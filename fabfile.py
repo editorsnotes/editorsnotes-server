@@ -33,6 +33,7 @@ def setup():
     with cd(env.path):
         run('virtualenv .' % env)
         run('mkdir -p logs; mkdir -p releases; mkdir -p shared; mkdir -p packages' % env)
+        run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     deploy()
     
 def deploy():
