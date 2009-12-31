@@ -1,0 +1,14 @@
+*.pyc
+*.pyo
+.tmp*
+.DS_Store
+.project
+.pydevproject
+.settings
+.svn
+secret.txt
+settings_local.py
+dev.db
+build
+*.tar.gz
+*.bak
