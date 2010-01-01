@@ -9,13 +9,6 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'postgresql_psycopg2'
-DATABASE_NAME = 'editorsnotes'
-DATABASE_USER = 'editorsnotes'
-DATABASE_PASSWORD = 'Beev0dir'
-DATABASE_HOST = '' # localhost
-DATABASE_PORT = '' # default
-
 TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
 
@@ -36,9 +29,6 @@ MEDIA_URL = ''
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
 ADMIN_MEDIA_PREFIX = '/django_admin_media/'
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = '$!d663ao9sgc$=aq%(-0$fe1f4(0&v7*dhb!#_n*_qky5$_x-g'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -70,3 +60,5 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'editorsnotes.main'
 )
+
+from settings_local import *
