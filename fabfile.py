@@ -52,6 +52,7 @@ def deploy():
     symlink_current_release()
     migrate()
     restart_webserver()
+    local('open http://%(host)s/' % env)
     
 def deploy_version(version):
     "Specify a specific version to be made live."
