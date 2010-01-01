@@ -16,11 +16,24 @@ def dev():
     env.path = '/Library/WebServer/Documents/%(project_name)s' % env
     env.vhosts_path = '/etc/apache2/sites'
 
+def pro():
+    "Use the production webserver."
+    env.hosts = ['editorsnotes.org']
+    env.user = 'ryanshaw'
+    env.path = '/db/projects/%(project_name)s' % env
+    env.vhosts_path = '/etc/httpd/sites.d/'
+
 # Tasks
 
 def test():
-    "Run the test suite and bail out if it fails."
-    result = local("cd %(project_name)s; python manage.py test" % env)
+    "Run the test suite locally."
+    local("cd %(project_name)s; python manage.py test" % env)
+    
+def test_remote():
+    "Run the test suite remotely."
+    require('hosts', provided_by=[dev])
+    require('path')
+    run('cd %(path)s/releases/current/%(project_name)s;  ../../../bin/python manage.py test' % env)
     
 def setup():
     """
@@ -112,7 +125,7 @@ def install_requirements():
 def install_site():
     "Add the virtualhost file to apache."
     require('release', provided_by=[deploy, setup])
-    sudo('cd %(path)s/releases/%(release)s; cp -f vhost-%(host)s.conf %(vhosts_path)s' % env)
+    sudo('cd %(path)s/releases/%(release)s; cp -f vhost-%(host)s.conf %(vhosts_path)s' % env, pty=True)
     
 def symlink_current_release():
     "Symlink our current release."
@@ -123,9 +136,10 @@ def symlink_current_release():
     
 def migrate():
     "Update the database"
-    require('project_name')
+    require('hosts', provided_by=[dev])
+    require('path')
     run('cd %(path)s/releases/current/%(project_name)s;  ../../../bin/python manage.py syncdb --noinput' % env)
     
 def restart_webserver():
     "Restart the web server."
-    sudo('apachectl restart')
+    sudo('apachectl restart', pty=True)
