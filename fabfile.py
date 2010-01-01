@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from fabric.api import *
+from fabric.contrib.console import confirm
 
 # Globals
 
@@ -95,15 +96,8 @@ def clean():
     "Clean out old packages and releases."
     require('hosts', provided_by=[dev])
     require('path')
-    def yes_or_no(answer):
-        answer = answer.lower()
-        if (answer == 'y' or answer == 'yes'):
-            return True
-        if (answer == 'n' or answer == 'no'):
-            return False
-        raise Exception('Please answer Y or N.')        
-    if (prompt('Are you sure you want to delete everything on %(host)s?' % env, 
-               default='no', validate=yes_or_no)): 
+    if (confirm('Are you sure you want to delete everything on %(host)s?' % env, 
+                default=False)):
         with cd(env.path):
             run('rm -rf packages; rm -rf releases')
     
