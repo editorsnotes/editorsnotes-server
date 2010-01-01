@@ -60,6 +60,7 @@ def deploy():
     import time
     env.release = time.strftime('%Y%m%d%H%M%S')
     upload_tar_from_git()
+    upload_local_settings()
     install_requirements()
     install_site()
     symlink_current_release()
@@ -116,7 +117,13 @@ def upload_tar_from_git():
     put('%(release)s.tar.gz' % env, '%(path)s/packages/' % env)
     run('cd %(path)s/releases/%(release)s && tar zxf ../../packages/%(release)s.tar.gz' % env)
     local('rm %(release)s.tar.gz' % env)
-    
+
+def upload_local_settings():
+    "Upload the appropriate local settings file."
+    require('release', provided_by=[deploy, setup])
+    put('%(project_name)s/settings-%(host)s.py' % env, 
+        '%(path)s/releases/%(release)s/%(project_name)s/settings_local.py' % env)
+
 def install_requirements():
     "Install the required packages from the requirements file using pip"
     require('release', provided_by=[deploy, setup])
