@@ -1,0 +1,56 @@
+Here's what I have in mind for the technical architecture of the Editors' &
+Curators' Notes (E&CN):
+
+E&CN will be a database and web site hosted at Berkeley. The database will
+store 4 kinds of records:
+
+1. Notes
+2. Queries
+3. Citations
+4. Terms
+
+1. *Notes* consist of text written by an Editor or Curator. The text is
+stored as HTML, so it may have hyperlinks and all the other features that
+HTML enables.
+
+2. *Queries* also consist of text written by an Editor or Curator. In fact,
+we can think of a Query as a special kind of Note, one that is identified as
+*asking* something rather than or explaining or describing something. The
+distinction exists solely so that Queries can be presented differently in
+the interface. A Query may be converted to a Note if it is answered.
+
+3. *Citations* are bibliographic descriptions of and references to source
+documents. These may be references to offline documents or links to online
+documents. They may include a scan of the document itself.
+
+4. All of the previous 3 kinds of records must be indexed using terms drawn
+from a controlled vocabulary of *Terms*. Terms may be person names,
+organization names, place names, event names, publication names, or names of
+topics or themes. We can think of these as subject authority records, with
+support for variant spellings, aliases, etc. But they go beyond that, with
+support for various kinds of relations among terms, e.g. personal relations
+between persons, involvement of persons and organizations in events, etc.
+Just as Terms are used to index Notes, Queries, and Citations, relationships
+between Terms might also be used for indexing: for instance if John Doe and
+Fred Smith were both schoolmates and business partners, their business
+partnership relation might be used to index a Citation that is relevant to
+the latter relationship but not the former.
+
+Notes, Queries and Citations are associated with their creators (of which
+there may be more than one: each of these is a collaborative document).
+Records of every change to these records are kept so that it is always
+possible to return to earlier versions. Notes, Queries, and Citations may be
+private or public. Private records are only visible to editors and curators,
+not the general public.
+
+The above only describes the underlying data structure. The interface will
+use the indexing terms to aggregate all of the Notes, Queries, and Citations
+relevant to a specific person, organization, place, event, publication, or
+theme. The resulting aggregation is expected to look something like the E.B.
+Foote and L.A. Times examples we created. Snapshots of the aggregated term
+pages, as well as materials like the scanned documents, can be periodically
+stored at the Internet Archive or elsewhere.
+
+I expect to use the Django web framework (http://www.djangoproject.com/) and
+the various components available for it to implement E&CN. For full-text
+search I will use the Xapian search engine.
