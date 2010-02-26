@@ -45,7 +45,7 @@ def setup():
     require('path')
     run('mkdir -p %(path)s' % env)
     with cd(env.path):
-        run('virtualenv .' % env)
+        run('virtualenv --no-site-packages .' % env)
         run('mkdir -p logs; mkdir -p releases; mkdir -p shared; mkdir -p packages' % env)
         run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     deploy()
