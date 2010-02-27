@@ -1,3 +1,4 @@
+from django import forms
 from django.db import models
 from django.contrib.auth.models import User
 from lxml import etree
@@ -12,6 +13,10 @@ class ElementField(models.Field):
     def to_python(self, value):
         if isinstance(value, etree._Element):
             return value
+        if not isinstance(value, str):
+            raise TypeError('%s is not a string' % value)
+        if len(value) == 0:
+            return None
         return etree.fromstring(value)
     def get_db_prep_value(self, value):
         return etree.tostring(value)
@@ -25,7 +30,7 @@ class ElementField(models.Field):
 
 class Metadata(models.Model):
     creator = models.ForeignKey(User, editable=False)
-    created = models.DateTimeField(auto_now_add=True, editable=False)
+    created = models.DateTimeField(auto_now_add=True)
     class Meta:
         abstract = True
         get_latest_by = 'created'
@@ -62,14 +67,14 @@ class Note(Metadata):
     <BLANKLINE>
     """
     content = ElementField()
-    is_query = models.BooleanField(default=False)
+    is_query = models.BooleanField(default=False, verbose_name='this is a query')
     terms = models.ManyToManyField('Term', through='TermAssignment')
 
 class Reference(Metadata):
     u"""
     A bibliographic citation (as XHTML) and reference to a document.
     """
-    note = models.ForeignKey(Note, related_name='references', editable=False)
+    note = models.ForeignKey(Note, related_name='references')
     citation = ElementField()
     url = models.URLField(blank=True, verify_exists=True)
     class Meta(Metadata.Meta):
@@ -89,7 +94,7 @@ class Alias(Metadata):
     u"""
     An alternate name for a term.
     """
-    term = models.ForeignKey(Term, related_name='aliases', editable=False)
+    term = models.ForeignKey(Term, related_name='aliases')
     name = models.CharField(max_length='80')
     def __unicode__(self):
         return self.name
@@ -101,9 +106,10 @@ class TermAssignment(Metadata):
     u""" 
     An assignment of a term to a note.
     """
-    term = models.ForeignKey(Term, related_name='terms', editable=False)
-    note = models.ForeignKey(Note, related_name='notes', editable=False)
+    term = models.ForeignKey(Term, related_name='terms')
+    note = models.ForeignKey(Note, related_name='notes')
     def __unicode__(self):
         return self.term.preferred_name
     class Meta(Metadata.Meta):
         unique_together = ('term', 'note')
+        verbose_name_plural = 'index terms'
