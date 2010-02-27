@@ -58,7 +58,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'editorsnotes.main'
+    'editorsnotes.main',
 )
 
 from settings_local import *
