@@ -1,32 +1,48 @@
+from lxml import etree, html
 from django import forms
 from django.db import models
 from django.contrib.auth.models import User
-from lxml import etree
+from django.utils.safestring import mark_safe
+from django.utils.html import conditional_escape
+from django.utils.encoding import force_unicode
 
-class ElementField(models.Field):
-    description = 'A parsed XML document or fragment'
+class XHTMLWidget(forms.Textarea):
+    def _format_value(self, value):
+        if value is None:
+            return ''
+        return etree.tostring(value)
+ 
+    def render(self, name, value, attrs=None):
+        final_attrs = self.build_attrs(attrs, name=name)
+        return mark_safe(u'<textarea%s>%s</textarea>' % (
+                forms.util.flatatt(final_attrs),
+                conditional_escape(force_unicode(self._format_value(value)))))
+
+
+class XHTMLField(models.Field):
+    description = 'A parsed XHTML fragment'
     __metaclass__ = models.SubfieldBase
     def __init__(self, *args, **kwargs):
-        super(ElementField, self).__init__(*args, **kwargs)
+        super(XHTMLField, self).__init__(*args, **kwargs)
     def db_type(self):
         return 'xml'
     def to_python(self, value):
-        if isinstance(value, etree._Element):
+        if isinstance(value, html.HtmlElement):
             return value
-        if not isinstance(value, str):
-            raise TypeError('%s is not a string' % value)
+        if not (isinstance(value, str) or isinstance(value, unicode)):
+            raise TypeError('%s cannot be parsed to XHTML' % type(value))
         if len(value) == 0:
             return None
-        return etree.fromstring(value)
+        return html.fragment_fromstring(value, create_parent=True)
     def get_db_prep_value(self, value):
         return etree.tostring(value)
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
     def formfield(self, **kwargs):
-        defaults = {'widget': forms.Textarea}
+        defaults = {'widget': XHTMLWidget}
         defaults.update(kwargs)
-        return super(ElementField, self).formfield(**defaults)
+        return super(XHTMLField, self).formfield(**defaults)
 
 class Metadata(models.Model):
     creator = models.ForeignKey(User, editable=False)
@@ -45,7 +61,7 @@ class Note(Metadata):
     than or explaining or describing something.
 
     >>> user = User.objects.create_user('tester', '', 'testerpass')
-    >>> note = Note.objects.create(content=u'<p>This is a note.</p>', creator=user)
+    >>> note = Note.objects.create(content=u'<h1>hey</h1><p>this is a <em>note</em></p>', creator=user)
     >>> note.is_query
     False
 
@@ -66,7 +82,7 @@ class Note(Metadata):
     IntegrityError: duplicate key value violates unique constraint "main_termassignment_term_id_key"
     <BLANKLINE>
     """
-    content = ElementField()
+    content = XHTMLField()
     is_query = models.BooleanField(default=False, verbose_name='this is a query')
     terms = models.ManyToManyField('Term', through='TermAssignment')
 
@@ -75,7 +91,7 @@ class Reference(Metadata):
     A bibliographic citation (as XHTML) and reference to a document.
     """
     note = models.ForeignKey(Note, related_name='references')
-    citation = ElementField()
+    citation = XHTMLField()
     url = models.URLField(blank=True, verify_exists=True)
     class Meta(Metadata.Meta):
         unique_together = ('note', 'url')

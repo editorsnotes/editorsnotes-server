@@ -19,6 +19,12 @@ class NoteAdmin(admin.ModelAdmin):
         if not change: # adding new note
             note.creator = request.user
         note.save()
+    def save_formset(self, request, form, formset, change):
+        term_assignments = formset.save(commit=False)
+        for term_assignment in term_assignments:
+            term_assignment.creator = request.user
+            term_assignment.save()
+        formset.save_m2m()
     class Media:
         js = ('http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js', 
               'wymeditor/jquery.wymeditor.pack.js',
