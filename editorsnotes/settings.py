@@ -17,17 +17,8 @@ SITE_ID = 1
 USE_I18N = False
 
 # Absolute path to the directory that holds media.
-# Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = ''
-
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash if there is a path component (optional in other cases).
-# Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = ''
-
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
+MEDIA_URL = '/media/'
 ADMIN_MEDIA_PREFIX = '/django_admin_media/'
 
 # List of callables that know how to import templates from various sources.
