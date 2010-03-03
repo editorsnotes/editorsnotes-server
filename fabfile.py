@@ -121,8 +121,10 @@ def upload_local_settings():
 def install_requirements():
     "Install the required packages from the requirements file using pip"
     require('release', provided_by=[deploy, setup])
-    run('cd %(path)s; pip install -E . -r ./releases/%(release)s/requirements.txt' % env)
-    
+    run('export SAVED_PIP_VIRTUALENV_BASE=$PIP_VIRTUALENV_BASE; unset PIP_VIRTUALENV_BASE; ' +
+        'cd %(path)s; ./bin/pip install -E . -r ./releases/%(release)s/requirements.txt; ' % env +
+        'export PIP_VIRTUALENV_BASE=$SAVED_PIP_VIRTUALENV_BASE; unset SAVED_PIP_VIRTUALENV_BASE')
+
 def install_site():
     "Add the virtualhost file to apache."
     require('release', provided_by=[deploy, setup])
