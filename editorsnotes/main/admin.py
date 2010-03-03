@@ -16,7 +16,9 @@ class AliasInline(admin.StackedInline):
 class NoteAdmin(admin.ModelAdmin):
     inlines = (ReferenceInline, TermAssignmentInline)
     def save_model(self, request, note, form, change):
-        if not change: # adding new note
+        if change: # updating existing note
+            note.last_updater = request.user
+        else: # adding new note
             note.creator = request.user
         note.save()
     def save_formset(self, request, form, formset, change):

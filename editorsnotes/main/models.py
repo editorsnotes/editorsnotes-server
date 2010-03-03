@@ -44,14 +44,14 @@ class XHTMLField(models.Field):
         defaults.update(kwargs)
         return super(XHTMLField, self).formfield(**defaults)
 
-class Metadata(models.Model):
-    creator = models.ForeignKey(User, editable=False)
+class CreationMetadata(models.Model):
+    creator = models.ForeignKey(User, editable=False, related_name='created_%(class)s_set')
     created = models.DateTimeField(auto_now_add=True)
     class Meta:
         abstract = True
         get_latest_by = 'created'
 
-class Note(Metadata):
+class Note(CreationMetadata):
     u""" 
     Text written by an editor or curator. The text is stored as XHTML,
     so it may have hyperlinks and all the other features that XHTML
@@ -61,7 +61,7 @@ class Note(Metadata):
     than or explaining or describing something.
 
     >>> user = User.objects.create_user('tester', '', 'testerpass')
-    >>> note = Note.objects.create(content=u'<h1>hey</h1><p>this is a <em>note</em></p>', creator=user)
+    >>> note = Note.objects.create(content=u'<h1>hey</h1><p>this is a <em>note</em></p>', creator=user, last_updater=user)
     >>> note.is_query
     False
 
@@ -85,18 +85,20 @@ class Note(Metadata):
     content = XHTMLField()
     is_query = models.BooleanField(default=False, verbose_name='this is a query')
     terms = models.ManyToManyField('Term', through='TermAssignment')
+    last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
+    last_updated = models.DateTimeField(auto_now=True)
 
-class Reference(Metadata):
+class Reference(CreationMetadata):
     u"""
     A bibliographic citation (as XHTML) and reference to a document.
     """
     note = models.ForeignKey(Note, related_name='references')
     citation = XHTMLField()
     url = models.URLField(blank=True, verify_exists=True)
-    class Meta(Metadata.Meta):
+    class Meta(CreationMetadata.Meta):
         unique_together = ('note', 'url')
 
-class Term(Metadata):
+class Term(CreationMetadata):
     u""" 
     A controlled term such as a person name, an organization name, a
     place name, an event name, a publication name, or the name of a
@@ -106,7 +108,7 @@ class Term(Metadata):
     def __unicode__(self):
         return self.preferred_name
 
-class Alias(Metadata):
+class Alias(CreationMetadata):
     u"""
     An alternate name for a term.
     """
@@ -114,11 +116,11 @@ class Alias(Metadata):
     name = models.CharField(max_length='80')
     def __unicode__(self):
         return self.name
-    class Meta(Metadata.Meta):
+    class Meta(CreationMetadata.Meta):
         unique_together = ('term', 'name')
         verbose_name_plural = 'aliases'
 
-class TermAssignment(Metadata):
+class TermAssignment(CreationMetadata):
     u""" 
     An assignment of a term to a note.
     """
@@ -126,6 +128,6 @@ class TermAssignment(Metadata):
     note = models.ForeignKey(Note, related_name='notes')
     def __unicode__(self):
         return self.term.preferred_name
-    class Meta(Metadata.Meta):
+    class Meta(CreationMetadata.Meta):
         unique_together = ('term', 'note')
         verbose_name_plural = 'index terms'
