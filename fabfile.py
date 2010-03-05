@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from time import sleep
 from fabric.api import *
 from fabric.contrib.console import confirm
 
@@ -67,6 +68,7 @@ def deploy():
     symlink_current_release()
     migrate()
     restart_webserver()
+    sleep(2)
     local('open http://%(host)s/' % env)
     
 def deploy_version(version):
@@ -100,6 +102,8 @@ def clean():
                 default=False)):
         with cd(env.path):
             run('rm -rf packages; rm -rf releases')
+            run('mkdir -p packages; mkdir -p releases')
+            run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     
 # Helpers. These are called by other functions rather than directly.
 
@@ -129,7 +133,7 @@ def install_site():
     "Add the virtualhost file to apache."
     require('release', provided_by=[deploy, setup])
     sudo('cd %(path)s/releases/%(release)s; cp -f vhost-%(host)s.conf %(vhosts_path)s' % env, pty=True)
-    
+
 def symlink_current_release():
     "Symlink our current release."
     require('release', provided_by=[deploy, setup])
