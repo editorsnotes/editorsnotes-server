@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  $('textarea').wymeditor({
+  jQuery('textarea').wymeditor({
     toolsItems: [
       {'name': 'Bold', 'title': 'Strong', 'css': 'wym_tools_strong'}, 
       {'name': 'Italic', 'title': 'Emphasis', 'css': 'wym_tools_emphasis'},
@@ -9,9 +9,9 @@ $(document).ready(function () {
       {'name': 'Redo', 'title': 'Redo', 'css': 'wym_tools_redo'},
       {'name': 'CreateLink', 'title': 'Link', 'css': 'wym_tools_link'},
       {'name': 'Unlink', 'title': 'Unlink', 'css': 'wym_tools_unlink'},
-      {'name': 'ToggleHtml', 'title': 'HTML', 'css': 'wym_tools_html'},
+      {'name': 'ToggleHtml', 'title': 'HTML', 'css': 'wym_tools_html'}
     ],
     updateSelector: 'input:submit',
     updateEvent: 'click'
-  });  
+  });
 });
