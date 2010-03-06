@@ -48,7 +48,10 @@ class XHTMLField(models.Field):
             raise TypeError('%s cannot be parsed to XHTML' % type(value))
         if len(value) == 0:
             return None
-        return html.fragment_fromstring(value, create_parent=True)
+        try:
+            return html.fragment_fromstring(value)
+        except etree.ParserError:
+            return html.fragment_fromstring(value, create_parent='p')
     def get_db_prep_value(self, value):
         return etree.tostring(value)
     def value_to_string(self, obj):
@@ -104,7 +107,7 @@ class Note(CreationMetadata):
     <BLANKLINE>
     """
     content = XHTMLField()
-    type = models.CharField(max_length=1, choices=(('N','note'),('Q','query')), default='N', verbose_name='note or query')
+    type = models.CharField(max_length=1, choices=(('N','note'),('Q','query')), default='N')
     terms = models.ManyToManyField('Term', through='TermAssignment')
     last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
     last_updated = models.DateTimeField(auto_now=True)

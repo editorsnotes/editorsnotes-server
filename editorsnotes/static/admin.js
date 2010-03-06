@@ -2,6 +2,7 @@ jQuery(document).ready(function () {
 
   // Initialize WYMeditor.
   jQuery('textarea').wymeditor({
+    skin: 'custom',
     toolsItems: [
       {'name': 'Bold', 'title': 'Strong', 'css': 'wym_tools_strong'}, 
       {'name': 'Italic', 'title': 'Emphasis', 'css': 'wym_tools_emphasis'},
@@ -14,7 +15,8 @@ jQuery(document).ready(function () {
       {'name': 'ToggleHtml', 'title': 'HTML', 'css': 'wym_tools_html'}
     ],
     updateSelector: 'input:submit',
-    updateEvent: 'click'
+    updateEvent: 'click',
+    classesHtml: ''
   });
 
   // Initialize timeago.

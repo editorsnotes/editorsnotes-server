@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans "Editors' Notes" %}{% endblock %}
+
+{% block extrastyle %}
+<style type="text/css">
+#header {
+  background-color: #4C5A64;
+}
+
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">{% trans "Editors' Notes" %}</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
