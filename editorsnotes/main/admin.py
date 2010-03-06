@@ -3,23 +3,24 @@ from django.contrib import admin
 
 class ReferenceInline(admin.StackedInline):
     model = Reference
-    extra = 1
+    extra = 0
 
 class TermAssignmentInline(admin.StackedInline):
     model = TermAssignment
-    extra = 3
+    extra = 1
 
 class AliasInline(admin.StackedInline):
     model = Alias
-    extra = 3
+    extra = 0
 
 class NoteAdmin(admin.ModelAdmin):
     inlines = (ReferenceInline, TermAssignmentInline)
+    list_display = ('excerpt', 'type', 'creator', 'created_display')
+    readonly_fields = ('edit_history',)
     def save_model(self, request, note, form, change):
-        if change: # updating existing note
-            note.last_updater = request.user
-        else: # adding new note
+        if not change: # adding new note
             note.creator = request.user
+        note.last_updater = request.user
         note.save()
     def save_formset(self, request, form, formset, change):
         term_assignments = formset.save(commit=False)
@@ -28,9 +29,9 @@ class NoteAdmin(admin.ModelAdmin):
             term_assignment.save()
         formset.save_m2m()
     class Media:
-        js = ('http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js', 
-              'wymeditor/jquery.wymeditor.pack.js',
-              'wymeditor_init.js')
+        js = ('wymeditor/jquery.wymeditor.pack.js',
+              'jquery.timeago.js',
+              'admin.js')
 
 class TermAdmin(admin.ModelAdmin):
     inlines = (AliasInline,)

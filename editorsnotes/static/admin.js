@@ -1,4 +1,6 @@
-$(document).ready(function () {
+jQuery(document).ready(function () {
+
+  // Initialize WYMeditor.
   jQuery('textarea').wymeditor({
     toolsItems: [
       {'name': 'Bold', 'title': 'Strong', 'css': 'wym_tools_strong'}, 
@@ -14,4 +16,7 @@ $(document).ready(function () {
     updateSelector: 'input:submit',
     updateEvent: 'click'
   });
+
+  // Initialize timeago.
+  jQuery('time.timeago').timeago();
 });

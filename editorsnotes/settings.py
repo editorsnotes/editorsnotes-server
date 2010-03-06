@@ -11,9 +11,11 @@ MANAGERS = ADMINS
 
 TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
+DATETIME_FORMAT = 'N j, Y, P'
 
 SITE_ID = 1
 
+USE_L10N = False
 USE_I18N = False
 
 # Absolute path to the directory that holds media.
