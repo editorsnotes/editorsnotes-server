@@ -1,3 +1,6 @@
+// Note: cannot use the '$' variable in here because Django turns on 
+// jQuery.noConflict() for the admin interface.
+
 jQuery(document).ready(function () {
 
   // Initialize WYMeditor.
