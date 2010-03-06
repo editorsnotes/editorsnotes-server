@@ -1,5 +1,9 @@
+# -*- coding: utf-8 -*-
+
+import re
 import os.path
 from lxml import etree, html
+from unaccent import unaccent
 from isodate import datetime_isoformat
 from django import forms
 from django.db import models
@@ -51,7 +55,7 @@ class XHTMLField(models.Field):
         try:
             return html.fragment_fromstring(value)
         except etree.ParserError:
-            return html.fragment_fromstring(value, create_parent='p')
+            return html.fragment_fromstring(value, create_parent='div')
     def get_db_prep_value(self, value):
         return etree.tostring(value)
     def value_to_string(self, obj):
@@ -142,8 +146,24 @@ class Term(CreationMetadata):
     A controlled term such as a person name, an organization name, a
     place name, an event name, a publication name, or the name of a
     topic or theme.
+
+    >>> term = Term(preferred_name=u'Foote, Edward B. (Edward Bliss) 1829-1906')
+    >>> term.make_slug()
+    u'foote-edward-b-edward-bliss-1829-1906'
+
+    >>> term = Term(preferred_name=u'Räggler å paschaser på våra mål tå en bonne')
+    >>> term.make_slug()
+    u'raggler-a-paschaser-pa-vara-mal-ta-en-bonne'
     """
     preferred_name = models.CharField(max_length='80', unique=True)
+    slug = models.CharField(max_length='80', unique=True, editable=False)
+    def make_slug(self):
+        return '-'.join(
+            [ x for x in re.split('\W+', unaccent(self.__unicode__()))
+              if len(x) > 0 ]).lower()
+    def save(self, *args, **kwargs):
+        self.slug = self.make_slug()
+        super(Term, self).save(*args, **kwargs)
     def __unicode__(self):
         return self.preferred_name
 

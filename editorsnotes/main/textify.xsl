@@ -5,12 +5,14 @@
     <xsl:copy>
       <xsl:apply-templates select="node()"/>
     </xsl:copy>
+    <xsl:text> </xsl:text>
   </xsl:template>
 
   <xsl:template match="p">
     <xsl:copy>
       <xsl:apply-templates select="node()"/>
     </xsl:copy>
+    <xsl:text> </xsl:text>
   </xsl:template>
 
   <xsl:template match="a"> 
