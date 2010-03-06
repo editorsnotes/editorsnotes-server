@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>{{ term.preferred_name }}</title>
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.0.0/build/cssreset/reset-min.css&amp;3.0.0/build/cssfonts/fonts-min.css&amp;3.0.0/build/cssgrids/grids-min.css&amp;3.0.0/build/cssbase/base-min.css"/>
+    <link rel="stylesheet" type="text/css" href="/media/style.css"/>
+  </head>
+  <body>
+    <div id="doc3" class="yui-t6">
+      <div id="hd">
+        <h1>{{ term.preferred_name }}</h1>
+      </div>
+      <div id="bd">
+        <div id="yui-main">
+          <div class="yui-b">
+            <div class="yui-g">
+              <div id="summary">
+                {{ note.content }}
+                <span class="attribution">{{ note.edit_history }}</span>
+              </div>
+              <div id="solicitation">
+                Please send additions, comments or corrections to <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+              </div>
+            </div>
+            <div class="yui-g">
+              <div id="references">
+                {% for reference in note.references %}
+                <div class="bib">
+                  {{ reference.citation }}
+                  {% if reference.url %}
+                  <a href="{{ reference.url }}">{{ reference.url }}</a>
+                  {% endif %}
+                </div>
+                {% empty %}
+                <div class="no-bib">
+                  No references for this note.
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+<!--
+        <div class="yui-b">
+          <h2>See also</h2>
+
+          <div class="yui-g seealso-group">
+            <div class="seealso">
+              <a href=""></a>
+            </div>
+          </div>
+
+          <div class="yui-g seealso-group">
+            <div class="seealso">
+              <a href=""></a>
+            </div>
+          </div>
+
+        </div>
+-->
+
+      </div>
+      <div id="ft"></div>
+    </div>
+    <div id="metadata">
+      <div id="publisher">Published by the <a href="/">Editors' Notes Project</a></div>
+      <div id="updated">Last updated {{ last_updated }} by <span class="attribution">{{ last_updater }}</span></div>
+    </div>
+  </body>
+</html>
