@@ -3,8 +3,7 @@
 
 jQuery(document).ready(function () {
 
-  // Initialize WYMeditor.
-  jQuery('textarea').wymeditor({
+  var wymconfig = {
     skin: 'custom',
     toolsItems: [
       {'name': 'Bold', 'title': 'Strong', 'css': 'wym_tools_strong'}, 
@@ -20,6 +19,12 @@ jQuery(document).ready(function () {
     updateSelector: 'input:submit',
     updateEvent: 'click',
     classesHtml: ''
+  };
+
+  // Initialize WYMeditors.
+  jQuery('textarea:not([id*=__prefix__])').wymeditor(wymconfig);
+  jQuery('body').bind('addedinlinerow', function (event, row) {
+    jQuery('#' + row.id).find('textarea').wymeditor(wymconfig);
   });
 
   // Initialize timeago.

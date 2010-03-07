@@ -16,7 +16,7 @@ textify = etree.XSLT(etree.parse(
         os.path.abspath(os.path.join(os.path.dirname(__file__), 'textify.xsl'))))
 
 def xhtml_to_text(xhtml):
-    return etree.tostring(textify(xhtml), method='text', encoding=unicode)
+    return etree.tostring(textify(xhtml), method='text', encoding=unicode).strip()
 
 def truncate(text, length=100):
     if len(text) <= length:
@@ -29,7 +29,11 @@ class XHTMLWidget(forms.Textarea):
     def _format_value(self, value):
         if value is None:
             return ''
-        return etree.tostring(value)
+        if isinstance(value, html.HtmlElement):
+            return etree.tostring(value)
+        if isinstance(value, str) or isinstance(value, unicode):
+            return value
+        raise TypeError('%s cannot be formatted as XHTML' % value)
  
     def render(self, name, value, attrs=None):
         final_attrs = self.build_attrs(attrs, name=name)
@@ -103,6 +107,8 @@ class Note(CreationMetadata):
     <TermAssignment: Example>
     >>> note.terms.all()
     [<Term: Example>]
+    >>> term.note_set.all()
+    [<Note: hey this is a note>]
     
     Can't assign the same term more than once.
     >>> TermAssignment.objects.create(note=note, term=term, creator=user)
@@ -115,6 +121,8 @@ class Note(CreationMetadata):
     terms = models.ManyToManyField('Term', through='TermAssignment')
     last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
     last_updated = models.DateTimeField(auto_now=True)
+    def content_as_html(self):
+        return etree.tostring(self.content)
     def last_updated_display(self):
         return '<time class="timeago" datetime="%s">%s</time>' % (
             datetime_isoformat(self.last_updated), self.last_updated.strftime('%I:%M%p, %b %d %Y'))
@@ -138,8 +146,8 @@ class Reference(CreationMetadata):
     note = models.ForeignKey(Note, related_name='references')
     citation = XHTMLField()
     url = models.URLField(blank=True, verify_exists=True)
-    class Meta(CreationMetadata.Meta):
-        unique_together = ('note', 'url')
+    def citation_as_html(self):
+        return etree.tostring(self.citation)
 
 class Term(CreationMetadata):
     u""" 
@@ -166,6 +174,10 @@ class Term(CreationMetadata):
         super(Term, self).save(*args, **kwargs)
     def __unicode__(self):
         return self.preferred_name
+    #@models.permalink
+    def get_absolute_url(self):
+        return '/t/%s/' % self.slug
+        #return ('term_view', (), { 'slug': self.slug })
 
 class Alias(CreationMetadata):
     u"""
@@ -183,7 +195,7 @@ class TermAssignment(CreationMetadata):
     u""" 
     An assignment of a term to a note.
     """
-    term = models.ForeignKey(Term, related_name='terms')
+    term = models.ForeignKey(Term)
     note = models.ForeignKey(Note, related_name='notes')
     def __unicode__(self):
         return self.term.preferred_name

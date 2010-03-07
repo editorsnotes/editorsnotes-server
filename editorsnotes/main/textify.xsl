@@ -15,6 +15,13 @@
     <xsl:text> </xsl:text>
   </xsl:template>
 
+  <xsl:template match="h1">
+    <xsl:copy>
+      <xsl:apply-templates select="node()"/>
+    </xsl:copy>
+    <xsl:text> </xsl:text>
+  </xsl:template>
+
   <xsl:template match="a"> 
     <xsl:apply-templates/>
   </xsl:template>

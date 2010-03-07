@@ -42,6 +42,12 @@ TEMPLATE_DIRS = (
     os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
 )
 
+DEVSERVER_MODULES = (
+    'devserver.modules.sql.SQLRealTimeModule',
+    'devserver.modules.sql.SQLSummaryModule',
+    'devserver.modules.profile.ProfileSummaryModule',
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +55,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'devserver',
     'editorsnotes.main',
 )
 

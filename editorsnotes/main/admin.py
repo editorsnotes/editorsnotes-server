@@ -39,6 +39,12 @@ class TermAdmin(admin.ModelAdmin):
         if not change: # adding new term
             term.creator = request.user
         term.save()
+    def save_formset(self, request, form, formset, change):
+        aliases = formset.save(commit=False)
+        for alias in aliases:
+            alias.creator = request.user
+            alias.save()
+        formset.save_m2m()
 
 admin.site.register(Note, NoteAdmin)
 admin.site.register(Term, TermAdmin)
