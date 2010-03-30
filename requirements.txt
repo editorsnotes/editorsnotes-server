@@ -1,4 +1,4 @@
--f http://www.djangoproject.com/download/1.2-beta-1/tarball/#egg=Django
+http://www.djangoproject.com/download/1.2-beta-1/tarball/#egg=Django
 django-reversion==1.2
 lxml==2.2.4
 psycopg2==2.0.13
