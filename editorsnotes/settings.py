@@ -1,8 +1,5 @@
 # Django settings for editorsnotes project.
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-
 ADMINS = (
     ('Ryan Shaw', 'ryanshaw@ischool.berkeley.edu'),
 )
