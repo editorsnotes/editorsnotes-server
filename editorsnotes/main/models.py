@@ -193,6 +193,8 @@ class Term(CreationMetadata):
     def get_absolute_url(self):
         return '/t/%s/' % self.slug
         #return ('term_view', (), { 'slug': self.slug })
+    class Meta:
+        ordering = ['preferred_name']
 
 class Alias(CreationMetadata):
     u"""
