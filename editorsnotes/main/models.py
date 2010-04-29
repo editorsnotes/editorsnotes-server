@@ -100,8 +100,11 @@ class Note(CreationMetadata):
     'type' indicates whether this is a 'query' (asking something) or a
     'note' (explaining or describing something).
 
+    Style elements are stripped from content.
     >>> user = User.objects.create_user('tester', '', 'testerpass')
-    >>> note = Note.objects.create(content=u'<h1>hey</h1><p>this is a <em>note</em></p>', creator=user, last_updater=user)
+    >>> note = Note.objects.create(content=u'<style>garbage</style><h1>hey</h1><p>this is a <em>note</em></p>', creator=user, last_updater=user)
+    >>> note.content_as_html()
+    '<div><h1>hey</h1><p>this is a <em>note</em></p></div>'
     >>> note.type
     u'N'
 
@@ -144,6 +147,10 @@ class Note(CreationMetadata):
     edit_history.allow_tags = True
     def excerpt(self):
         return truncate(xhtml_to_text(self.content))
+    def save(self, *args, **kwargs):
+        for e in self.content.iter(tag='style'):
+            e.getparent().remove(e)
+        super(Note, self).save(*args, **kwargs)
     def __unicode__(self):
         return self.excerpt()
 
