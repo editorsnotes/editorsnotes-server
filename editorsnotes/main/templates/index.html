@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Editors' Notes</title>
+  </head>
+  <body>
+
+    <section id="terms">
+      <ul>
+      {% for term in term_list %}
+      <li><a href="{{ term.get_absolute_url }}">{{ term }}</a></li>
+      {% endfor %}
+      </ul>
+    </section>
+
+  </body>
+</html>

@@ -1,11 +1,16 @@
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
+from django.contrib.auth.decorators import login_required
 from models import Term, Reference
 
+@login_required
 def index(request):
-    return HttpResponse('Hello, world.')
+    o = {}
+    o['term_list'] = Term.objects.all()
+    return render_to_response('index.html', o)
 
+@login_required
 def term(request, slug):
     o = {}
     o['contact'] = { 'name': settings.ADMINS[0][0], 
@@ -20,4 +25,3 @@ def term(request, slug):
                 o['last_updater'] = note.last_updater.username
                 o['last_updated_display'] = note.last_updated_display()
     return render_to_response('term.html', o)
-    
