@@ -2,12 +2,9 @@
 
 {% block title %}{{ term.preferred_name }}{% endblock %}
 
-{% block body %}
-    <header>
+{% block content %}
+    <header class="span-24 last">
       <h1>{{ term.preferred_name }}</h1>
-      <div id="solicitation">
-        Please send additions, comments or corrections to {{ contact.name }} at <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>.
-      </div>
     </header>
 
     {% if note_dict %}
