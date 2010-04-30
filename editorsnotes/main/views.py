@@ -16,10 +16,11 @@ def term(request, slug):
     o['contact'] = { 'name': settings.ADMINS[0][0], 
                      'email': settings.ADMINS[0][1] }
     o['term'] = Term.objects.get(slug=slug)
-    o['note_list'] = o['term'].note_set.filter(type__exact='N')
-    o['query_list'] = o['term'].note_set.filter(type__exact='Q')
-    o['reference_list'] = Reference.objects.filter(note__in=o['note_list'])
-    for note in list(o['note_list']) + list(o['query_list']):
+    o['note_list'] = list(o['term'].note_set.filter(type__exact='N'))
+    o['query_list'] = list(o['term'].note_set.filter(type__exact='Q'))
+    o['note_dict'] = [ (n, n.references.all()) for n in o['note_list'] ]
+    o['query_dict'] = [ (q, q.references.all()) for q in o['query_list'] ]
+    for note in o['note_list'] + o['query_list']:
         if ('last_updated' not in o) or (note.last_updated > o['last_updated']):
                 o['last_updated'] = note.last_updated
                 o['last_updater'] = note.last_updater.username

@@ -12,14 +12,26 @@
       </div>
     </header>
 
-    {% if note_list %}
+    {% if note_dict %}
     <section id="notes">
       <h1>Notes</h1>
-      {% for note in note_list %}
+      {% for note, refs in note_dict %}
       <article class="note">
         <div class="note-content">
           {{ note.content_as_html|safe }}
         </div>
+        {% if refs %}
+        <div class="note-references">
+          {% for ref in refs %}
+          <div class="reference">
+            {{ ref.citation_as_html|safe }}
+            {% if ref.url %}
+            <a href="{{ reference.url }}">{{ ref.url }}</a>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
         <div class="note-edit-history">
           {{ note.edit_history|safe }}
         </div>
@@ -32,32 +44,30 @@
     </div>
     {% endif %}
 
-    {% if query_list %}
+    {% if query_dict %}
     <section id="queries">
       <h1>Queries</h1>
-      {% for query in query_list %}
+      {% for query, refs in query_dict %}
       <article class="query">
         <div class="query-content">
           {{ query.content_as_html|safe }}
         </div>
+        {% if refs %}
+        <div class="query-references">
+          {% for ref in refs %}
+          <div class="reference">
+            {{ ref.citation_as_html|safe }}
+            {% if ref.url %}
+            <a href="{{ reference.url }}">{{ ref.url }}</a>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
         <div class="query-edit-history">
           {{ query.edit_history|safe }}
         </div>
       </article>
-      {% endfor %}
-    </section>
-    {% endif %}
-
-    {% if reference_list %}
-    <section id="references">
-      <h1>References</h1>
-      {% for reference in reference_list %}
-      <div class="reference">
-        {{ reference.citation_as_html|safe }}
-        {% if reference.url %}
-        <a href="{{ reference.url }}">{{ reference.url }}</a>
-        {% endif %}
-      </div>
       {% endfor %}
     </section>
     {% endif %}
