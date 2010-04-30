@@ -264,3 +264,14 @@ form p + p {text-indent:0;}
 .dquo {margin-left:-.5em;}
 p.incr, .incr p {font-size:10px;line-height:1.44em;margin-bottom:1.5em;}
 .caps {font-variant:small-caps;letter-spacing:1px;text-transform:lowercase;font-size:1.2em;line-height:1%;font-weight:bold;padding:0 2px;}
+
+/* src/screen-custom.css */
+body {font-size:87.5%;}
+#metadata {position:absolute;top:0;right:0;}
+.edit-history {text-align:right;}
+
+/* semantic class names */
+#metadata {padding:1.5em;margin-bottom:1.5em;background:#E5ECF9;}
+.edit-history {color:#666;}
+header {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;margin-top:1.5em;}
+#notes {float:left;margin-right:10px;width:710px;}

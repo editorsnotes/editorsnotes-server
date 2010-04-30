@@ -3,13 +3,13 @@
 {% block title %}{{ term.preferred_name }}{% endblock %}
 
 {% block content %}
-    <header class="span-24 last">
+    <header>
       <h1>{{ term.preferred_name }}</h1>
     </header>
 
     {% if note_dict %}
     <section id="notes">
-      <h1>Notes</h1>
+      <h2>Notes</h2>
       {% for note, refs in note_dict %}
       <article class="note">
         <div class="note-content">
@@ -27,10 +27,11 @@
           {% endfor %}
         </div>
         {% endif %}
-        <div class="note-edit-history">
+        <div class="edit-history">
           {{ note.edit_history|safe }}
         </div>
       </article>
+      <hr/>
       {% endfor %}
     </section>
     {% else %}
@@ -41,7 +42,7 @@
 
     {% if query_dict %}
     <section id="queries">
-      <h1>Queries</h1>
+      <h2>Queries</h2>
       {% for query, refs in query_dict %}
       <article class="query">
         <div class="query-content">
@@ -59,7 +60,7 @@
           {% endfor %}
         </div>
         {% endif %}
-        <div class="query-edit-history">
+        <div class="edit-history">
           {{ query.edit_history|safe }}
         </div>
       </article>
