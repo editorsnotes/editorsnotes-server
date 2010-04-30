@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-  <head>
-    <title>{{ term.preferred_name }}</title>
-  </head>
-  <body>
+{% extends "base.html" %}
 
+{% block title %}{{ term.preferred_name }}{% endblock %}
+
+{% block body %}
     <header>
       <h1>{{ term.preferred_name }}</h1>
       <div id="solicitation">
@@ -80,6 +78,4 @@
         Last updated {{ last_updated_display|safe }} by <span class="attribution">{{ last_updater }}</span>
       </div>
     </aside>
-
-  </body>
-</html>
+{% endblock %}

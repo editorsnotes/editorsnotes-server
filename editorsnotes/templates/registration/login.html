@@ -1,30 +1,28 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-  <head>
-    <title></title>
-    <link rel="stylesheet" href="" type="text/css" media="screen"/>
-  </head>
-  <body>
+{% extends "base.html" %}
+
+{% block title %}Login to Editor's Notes{% endblock %}
+
+{% block body %}
     {% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
+    <div class="error">Your username and password didn't match. Please try again.</div>
     {% endif %}
 
     <form method="post" action="{% url django.contrib.auth.views.login %}">
-      <table>
-        <tr>
-          <td>{{ form.username.label_tag }}</td>
-          <td>{{ form.username }}</td>
-        </tr>
-        <tr>
-          <td>{{ form.password.label_tag }}</td>
-          <td>{{ form.password }}</td>
-        </tr>
-      </table>
-
-      <input type="submit" value="login" />
+      <fieldset>
+        <legend>Login</legend>
+        <p>
+          {{ form.username.label_tag }}<br/>
+          {{ form.username }}
+        </p>
+        <p>
+          {{ form.password.label_tag }}<br/>
+          {{ form.password }}
+        </p>
+        <p>
+          <input type="submit" value="login"/>
+        </p>
+      </fieldset>
       <input type="hidden" name="next" value="{{ next }}" />
       {% csrf_token %}
     </form>  
-
-  </body>
-</html>
+{% endblock %}
