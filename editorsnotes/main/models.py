@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-import os.path
+import utils
 import fields
 from copy import deepcopy
 from lxml import etree
@@ -9,27 +9,6 @@ from unaccent import unaccent
 from isodate import datetime_isoformat
 from django.db import models
 from django.contrib.auth.models import User
-
-textify = etree.XSLT(etree.parse(
-        os.path.abspath(os.path.join(os.path.dirname(__file__), 'textify.xsl'))))
-
-def xhtml_to_text(xhtml):
-    return etree.tostring(textify(xhtml), method='text', encoding=unicode).strip()
-
-def truncate(text, length=100):
-    u"""
-    >>> truncate(u'xxxxxxxxxx', 4)
-    u'xx... xx'
-    """
-    if len(text) <= length:
-        return text
-    l = text[:(length/2)].rsplit(' ', 1)[0]
-    r = text[-(length/2):].split(' ', 1)
-    if len(r) == 1:
-        r = r[0]
-    else:
-        r = r[1]
-    return l + u'... ' + r
 
 class CreationMetadata(models.Model):
     creator = models.ForeignKey(User, editable=False, related_name='created_%(class)s_set')
@@ -99,7 +78,7 @@ class Note(CreationMetadata):
             self.last_updater.username, self.last_updated_display())
     edit_history.allow_tags = True
     def excerpt(self):
-        return truncate(xhtml_to_text(self.content))
+        return utils.truncate(utils.xhtml_to_text(self.content))
     def __unicode__(self):
         return self.excerpt()
 
@@ -123,7 +102,7 @@ class Reference(CreationMetadata):
         else:
             return etree.tostring(self.citation)
     def save(self, *args, **kwargs):
-        self.ordering = xhtml_to_text(self.citation)[:5]
+        self.ordering = utils.xhtml_to_text(self.citation)[:5]
         super(Reference, self).save(*args, **kwargs)
     class Meta:
         ordering = ['ordering']    
