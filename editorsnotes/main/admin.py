@@ -29,9 +29,9 @@ class NoteAdmin(admin.ModelAdmin):
             term_assignment.save()
         formset.save_m2m()
     class Media:
-        js = ('wymeditor/jquery.wymeditor.pack.js',
-              'jquery.timeago.js',
-              'admin.js')
+        js = ('function/wymeditor/jquery.wymeditor.pack.js',
+              'function/jquery.timeago.js',
+              'function/admin.js')
 
 class TermAdmin(admin.ModelAdmin):
     inlines = (AliasInline,)
