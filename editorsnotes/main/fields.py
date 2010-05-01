@@ -10,6 +10,21 @@ from django.utils.encoding import force_unicode
 
 cleaner = Cleaner(style=True)
 
+class XHTMLWidget(forms.Textarea):
+    def _format_value(self, value):
+        if value is None:
+            return ''
+        if isinstance(value, html.HtmlElement):
+            return etree.tostring(value)
+        if isinstance(value, str) or isinstance(value, unicode):
+            return value
+        raise TypeError('%s cannot be formatted as XHTML' % value)
+    def render(self, name, value, attrs=None):
+        final_attrs = self.build_attrs(attrs, name=name)
+        return mark_safe(u'<textarea%s>%s</textarea>' % (
+                forms.util.flatatt(final_attrs),
+                conditional_escape(force_unicode(self._format_value(value)))))
+
 class XHTMLField(models.Field):
     description = 'A parsed XHTML fragment'
     __metaclass__ = models.SubfieldBase
@@ -40,20 +55,5 @@ class XHTMLField(models.Field):
         defaults = {'widget': XHTMLWidget}
         defaults.update(kwargs)
         return super(XHTMLField, self).formfield(**defaults)
-
-class XHTMLWidget(forms.Textarea):
-    def _format_value(self, value):
-        if value is None:
-            return ''
-        if isinstance(value, html.HtmlElement):
-            return etree.tostring(value)
-        if isinstance(value, str) or isinstance(value, unicode):
-            return value
-        raise TypeError('%s cannot be formatted as XHTML' % value)
- 
-    def render(self, name, value, attrs=None):
-        final_attrs = self.build_attrs(attrs, name=name)
-        return mark_safe(u'<textarea%s>%s</textarea>' % (
-                forms.util.flatatt(final_attrs),
-                conditional_escape(force_unicode(self._format_value(value)))))
-
+    def south_field_triple(self):
+        return ('main.fields.XHTMLField', [], {})

@@ -88,7 +88,7 @@ class Reference(CreationMetadata):
     """
     note = models.ForeignKey(Note, related_name='references')
     citation = fields.XHTMLField()
-    ordering = models.CharField(max_length=5, editable=False)
+    #ordering = models.CharField(max_length=5, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
     def citation_as_html(self):
         if self.url:
@@ -101,11 +101,11 @@ class Reference(CreationMetadata):
            return etree.tostring(e)
         else:
             return etree.tostring(self.citation)
-    def save(self, *args, **kwargs):
-        self.ordering = utils.xhtml_to_text(self.citation)[:5]
-        super(Reference, self).save(*args, **kwargs)
-    class Meta:
-        ordering = ['ordering']    
+    # def save(self, *args, **kwargs):
+    #     self.ordering = utils.xhtml_to_text(self.citation)[:5]
+    #     super(Reference, self).save(*args, **kwargs)
+    # class Meta:
+    #     ordering = ['ordering']    
 
 class Term(CreationMetadata):
     u""" 
