@@ -16,13 +16,10 @@
           {{ note.content_as_html|safe }}
         </div>
         {% if refs %}
-        <div class="note-references">
+        <div class="reference-list">
           {% for ref in refs %}
           <div class="reference">
             {{ ref.citation_as_html|safe }}
-            {% if ref.url %}
-            <a href="{{ reference.url }}">{{ ref.url }}</a>
-            {% endif %}
           </div>
           {% endfor %}
         </div>
@@ -44,18 +41,15 @@
     <section id="queries">
       <h2>Queries</h2>
       {% for query, refs in query_dict %}
-      <article class="query">
-        <div class="query-content">
+      <article class="note">
+        <div class="note-content">
           {{ query.content_as_html|safe }}
         </div>
         {% if refs %}
-        <div class="query-references">
+        <div class="reference-list">
           {% for ref in refs %}
           <div class="reference">
             {{ ref.citation_as_html|safe }}
-            {% if ref.url %}
-            <a href="{{ reference.url }}">{{ ref.url }}</a>
-            {% endif %}
           </div>
           {% endfor %}
         </div>

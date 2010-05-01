@@ -269,6 +269,7 @@ p.incr, .incr p {font-size:10px;line-height:1.44em;margin-bottom:1.5em;}
 body {font-size:87.5%;}
 #metadata {position:absolute;top:0;right:0;}
 .edit-history {text-align:right;}
+.reference {text-indent:-2em;padding-left:2em;}
 
 /* semantic class names */
 #metadata {padding:1.5em;margin-bottom:1.5em;background:#E5ECF9;}

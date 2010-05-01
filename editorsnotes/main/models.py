@@ -2,7 +2,9 @@
 
 import re
 import os.path
+from copy import deepcopy
 from lxml import etree, html
+from lxml.html.clean import Cleaner
 from unaccent import unaccent
 from isodate import datetime_isoformat
 from django import forms
@@ -14,6 +16,8 @@ from django.utils.encoding import force_unicode
 
 textify = etree.XSLT(etree.parse(
         os.path.abspath(os.path.join(os.path.dirname(__file__), 'textify.xsl'))))
+
+cleaner = Cleaner(style=True)
 
 def xhtml_to_text(xhtml):
     return etree.tostring(textify(xhtml), method='text', encoding=unicode).strip()
@@ -64,10 +68,13 @@ class XHTMLField(models.Field):
             raise TypeError('%s cannot be parsed to XHTML' % type(value))
         if len(value) == 0:
             return None
+        #value = re.sub(r'(&#13;\n)+', ' ', value)
+        fragment = None
         try:
-            return html.fragment_fromstring(value)
+            fragment = html.fragment_fromstring(value)
         except etree.ParserError:
-            return html.fragment_fromstring(value, create_parent='div')
+            fragment = html.fragment_fromstring(value, create_parent='div')
+        return cleaner.clean_html(fragment)
     def get_db_prep_value(self, value):
         return etree.tostring(value)
     def value_to_string(self, obj):
@@ -147,10 +154,6 @@ class Note(CreationMetadata):
     edit_history.allow_tags = True
     def excerpt(self):
         return truncate(xhtml_to_text(self.content))
-    def save(self, *args, **kwargs):
-        for e in self.content.iter(tag='style'):
-            e.getparent().remove(e)
-        super(Note, self).save(*args, **kwargs)
     def __unicode__(self):
         return self.excerpt()
 
@@ -160,9 +163,24 @@ class Reference(CreationMetadata):
     """
     note = models.ForeignKey(Note, related_name='references')
     citation = XHTMLField()
+    ordering = models.CharField(max_length=5, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
     def citation_as_html(self):
-        return etree.tostring(self.citation)
+        if self.url:
+           e = deepcopy(self.citation)
+           a = etree.SubElement(e, 'a')
+           a.href = self.url
+           a.text = self.url
+           a.getprevious().tail += ' '
+           print etree.tostring(e)
+           return etree.tostring(e)
+        else:
+            return etree.tostring(self.citation)
+    def save(self, *args, **kwargs):
+        self.ordering = xhtml_to_text(self.citation)[:5]
+        super(Reference, self).save(*args, **kwargs)
+    class Meta:
+        ordering = ['ordering']    
 
 class Term(CreationMetadata):
     u""" 
