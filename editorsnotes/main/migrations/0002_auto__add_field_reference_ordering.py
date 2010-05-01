@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding field 'Reference.ordering'
-        db.add_column('main_reference', 'ordering', self.gf('django.db.models.fields.CharField')(default='DISORDERED', max_length=5), keep_default=False)
+        db.add_column('main_reference', 'ordering', self.gf('django.db.models.fields.CharField')(default='?????', max_length=5), keep_default=False)
     
     
     def backwards(self, orm):
