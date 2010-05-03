@@ -1,4 +1,5 @@
 body { font-size: 87.5%; }
+ul { list-style-type: none }
 #metadata { position: absolute; top: 0; right: 0; }
 .edit-history { text-align: right; }
 .reference { text-indent: -2em; padding-left: 2em; }

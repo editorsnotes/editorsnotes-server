@@ -267,6 +267,8 @@ p.incr, .incr p {font-size:10px;line-height:1.44em;margin-bottom:1.5em;}
 
 /* src/screen-custom.css */
 body {font-size:87.5%;}
+ul {list-style-type:none
+;}
 #metadata {position:absolute;top:0;right:0;}
 .edit-history {text-align:right;}
 .reference {text-indent:-2em;padding-left:2em;}
