@@ -1,0 +1,18 @@
+      <article class="note">
+        <div class="note-content">
+          {{ note.content_as_html|safe }}
+        </div>
+        {% if refs %}
+        <div class="reference-list">
+          {% for ref in refs %}
+          <div class="reference">
+            {{ ref.citation_as_html|safe }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="edit-history">
+          {{ note.edit_history|safe }}
+        </div>
+      </article>
+      <hr/>
