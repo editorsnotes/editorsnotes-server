@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from models import Term, Reference
 
@@ -13,9 +13,9 @@ def index(request):
 @login_required
 def term(request, slug):
     o = {}
+    o['term'] = get_object_or_404(Term, slug=slug)
     o['contact'] = { 'name': settings.ADMINS[0][0], 
                      'email': settings.ADMINS[0][1] }
-    o['term'] = Term.objects.get(slug=slug)
     o['note_list'] = list(o['term'].note_set.filter(type__exact='N'))
     o['query_list'] = list(o['term'].note_set.filter(type__exact='Q'))
     o['note_dict'] = [ (n, n.references.all()) for n in o['note_list'] ]
