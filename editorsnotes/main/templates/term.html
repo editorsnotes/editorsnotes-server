@@ -8,66 +8,39 @@
     </header>
 
     {% if note_dict %}
-    <section id="notes">
+    <section id="notes" 
+             class="{% if query_dict %}span-12{% else %}span-18 last{% endif %}">
       <h2>Notes</h2>
       {% for note, refs in note_dict %}
-      <article class="note">
-        <div class="note-content">
-          {{ note.content_as_html|safe }}
-        </div>
-        {% if refs %}
-        <div class="reference-list">
-          {% for ref in refs %}
-          <div class="reference">
-            {{ ref.citation_as_html|safe }}
-          </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-        <div class="edit-history">
-          {{ note.edit_history|safe }}
-        </div>
-      </article>
-      <hr/>
+        {% include "note.html" %}
       {% endfor %}
     </section>
-    {% else %}
-    <div id="no-notes">
-      We don't have any notes on this topic yet.
-    </div>
     {% endif %}
 
     {% if query_dict %}
-    <section id="queries">
+    <section id="queries"
+             class="{% if note_dict %}span-12{% else %}span-18{% endif %} last">
       <h2>Queries</h2>
-      {% for query, refs in query_dict %}
-      <article class="note">
-        <div class="note-content">
-          {{ query.content_as_html|safe }}
-        </div>
-        {% if refs %}
-        <div class="reference-list">
-          {% for ref in refs %}
-          <div class="reference">
-            {{ ref.citation_as_html|safe }}
-          </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-        <div class="edit-history">
-          {{ query.edit_history|safe }}
-        </div>
-      </article>
+      {% for note, refs in query_dict %}
+        {% include "note.html" %}
       {% endfor %}
     </section>
+    {% endif %}
+
+    {% if not note_dict and not query_dict %}
+    <div id="no-notes">
+      There are no notes or queries related to <em>{{ term.preferred_name }}</em>.
+    </div>
     {% endif %}
 
     <aside id="metadata">
       <div id="publisher">
         Published by the <a href="/">Editors' Notes Project</a>
       </div>
+      {% if last_updated_display %}
       <div id="updated" class="quiet">
         Last updated {{ last_updated_display|safe }} by <span class="attribution">{{ last_updater }}</span>
       </div>
+      {% endif %}
     </aside>
 {% endblock %}
