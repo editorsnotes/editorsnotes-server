@@ -56,7 +56,7 @@ class Note(CreationMetadata):
     Can't assign the same term more than once.
     >>> TermAssignment.objects.create(note=note, term=term, creator=user)
     Traceback (most recent call last):
-    IntegrityError: duplicate key value violates unique constraint "main_termassignment_term_id_key"
+    IntegrityError: duplicate key value violates unique constraint "main_termassignment_term_id_346a14e0_uniq"
     <BLANKLINE>
     """
     content = fields.XHTMLField()
