@@ -97,7 +97,6 @@ class Reference(CreationMetadata):
            a.href = self.url
            a.text = self.url
            a.getprevious().tail += ' '
-           print etree.tostring(e)
            return etree.tostring(e)
         else:
             return etree.tostring(self.citation)
