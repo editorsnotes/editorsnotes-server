@@ -1,18 +1,12 @@
-      <article class="note">
-        <div class="note-content">
-          {{ note.content_as_html|safe }}
-        </div>
-        {% if refs %}
-        <div class="reference-list">
-          {% for ref in refs %}
-          <div class="reference">
-            {{ ref.citation_as_html|safe }}
-          </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-        <div class="edit-history">
-          {{ note.edit_history|safe }}
-        </div>
-      </article>
-      <hr/>
+{% extends "base.html" %}
+
+{% block title %}{{ term.preferred_name }}{% endblock %}
+
+{% block content %}
+    <header>
+      <h1>Note #{{ note.id }}</h1>
+    </header>
+    <section id="note" class="span-18 last">
+      {% include "note.include" %}
+    </section>
+{% endblock %}

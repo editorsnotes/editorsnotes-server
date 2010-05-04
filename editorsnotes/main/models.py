@@ -81,6 +81,8 @@ class Note(CreationMetadata):
         return utils.truncate(utils.xhtml_to_text(self.content))
     def __unicode__(self):
         return self.excerpt()
+    def get_absolute_url(self):
+        return '/n/%s/' % self.id
 
 class Reference(CreationMetadata):
     u"""

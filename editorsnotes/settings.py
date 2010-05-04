@@ -55,7 +55,11 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
 #    'devserver',
     'south',
+    'haystack',
     'editorsnotes.main',
 )
+
+HAYSTACK_SITECONF = 'editorsnotes.search_sites'
+HAYSTACK_SEARCH_ENGINE = 'xapian'
 
 from settings_local import *

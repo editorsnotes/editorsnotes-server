@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Search Editors' Notes{% endblock %}
+
+{% block content %}
+<div class="span-24 last">
+  <form method="get" action="." class="inline">
+    <fieldset>
+      <legend>Search all editors' notes and queries</legend>
+      <div class="span-10">
+        <input type="text" class="text" id="q" name="q" style="width: 380px"/>
+      </div>
+      <div class="span-2 last">
+        <input type="submit" value="search">
+      </div>
+    </fieldset>
+  </form>
+</div>
+
+{% if query %}
+  {% if page.object_list %}
+  <ol id="results" class="span-24 last">
+    {% for result in page.object_list %}
+    <li><a href="{{ result.object.get_absolute_url }}">{{ result.object.excerpt }}</a></li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p>No results found.</p>
+  {% endif %}
+</ol>
+{% else %}
+{# Show some example queries to run, maybe query syntax, something else? #}
+{% endif %}
+
+{% endblock %}
