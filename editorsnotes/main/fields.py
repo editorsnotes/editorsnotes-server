@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from django import forms
 from django.db import models
 from lxml import etree, html
@@ -39,7 +40,8 @@ class XHTMLField(models.Field):
             raise TypeError('%s cannot be parsed to XHTML' % type(value))
         if len(value) == 0:
             return None
-        #value = re.sub(r'(&#13;\n)+', ' ', value)
+        # strip out entity-encoded carriage returns (pasted MS Word garbage)
+        value = re.sub(r'(&#13;\n)+', ' ', value)
         fragment = None
         try:
             fragment = html.fragment_fromstring(value)
