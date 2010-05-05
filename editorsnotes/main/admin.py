@@ -15,7 +15,7 @@ class AliasInline(admin.StackedInline):
 
 class NoteAdmin(admin.ModelAdmin):
     inlines = (ReferenceInline, TermAssignmentInline)
-    list_display = ('excerpt', 'type', 'creator', 'created_display')
+    list_display = ('excerpt', 'type', 'last_updater', 'last_updated_display')
     readonly_fields = ('edit_history',)
     def save_model(self, request, note, form, change):
         if not change: # adding new note

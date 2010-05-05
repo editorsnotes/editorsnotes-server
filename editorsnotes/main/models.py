@@ -83,6 +83,8 @@ class Note(CreationMetadata):
         return self.excerpt()
     def get_absolute_url(self):
         return '/n/%s/' % self.id
+    class Meta:
+        ordering = ['-last_updated']  
 
 class Reference(CreationMetadata):
     u"""
