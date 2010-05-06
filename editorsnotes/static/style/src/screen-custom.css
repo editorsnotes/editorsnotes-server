@@ -1,5 +1,11 @@
 body { font-size: 87.5%; }
-ul { list-style-type: none }
-#metadata { position: absolute; top: 0; right: 0; }
+button { font-size: 12px; }
+h1 { font-size: 2em; margin: 0.2em 0 0 0 }
+h2 { margin-bottom: 0; }
+ul { list-style-type: none; }
+#topnav, #stripe { height: 42px; background: #E5ECF9; }
+#stripe { position: absolute; z-index: -1; width: 100%; }
+#logo a { text-decoration: none; }
+#searchinput input { width: 338px; }
 .edit-history { text-align: right; }
 .reference { text-indent: -2em; padding-left: 2em; }

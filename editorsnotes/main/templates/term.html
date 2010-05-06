@@ -1,16 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}{{ term.preferred_name }}{% endblock %}
+{% block title %}: {{ term.preferred_name }}{% endblock %}
 
 {% block content %}
     <header>
-      <h1>{{ term.preferred_name }}</h1>
+      <h2>{{ term.preferred_name }}</h2>
+      <div id="updated" class="quiet">
+        Last updated {{ last_updated_display|safe }} by <span class="attribution">{{ last_updater }}</span>
+      </div>    
     </header>
 
     {% if note_dict %}
     <section id="notes" 
-             class="{% if query_dict %}span-12{% else %}span-18 last{% endif %}">
-      <h2>Notes</h2>
+             class="{% if query_dict %}span-12{% else %}span-24 last{% endif %}">
+      <h3>Notes</h3>
       {% for note, refs in note_dict %}
         {% include "note.include" %}
       {% endfor %}
@@ -19,8 +22,8 @@
 
     {% if query_dict %}
     <section id="queries"
-             class="{% if note_dict %}span-12{% else %}span-18{% endif %} last">
-      <h2>Queries</h2>
+             class="{% if note_dict %}span-12{% else %}span-24{% endif %} last">
+      <h3>Queries</h3>
       {% for note, refs in query_dict %}
         {% include "note.include" %}
       {% endfor %}
@@ -32,15 +35,4 @@
       There are no notes or queries related to <em>{{ term.preferred_name }}</em>.
     </div>
     {% endif %}
-
-    <aside id="metadata">
-      <div id="publisher">
-        Published by the <a href="/">Editors' Notes Project</a>
-      </div>
-      {% if last_updated_display %}
-      <div id="updated" class="quiet">
-        Last updated {{ last_updated_display|safe }} by <span class="attribution">{{ last_updater }}</span>
-      </div>
-      {% endif %}
-    </aside>
 {% endblock %}

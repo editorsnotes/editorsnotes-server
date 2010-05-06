@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Login to Editor's Notes{% endblock %}
+{% block title %}: Login{% endblock %}
 
 {% block content %}
+<div id="login">
     {% if form.errors %}
     <div class="error">Your username and password didn't match. Please try again.</div>
     {% endif %}
@@ -19,10 +20,11 @@
           {{ form.password }}
         </p>
         <p>
-          <input type="submit" value="login"/>
+          <button type="submit">Login</button>
         </p>
       </fieldset>
       <input type="hidden" name="next" value="{{ next }}" />
       {% csrf_token %}
     </form>  
+</div>
 {% endblock %}

@@ -4,16 +4,8 @@ from django.contrib.auth.forms import AuthenticationForm
 
 admin.autodiscover()
 
-# TODO: get rid of this by using settings.yml to assign title to id_username, id_password
-class CustomAuthenticationForm(AuthenticationForm):
-    def __init__(self, request=None, *args, **kwargs):
-        super(CustomAuthenticationForm, self).__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs['class'] = 'title'
-        self.fields['password'].widget.attrs['class'] = 'title'
-
 urlpatterns = patterns('',
-    (r'^accounts/login/$', 'django.contrib.auth.views.login',
-     { 'authentication_form': CustomAuthenticationForm }),
+    (r'^accounts/login/$', 'django.contrib.auth.views.login'),
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/', include(admin.site.urls)),
     (r'^search/', include('haystack.urls')),
