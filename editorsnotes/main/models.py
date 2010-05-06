@@ -92,23 +92,24 @@ class Reference(CreationMetadata):
     """
     note = models.ForeignKey(Note, related_name='references')
     citation = fields.XHTMLField()
+    type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
     ordering = models.CharField(max_length=5, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
     def citation_as_html(self):
         if self.url:
-           e = deepcopy(self.citation)
-           a = etree.SubElement(e, 'a')
-           a.href = self.url
-           a.text = self.url
-           a.getprevious().tail += ' '
-           return etree.tostring(e)
+            e = deepcopy(self.citation)
+            a = etree.SubElement(e, 'a')
+            a.href = self.url
+            a.text = self.url
+            a.getprevious().tail += ' '
+            return etree.tostring(e)
         else:
             return etree.tostring(self.citation)
     def save(self, *args, **kwargs):
         self.ordering = utils.xhtml_to_text(self.citation)[:5]
         super(Reference, self).save(*args, **kwargs)
     class Meta:
-        ordering = ['ordering']    
+        ordering = ['type','ordering']    
 
 class Term(CreationMetadata):
     u""" 

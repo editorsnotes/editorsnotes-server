@@ -10,27 +10,27 @@
       </div>    
     </header>
 
-    {% if note_dict %}
+    {% if notes %}
     <section id="notes" 
-             class="{% if query_dict %}span-12{% else %}span-24 last{% endif %}">
+             class="{% if queries %}span-12{% else %}span-24 last{% endif %}">
       <h3>Notes</h3>
-      {% for note, refs in note_dict %}
+      {% for note, refs in notes %}
         {% include "note.include" %}
       {% endfor %}
     </section>
     {% endif %}
 
-    {% if query_dict %}
+    {% if queries %}
     <section id="queries"
-             class="{% if note_dict %}span-12{% else %}span-24{% endif %} last">
+             class="{% if notes %}span-12{% else %}span-24{% endif %} last">
       <h3>Queries</h3>
-      {% for note, refs in query_dict %}
+      {% for note, refs in queries %}
         {% include "note.include" %}
       {% endfor %}
     </section>
     {% endif %}
 
-    {% if not note_dict and not query_dict %}
+    {% if not notes and not queries %}
     <div id="no-notes">
       There are no notes or queries related to <em>{{ term.preferred_name }}</em>.
     </div>

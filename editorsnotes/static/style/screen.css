@@ -296,6 +296,7 @@ ul {list-style-type:none;}
 
 /* semantic class names */
 #searchinput {float:left;margin-right:10px;width:350px;}
+h4 {font-variant:small-caps;letter-spacing:1px;text-transform:lowercase;font-size:1.2em;line-height:1%;font-weight:bold;padding:0 2px;}
 #searchresults {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 .edit-history {color:#666;}
 #logo {float:left;margin-right:10px;width:510px;}

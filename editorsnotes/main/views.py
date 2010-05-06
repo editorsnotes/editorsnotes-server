@@ -16,11 +16,17 @@ def term(request, term_slug):
     o['term'] = get_object_or_404(Term, slug=term_slug)
     o['contact'] = { 'name': settings.ADMINS[0][0], 
                      'email': settings.ADMINS[0][1] }
-    o['note_list'] = list(o['term'].note_set.filter(type__exact='N'))
-    o['query_list'] = list(o['term'].note_set.filter(type__exact='Q'))
-    o['note_dict'] = [ (n, n.references.all()) for n in o['note_list'] ]
-    o['query_dict'] = [ (q, q.references.all()) for q in o['query_list'] ]
-    for note in o['note_list'] + o['query_list']:
+    notes = list(o['term'].note_set.filter(type__exact='N'))
+    queries = list(o['term'].note_set.filter(type__exact='Q'))
+    def sort_references(note):
+        refs = { 'primary': [], 'secondary': [] }
+        for r in note.references.all():
+            if r.type == 'P': refs['primary'].append(r)
+            elif r.type == 'S': refs['secondary'].append(r)
+        return refs
+    o['notes'] = zip(notes, [ sort_references(n) for n in notes ])
+    o['queries'] = zip(queries, [ sort_references(q) for q in queries ])
+    for note in notes + queries:
         if ('last_updated' not in o) or (note.last_updated > o['last_updated']):
                 o['last_updated'] = note.last_updated
                 o['last_updater'] = note.last_updater.username

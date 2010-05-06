@@ -2,9 +2,20 @@
         <div class="note-content">
           {{ note.content_as_html|safe }}
         </div>
-        {% if refs %}
+        {% if refs.primary %}
+        <h4>Primary sources</h4>
         <div class="reference-list">
-          {% for ref in refs %}
+          {% for ref in refs.primary %}
+          <div class="reference">
+            {{ ref.citation_as_html|safe }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if refs.secondary %}
+        <h4>Secondary sources</h4>
+        <div class="reference-list">
+          {% for ref in refs.secondary %}
           <div class="reference">
             {{ ref.citation_as_html|safe }}
           </div>
