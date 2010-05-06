@@ -1,5 +1,6 @@
 from models import Note, Reference, Term, Alias, TermAssignment
 from django.contrib import admin
+from reversion.admin import VersionAdmin
 
 class ReferenceInline(admin.StackedInline):
     model = Reference
@@ -13,10 +14,10 @@ class AliasInline(admin.StackedInline):
     model = Alias
     extra = 0
 
-class NoteAdmin(admin.ModelAdmin):
+class NoteAdmin(VersionAdmin):
     inlines = (ReferenceInline, TermAssignmentInline)
     list_display = ('excerpt', 'type', 'last_updater', 'last_updated_display')
-    readonly_fields = ('edit_history',)
+    #readonly_fields = ('edit_history',)
     def save_model(self, request, note, form, change):
         if not change: # adding new note
             note.creator = request.user
