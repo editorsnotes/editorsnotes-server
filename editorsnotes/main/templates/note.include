@@ -1,4 +1,4 @@
-      <article class="note">
+      <article id="note{{ note.id }}" class="note">
         <div class="note-content">
           {{ note.content_as_html|safe }}
         </div>

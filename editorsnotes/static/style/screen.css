@@ -286,26 +286,37 @@ button {font-size:12px;}
 h1 {font-size:2em;margin:0.2em 0 0 0
 ;}
 h2 {margin-bottom:0;}
-ul {list-style-type:none;}
+ul {list-style-type:none;padding:0
+;}
+ul.term-list li {display:inline;}
 #topnav, #stripe {height:42px;background:#E5ECF9;}
 #stripe {position:absolute;z-index:-1;width:100%;}
 #logo a {text-decoration:none;}
 #searchinput input {width:338px;}
 .edit-history {text-align:right;}
 .reference {text-indent:-2em;padding-left:2em;}
+.note-link {vertical-align:bottom;}
+a.subtle {color:#222;text-decoration:none;}
+a.subtle:focus, a.subtle:hover {text-decoration:underline;}
 
 /* semantic class names */
 #searchinput {float:left;margin-right:10px;width:350px;}
+.note-link {float:left;margin-right:10px;width:750px;padding-left:40px;}
 h4 {font-variant:small-caps;letter-spacing:1px;text-transform:lowercase;font-size:1.2em;line-height:1%;font-weight:bold;padding:0 2px;}
 #searchresults {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 .edit-history {color:#666;}
 #logo {float:left;margin-right:10px;width:510px;}
+#notes-and-queries {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
+.note-updated {color:#666;margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:150px;}
 header {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;margin-bottom:1.5em;}
 #login p {padding-left:40px;}
 #searchform {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:430px;}
+.note-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #login {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:270px;padding-left:320px;}
 #searchresults #message {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #topnav {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;margin-bottom:1.5em;}
+.term-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:790px;}
 #logo h1 {color:#666;}
 #searchbutton {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:70px;}
+.note-list > li {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #searchresults #results {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}

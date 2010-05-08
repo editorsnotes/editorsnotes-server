@@ -63,4 +63,6 @@ INSTALLED_APPS = (
 HAYSTACK_SITECONF = 'editorsnotes.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'xapian'
 
+AUTH_PROFILE_MODULE = 'main.UserProfile'
+
 from settings_local import *

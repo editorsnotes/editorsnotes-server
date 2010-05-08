@@ -2,6 +2,7 @@
 
 import os.path
 from lxml import etree
+from isodate import datetime_isoformat
 
 textify = etree.XSLT(etree.parse(
         os.path.abspath(os.path.join(os.path.dirname(__file__), 'textify.xsl'))))
@@ -20,3 +21,6 @@ def truncate(text, length=100):
         r = r[1]
     return l + u'... ' + r
 
+def timeago(datetime):
+    return '<time class="timeago" datetime="%s">%s</time>' % (
+        datetime_isoformat(datetime), datetime.strftime('%I:%M%p, %b %d %Y'))

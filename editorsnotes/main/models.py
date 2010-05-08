@@ -6,16 +6,15 @@ import fields
 from copy import deepcopy
 from lxml import etree
 from unaccent import unaccent
-from isodate import datetime_isoformat
 from django.db import models
 from django.contrib.auth.models import User
+from django.core import urlresolvers
 
 class CreationMetadata(models.Model):
     creator = models.ForeignKey(User, editable=False, related_name='created_%(class)s_set')
     created = models.DateTimeField(auto_now_add=True)
     def created_display(self):
-        return u'<time class="timeago" datetime="%s">%s</time>' % (
-            datetime_isoformat(self.created), self.created.strftime('%I:%M%p, %b %d %Y'))
+        return utils.timeago(self.created)
     created_display.allow_tags = True
     created_display.short_description = 'created'
     created_display.admin_order_field = 'created'
@@ -67,15 +66,16 @@ class Note(CreationMetadata):
     def content_as_html(self):
         return etree.tostring(self.content)
     def last_updated_display(self):
-        return '<time class="timeago" datetime="%s">%s</time>' % (
-            datetime_isoformat(self.last_updated), self.last_updated.strftime('%I:%M%p, %b %d %Y'))
+        return utils.timeago(self.last_updated)
     last_updated_display.allow_tags = True
     last_updated_display.short_description = 'last updated'
     last_updated_display.admin_order_field = 'last_updated'
     def edit_history(self):
         return u'Created by %s %s. Last edited by %s %s.' % (
-            self.creator.username, self.created_display(), 
-            self.last_updater.username, self.last_updated_display())
+            UserProfile.get_for(self.creator).name_display(), 
+            self.created_display(), 
+            UserProfile.get_for(self.last_updater).name_display(),
+            self.last_updated_display())
     edit_history.allow_tags = True
     def excerpt(self):
         return utils.truncate(utils.xhtml_to_text(self.content))
@@ -83,6 +83,8 @@ class Note(CreationMetadata):
         return self.excerpt()
     def get_absolute_url(self):
         return '/n/%s/' % self.id
+    def get_admin_url(self):
+        return urlresolvers.reverse('admin:main_note_change', args=(self.id,))
     class Meta:
         ordering = ['-last_updated']  
 
@@ -166,3 +168,32 @@ class TermAssignment(CreationMetadata):
     class Meta(CreationMetadata.Meta):
         unique_together = ('term', 'note')
         verbose_name_plural = 'index terms'
+
+class UserProfile(models.Model):
+    user = models.ForeignKey(User, unique=True)
+    def get_absolute_url(self):
+        return '/u/%s/' % self.user.username
+    def _get_display_name(self):
+        "Returns the full name if available, or the username if not."
+        display_name = self.user.username
+        if self.user.first_name:
+            display_name = self.user.first_name
+            if self.user.last_name:
+                display_name = '%s %s' % (self.user.first_name, self.user.last_name)
+        return display_name
+    display_name = property(_get_display_name)
+    def last_login_display(self):
+        return utils.timeago(self.user.last_login)
+    last_login_display.allow_tags = True
+    def name_display(self):
+        return '<a class="subtle" href="%s">%s</a>' % (self.get_absolute_url(), self.display_name)
+    name_display.allow_tags = True
+    @staticmethod
+    def get_for(user):
+        try:
+            return user.get_profile()
+        except UserProfile.DoesNotExist:
+            return UserProfile.objects.create(user=user)
+
+
+
