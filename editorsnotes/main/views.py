@@ -43,9 +43,12 @@ def note(request, note_id):
     return render_to_response('note.html', o)
 
 @login_required
-def user(request, username):
+def user(request, username=None):
     o = {}
-    user = get_object_or_404(User, username=username)
+    if not username:
+        user = request.user
+    else:
+        user = get_object_or_404(User, username=username)
     o['profile'] = UserProfile.get_for(user)
     o['notes'] = Note.objects.filter(Q(creator=user) | Q(last_updater=user))
     return render_to_response('user.html', o)
