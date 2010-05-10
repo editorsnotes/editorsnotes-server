@@ -4,6 +4,8 @@
 from time import sleep
 from fabric.api import *
 from fabric.contrib.console import confirm
+from fabric.contrib.files import exists
+from fabric.utils import abort
 
 # Globals
 
@@ -140,8 +142,11 @@ def symlink_system_packages():
         with open('requirements.txt') as reqs:
             for line in reqs:
                 if line.startswith('# symlink: '):
-                    target = line[11:-1]
-                    run('ln -s %(site_packages)s/%(target)s' % env)
+                    target = env.site_packages + '/' + line[11:-1]
+                    if exists(target):
+                        run('ln -s %s' % target)
+                    else:
+                        abort('Missing %s' % target)
 
 def install_site():
     "Add the virtualhost file to apache."
