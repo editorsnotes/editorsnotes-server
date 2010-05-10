@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 from time import sleep
 from fabric.api import *
 from fabric.contrib.console import confirm
@@ -142,8 +143,11 @@ def symlink_system_packages():
         with open('requirements.txt') as reqs:
             for line in reqs:
                 if line.startswith('# symlink: '):
-                    target = env.site_packages + '/' + line[11:-1]
+                    source = line[11:-1]
+                    target = env.site_packages + '/' + source
                     if exists(target):
+                        if exists(source):
+                            os.remove(source)
                         run('ln -s %s' % target)
                     else:
                         abort('Missing %s' % target)
