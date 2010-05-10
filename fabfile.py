@@ -144,13 +144,9 @@ def symlink_system_packages():
         with open('requirements.txt') as reqs:
             for line in reqs:
                 if line.startswith('# symlink: '):
-                    filename = line[11:-1]
-                    source = site_packages + '/' + filename
-                    target = env.site_packages + '/' + filename
+                    target = env.site_packages + '/' + line[11:-1]
                     if exists(target):
-                        if exists(source):
-                            os.remove(source)
-                        run('ln -s %s' % target)
+                        run('ln -f -s %s' % target)
                     else:
                         abort('Missing %s' % target)
 
@@ -173,7 +169,7 @@ def migrate():
     with cd('%(path)s/releases/current/%(project_name)s' % env):
         run('../../../bin/python manage.py syncdb --noinput' % env)
         run('../../../bin/python manage.py migrate main')
-        run('../../../bin/python manage.py rebuild_index')
+        #run('../../../bin/python manage.py rebuild_index')
     
 def restart_webserver():
     "Restart the web server."
