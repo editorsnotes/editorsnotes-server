@@ -17,13 +17,15 @@ def dev():
     env.user = 'ryanshaw'
     env.path = '/Library/WebServer/Documents/%(project_name)s' % env
     env.vhosts_path = '/etc/apache2/sites'
+    env.site_packages = '/Library/Python/2.6/site-packages'
 
 def pro():
     "Use the production webserver."
     env.hosts = ['editorsnotes.org']
     env.user = 'ryanshaw'
     env.path = '/db/projects/%(project_name)s' % env
-    env.vhosts_path = '/etc/httpd/sites.d/'
+    env.vhosts_path = '/etc/httpd/sites.d'
+    env.site_packages = '/usr/lib64/python2.6/site-packages'
 
 # Tasks
 
@@ -63,6 +65,7 @@ def deploy():
     env.release = time.strftime('%Y%m%d%H%M%S')
     upload_tar_from_git()
     upload_local_settings()
+    symlink_system_packages()
     install_requirements()
     install_site()
     symlink_current_release()
@@ -129,6 +132,17 @@ def install_requirements():
         'cd %(path)s; ./bin/pip install -E . -r ./releases/%(release)s/requirements.txt; ' % env +
         'export PIP_VIRTUALENV_BASE=$SAVED_PIP_VIRTUALENV_BASE; unset SAVED_PIP_VIRTUALENV_BASE')
 
+def symlink_system_packages():
+    "Create symlinks to system site-packages."
+    require('site_packages', provided_by=[dev])
+    require('path')
+    with cd(env.path + '/lib/python2.6/site-packages'):
+        with open('requirements.txt') as reqs:
+            for line in reqs:
+                if line.startswith('# symlink: '):
+                    target = line[11:-1]
+                    run('ln -s %(site_packages)s/%(target)s' % env)
+
 def install_site():
     "Add the virtualhost file to apache."
     require('release', provided_by=[deploy, setup])
@@ -145,7 +159,9 @@ def migrate():
     "Update the database"
     require('hosts', provided_by=[dev])
     require('path')
-    run('cd %(path)s/releases/current/%(project_name)s;  ../../../bin/python manage.py syncdb --noinput' % env)
+    with cd('%(path)s/releases/current/%(project_name)s' % env):
+        run('../../../bin/python manage.py syncdb --noinput' % env)
+        run('../../../bin/python manage.py migrate main')
     
 def restart_webserver():
     "Restart the web server."
