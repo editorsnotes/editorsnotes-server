@@ -173,6 +173,7 @@ def migrate():
     with cd('%(path)s/releases/current/%(project_name)s' % env):
         run('../../../bin/python manage.py syncdb --noinput' % env)
         run('../../../bin/python manage.py migrate main')
+        run('../../../bin/python manage.py rebuild_index')
     
 def restart_webserver():
     "Restart the web server."
