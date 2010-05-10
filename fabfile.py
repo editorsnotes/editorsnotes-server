@@ -139,12 +139,14 @@ def symlink_system_packages():
     "Create symlinks to system site-packages."
     require('site_packages', provided_by=[dev])
     require('path')
-    with cd(env.path + '/lib/python2.6/site-packages'):
+    site_packages = env.path + '/lib/python2.6/site-packages'
+    with cd(site_packages):
         with open('requirements.txt') as reqs:
             for line in reqs:
                 if line.startswith('# symlink: '):
-                    source = line[11:-1]
-                    target = env.site_packages + '/' + source
+                    filename = line[11:-1]
+                    source = site_packages + '/' + filename
+                    target = env.site_packages + '/' + filename
                     if exists(target):
                         if exists(source):
                             os.remove(source)
