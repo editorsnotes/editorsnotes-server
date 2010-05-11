@@ -43,6 +43,13 @@ class Note(CreationMetadata):
     >>> note.references.create(citation='<p><span class="title">Anarchism and other essays</span>, 3rd edition, 1917</p>', url='http://books.google.com/books?id=U5ZYAAAAMAAJ', creator=user)
     <Reference: Reference object>
 
+    Add citations.
+    >>> source = Source.objects.create(description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', type='P', creator=user)
+    >>> note.citations.create(source=source, location='98-113', creator=user)
+    <Citation: Citation object>
+    >>> note.citations.all()
+    [<Citation: Citation object>]
+
     Assign terms.
     >>> term = Term.objects.create(preferred_name=u'Example', creator=user)
     >>> TermAssignment.objects.create(note=note, term=term, creator=user)
@@ -112,6 +119,40 @@ class Reference(CreationMetadata):
         super(Reference, self).save(*args, **kwargs)
     class Meta:
         ordering = ['type','ordering']    
+
+class Source(CreationMetadata):
+    u"""
+    A documented source for assertions made in notes. 
+    """
+    description = fields.XHTMLField()
+    type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
+    ordering = models.CharField(max_length=32, editable=False)
+    url = models.URLField(blank=True, verify_exists=True)
+    def description_as_html(self):
+        if self.url:
+            e = deepcopy(self.description)
+            a = etree.SubElement(e, 'a')
+            a.href = self.url
+            a.text = self.url
+            a.getprevious().tail += ' '
+            return etree.tostring(e)
+        else:
+            return etree.tostring(self.description)
+    def save(self, *args, **kwargs):
+        self.ordering = utils.xhtml_to_text(self.description)[:32]
+        super(Source, self).save(*args, **kwargs)
+    def __unicode__(self):
+        return u'%s...' % self.ordering
+    class Meta:
+        ordering = ['type','ordering']    
+
+class Citation(CreationMetadata):
+    u"""
+    A reference to or citation of a documented source. Links notes and sources.
+    """
+    note = models.ForeignKey(Note, related_name='citations')
+    source = models.ForeignKey(Source, related_name='citations')
+    location = models.CharField(max_length=16, blank=True)
 
 class Term(CreationMetadata):
     u""" 

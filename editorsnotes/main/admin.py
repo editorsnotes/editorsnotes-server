@@ -1,9 +1,13 @@
-from models import Note, Reference, Term, Alias, TermAssignment
+from models import Note, Reference, Source, Citation, Term, Alias, TermAssignment
 from django.contrib import admin
 from reversion.admin import VersionAdmin
 
 class ReferenceInline(admin.StackedInline):
     model = Reference
+    extra = 0
+
+class CitationInline(admin.StackedInline):
+    model = Citation
     extra = 0
 
 class TermAssignmentInline(admin.StackedInline):
@@ -15,7 +19,7 @@ class AliasInline(admin.StackedInline):
     extra = 0
 
 class NoteAdmin(VersionAdmin):
-    inlines = (ReferenceInline, TermAssignmentInline)
+    inlines = (ReferenceInline, CitationInline, TermAssignmentInline)
     list_display = ('excerpt', 'type', 'last_updater', 'last_updated_display')
     #readonly_fields = ('edit_history',)
     def save_model(self, request, note, form, change):
@@ -24,11 +28,21 @@ class NoteAdmin(VersionAdmin):
         note.last_updater = request.user
         note.save()
     def save_formset(self, request, form, formset, change):
-        term_assignments = formset.save(commit=False)
-        for term_assignment in term_assignments:
-            term_assignment.creator = request.user
-            term_assignment.save()
+        instances = formset.save(commit=False)
+        for instance in instances: # citations and term assignments
+            instance.creator = request.user
+            instance.save()
         formset.save_m2m()
+    class Media:
+        js = ('function/wymeditor/jquery.wymeditor.pack.js',
+              'function/jquery.timeago.js',
+              'function/admin.js')
+
+class SourceAdmin(admin.ModelAdmin):
+    def save_model(self, request, source, form, change):
+        if not change: # adding new source
+            source.creator = request.user
+        source.save()
     class Media:
         js = ('function/wymeditor/jquery.wymeditor.pack.js',
               'function/jquery.timeago.js',
@@ -48,4 +62,5 @@ class TermAdmin(admin.ModelAdmin):
         formset.save_m2m()
 
 admin.site.register(Note, NoteAdmin)
+admin.site.register(Source, SourceAdmin)
 admin.site.register(Term, TermAdmin)
