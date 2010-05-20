@@ -152,7 +152,7 @@ class Citation(CreationMetadata):
     """
     note = models.ForeignKey(Note, related_name='citations')
     source = models.ForeignKey(Source, related_name='citations')
-    location = models.CharField(max_length=16, blank=True)
+    locator = models.CharField(max_length=16, blank=True)
 
 class Term(CreationMetadata):
     u""" 
