@@ -1,45 +1,30 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-class Migration(SchemaMigration):
+class Migration(DataMigration):
     
     def forwards(self, orm):
-        
-        # Adding model 'Source'
-        db.create_table('main_source', (
-            ('description', self.gf('main.fields.XHTMLField')()),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('ordering', self.gf('django.db.models.fields.CharField')(max_length=32)),
-            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(related_name='created_source_set', to=orm['auth.User'])),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
-            ('type', self.gf('django.db.models.fields.CharField')(default='S', max_length=1)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-        ))
-        db.send_create_signal('main', ['Source'])
-
-        # Adding model 'Citation'
-        db.create_table('main_citation', (
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(related_name='created_citation_set', to=orm['auth.User'])),
-            ('note', self.gf('django.db.models.fields.related.ForeignKey')(related_name='citations', to=orm['main.Note'])),
-            ('source', self.gf('django.db.models.fields.related.ForeignKey')(related_name='citations', to=orm['main.Source'])),
-            ('locator', self.gf('django.db.models.fields.CharField')(max_length=16, blank=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-        ))
-        db.send_create_signal('main', ['Citation'])
-    
+        for reference in orm.Reference.objects.all():
+            source = orm.Source()
+            source.description = reference.citation
+            source.type = reference.type
+            source.ordering = reference.ordering
+            source.url = reference.url
+            source.creator = reference.creator
+            source.created = reference.created
+            source.save()
+            citation = orm.Citation()
+            citation.note = reference.note
+            citation.source = source
+            citation.creator = reference.creator
+            citation.created = reference.created
+            citation.save()
     
     def backwards(self, orm):
-        
-        # Deleting model 'Source'
-        db.delete_table('main_source')
-
-        # Deleting model 'Citation'
-        db.delete_table('main_citation')
-    
+        raise RuntimeError("Cannot reverse this migration.")
     
     models = {
         'auth.group': {

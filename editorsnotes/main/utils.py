@@ -24,3 +24,12 @@ def truncate(text, length=100):
 def timeago(datetime):
     return '<time class="timeago" datetime="%s">%s</time>' % (
         datetime_isoformat(datetime), datetime.strftime('%I:%M%p, %b %d %Y'))
+
+def prepend_space(element):
+    previous = element.getprevious()
+    if previous is not None:
+        if previous.tail:
+            previous.tail += ' '
+        else:
+            previous.tail = ' '
+        

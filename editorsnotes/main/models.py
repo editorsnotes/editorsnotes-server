@@ -39,13 +39,9 @@ class Note(CreationMetadata):
     >>> note.type
     u'N'
 
-    Add references.
-    >>> note.references.create(citation='<p><span class="title">Anarchism and other essays</span>, 3rd edition, 1917</p>', url='http://books.google.com/books?id=U5ZYAAAAMAAJ', creator=user)
-    <Reference: Reference object>
-
     Add citations.
     >>> source = Source.objects.create(description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', type='P', creator=user)
-    >>> note.citations.create(source=source, location='98-113', creator=user)
+    >>> note.citations.create(source=source, locator='98-113', creator=user)
     <Citation: Citation object>
     >>> note.citations.all()
     [<Citation: Citation object>]
@@ -78,7 +74,7 @@ class Note(CreationMetadata):
     last_updated_display.short_description = 'last updated'
     last_updated_display.admin_order_field = 'last_updated'
     def edit_history(self):
-        return u'Created by %s %s. Last edited by %s %s.' % (
+        return u'Created by %s %s.<br/>Last edited by %s %s.' % (
             UserProfile.get_for(self.creator).name_display(), 
             self.created_display(), 
             UserProfile.get_for(self.last_updater).name_display(),
@@ -95,31 +91,6 @@ class Note(CreationMetadata):
     class Meta:
         ordering = ['-last_updated']  
 
-class Reference(CreationMetadata):
-    u"""
-    A bibliographic citation (as XHTML) and reference to a document.
-    """
-    note = models.ForeignKey(Note, related_name='references')
-    citation = fields.XHTMLField()
-    type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
-    ordering = models.CharField(max_length=5, editable=False)
-    url = models.URLField(blank=True, verify_exists=True)
-    def citation_as_html(self):
-        if self.url:
-            e = deepcopy(self.citation)
-            a = etree.SubElement(e, 'a')
-            a.href = self.url
-            a.text = self.url
-            a.getprevious().tail += ' '
-            return etree.tostring(e)
-        else:
-            return etree.tostring(self.citation)
-    def save(self, *args, **kwargs):
-        self.ordering = utils.xhtml_to_text(self.citation)[:5]
-        super(Reference, self).save(*args, **kwargs)
-    class Meta:
-        ordering = ['type','ordering']    
-
 class Source(CreationMetadata):
     u"""
     A documented source for assertions made in notes. 
@@ -129,22 +100,20 @@ class Source(CreationMetadata):
     ordering = models.CharField(max_length=32, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
     def description_as_html(self):
+        e = deepcopy(self.description)
         if self.url:
-            e = deepcopy(self.description)
             a = etree.SubElement(e, 'a')
-            a.href = self.url
+            a.attrib['href'] = self.url
             a.text = self.url
-            a.getprevious().tail += ' '
-            return etree.tostring(e)
-        else:
-            return etree.tostring(self.description)
+            utils.prepend_space(a)
+        return etree.tostring(e)
     def save(self, *args, **kwargs):
-        self.ordering = utils.xhtml_to_text(self.description)[:32]
+        self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
         super(Source, self).save(*args, **kwargs)
     def __unicode__(self):
-        return u'%s...' % self.ordering
+        return utils.truncate(utils.xhtml_to_text(self.description))
     class Meta:
-        ordering = ['type','ordering']    
+        ordering = ['ordering']    
 
 class Citation(CreationMetadata):
     u"""
@@ -153,6 +122,18 @@ class Citation(CreationMetadata):
     note = models.ForeignKey(Note, related_name='citations')
     source = models.ForeignKey(Source, related_name='citations')
     locator = models.CharField(max_length=16, blank=True)
+    def as_html(self):
+        e = deepcopy(self.source.description)
+        if self.locator:
+            s = etree.SubElement(e, 'span')
+            s.text = self.locator + '.'
+            utils.prepend_space(s)
+        if self.source.url:
+            a = etree.SubElement(e, 'a')
+            a.attrib['href'] = self.source.url
+            a.text = self.source.url
+            utils.prepend_space(a)
+        return etree.tostring(e)
 
 class Term(CreationMetadata):
     u""" 

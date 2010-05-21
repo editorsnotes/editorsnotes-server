@@ -10,13 +10,18 @@
         Last updated {{ last_updated_display|safe }} by {{ last_updater_display|safe }}</span>
       </div>
       {% endif %}
+      {% if created_display %}
+      <div id="updated" class="quiet">
+        Created {{ created_display|safe }} by {{ creator_display|safe }}</span>
+      </div>
+      {% endif %}
     </header>
 
     {% if notes %}
     <section id="notes" 
              class="{% if queries %}span-12{% else %}span-24 last{% endif %}">
       <h3>Notes</h3>
-      {% for note, refs in notes %}
+      {% for note, cites in notes %}
         {% include "note.include" %}
       {% endfor %}
     </section>
@@ -26,7 +31,7 @@
     <section id="queries"
              class="{% if notes %}span-12{% else %}span-24{% endif %} last">
       <h3>Queries</h3>
-      {% for note, refs in queries %}
+      {% for note, cites in queries %}
         {% include "note.include" %}
       {% endfor %}
     </section>

@@ -8,37 +8,24 @@ class Migration(SchemaMigration):
     
     def forwards(self, orm):
         
-        # Adding model 'Source'
-        db.create_table('main_source', (
-            ('description', self.gf('main.fields.XHTMLField')()),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('ordering', self.gf('django.db.models.fields.CharField')(max_length=32)),
-            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(related_name='created_source_set', to=orm['auth.User'])),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
-            ('type', self.gf('django.db.models.fields.CharField')(default='S', max_length=1)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-        ))
-        db.send_create_signal('main', ['Source'])
-
-        # Adding model 'Citation'
-        db.create_table('main_citation', (
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(related_name='created_citation_set', to=orm['auth.User'])),
-            ('note', self.gf('django.db.models.fields.related.ForeignKey')(related_name='citations', to=orm['main.Note'])),
-            ('source', self.gf('django.db.models.fields.related.ForeignKey')(related_name='citations', to=orm['main.Source'])),
-            ('locator', self.gf('django.db.models.fields.CharField')(max_length=16, blank=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-        ))
-        db.send_create_signal('main', ['Citation'])
+        # Deleting model 'Reference'
+        db.delete_table('main_reference')
     
     
     def backwards(self, orm):
         
-        # Deleting model 'Source'
-        db.delete_table('main_source')
-
-        # Deleting model 'Citation'
-        db.delete_table('main_citation')
+        # Adding model 'Reference'
+        db.create_table('main_reference', (
+            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
+            ('citation', self.gf('main.fields.XHTMLField')()),
+            ('note', self.gf('django.db.models.fields.related.ForeignKey')(related_name='references', to=orm['main.Note'])),
+            ('ordering', self.gf('django.db.models.fields.CharField')(max_length=5)),
+            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(related_name='created_reference_set', to=orm['auth.User'])),
+            ('type', self.gf('django.db.models.fields.CharField')(default='S', max_length=1)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal('main', ['Reference'])
     
     
     models = {
@@ -105,17 +92,6 @@ class Migration(SchemaMigration):
             'last_updater': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'last_to_update_note_set'", 'to': "orm['auth.User']"}),
             'terms': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['main.Term']", 'through': "orm['main.TermAssignment']"}),
             'type': ('django.db.models.fields.CharField', [], {'default': "'N'", 'max_length': '1'})
-        },
-        'main.reference': {
-            'Meta': {'object_name': 'Reference'},
-            'citation': ('main.fields.XHTMLField', [], {}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'creator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'created_reference_set'", 'to': "orm['auth.User']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'note': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'references'", 'to': "orm['main.Note']"}),
-            'ordering': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
-            'type': ('django.db.models.fields.CharField', [], {'default': "'S'", 'max_length': '1'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'})
         },
         'main.source': {
             'Meta': {'object_name': 'Source'},

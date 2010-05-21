@@ -6,6 +6,13 @@ from django.contrib.auth.models import User
 from models import Term, Note, UserProfile
 from django.db.models import Q
 
+def _sort_citations(note):
+    cites = { 'primary': [], 'secondary': [] }
+    for c in note.citations.all():
+        if c.source.type == 'P': cites['primary'].append(c)
+        elif c.source.type == 'S': cites['secondary'].append(c)
+    return cites
+
 @login_required
 def index(request):
     o = {}
@@ -20,26 +27,25 @@ def term(request, term_slug):
                      'email': settings.ADMINS[0][1] }
     notes = list(o['term'].note_set.filter(type='N'))
     queries = list(o['term'].note_set.filter(type='Q'))
-    def sort_references(note):
-        refs = { 'primary': [], 'secondary': [] }
-        for r in note.references.all():
-            if r.type == 'P': refs['primary'].append(r)
-            elif r.type == 'S': refs['secondary'].append(r)
-        return refs
-    o['notes'] = zip(notes, [ sort_references(n) for n in notes ])
-    o['queries'] = zip(queries, [ sort_references(q) for q in queries ])
+    o['notes'] = zip(notes, [ _sort_citations(n) for n in notes ])
+    o['queries'] = zip(queries, [ _sort_citations(q) for q in queries ])
     last_updated_note = None
     for note in notes + queries:
         if (not last_updated_note) or (note.last_updated > last_updated_note.last_updated):
             last_updated_note = note
-    o['last_updated_display'] = last_updated_note.last_updated_display()
-    o['last_updater_display'] = UserProfile.get_for(last_updated_note.last_updater).name_display()
+    if last_updated_note:
+        o['last_updated_display'] = last_updated_note.last_updated_display()
+        o['last_updater_display'] = UserProfile.get_for(last_updated_note.last_updater).name_display()
+    else:
+        o['created_display'] = o['term'].created_display()
+        o['creator_display'] = UserProfile.get_for(o['term'].creator).name_display()
     return render_to_response('term.html', o)
 
 @login_required
 def note(request, note_id):
     o = {}
     o['note'] = get_object_or_404(Note, id=note_id)
+    o['cites'] = _sort_citations(o['note'])
     return render_to_response('note.html', o)
 
 @login_required

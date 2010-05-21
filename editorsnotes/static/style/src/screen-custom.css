@@ -2,6 +2,7 @@ body { font-size: 87.5%; }
 button { font-size: 12px; }
 h1 { font-size: 2em; margin: 0.2em 0 0 0 }
 h2 { margin-bottom: 0; }
+h4 { font-variant: small-caps; letter-spacing: 1px; text-transform: lowercase; font-weight: bold; }
 ul { list-style-type: none; padding: 0 }
 ul.term-list li { display: inline; }
 #topnav, #stripe { height: 42px; background: #E5ECF9; }
@@ -9,7 +10,8 @@ ul.term-list li { display: inline; }
 #logo a { text-decoration: none; }
 #searchinput input { width: 338px; }
 .edit-history { text-align: right; }
-.reference { text-indent: -2em; padding-left: 2em; }
+.citation { text-indent: -2em; padding-left: 2em; }
+.citation div, .citation p { display: inline; }
 .note-link { vertical-align: bottom; }
 a.subtle { color: #222; text-decoration: none; }
 a.subtle:focus, a.subtle:hover { text-decoration: underline; }

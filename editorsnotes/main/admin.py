@@ -1,10 +1,6 @@
-from models import Note, Reference, Source, Citation, Term, Alias, TermAssignment
+from models import Note, Source, Citation, Term, Alias, TermAssignment
 from django.contrib import admin
 from reversion.admin import VersionAdmin
-
-class ReferenceInline(admin.StackedInline):
-    model = Reference
-    extra = 0
 
 class CitationInline(admin.StackedInline):
     model = Citation
@@ -19,7 +15,7 @@ class AliasInline(admin.StackedInline):
     extra = 0
 
 class NoteAdmin(VersionAdmin):
-    inlines = (ReferenceInline, CitationInline, TermAssignmentInline)
+    inlines = (CitationInline, TermAssignmentInline)
     list_display = ('excerpt', 'type', 'last_updater', 'last_updated_display')
     #readonly_fields = ('edit_history',)
     def save_model(self, request, note, form, change):
@@ -39,6 +35,7 @@ class NoteAdmin(VersionAdmin):
               'function/admin.js')
 
 class SourceAdmin(admin.ModelAdmin):
+    list_display = ('__unicode__', 'type', 'creator', 'created_display')
     def save_model(self, request, source, form, change):
         if not change: # adding new source
             source.creator = request.user
