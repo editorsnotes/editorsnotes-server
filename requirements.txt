@@ -1,5 +1,5 @@
 # Installed using pip
-http://www.djangoproject.com/download/1.2-beta-1/tarball/#egg=Django-1.2-beta-1
+Django==1.2
 South==0.7
 django-haystack==1.0.1-final
 django-reversion==1.2.1
