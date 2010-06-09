@@ -1,7 +1,4 @@
-// Note: cannot use the '$' variable in here because Django turns on 
-// jQuery.noConflict() for the admin interface.
-
-jQuery(document).ready(function () {
+$(document).ready(function () {
 
   var wymconfig = {
     skin: 'custom',
@@ -22,11 +19,8 @@ jQuery(document).ready(function () {
   };
 
   // Initialize WYMeditors.
-  jQuery('textarea:not([id*=__prefix__])').wymeditor(wymconfig);
-  jQuery('body').bind('addedinlinerow', function (event, row) {
-    jQuery('#' + row.id).find('textarea').wymeditor(wymconfig);
-  });
+  $('textarea').wymeditor(wymconfig);
 
   // Initialize timeago.
-  jQuery('time.timeago').timeago();
+  $('time.timeago').timeago();
 });

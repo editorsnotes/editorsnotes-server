@@ -64,6 +64,7 @@ class Note(CreationMetadata):
     content = fields.XHTMLField()
     type = models.CharField(max_length=1, choices=(('N','note'),('Q','query')), default='N')
     terms = models.ManyToManyField('Term', through='TermAssignment')
+    sources = models.ManyToManyField('Source', through='Citation')
     last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
     last_updated = models.DateTimeField(auto_now=True)
     def content_as_html(self):
@@ -114,6 +115,26 @@ class Source(CreationMetadata):
         return utils.truncate(utils.xhtml_to_text(self.description))
     class Meta:
         ordering = ['ordering']    
+
+class Transcript(CreationMetadata):
+    u"""
+    A text transcript of a primary source document.
+    """
+    source = models.OneToOneField(Source)
+    content = fields.XHTMLField()
+    def __unicode__(self):
+        return u'Transcript of %s' % self.source
+
+class Footnote(CreationMetadata):
+    u"""
+    A footnote attached to a transcript.
+    """
+    transcript = models.ForeignKey(Transcript, related_name='footnotes')
+    content = fields.XHTMLField()
+    def get_absolute_url(self):
+        return '/f/%s/' % self.id
+    def __unicode__(self):
+        return utils.truncate(utils.xhtml_to_text(self.content))
 
 class Citation(CreationMetadata):
     u"""
