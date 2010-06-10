@@ -26,10 +26,5 @@ def timeago(datetime):
         datetime_isoformat(datetime), datetime.strftime('%I:%M%p, %b %d %Y'))
 
 def prepend_space(element):
-    previous = element.getprevious()
-    if previous is not None:
-        if previous.tail:
-            previous.tail += ' '
-        else:
-            previous.tail = ' '
+    element.addprevious(etree.Entity('nbsp'))
         

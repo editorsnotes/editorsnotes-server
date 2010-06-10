@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}: {{ transcript }}{% endblock %}
+
+{% block content %}
+    <header>
+      <h2>{{ transcript }}</h2>
+    </header>
+    <section id="transcript" class="span-18 last">
+      <article id="transcript{{ transcript.id }}" class="transcript">
+        <div class="transcript-content">
+          {{ transcript.content_as_html|safe }}
+        </div>
+        <div class="edit-history">
+          {{ transcript.edit_history|safe }}
+        </div>
+      </article>
+    </section>
+{% endblock %}

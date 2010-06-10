@@ -18,6 +18,11 @@ class CreationMetadata(models.Model):
     created_display.allow_tags = True
     created_display.short_description = 'created'
     created_display.admin_order_field = 'created'
+    def edit_history(self):
+        return u'Created by %s %s.' % (
+            UserProfile.get_for(self.creator).name_display(), 
+            self.created_display())
+    edit_history.allow_tags = True
     class Meta:
         abstract = True
         get_latest_by = 'created'
@@ -86,7 +91,7 @@ class Note(CreationMetadata):
     def __unicode__(self):
         return self.excerpt()
     def get_absolute_url(self):
-        return '/n/%s/' % self.id
+        return '/note/%s/' % self.id
     def get_admin_url(self):
         return urlresolvers.reverse('admin:main_note_change', args=(self.id,))
     class Meta:
@@ -107,6 +112,11 @@ class Source(CreationMetadata):
             a.attrib['href'] = self.url
             a.text = self.url
             utils.prepend_space(a)
+        if self.transcript:
+            a = etree.SubElement(e, 'a')
+            a.attrib['href'] = self.transcript.get_absolute_url()
+            a.text = 'transcript'
+            utils.prepend_space(a)
         return etree.tostring(e)
     def save(self, *args, **kwargs):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
@@ -122,6 +132,10 @@ class Transcript(CreationMetadata):
     """
     source = models.OneToOneField(Source)
     content = fields.XHTMLField()
+    def content_as_html(self):
+        return etree.tostring(self.content)
+    def get_absolute_url(self):
+        return '/transcript/%s/' % self.id
     def __unicode__(self):
         return u'Transcript of %s' % self.source
 
@@ -132,7 +146,7 @@ class Footnote(CreationMetadata):
     transcript = models.ForeignKey(Transcript, related_name='footnotes')
     content = fields.XHTMLField()
     def get_absolute_url(self):
-        return '/f/%s/' % self.id
+        return '/footnote/%s/' % self.id
     def __unicode__(self):
         return utils.truncate(utils.xhtml_to_text(self.content))
 
@@ -153,6 +167,11 @@ class Citation(CreationMetadata):
             a = etree.SubElement(e, 'a')
             a.attrib['href'] = self.source.url
             a.text = self.source.url
+            utils.prepend_space(a)
+        if self.source.transcript:
+            a = etree.SubElement(e, 'a')
+            a.attrib['href'] = self.source.transcript.get_absolute_url()
+            a.text = 'View transcript'
             utils.prepend_space(a)
         return etree.tostring(e)
 
@@ -183,7 +202,7 @@ class Term(CreationMetadata):
         return self.preferred_name
     #@models.permalink
     def get_absolute_url(self):
-        return '/t/%s/' % self.slug
+        return '/term/%s/' % self.slug
         #return ('term_view', (), { 'slug': self.slug })
     class Meta:
         ordering = ['preferred_name']
@@ -215,7 +234,7 @@ class TermAssignment(CreationMetadata):
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
     def get_absolute_url(self):
-        return '/u/%s/' % self.user.username
+        return '/user/%s/' % self.user.username
     def _get_display_name(self):
         "Returns the full name if available, or the username if not."
         display_name = self.user.username
