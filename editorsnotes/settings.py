@@ -57,6 +57,7 @@ INSTALLED_APPS = (
     'reversion',
     'south',
     'haystack',
+    'typogrify',
     'editorsnotes.main',
 )
 

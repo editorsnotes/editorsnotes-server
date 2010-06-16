@@ -52,6 +52,7 @@ def note(request, note_id):
 def transcript(request, transcript_id):
     o = {}
     o['transcript'] = get_object_or_404(Transcript, id=transcript_id)
+    o['notes'] = o['transcript'].footnotes.all()
     return render_to_response('transcript.html', o)
 
 @login_required

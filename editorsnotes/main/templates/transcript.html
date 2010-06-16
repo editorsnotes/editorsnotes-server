@@ -1,17 +1,29 @@
 {% extends "base.html" %}
+{% load typogrify %}
 
-{% block title %}: {{ transcript }}{% endblock %}
+{% block title %}: {{ transcript.source }}{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="/media/function/transcript.js"></script>
+{% endblock %}
 
 {% block content %}
     <header>
-      <h2>{{ transcript }}</h2>
+      <h2>{{ transcript.source|typogrify }}</h2>
     </header>
-    <section id="transcript" class="span-18 last">
+    <section id="transcript" class="span-24 last">
       <article id="transcript{{ transcript.id }}" class="transcript">
-        <div class="transcript-content">
+        <div id="transcript-content" class="span-18 colborder">
           {{ transcript.content_as_html|safe }}
         </div>
-        <div class="edit-history">
+        <aside id="transcript-notes" class="span-5 last">
+          {% for note in notes %}
+          <div id="note-{{ note.id }}" class="transcript-note">
+            {{ note.content_as_html|widont }}
+          </div>
+          {% endfor %}
+        </aside>
+        <div class="edit-history span-24 last prepend-top append-bottom">
           {{ transcript.edit_history|safe }}
         </div>
       </article>

@@ -6,6 +6,8 @@ django-reversion==1.3.1
 lxml==2.2.4
 isodate==0.4.0
 xapian-haystack==1.1.3beta
+smartypants==1.6.0.3
+typogrify==1.0
 
 # Symlinks to system packages
 # symlink: _xapian.so

@@ -145,6 +145,8 @@ class Footnote(CreationMetadata):
     """
     transcript = models.ForeignKey(Transcript, related_name='footnotes')
     content = fields.XHTMLField()
+    def content_as_html(self):
+        return etree.tostring(self.content)
     def get_absolute_url(self):
         return '/footnote/%s/' % self.id
     def __unicode__(self):

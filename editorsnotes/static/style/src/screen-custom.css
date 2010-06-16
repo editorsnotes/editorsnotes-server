@@ -1,4 +1,5 @@
-body { font-size: 87.5%; }
+/* The font-size percentage is of 16px. */ 
+body { font-size: 87.5%; } /* (0.875 * 16px = 14px) */
 button { font-size: 12px; }
 h1 { font-size: 2em; margin: 0.2em 0 0 0 }
 h2 { margin-bottom: 0; }
@@ -13,5 +14,23 @@ ul.term-list li { display: inline; }
 .citation { text-indent: -2em; padding-left: 2em; }
 .citation div, .citation p { display: inline; }
 .note-link { vertical-align: bottom; }
-a.subtle { color: #222; text-decoration: none; }
+a.subtle, a.footnote { color: #222; text-decoration: none; }
 a.subtle:focus, a.subtle:hover { text-decoration: underline; }
+a.footnote:focus, a.footnote:hover { color: red; }
+a.footnote sup { color: red; padding-left: 1px; }
+span.note-number { color:red; margin-left: -1.2em; }
+/* Reduced size type with incremental leading
+
+   Using this class, it reduces your font size and line-height so that for
+   every four lines of normal sized type, there is five lines of the sidenote. eg:
+
+   New line-height value:
+     14px x 1.5 = 21px (old line-height)
+     21px x 4 = 84px
+     84px / 5 = 16.8px (new line height)
+     16.8px / 12px = 1.4 (new line height in em's) */
+aside p {
+  font-size: 12px;
+  line-height: 1.4em;
+  margin-bottom: 1.5em;
+}

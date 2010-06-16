@@ -298,8 +298,12 @@ ul.term-list li {display:inline;}
 .citation {text-indent:-2em;padding-left:2em;}
 .citation div, .citation p {display:inline;}
 .note-link {vertical-align:bottom;}
-a.subtle {color:#222;text-decoration:none;}
+a.subtle, a.footnote {color:#222;text-decoration:none;}
 a.subtle:focus, a.subtle:hover {text-decoration:underline;}
+a.footnote:focus, a.footnote:hover {color:red;}
+a.footnote sup {color:red;padding-left:1px;}
+span.note-number {color:red;margin-left:-1.2em;}
+aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */
 #searchinput {float:left;margin-right:10px;width:350px;}
