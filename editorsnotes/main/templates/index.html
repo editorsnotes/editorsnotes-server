@@ -4,10 +4,12 @@
 
 {% block content %}
     <section id="terms">
+      {% if term_list %}
       <ul>
       {% for term in term_list %}
       <li><a href="{{ term.get_absolute_url }}">{{ term }}</a></li>
       {% endfor %}
       </ul>
+      {% endif %}
     </section>
 {% endblock %}
