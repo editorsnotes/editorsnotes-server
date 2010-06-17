@@ -111,6 +111,8 @@ class Source(CreationMetadata):
             return self._transcript
         except Transcript.DoesNotExist:
             return None
+    def description_as_text(self):
+        return utils.xhtml_to_text(self.description)
     def description_as_html(self):
         e = deepcopy(self.description)
         if self.url:
@@ -128,7 +130,7 @@ class Source(CreationMetadata):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
         super(Source, self).save(*args, **kwargs)
     def __unicode__(self):
-        return utils.xhtml_to_text(self.description)
+        return return utils.truncate(self.description_as_text())
     class Meta:
         ordering = ['ordering']    
 
