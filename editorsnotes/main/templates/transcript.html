@@ -9,7 +9,7 @@
 
 {% block content %}
     <header>
-      <h2>{{ transcript.source.description_as_html|typogrify }}</h2>
+      <h2>{{ transcript.source|typogrify }}</h2>
     </header>
     <section id="transcript" class="span-24 last">
       <article id="transcript{{ transcript.id }}" class="transcript">
