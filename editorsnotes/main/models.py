@@ -149,6 +149,12 @@ class Footnote(CreationMetadata):
         return etree.tostring(self.content)
     def get_absolute_url(self):
         return '/footnote/%s/' % self.id
+    def delete(self, *args, **kwargs):
+        a = self.transcript.content.cssselect(
+            'a.footnote[href="' + self.get_absolute_url() + '"]')[0]
+        for element in a: a.addprevious(element)
+        a.drop_tree()
+        super(Footnote, self).delete(*args, **kwargs)
     def __unicode__(self):
         return utils.truncate(utils.xhtml_to_text(self.content))
 

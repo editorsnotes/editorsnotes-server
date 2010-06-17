@@ -16,7 +16,7 @@ class AliasInline(admin.StackedInline):
     extra = 0
 
 class FootnoteAdminForm(forms.ModelForm):
-    stamp = forms.CharField(required=True, widget=forms.HiddenInput)
+    stamp = forms.CharField(required=False, widget=forms.HiddenInput)
     class Meta:
         model = Footnote
 
@@ -74,8 +74,9 @@ class TranscriptAdmin(admin.ModelAdmin):
         transcript = form.instance
         for footnote_form in formset.forms:
             stamp = footnote_form.cleaned_data['stamp']
-            a = transcript.content.cssselect('a.footnote[href=' + stamp + ']')[0]
-            a.attrib['href'] = footnote_form.instance.get_absolute_url()
+            if stamp:
+                a = transcript.content.cssselect('a.footnote[href="' + stamp + '"]')[0]
+                a.attrib['href'] = footnote_form.instance.get_absolute_url()
         transcript.save()
     class Media:
         css = { 'all': ('style/admin-transcript.css',) }

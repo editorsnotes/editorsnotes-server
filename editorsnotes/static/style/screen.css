@@ -303,6 +303,7 @@ a.subtle:focus, a.subtle:hover {text-decoration:underline;}
 a.footnote:focus, a.footnote:hover {color:red;}
 a.footnote sup {color:red;padding-left:1px;}
 span.note-number {color:red;margin-left:-1.2em;}
+.transcript-note .dquo {margin-left:auto;}
 aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */

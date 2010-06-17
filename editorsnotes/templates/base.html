@@ -10,11 +10,12 @@
     <script type="text/javascript" src="/media/function/base.js"></script>
     {% block js %}{% endblock %}
   </head>
+  {% load typogrify %}
   <body>
     <div id="stripe"></div>
     <div class="container">
       <nav id="topnav">
-        <div id="logo"><a href="/"><h1>The Editors' Notes Project</h1></a></div>
+        <div id="logo"><a href="/"><h1>{% filter smartypants %}The Editors' Notes Project{% endfilter %}</h1></a></div>
         <div id="searchform">
           <form action="/search/" method="get" class="inline">
             <div id="searchinput">

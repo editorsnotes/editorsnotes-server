@@ -23,7 +23,9 @@ $(document).ready(function () {
   var wymconfig_content = jQuery.extend(true, {}, wymconfig);
 
   // Initialize WYMeditors (except the content one).
-  //$('textarea[id!=id_content]').wymeditor(wymconfig);
+  $('textarea').filter(function() {
+    return this.id.match(/id_footnotes-\d+-content/);
+  }).wymeditor(wymconfig);
 
   wymconfig_content.postInit = function(wym) {
     var button = ''
@@ -36,8 +38,19 @@ $(document).ready(function () {
     $(wym._box).find(wym._options.toolsSelector + 
                      wym._options.toolsListSelector).append(button);
     $(wym._box).find('li.wym_tools_footnote a').click(function() {
-      var selected_text = wym._iframe.contentWindow.getSelection().toString();
-      if (selected_text) {
+      var selection = wym._iframe.contentWindow.getSelection();
+      var selected_text = selection.toString();
+      var overlap = false;
+      //$(wym._iframe).contents().find('a.footnote').each(function(index) {
+      $('a.footnote', wym._doc.body).each(function(index) {
+        if (selection.containsNode(this, true)) {
+          overlap = true;
+          return false;
+        }
+      });
+      if (overlap) {
+        wym.status('Footnotes cannot overlap.');
+      } else if (selected_text) {
         wym.status('&nbsp;');
         var stamp = wym.uniqueStamp();
         stamps.push(stamp);
@@ -47,29 +60,36 @@ $(document).ready(function () {
       } else {
         wym.status('You must select some text to add a footnote.');
       }
-      /*
-          // TODO: pop up a footnote creation dialog, and somehow get 
-          // back the footnote uri when we're done.
-          var footnote_uri = ; 
-          wym._exec(WYMeditor.CREATE_LINK, footnote_uri);
-          $("a[href=" + footnote_uri + "]", 
-            wym._doc.body).attr(WYMeditor.CLASS, 'footnote-link');
-          return false;
-        */
+    });
+
+    // Friendlier labels on footnote rows.
+    $('.dynamic-footnotes').each(function(index) {
+      var row_id = $(this).attr('id');
+      var footnote_id = $(this).find('#id_' + row_id + '-id').attr('value');
+      var link = $('a[href="/footnote/' + footnote_id + '/"]', wym._doc.body);
+      $(this).find('.inline_label').text(link.text());
+    });
+
+    $('body').bind('footnoterowadded', function(e, row) {
+      var row_id = row.attr('id');
+      row.find('#id_' + row_id + '-stamp').attr('value', stamps.shift());
+      $('#' + row_id + ' textarea').wymeditor(wymconfig);
+      $('html,body').animate({ scrollTop: row.offset().top - 100 }, 500);
+    });
+
+    $('body').bind('footnoterowremoved', function(e, row) {
+      var row_id = row.attr('id');
+      var stamp = row.find('#id_' + row_id + '-stamp').attr('value');
+      var selection = wym._iframe.contentWindow.getSelection();
+      selection.selectAllChildren($('a[href="' + stamp + '"]', wym._doc.body)[0]);
+      wym._exec(WYMeditor.UNLINK)
+      wym._iframe.contentWindow.focus();
+      selection.collapseToStart();
     });
   };
 
   // Initialize content WYMeditor.
   $('textarea#id_content').wymeditor(wymconfig_content);
-
-  // Initialize footnote WYMeditor.
-  $('body').bind('footnoterowadded', function(e, row) {
-    // Can't use the row directly since it was loaded by the 
-    // Django jQuery instance, which doesn't have wymeditor.
-    var row_id = row.attr('id');
-    $('#' + row_id + ' textarea').wymeditor(wymconfig);
-    $('#id_' + row_id + '-stamp').attr('value', stamps.shift());
-  });
 
   // Initialize timeago.
   $('time.timeago').timeago();
