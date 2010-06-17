@@ -122,7 +122,7 @@ class Source(CreationMetadata):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
         super(Source, self).save(*args, **kwargs)
     def __unicode__(self):
-        return utils.truncate(utils.xhtml_to_text(self.description))
+        return utils.xhtml_to_text(self.description)
     class Meta:
         ordering = ['ordering']    
 
