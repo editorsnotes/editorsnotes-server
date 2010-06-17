@@ -288,6 +288,7 @@ h4 {font-variant:small-caps;letter-spacing:1px;text-transform:lowercase;font-wei
 ul {list-style-type:none;padding:0
 ;}
 ul.term-list li {display:inline;}
+hr {margin-bottom:2.95em;}
 #topnav, #stripe {height:42px;background:#E5ECF9;}
 #stripe {position:absolute;z-index:-1;width:100%;}
 #logo a {text-decoration:none;}
