@@ -7,7 +7,7 @@ lxml==2.2.4
 isodate==0.4.0
 xapian-haystack==1.1.3beta
 smartypants==1.6.0.3
-typogrify==1.0
+http://typogrify.googlecode.com/files/typogrify-1.0.tar.gz
 
 # Symlinks to system packages
 # symlink: _xapian.so
