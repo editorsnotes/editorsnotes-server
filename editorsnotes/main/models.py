@@ -105,6 +105,12 @@ class Source(CreationMetadata):
     type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
     ordering = models.CharField(max_length=32, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
+    @property
+    def transcript(self):
+        try:
+            return self._transcript
+        except Transcript.DoesNotExist:
+            return None
     def description_as_html(self):
         e = deepcopy(self.description)
         if self.url:
@@ -115,7 +121,7 @@ class Source(CreationMetadata):
         if self.transcript:
             a = etree.SubElement(e, 'a')
             a.attrib['href'] = self.transcript.get_absolute_url()
-            a.text = 'transcript'
+            a.text = 'View transcript'
             utils.prepend_space(a)
         return etree.tostring(e)
     def save(self, *args, **kwargs):
@@ -130,7 +136,7 @@ class Transcript(CreationMetadata):
     u"""
     A text transcript of a primary source document.
     """
-    source = models.OneToOneField(Source)
+    source = models.OneToOneField(Source, related_name='_transcript')
     content = fields.XHTMLField()
     def content_as_html(self):
         return etree.tostring(self.content)
