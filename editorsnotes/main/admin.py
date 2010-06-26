@@ -1,7 +1,13 @@
 from models import Note, Source, Transcript, Footnote, Citation, Term, Alias, TermAssignment
 from django import forms
 from django.contrib import admin
+from django.db import IntegrityError
 from reversion.admin import VersionAdmin
+
+class FootnoteAdminForm(forms.ModelForm):
+    stamp = forms.CharField(required=False, widget=forms.HiddenInput)
+    class Meta:
+        model = Footnote
 
 class CitationInline(admin.StackedInline):
     model = Citation
@@ -14,11 +20,6 @@ class TermAssignmentInline(admin.StackedInline):
 class AliasInline(admin.StackedInline):
     model = Alias
     extra = 0
-
-class FootnoteAdminForm(forms.ModelForm):
-    stamp = forms.CharField(required=False, widget=forms.HiddenInput)
-    class Meta:
-        model = Footnote
 
 class FootnoteInline(admin.StackedInline):
     model = Footnote

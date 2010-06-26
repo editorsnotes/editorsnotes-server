@@ -61,6 +61,8 @@ INSTALLED_APPS = (
     'editorsnotes.main',
 )
 
+FIXTURE_DIRS = ( 'fixtures', )
+
 HAYSTACK_SITECONF = 'editorsnotes.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'xapian'
 

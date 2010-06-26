@@ -9,6 +9,7 @@ from unaccent import unaccent
 from django.db import models
 from django.contrib.auth.models import User
 from django.core import urlresolvers
+from django.core.exceptions import ValidationError
 
 class CreationMetadata(models.Model):
     creator = models.ForeignKey(User, editable=False, related_name='created_%(class)s_set')
@@ -198,24 +199,52 @@ class Term(CreationMetadata):
     topic or theme.
 
     >>> term = Term(preferred_name=u'Foote, Edward B. (Edward Bliss) 1829-1906')
-    >>> term.make_slug()
+    >>> term.slug
     u'foote-edward-b-edward-bliss-1829-1906'
 
     >>> term = Term(preferred_name=u'Räggler å paschaser på våra mål tå en bonne')
-    >>> term.make_slug()
+    >>> term.slug
     u'raggler-a-paschaser-pa-vara-mal-ta-en-bonne'
+
+    >>> term = Term(preferred_name='Not unicode')
+    >>> term.slug
+    u'not-unicode'
     """
     preferred_name = models.CharField(max_length='80', unique=True)
     slug = models.CharField(max_length='80', unique=True, editable=False)
-    def make_slug(self):
+    def __init__(self, *args, **kwargs):
+        super(Term, self).__init__(*args, **kwargs)
+        if 'preferred_name' in kwargs:
+            self.slug = self._make_slug()
+    def _make_slug(self):
         return '-'.join(
             [ x for x in re.split('\W+', unaccent(self.__unicode__()))
               if len(x) > 0 ]).lower()
-    def save(self, *args, **kwargs):
-        self.slug = self.make_slug()
-        super(Term, self).save(*args, **kwargs)
+    def __setattr__(self, key, value):
+        super(Term, self).__setattr__(key, value)
+        if key == 'preferred_name':
+            self.slug = self._make_slug()
     def __unicode__(self):
-        return self.preferred_name
+        return unicode(self.preferred_name)
+    def validate_unique(self, exclude=None):
+        if 'slug' in exclude:
+            exclude.remove('slug')
+        try:
+            super(Term, self).validate_unique(exclude)
+        except ValidationError as e:
+            if ('slug' in e.message_dict and 
+                u'Term with this Slug already exists.' in e.message_dict['slug']):
+                e.message_dict['slug'].remove(
+                    u'Term with this Slug already exists.')
+                if len(e.message_dict['slug']) == 0:
+                    del e.message_dict['slug']
+                if not ('preferred_name' in e.message_dict and
+                        u'Term with this Preferred name already exists.' in e.message_dict['preferred_name']):
+                    if not 'preferred_name' in e.message_dict:
+                        e.message_dict['preferred_name'] = []
+                    e.message_dict['preferred_name'].append(u'Term with a very similar Preferred name already exists.')
+            raise e
+            
     #@models.permalink
     def get_absolute_url(self):
         return '/term/%s/' % self.slug
