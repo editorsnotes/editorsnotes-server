@@ -270,6 +270,7 @@ class TermAssignment(CreationMetadata):
     """
     term = models.ForeignKey(Term)
     note = models.ForeignKey(Note, related_name='notes')
+    main = models.BooleanField(default=False)
     def __unicode__(self):
         return self.term.preferred_name
     class Meta(CreationMetadata.Meta):
