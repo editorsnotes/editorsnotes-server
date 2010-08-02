@@ -92,6 +92,8 @@ class TermAdmin(admin.ModelAdmin):
         if not change: # adding new term
             term.creator = request.user
         term.save()
+        if term.article and not term.article.has_term(term):
+            TermAssignment.objects.create(note=term.article, term=term, creator=request.user)
     def save_formset(self, request, form, formset, change):
         aliases = formset.save(commit=False)
         for alias in aliases:

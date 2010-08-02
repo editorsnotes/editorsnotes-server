@@ -62,6 +62,8 @@ class Note(CreationMetadata):
     [<Note: hey this is a note>]
     
     Can't assign the same term more than once.
+    >>> note.has_term(term)
+    True
     >>> TermAssignment.objects.create(note=note, term=term, creator=user)
     Traceback (most recent call last):
     IntegrityError: duplicate key value violates unique constraint "main_termassignment_term_id_346a14e0_uniq"
@@ -73,6 +75,8 @@ class Note(CreationMetadata):
     sources = models.ManyToManyField('Source', through='Citation')
     last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
     last_updated = models.DateTimeField(auto_now=True)
+    def has_term(self, term):
+        return term.id in self.terms.values_list('id', flat=True)
     def content_as_html(self):
         return etree.tostring(self.content)
     def last_updated_display(self):
@@ -212,6 +216,7 @@ class Term(CreationMetadata):
     """
     preferred_name = models.CharField(max_length='80', unique=True)
     slug = models.CharField(max_length='80', unique=True, editable=False)
+    article = models.OneToOneField(Note, verbose_name='main article', blank=True, null=True)
     def __init__(self, *args, **kwargs):
         super(Term, self).__init__(*args, **kwargs)
         if 'preferred_name' in kwargs:
@@ -269,8 +274,7 @@ class TermAssignment(CreationMetadata):
     An assignment of a term to a note.
     """
     term = models.ForeignKey(Term)
-    note = models.ForeignKey(Note, related_name='notes')
-    main = models.BooleanField(default=False)
+    note = models.ForeignKey(Note)
     def __unicode__(self):
         return self.term.preferred_name
     class Meta(CreationMetadata.Meta):
