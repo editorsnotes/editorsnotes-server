@@ -52,31 +52,31 @@ class Note(CreationMetadata):
     >>> note.citations.all()
     [<Citation: Citation object>]
 
-    Assign terms.
-    >>> term = Term.objects.create(preferred_name=u'Example', creator=user)
-    >>> TermAssignment.objects.create(note=note, term=term, creator=user)
-    <TermAssignment: Example>
-    >>> note.terms.all()
-    [<Term: Example>]
-    >>> term.note_set.all()
+    Assign topics.
+    >>> topic = Topic.objects.create(preferred_name=u'Example', creator=user)
+    >>> TopicAssignment.objects.create(note=note, topic=topic, creator=user)
+    <TopicAssignment: Example>
+    >>> note.topics.all()
+    [<Topic: Example>]
+    >>> topic.note_set.all()
     [<Note: hey this is a note>]
     
-    Can't assign the same term more than once.
-    >>> note.has_term(term)
+    Can't assign the same topic more than once.
+    >>> note.has_topic(topic)
     True
-    >>> TermAssignment.objects.create(note=note, term=term, creator=user)
+    >>> TopicAssignment.objects.create(note=note, topic=topic, creator=user)
     Traceback (most recent call last):
-    IntegrityError: duplicate key value violates unique constraint "main_termassignment_term_id_346a14e0_uniq"
+    IntegrityError: duplicate key value violates unique constraint "main_topicassignment_topic_id_730963ea_uniq"
     <BLANKLINE>
     """
     content = fields.XHTMLField()
     type = models.CharField(max_length=1, choices=(('N','note'),('Q','query')), default='N')
-    terms = models.ManyToManyField('Term', through='TermAssignment')
+    topics = models.ManyToManyField('Topic', through='TopicAssignment')
     sources = models.ManyToManyField('Source', through='Citation')
     last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
     last_updated = models.DateTimeField(auto_now=True)
-    def has_term(self, term):
-        return term.id in self.terms.values_list('id', flat=True)
+    def has_topic(self, topic):
+        return topic.id in self.topics.values_list('id', flat=True)
     def content_as_html(self):
         return etree.tostring(self.content)
     def last_updated_display(self):
@@ -196,90 +196,89 @@ class Citation(CreationMetadata):
             utils.prepend_space(a)
         return etree.tostring(e)
 
-class Term(CreationMetadata):
+class Topic(CreationMetadata):
     u""" 
-    A controlled term such as a person name, an organization name, a
+    A controlled topic such as a person name, an organization name, a
     place name, an event name, a publication name, or the name of a
     topic or theme.
 
-    >>> term = Term(preferred_name=u'Foote, Edward B. (Edward Bliss) 1829-1906')
-    >>> term.slug
+    >>> topic = Topic(preferred_name=u'Foote, Edward B. (Edward Bliss) 1829-1906')
+    >>> topic.slug
     u'foote-edward-b-edward-bliss-1829-1906'
 
-    >>> term = Term(preferred_name=u'Räggler å paschaser på våra mål tå en bonne')
-    >>> term.slug
+    >>> topic = Topic(preferred_name=u'Räggler å paschaser på våra mål tå en bonne')
+    >>> topic.slug
     u'raggler-a-paschaser-pa-vara-mal-ta-en-bonne'
 
-    >>> term = Term(preferred_name='Not unicode')
-    >>> term.slug
+    >>> topic = Topic(preferred_name='Not unicode')
+    >>> topic.slug
     u'not-unicode'
     """
     preferred_name = models.CharField(max_length='80', unique=True)
     slug = models.CharField(max_length='80', unique=True, editable=False)
     article = models.OneToOneField(Note, verbose_name='main article', blank=True, null=True)
     def __init__(self, *args, **kwargs):
-        super(Term, self).__init__(*args, **kwargs)
+        super(Topic, self).__init__(*args, **kwargs)
         if 'preferred_name' in kwargs:
-            self.slug = self._make_slug()
-    def _make_slug(self):
+            self.slug = self._make_slug(kwargs['preferred_name'])
+    def _make_slug(self, preferred_name):
         return '-'.join(
-            [ x for x in re.split('\W+', unaccent(self.__unicode__()))
+            [ x for x in re.split('\W+', unaccent(unicode(preferred_name)))
               if len(x) > 0 ]).lower()
     def __setattr__(self, key, value):
-        super(Term, self).__setattr__(key, value)
+        super(Topic, self).__setattr__(key, value)
         if key == 'preferred_name':
-            self.slug = self._make_slug()
+            self.slug = self._make_slug(value)
     def __unicode__(self):
         return unicode(self.preferred_name)
     def validate_unique(self, exclude=None):
         if 'slug' in exclude:
             exclude.remove('slug')
         try:
-            super(Term, self).validate_unique(exclude)
+            super(Topic, self).validate_unique(exclude)
         except ValidationError as e:
             if ('slug' in e.message_dict and 
-                u'Term with this Slug already exists.' in e.message_dict['slug']):
+                u'Topic with this Slug already exists.' in e.message_dict['slug']):
                 e.message_dict['slug'].remove(
-                    u'Term with this Slug already exists.')
+                    u'Topic with this Slug already exists.')
                 if len(e.message_dict['slug']) == 0:
                     del e.message_dict['slug']
                 if not ('preferred_name' in e.message_dict and
-                        u'Term with this Preferred name already exists.' in e.message_dict['preferred_name']):
+                        u'Topic with this Preferred name already exists.' in e.message_dict['preferred_name']):
                     if not 'preferred_name' in e.message_dict:
                         e.message_dict['preferred_name'] = []
-                    e.message_dict['preferred_name'].append(u'Term with a very similar Preferred name already exists.')
+                    e.message_dict['preferred_name'].append(u'Topic with a very similar Preferred name already exists.')
             raise e
             
     #@models.permalink
     def get_absolute_url(self):
-        return '/term/%s/' % self.slug
-        #return ('term_view', (), { 'slug': self.slug })
+        return '/topic/%s/' % self.slug
+        #return ('topic_view', (), { 'slug': self.slug })
     class Meta:
         ordering = ['preferred_name']
 
 class Alias(CreationMetadata):
     u"""
-    An alternate name for a term.
+    An alternate name for a topic.
     """
-    term = models.ForeignKey(Term, related_name='aliases')
+    topic = models.ForeignKey(Topic, related_name='aliases')
     name = models.CharField(max_length='80')
     def __unicode__(self):
         return self.name
     class Meta(CreationMetadata.Meta):
-        unique_together = ('term', 'name')
+        unique_together = ('topic', 'name')
         verbose_name_plural = 'aliases'
 
-class TermAssignment(CreationMetadata):
+class TopicAssignment(CreationMetadata):
     u""" 
-    An assignment of a term to a note.
+    An assignment of a topic to a note.
     """
-    term = models.ForeignKey(Term)
+    topic = models.ForeignKey(Topic)
     note = models.ForeignKey(Note)
     def __unicode__(self):
-        return self.term.preferred_name
+        return self.topic.preferred_name
     class Meta(CreationMetadata.Meta):
-        unique_together = ('term', 'note')
-        verbose_name_plural = 'index terms'
+        unique_together = ('topic', 'note')
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)

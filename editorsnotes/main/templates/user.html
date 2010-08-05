@@ -16,11 +16,11 @@
       <ul class="note-list">
       {% for note in notes %}
         <li>
-          <ul class="term-list">
-          {% for term in note.terms.all %}
-            <li><a class="subtle" href="{{ term.get_absolute_url }}">{{ term.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
+          <ul class="topic-list">
+          {% for topic in note.topics.all %}
+            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
           {% empty %}
-            <li><em>no terms assigned</em></li>
+            <li><em>no topics assigned</em></li>
           {% endfor %}
           </ul>
           <div class="note-link">

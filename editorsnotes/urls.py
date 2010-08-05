@@ -16,7 +16,7 @@ urlpatterns = patterns('',
 
 urlpatterns += patterns('editorsnotes.main.views',
     url(r'^$', 'index', name='index_view'),
-    url(r'^term/(?P<term_slug>[-a-z0-9]+)/$', 'term', name='term_view'),
+    url(r'^topic/(?P<topic_slug>[-a-z0-9]+)/$', 'topic', name='topic_view'),
     url(r'^note/(?P<note_id>\d+)/$', 'note', name='note_view'),
     url(r'^user/(?P<username>[\w@\+\.\-]+)/$', 'user', name='user_view'),
     url(r'^transcript/(?P<transcript_id>\d+)/$', 'transcript', name='transcript_view'),

@@ -1,4 +1,4 @@
-from models import Note, Source, Transcript, Footnote, Citation, Term, Alias, TermAssignment
+from models import Note, Source, Transcript, Footnote, Citation, Topic, Alias, TopicAssignment
 from django import forms
 from django.contrib import admin
 from django.db import IntegrityError
@@ -13,8 +13,8 @@ class CitationInline(admin.StackedInline):
     model = Citation
     extra = 0
 
-class TermAssignmentInline(admin.StackedInline):
-    model = TermAssignment
+class TopicAssignmentInline(admin.StackedInline):
+    model = TopicAssignment
     extra = 1
 
 class AliasInline(admin.StackedInline):
@@ -28,7 +28,7 @@ class FootnoteInline(admin.StackedInline):
     form = FootnoteAdminForm
 
 class NoteAdmin(VersionAdmin):
-    inlines = (CitationInline, TermAssignmentInline)
+    inlines = (CitationInline, TopicAssignmentInline)
     list_display = ('excerpt', 'type', 'last_updater', 'last_updated_display')
     readonly_fields = ('edit_history',)
     def save_model(self, request, note, form, change):
@@ -38,7 +38,7 @@ class NoteAdmin(VersionAdmin):
         note.save()
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
-        for instance in instances: # citations and term assignments
+        for instance in instances: # citations and topic assignments
             instance.creator = request.user
             instance.save()
         formset.save_m2m()
@@ -86,14 +86,14 @@ class TranscriptAdmin(admin.ModelAdmin):
               'function/jquery.timeago.js',
               'function/admin-transcript.js')
 
-class TermAdmin(admin.ModelAdmin):
+class TopicAdmin(admin.ModelAdmin):
     inlines = (AliasInline,)
-    def save_model(self, request, term, form, change):
-        if not change: # adding new term
-            term.creator = request.user
-        term.save()
-        if term.article and not term.article.has_term(term):
-            TermAssignment.objects.create(note=term.article, term=term, creator=request.user)
+    def save_model(self, request, topic, form, change):
+        if not change: # adding new topic
+            topic.creator = request.user
+        topic.save()
+        if topic.article and not topic.article.has_topic(topic):
+            TopicAssignment.objects.create(note=topic.article, topic=topic, creator=request.user)
     def save_formset(self, request, form, formset, change):
         aliases = formset.save(commit=False)
         for alias in aliases:
@@ -103,4 +103,4 @@ class TermAdmin(admin.ModelAdmin):
 admin.site.register(Note, NoteAdmin)
 admin.site.register(Source, SourceAdmin)
 admin.site.register(Transcript, TranscriptAdmin)
-admin.site.register(Term, TermAdmin)
+admin.site.register(Topic, TopicAdmin)

@@ -3,11 +3,11 @@
 {% block title %}{% endblock %}
 
 {% block content %}
-    <section id="terms">
-      {% if term_list %}
+    <section id="topics">
+      {% if topic_list %}
       <ul>
-      {% for term in term_list %}
-      <li><a href="{{ term.get_absolute_url }}">{{ term }}</a></li>
+      {% for topic in topic_list %}
+      <li><a href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
       {% endfor %}
       </ul>
       {% endif %}

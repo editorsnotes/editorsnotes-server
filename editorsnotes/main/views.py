@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from models import Term, Note, Transcript, UserProfile
+from models import Topic, Note, Transcript, UserProfile
 from django.db.models import Q
 
 def _sort_citations(note):
@@ -16,17 +16,17 @@ def _sort_citations(note):
 @login_required
 def index(request):
     o = {}
-    o['term_list'] = Term.objects.all()
+    o['topic_list'] = Topic.objects.all()
     return render_to_response('index.html', o)
 
 @login_required
-def term(request, term_slug):
+def topic(request, topic_slug):
     o = {}
-    o['term'] = get_object_or_404(Term, slug=term_slug)
+    o['topic'] = get_object_or_404(Topic, slug=topic_slug)
     o['contact'] = { 'name': settings.ADMINS[0][0], 
                      'email': settings.ADMINS[0][1] }
-    notes = list(o['term'].note_set.filter(type='N'))
-    queries = list(o['term'].note_set.filter(type='Q'))
+    notes = list(o['topic'].note_set.filter(type='N'))
+    queries = list(o['topic'].note_set.filter(type='Q'))
     o['notes'] = zip(notes, [ _sort_citations(n) for n in notes ])
     o['queries'] = zip(queries, [ _sort_citations(q) for q in queries ])
     last_updated_note = None
@@ -37,9 +37,9 @@ def term(request, term_slug):
         o['last_updated_display'] = last_updated_note.last_updated_display()
         o['last_updater_display'] = UserProfile.get_for(last_updated_note.last_updater).name_display()
     else:
-        o['created_display'] = o['term'].created_display()
-        o['creator_display'] = UserProfile.get_for(o['term'].creator).name_display()
-    return render_to_response('term.html', o)
+        o['created_display'] = o['topic'].created_display()
+        o['creator_display'] = UserProfile.get_for(o['topic'].creator).name_display()
+    return render_to_response('topic.html', o)
 
 @login_required
 def note(request, note_id):
