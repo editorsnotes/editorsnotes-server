@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding field 'Alias.topic'
-        db.add_column('main_alias', 'topic', self.gf('django.db.models.fields.related.ForeignKey')(default=None, related_name='aliases', to=orm['main.Topic']), keep_default=False)
+        db.add_column('main_alias', 'topic', self.gf('django.db.models.fields.related.ForeignKey')(default=1, related_name='aliases', to=orm['main.Topic']), keep_default=False)
 
         # Adding unique constraint on 'Alias', fields ['topic', 'name']
         db.create_unique('main_alias', ['topic_id', 'name'])
