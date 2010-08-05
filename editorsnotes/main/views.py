@@ -27,6 +27,12 @@ def topic(request, topic_slug):
                      'email': settings.ADMINS[0][1] }
     notes = list(o['topic'].note_set.filter(type='N'))
     queries = list(o['topic'].note_set.filter(type='Q'))
+    if o['topic'].article:
+        o['article'] = o['topic'].article
+        if o['article'] in notes: 
+            notes.remove(o['article'])
+        if o['article'] in queries:
+            queries.remove(o['article'])
     o['notes'] = zip(notes, [ _sort_citations(n) for n in notes ])
     o['queries'] = zip(queries, [ _sort_citations(q) for q in queries ])
     last_updated_note = None

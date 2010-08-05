@@ -1,0 +1,29 @@
+      <article id="note{{ article.id }}" class="note">
+        <div class="note-content">
+          {{ article.content_as_html|safe }}
+        </div>
+        {% if cites.primary %}
+        <h4>Primary sources</h4>
+        <div class="citation-list">
+          {% for cite in cites.primary %}
+          <div class="citation">
+            {{ cite.as_html|safe }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if cites.secondary %}
+        <h4>Secondary sources</h4>
+        <div class="citation-list">
+          {% for cite in cites.secondary %}
+          <div class="citation">
+            {{ cite.as_html|safe }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="edit-history">
+          {{ article.edit_history|safe }}
+        </div>
+      </article>
+      <hr/>

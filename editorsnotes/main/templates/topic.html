@@ -17,6 +17,12 @@
       {% endif %}
     </header>
 
+    {% if article %}
+    <section id="article" class="span-24 last">
+      {% include "article.include" %}
+    </section>
+    {% endif %}
+
     {% if notes %}
     <section id="notes" 
              class="{% if queries %}span-12{% else %}span-24 last{% endif %}">
