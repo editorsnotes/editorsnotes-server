@@ -52,6 +52,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
 #    'devserver',
+#    'django_extensions',
     'reversion',
     'south',
     'haystack',
