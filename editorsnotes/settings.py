@@ -15,8 +15,6 @@ SITE_ID = 1
 USE_L10N = False
 USE_I18N = False
 
-# Absolute path to the directory that holds media.
-MEDIA_ROOT = ''
 MEDIA_URL = '/media/'
 ADMIN_MEDIA_PREFIX = '/django_admin_media/'
 

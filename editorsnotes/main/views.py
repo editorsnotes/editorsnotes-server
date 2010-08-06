@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from models import Topic, Note, Transcript, UserProfile
+from models import *
 from django.db.models import Q
 
 def _sort_citations(note):
@@ -53,6 +53,13 @@ def note(request, note_id):
     o['note'] = get_object_or_404(Note, id=note_id)
     o['cites'] = _sort_citations(o['note'])
     return render_to_response('note.html', o)
+
+@login_required
+def source(request, source_id):
+    o = {}
+    o['source'] = get_object_or_404(Source, id=source_id)
+    o['scans'] = o['source'].scans.all()
+    return render_to_response('source.html', o)
 
 @login_required
 def transcript(request, transcript_id):

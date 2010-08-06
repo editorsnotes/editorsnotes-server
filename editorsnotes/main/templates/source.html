@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load typogrify %}
+
+{% block title %}: {{ source }}{% endblock %}
+
+{% block content %}
+    <header>
+      <h2>{{ source.description_as_text|typogrify }}</h2>
+    </header>
+    {% if source.transcript %}
+    <div id="transcript-link">
+      Read an <a href="{{ source.transcript.get_absolute_url }}">annotated transcript</a> 
+      of this source document.
+    </div>
+    {% endif %}
+    <section id="scans" class=span-24 last">
+      <ol>
+        {% for scan in scans %}
+        <li><img src="{{ scan.image.url }}"/></li>
+        {% endfor %}
+      </ol>
+    </section>
+{% endblock %}

@@ -136,8 +136,22 @@ class Source(CreationMetadata):
         super(Source, self).save(*args, **kwargs)
     def __unicode__(self):
         return utils.truncate(self.description_as_text())
+    def get_absolute_url(self):
+        return '/source/%s/' % self.id
     class Meta:
         ordering = ['ordering']    
+
+class Scan(CreationMetadata):
+    u"""
+    A scanned image associated with a source.
+    """
+    source = models.ForeignKey(Source, related_name='scans')
+    image = models.ImageField(upload_to='scans/%Y/%m')
+    ordering = models.IntegerField(blank=True, null=True)
+    def __unicode__(self):
+        return self.image.url
+    class Meta:
+        ordering = ['ordering'] 
 
 class Transcript(CreationMetadata):
     u"""

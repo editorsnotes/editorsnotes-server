@@ -19,3 +19,4 @@ secret.txt
 settings_local.py
 settings-*.py
 searchindex
+uploads

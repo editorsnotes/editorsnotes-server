@@ -1,4 +1,4 @@
-from models import Note, Source, Transcript, Footnote, Citation, Topic, Alias, TopicAssignment
+from models import *
 from django import forms
 from django.contrib import admin
 from django.db import IntegrityError
@@ -27,6 +27,9 @@ class FootnoteInline(admin.StackedInline):
     template = 'admin/edit_inline/footnote.html'
     form = FootnoteAdminForm
 
+class ScanInline(admin.StackedInline):
+    model = Scan
+
 class NoteAdmin(VersionAdmin):
     inlines = (CitationInline, TopicAssignmentInline)
     list_display = ('excerpt', 'type', 'last_updater', 'last_updated_display')
@@ -49,16 +52,18 @@ class NoteAdmin(VersionAdmin):
               'function/admin.js')
 
 class SourceAdmin(admin.ModelAdmin):
+    inlines = (ScanInline,)
     list_display = ('__unicode__', 'type', 'creator', 'created_display')
     def save_model(self, request, source, form, change):
         if not change: # adding new source
             source.creator = request.user
         source.save()
-    class Media:
-        js = ('function/jquery-1.4.2.min.js',
-              'function/wymeditor/jquery.wymeditor.pack.js',
-              'function/jquery.timeago.js',
-              'function/admin.js')
+    def save_formset(self, request, form, formset, change):
+        scans = formset.save(commit=False)
+        for scan in scans:
+            scan.creator = request.user
+            scan.save()
+        formset.save_m2m()
 
 class TranscriptAdmin(admin.ModelAdmin):
     inlines = (FootnoteInline,)
