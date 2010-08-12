@@ -24,28 +24,16 @@
     {% endif %}
 
     {% if notes %}
-    <section id="notes" 
-             class="{% if queries %}span-12{% else %}span-24 last{% endif %}">
+    <section id="notes" class="span-24 last">
       <h3>Notes</h3>
       {% for note, cites in notes %}
         {% include "note.include" %}
       {% endfor %}
     </section>
-    {% endif %}
-
-    {% if queries %}
-    <section id="queries"
-             class="{% if notes %}span-12{% else %}span-24{% endif %} last">
-      <h3>Queries</h3>
-      {% for note, cites in queries %}
-        {% include "note.include" %}
-      {% endfor %}
-    </section>
-    {% endif %}
-
-    {% if not notes and not queries %}
+    {% else %}
     <div id="no-notes">
-      There are no notes or queries related to <em>{{ topic.preferred_name }}</em>.
+      There are no notes related to <em>{{ topic.preferred_name }}</em>.
     </div>
     {% endif %}
+
 {% endblock %}

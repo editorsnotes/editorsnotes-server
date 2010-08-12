@@ -25,18 +25,14 @@ def topic(request, topic_slug):
     o['topic'] = get_object_or_404(Topic, slug=topic_slug)
     o['contact'] = { 'name': settings.ADMINS[0][0], 
                      'email': settings.ADMINS[0][1] }
-    notes = list(o['topic'].note_set.filter(type='N'))
-    queries = list(o['topic'].note_set.filter(type='Q'))
+    notes = list(o['topic'].note_set.all())
     if o['topic'].article:
         o['article'] = o['topic'].article
         if o['article'] in notes: 
             notes.remove(o['article'])
-        if o['article'] in queries:
-            queries.remove(o['article'])
     o['notes'] = zip(notes, [ _sort_citations(n) for n in notes ])
-    o['queries'] = zip(queries, [ _sort_citations(q) for q in queries ])
     last_updated_note = None
-    for note in notes + queries:
+    for note in notes:
         if (not last_updated_note) or (note.last_updated > last_updated_note.last_updated):
             last_updated_note = note
     if last_updated_note:

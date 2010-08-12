@@ -34,16 +34,11 @@ class Note(CreationMetadata):
     so it may have hyperlinks and all the other features that XHTML
     enables.
 
-    'type' indicates whether this is a 'query' (asking something) or a
-    'note' (explaining or describing something).
-
     Style elements are stripped from content.
     >>> user = User.objects.create_user('tester', '', 'testerpass')
     >>> note = Note.objects.create(content=u'<style>garbage</style><h1>hey</h1><p>this is a <em>note</em></p>', creator=user, last_updater=user)
     >>> note.content_as_html()
     '<div><h1>hey</h1><p>this is a <em>note</em></p></div>'
-    >>> note.type
-    u'N'
 
     Add citations.
     >>> source = Source.objects.create(description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', type='P', creator=user)
@@ -70,7 +65,6 @@ class Note(CreationMetadata):
     <BLANKLINE>
     """
     content = fields.XHTMLField()
-    type = models.CharField(max_length=1, choices=(('N','note'),('Q','query')), default='N')
     topics = models.ManyToManyField('Topic', through='TopicAssignment')
     sources = models.ManyToManyField('Source', through='Citation')
     last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
