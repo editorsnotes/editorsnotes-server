@@ -56,6 +56,9 @@ class Note(CreationMetadata):
     >>> topic.note_set.all()
     [<Note: hey this is a note>]
     
+    >>> note.is_article()
+    False
+
     Can't assign the same topic more than once.
     >>> note.has_topic(topic)
     True
@@ -71,6 +74,11 @@ class Note(CreationMetadata):
     last_updated = models.DateTimeField(auto_now=True)
     def has_topic(self, topic):
         return topic.id in self.topics.values_list('id', flat=True)
+    def is_article(self):
+        try:
+            return (self.main_topic is not None)
+        except Topic.DoesNotExist:
+            return False
     def content_as_html(self):
         return etree.tostring(self.content)
     def last_updated_display(self):
@@ -224,7 +232,7 @@ class Topic(CreationMetadata):
     """
     preferred_name = models.CharField(max_length='80', unique=True)
     slug = models.CharField(max_length='80', unique=True, editable=False)
-    article = models.OneToOneField(Note, verbose_name='main article', blank=True, null=True)
+    article = models.OneToOneField(Note, verbose_name='main article', related_name='main_topic', blank=True, null=True)
     def __init__(self, *args, **kwargs):
         super(Topic, self).__init__(*args, **kwargs)
         if 'preferred_name' in kwargs:

@@ -2,6 +2,16 @@
         <div class="note-content">
           {{ note.content_as_html|safe }}
         </div>
+        {% if topics %}
+        <div class="related-topics">
+          <span class="quiet">Related topics:</span> 
+          <ul class="topic-list">
+            {% for topic in topics %}
+              <li><a href="{{ topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
         {% if cites.primary %}
         <h4>Primary sources</h4>
         <div class="citation-list">

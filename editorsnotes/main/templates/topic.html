@@ -2,38 +2,52 @@
 
 {% block title %}: {{ topic.preferred_name }}{% endblock %}
 
+{% block js %}
+<script type="text/javascript">
+  $(function() {
+    $("#tabs").tabs();
+  });
+</script>
+{% endblock %}
+
 {% block content %}
     <header>
       <h2>{{ topic.preferred_name }}</h2>
-      {% if last_updated_display %}
-      <div id="updated" class="quiet">
-        Last updated {{ last_updated_display|safe }} by {{ last_updater_display|safe }}
+      <div class="related-topics">
+        {% if related_articles %}
+        <span class="quiet">Related articles:</span> 
+        <ul class="topic-list">
+          {% for topic in related_articles %}
+          <li><a href="{{ topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
       </div>
-      {% endif %}
-      {% if created_display %}
-      <div id="updated" class="quiet">
-        Created {{ created_display|safe }} by {{ creator_display|safe }}</span>
-      </div>
-      {% endif %}
     </header>
 
-    {% if article %}
-    <section id="article" class="span-24 last">
-      {% include "article.include" %}
-    </section>
-    {% endif %}
+    <div id="tabs" class="span-24 last">
+      <ul>
+        <li><a href="#article">Article</a></li>
+        <li><a href="#notes">Related Notes <span class="alt">&amp;</span> Queries</a></li>
+      </ul>
 
-    {% if notes %}
-    <section id="notes" class="span-24 last">
-      <h3>Notes</h3>
-      {% for note, cites in notes %}
-        {% include "note.include" %}
-      {% endfor %}
-    </section>
-    {% else %}
-    <div id="no-notes">
-      There are no notes related to <em>{{ topic.preferred_name }}</em>.
+      <section id="article" class="span-23 last">
+        {% if article %}
+          {% include "article.include" %}
+        {% else %}
+          There is no article about <em>{{ topic.preferred_name }}</em> yet.
+        {% endif %}
+      </section>
+
+      <section id="notes" class="span-23 last">
+        {% if notes %}
+          {% for note, topics, cites in notes %}
+            {% include "note.include" %}
+          {% endfor %}
+        {% else %}
+          There are no notes or queries related to <em>{{ topic.preferred_name }}</em>.
+        {% endif %}
+      </section>
     </div>
-    {% endif %}
 
 {% endblock %}

@@ -3,8 +3,10 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.admin.models import LogEntry
 from models import *
 from django.db.models import Q
+import utils
 
 def _sort_citations(note):
     cites = { 'primary': [], 'secondary': [] }
@@ -17,6 +19,30 @@ def _sort_citations(note):
 def index(request):
     o = {}
     o['topic_list'] = Topic.objects.all()
+    o['article_list'] = Topic.objects.filter(article__isnull=False)
+    o['activity'] = []
+    prev_obj = None
+    for entry in LogEntry.objects.filter(content_type__app_label='main')[:10]:
+        obj = entry.get_edited_object()
+        if obj == prev_obj: continue
+        e = {}
+        e['action'] = entry.action_flag
+        e['who'] = UserProfile.get_for(entry.user).name_display()
+        e['what'] = '<a href="' + obj.get_absolute_url() + '">' + entry.content_type.name + '</a>'
+        if entry.content_type.name == 'note':
+            topics = [ ('<a class="subtle" href="' + t.get_absolute_url() + '">' + t.preferred_name + '</a>') for t in obj.topics.all() ]
+            print topics
+            if len(topics) > 0:
+                e['what'] += ' about '
+                if len(topics) == 1:
+                    e['what'] += topics[0]
+                elif len(topics) == 2:
+                    e['what'] += ' and '.join(topics)
+                else:
+                    e['what'] += (', '.join(topics[:-1]) + ', and ' + topics[-1])
+        e['when'] = utils.timeago(entry.action_time)
+        o['activity'].append(e)
+        prev_obj = obj
     return render_to_response('index.html', o)
 
 @login_required
@@ -25,22 +51,20 @@ def topic(request, topic_slug):
     o['topic'] = get_object_or_404(Topic, slug=topic_slug)
     o['contact'] = { 'name': settings.ADMINS[0][0], 
                      'email': settings.ADMINS[0][1] }
-    notes = list(o['topic'].note_set.all())
+    o['related_articles'] = []
+    for article in o['topic'].note_set.filter(main_topic__isnull=False):
+        if not article.main_topic == o['topic']:
+            o['related_articles'].append(article.main_topic)
+    notes = list(o['topic'].note_set.filter(main_topic__isnull=True))
     if o['topic'].article:
         o['article'] = o['topic'].article
         if o['article'] in notes: 
             notes.remove(o['article'])
-    o['notes'] = zip(notes, [ _sort_citations(n) for n in notes ])
-    last_updated_note = None
-    for note in notes:
-        if (not last_updated_note) or (note.last_updated > last_updated_note.last_updated):
-            last_updated_note = note
-    if last_updated_note:
-        o['last_updated_display'] = last_updated_note.last_updated_display()
-        o['last_updater_display'] = UserProfile.get_for(last_updated_note.last_updater).name_display()
-    else:
-        o['created_display'] = o['topic'].created_display()
-        o['creator_display'] = UserProfile.get_for(o['topic'].creator).name_display()
+        o['article_topics'] = o['article'].topics.exclude(id=o['topic'].id)
+        o['article_cites'] = _sort_citations(o['article'])
+    o['notes'] = zip(notes, 
+                     [ n.topics.exclude(id=o['topic'].id) for n in notes ],
+                     [ _sort_citations(n) for n in notes ])
     return render_to_response('topic.html', o)
 
 @login_required
