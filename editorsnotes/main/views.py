@@ -31,7 +31,6 @@ def index(request):
         e['what'] = '<a href="' + obj.get_absolute_url() + '">' + entry.content_type.name + '</a>'
         if entry.content_type.name == 'note':
             topics = [ ('<a class="subtle" href="' + t.get_absolute_url() + '">' + t.preferred_name + '</a>') for t in obj.topics.all() ]
-            print topics
             if len(topics) > 0:
                 e['what'] += ' about '
                 if len(topics) == 1:
