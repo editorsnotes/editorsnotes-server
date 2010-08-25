@@ -81,6 +81,8 @@ class Note(CreationMetadata):
             return False
     def content_as_html(self):
         return etree.tostring(self.content)
+    def content_as_text(self):
+        return utils.xhtml_to_text(self.content)
     def last_updated_display(self):
         return utils.timeago(self.last_updated)
     last_updated_display.allow_tags = True
@@ -118,6 +120,15 @@ class Source(CreationMetadata):
             return self._transcript
         except Transcript.DoesNotExist:
             return None
+    # For search indexing.
+    def transcript_and_footnotes_as_text(self):
+        try:
+            html = self._transcript.content_as_html()
+            for f in self._transcript.footnotes.all():
+                html += ' ' + f.content_as_html()
+            return html
+        except Transcript.DoesNotExist:
+            return ''
     def description_as_text(self):
         return utils.xhtml_to_text(self.description)
     def description_as_html(self):
@@ -163,6 +174,8 @@ class Transcript(CreationMetadata):
     content = fields.XHTMLField()
     def content_as_html(self):
         return etree.tostring(self.content)
+    def content_as_text(self):
+        return utils.xhtml_to_text(self.content)
     def get_absolute_url(self):
         return '/transcript/%s/' % self.id
     def __unicode__(self):
@@ -247,6 +260,8 @@ class Topic(CreationMetadata):
             self.slug = self._make_slug(value)
     def __unicode__(self):
         return unicode(self.preferred_name)
+    def get_aliases(self):
+        return u' '.join([ a.name for a in self.aliases.all() ])
     def validate_unique(self, exclude=None):
         if 'slug' in exclude:
             exclude.remove('slug')

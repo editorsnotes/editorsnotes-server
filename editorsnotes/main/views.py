@@ -4,8 +4,9 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
-from models import *
 from django.db.models import Q
+from haystack.views import SearchView as HaystackSearchView
+from models import *
 import utils
 
 def _sort_citations(note):
@@ -97,4 +98,13 @@ def user(request, username=None):
     o['profile'] = UserProfile.get_for(user)
     o['notes'] = Note.objects.filter(Q(creator=user) | Q(last_updater=user))
     return render_to_response('user.html', o)
-    
+
+class SearchView(HaystackSearchView):
+    def extra_context(self):
+        extra = super(SearchView, self).extra_context()
+        for r in self.results:
+            name = r.verbose_name_plural.lower()
+            if name not in extra:
+                extra[name] = []
+            extra[name].append(r)
+        return extra

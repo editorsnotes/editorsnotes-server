@@ -1,20 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}Search Editors' Notes{% endblock %}
+{% block title %}: Results for '{{ query }}'{% endblock %}
 
 {% block content %}
 <div id="searchresults">
 {% if query %}
-  {% if page.object_list %}
-  <p id="message">Search results for <em>{{ query }}</em>:</p> 
-  <ol id="results">
-    {% for result in page.object_list %}
-    <li><a href="{{ result.object.get_absolute_url }}">{{ result.object.excerpt }}</a></li>
-    {% endfor %}
-  </ol>
-  {% else %}
-  <p id="message">No results for <em>{{ query }}</em>.</p> 
-  {% endif %}
+  <p id="message">Search results for <em>{{ query }}</em>:</p>
+  <section id="topics" class="span-8 colborder">
+    <h3>Topics</h3>
+    {% if topics %}
+    <ol>
+      {% for result in topics %}
+      <li><a href="{{ result.object.get_absolute_url }}">{{ result.object.preferred_name }}</a></li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p id="message">No topics matching <em>{{ query }}</em>.</p> 
+    {% endif %}
+  </section>
+  <section id="notes" class="span-15 last">
+    <h3>Notes</h3>
+    {% if notes %}
+    <ol>
+      {% for result in notes %}
+      <li><a href="{{ result.object.get_absolute_url }}">{{ result.object.excerpt }}</a></li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p id="message">No notes matching <em>{{ query }}</em>.</p> 
+    {% endif %}
+  </section>
 </div>
 {% endif %}
 

@@ -1,0 +1,4 @@
+{{ object.description_as_text }}
+{% if object.transcript %}
+  {{ object.transcript.content_as_text }}
+{% endif %}
