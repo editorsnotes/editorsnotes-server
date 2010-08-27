@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Sit
+from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 #from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
