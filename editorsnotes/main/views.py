@@ -2,7 +2,8 @@ from django.conf import settings
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
+from django.contrib.sites.models import Sit
+from django.core.exceptions import ObjectDoesNotExist
 #from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
 from django.http import HttpResponse
@@ -27,7 +28,10 @@ def index(request):
     o['activity'] = []
     prev_obj = None
     for entry in LogEntry.objects.filter(content_type__app_label='main')[:10]:
-        obj = entry.get_edited_object()
+        try:
+            obj = entry.get_edited_object()
+        except ObjectDoesNotExist:
+            continue
         if obj == prev_obj: continue
         e = {}
         e['action'] = entry.action_flag
