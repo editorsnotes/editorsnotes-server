@@ -1,13 +1,16 @@
 from django.conf import settings
-from django.http import HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.admin.models import LogEntry
+from django.contrib.sites.models import Site
+#from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
-from haystack.views import SearchView as HaystackSearchView
+from django.http import HttpResponse
+from django.shortcuts import render_to_response, get_object_or_404
+from haystack.query import SearchQuerySet, EmptySearchQuerySet
 from models import *
 import utils
+import json
 
 def _sort_citations(note):
     cites = { 'primary': [], 'secondary': [] }
@@ -99,12 +102,47 @@ def user(request, username=None):
     o['notes'] = Note.objects.filter(Q(creator=user) | Q(last_updater=user))
     return render_to_response('user.html', o)
 
-class SearchView(HaystackSearchView):
-    def extra_context(self):
-        extra = super(SearchView, self).extra_context()
-        for r in self.results:
-            name = r.verbose_name_plural.lower()
-            if name not in extra:
-                extra[name] = []
-            extra[name].append(r)
-        return extra
+@login_required
+def search(request):
+    query = ''
+    results = EmptySearchQuerySet()
+
+    if request.GET.get('q'):
+        query = request.GET.get('q')
+        results = SearchQuerySet().auto_query(query).load_all()
+
+    # paginator = Paginator(results, 20)
+    
+    # try:
+    #     page = paginator.page(int(request.GET.get('page', 1)))
+    # except InvalidPage:
+    #     raise Http404('No such page of results!')
+    
+    o = {
+        # 'page': page,
+        # 'paginator': paginator,
+        'query': query,
+    }
+    
+    for r in results:
+        name = r.verbose_name_plural.lower()
+        if name not in o:
+            o[name] = []
+            o[name].append(r)
+
+    return render_to_response('search.html', o)
+
+def api_topics(request):
+    query = ''
+    results = EmptySearchQuerySet()
+
+    if request.GET.get('q'):
+        query = request.GET.get('q')
+        results = SearchQuerySet().models(Topic).narrow(query).load_all()
+    
+    
+    topics = [ { 'preferred_name': r.object.preferred_name,
+                 'uri': 'http://%s%s' % (Site.objects.get_current().domain, 
+                                         r.object.get_absolute_url()) } 
+               for r in results ]
+    return HttpResponse(json.dumps(topics), mimetype='text/plain')
