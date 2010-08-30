@@ -28,7 +28,25 @@ class CreationMetadata(models.Model):
         abstract = True
         get_latest_by = 'created'
 
-class Note(CreationMetadata):
+class LastUpdateMetadata(CreationMetadata):
+    last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_%(class)s_set')
+    last_updated = models.DateTimeField(auto_now=True)    
+    def last_updated_display(self):
+        return utils.timeago(self.last_updated)
+    last_updated_display.allow_tags = True
+    last_updated_display.short_description = 'last updated'
+    last_updated_display.admin_order_field = 'last_updated'
+    def edit_history(self):
+        return u'Created by %s %s.<br/>Last edited by %s %s.' % (
+            UserProfile.get_for(self.creator).name_display(), 
+            self.created_display(), 
+            UserProfile.get_for(self.last_updater).name_display(),
+            self.last_updated_display())
+    edit_history.allow_tags = True
+    class Meta:
+        abstract = True
+
+class Note(LastUpdateMetadata):
     u""" 
     Text written by an editor or curator. The text is stored as XHTML,
     so it may have hyperlinks and all the other features that XHTML
@@ -70,8 +88,6 @@ class Note(CreationMetadata):
     content = fields.XHTMLField()
     topics = models.ManyToManyField('Topic', through='TopicAssignment')
     sources = models.ManyToManyField('Source', through='Citation')
-    last_updater = models.ForeignKey(User, editable=False, related_name='last_to_update_note_set')
-    last_updated = models.DateTimeField(auto_now=True)
     def has_topic(self, topic):
         return topic.id in self.topics.values_list('id', flat=True)
     def is_article(self):
@@ -83,18 +99,6 @@ class Note(CreationMetadata):
         return etree.tostring(self.content)
     def content_as_text(self):
         return utils.xhtml_to_text(self.content)
-    def last_updated_display(self):
-        return utils.timeago(self.last_updated)
-    last_updated_display.allow_tags = True
-    last_updated_display.short_description = 'last updated'
-    last_updated_display.admin_order_field = 'last_updated'
-    def edit_history(self):
-        return u'Created by %s %s.<br/>Last edited by %s %s.' % (
-            UserProfile.get_for(self.creator).name_display(), 
-            self.created_display(), 
-            UserProfile.get_for(self.last_updater).name_display(),
-            self.last_updated_display())
-    edit_history.allow_tags = True
     def excerpt(self):
         return utils.truncate(utils.xhtml_to_text(self.content))
     def __unicode__(self):
