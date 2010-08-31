@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 #from django.core.paginator import Paginator, InvalidPage
@@ -13,9 +14,11 @@ from models import *
 import utils
 import json
 
-def _sort_citations(note):
+def _sort_citations(instance):
     cites = { 'primary': [], 'secondary': [] }
-    for c in note.citations.all():
+    for c in Citation.objects.filter(
+        content_type=ContentType.objects.get_for_model(instance), 
+        object_id=instance.id):
         if c.source.type == 'P': cites['primary'].append(c)
         elif c.source.type == 'S': cites['secondary'].append(c)
     return cites
@@ -23,8 +26,10 @@ def _sort_citations(note):
 @login_required
 def index(request):
     o = {}
-    o['topic_list'] = Topic.objects.all()
-    o['article_list'] = Topic.objects.filter(article__isnull=False)
+    topics = list(Topic.objects.all())
+    index = (len(topics) / 2)  + 1 
+    o['topic_list_1'] = topics[:index]
+    o['topic_list_2'] = topics[index:]
     o['activity'] = []
     prev_obj = None
     for entry in LogEntry.objects.filter(content_type__app_label='main')[:10]:
@@ -38,7 +43,7 @@ def index(request):
         e['who'] = UserProfile.get_for(entry.user).name_display()
         e['what'] = '<a href="' + obj.get_absolute_url() + '">' + entry.content_type.name + '</a>'
         if entry.content_type.name == 'note':
-            topics = [ ('<a class="subtle" href="' + t.get_absolute_url() + '">' + t.preferred_name + '</a>') for t in obj.topics.all() ]
+            topics = [ ('<a class="subtle" href="' + ta.topic.get_absolute_url() + '">' + ta.topic.preferred_name + '</a>') for ta in obj.topics.all() ]
             if len(topics) > 0:
                 e['what'] += ' about '
                 if len(topics) == 1:
@@ -58,20 +63,13 @@ def topic(request, topic_slug):
     o['topic'] = get_object_or_404(Topic, slug=topic_slug)
     o['contact'] = { 'name': settings.ADMINS[0][0], 
                      'email': settings.ADMINS[0][1] }
-    o['related_articles'] = []
-    for article in o['topic'].note_set.filter(main_topic__isnull=False):
-        if not article.main_topic == o['topic']:
-            o['related_articles'].append(article.main_topic)
-    notes = list(o['topic'].note_set.filter(main_topic__isnull=True))
-    if o['topic'].article:
-        o['article'] = o['topic'].article
-        if o['article'] in notes: 
-            notes.remove(o['article'])
-        o['article_topics'] = o['article'].topics.exclude(id=o['topic'].id)
-        o['article_cites'] = _sort_citations(o['article'])
+    o['related_topics'] = o['topic'].related_topics.all()
+    o['summary_cites'] = _sort_citations(o['topic'])
+    notes = [ ta.content_object for ta in o['topic'].assignments.filter(
+           content_type=ContentType.objects.get_for_model(Note)) ]
     o['notes'] = zip(notes, 
-                     [ n.topics.exclude(id=o['topic'].id) for n in notes ],
-                     [ _sort_citations(n) for n in notes ])
+                    [ [ ta.topic for ta in n.topics.exclude(topic=o['topic']) ] for n in notes ],
+                    [ _sort_citations(n) for n in notes ])
     return render_to_response('topic.html', o)
 
 @login_required
@@ -141,9 +139,8 @@ def api_topics(request):
     results = EmptySearchQuerySet()
 
     if request.GET.get('q'):
-        query = request.GET.get('q')
+        query = 'names:%s' % request.GET.get('q')
         results = SearchQuerySet().models(Topic).narrow(query).load_all()
-    
     
     topics = [ { 'preferred_name': r.object.preferred_name,
                  'uri': 'http://%s%s' % (Site.objects.get_current().domain, 

@@ -1,24 +1,60 @@
 # -*- coding: utf-8 -*-
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 from django.forms.formsets import formset_factory
-from models import Topic
+from django.db import IntegrityError, transaction
+from models import *
 import utils
 
 class UtilsTestCase(TestCase):
     def test_truncate(self):
         self.assertEquals(utils.truncate(u'xxxxxxxxxx', 4), u'xx... xx')
 
-class AddTopicTestCase(TestCase):
+class TopicTestCase(TestCase):
     fixtures = [ 'test' ]
     def setUp(self):
         self.user = User.objects.get(username='testuser')
+        self.topics = []
+        self.topics.append(Topic.objects.create(
+                preferred_name=u'Foote, Edward B. (Edward Bliss) 1829-1906', 
+                summary='Foote was the man.',
+                creator=self.user))
+        self.topics.append(Topic.objects.create(
+                preferred_name=u'Räggler å paschaser på våra mål tå en bonne', 
+                summary='Weird language!',
+                creator=self.user))
+        self.topics.append(Topic.objects.create(
+                preferred_name=u'Not unicode', 
+                summary='Another test topic.',
+                creator=self.user))
+    def tearDown(self):
+        for t in self.topics:
+            t.delete()
+    def testSlugGeneration(self):
+        self.assertEquals(self.topics[0].slug,
+                          u'foote-edward-b-edward-bliss-1829-1906')
+        self.assertEquals(self.topics[1].slug,
+                          u'raggler-a-paschaser-pa-vara-mal-ta-en-bonne')
+        self.assertEquals(self.topics[2].slug,
+                          u'not-unicode')
+    def testRelatedTopics(self):
+        self.topics[0].related_topics.add(self.topics[1])
+        self.topics[0].related_topics.add(self.topics[2])
+        self.topics[0].save()
+        for t in self.topics[1:]:
+            related = t.related_topics.all()
+            self.assertEquals(len(related), 1)
+            self.assertEquals(related[0], self.topics[0])
     def testDuplicateSlug(self):
-        Topic.objects.create(preferred_name=u'Doe, John', creator=self.user)
+        Topic.objects.create(
+            preferred_name=u'Doe, John', 
+            summary='Yoyoyo!',
+            creator=self.user)
         self.client.login(username='testuser', password='testuser')
         response = self.client.post('/admin/main/topic/add/', 
                                      { 'preferred_name': u'Doe, John',
+                                       'summary': u'John Doe was a great man.',
                                        'aliases-TOTAL_FORMS': 0,
                                        'aliases-INITIAL_FORMS': 0,
                                        'aliases-MAX_NUM_FORMS': 0 })
@@ -27,8 +63,73 @@ class AddTopicTestCase(TestCase):
                           u'Topic with this Preferred name already exists.')
         response = self.client.post('/admin/main/topic/add/', 
                                      { 'preferred_name': u'Doe John',
+                                       'summary': u'John Doe was a great man.',
                                        'aliases-TOTAL_FORMS': 0,
                                        'aliases-INITIAL_FORMS': 0,
                                        'aliases-MAX_NUM_FORMS': 0 })
         self.assertEquals(response.context['errors'][0][0], 
                           u'Topic with a very similar Preferred name already exists.')
+
+class NoteTestCase(TestCase):
+    fixtures = [ 'test' ]
+    def setUp(self):
+        self.user = User.objects.get(username='testuser')    
+    def testStripStyleElementsFromContent(self):
+        note = Note.objects.create(
+            content=u'<style>garbage</style><h1>hey</h1><p>this is a <em>note</em></p>', 
+            creator=self.user, last_updater=self.user)
+        self.assertEquals(
+            note.content_as_html(),
+            '<div><h1>hey</h1><p>this is a <em>note</em></p></div>')
+        note.delete()
+    def testAddCitations(self):
+        note = Note.objects.create(
+            content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
+            creator=self.user, last_updater=self.user)
+        source = Source.objects.create(
+            description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
+            type='P', creator=self.user)
+        note.citations.create(source=source, locator='98-113', creator=self.user)
+        self.assertEquals(1, len(note.citations.all()))
+        self.assertEquals(source, note.citations.all()[0].source)
+        note.delete()
+        source.delete()
+    def testAssignTopics(self):
+        note = Note.objects.create(
+            content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
+            creator=self.user, last_updater=self.user)
+        topic = Topic.objects.create(
+            preferred_name=u'Example', 
+            summary='An example topic',
+            creator=self.user)
+        self.assertFalse(note.has_topic(topic))
+        TopicAssignment.objects.create(
+            content_object=note, topic=topic, creator=self.user)
+        self.assertTrue(note.has_topic(topic))
+        self.assertEquals(1, len(note.topics.all()))
+        self.assertEquals(1, len(topic.assignments.all()))
+        self.assertEquals(topic, note.topics.all()[0].topic)
+        note.delete()
+        topic.delete()
+
+class NoteTransactionTestCase(TransactionTestCase):
+    fixtures = [ 'test' ]
+    def setUp(self):
+        self.user = User.objects.get(username='testuser')     
+    def testAssignTopicTwice(self):
+        note = Note.objects.create(
+            content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
+            creator=self.user, last_updater=self.user)
+        topic = Topic.objects.create(
+            preferred_name=u'Example', 
+            summary='An example topic',
+            creator=self.user)
+        TopicAssignment.objects.create(
+            content_object=note, topic=topic, creator=self.user)
+        self.assertRaises(IntegrityError, TopicAssignment.objects.create,
+                          content_object=note, topic=topic, creator=self.user)
+        transaction.rollback()
+        note.delete()
+        topic.delete()
+    
+    

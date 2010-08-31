@@ -9,6 +9,7 @@ class NoteIndex(SearchIndex):
 
 class TopicIndex(SearchIndex):
     text = CharField(document=True, use_template=True)
+    names = CharField(use_template=True)
 
 class SourceIndex(SearchIndex):
     text = CharField(document=True, use_template=True)

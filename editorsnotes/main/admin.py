@@ -1,6 +1,7 @@
 from models import *
 from django import forms
 from django.contrib import admin
+from django.contrib.contenttypes import generic
 from django.db import IntegrityError
 from reversion.admin import VersionAdmin
 
@@ -9,11 +10,11 @@ class FootnoteAdminForm(forms.ModelForm):
     class Meta:
         model = Footnote
 
-class CitationInline(admin.StackedInline):
+class CitationInline(generic.GenericStackedInline):
     model = Citation
     extra = 0
 
-class TopicAssignmentInline(admin.StackedInline):
+class TopicAssignmentInline(generic.GenericStackedInline):
     model = TopicAssignment
     extra = 1
 
@@ -29,6 +30,24 @@ class FootnoteInline(admin.StackedInline):
 
 class ScanInline(admin.StackedInline):
     model = Scan
+
+class TopicAdmin(VersionAdmin):
+    inlines = (AliasInline, CitationInline)
+    def save_model(self, request, topic, form, change):
+        if not change: # adding new topic
+            topic.creator = request.user
+        topic.last_updater = request.user
+        topic.save()
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances: # citations and aliases
+            instance.creator = request.user
+            instance.save()
+    class Media:
+        js = ('function/jquery-1.4.2.min.js',
+              'function/wymeditor/jquery.wymeditor.pack.js',
+              'function/jquery.timeago.js',
+              'function/admin.js')
 
 class NoteAdmin(VersionAdmin):
     inlines = (CitationInline, TopicAssignmentInline)
@@ -91,21 +110,8 @@ class TranscriptAdmin(admin.ModelAdmin):
               'function/jquery.timeago.js',
               'function/admin-transcript.js')
 
-class TopicAdmin(admin.ModelAdmin):
-    inlines = (AliasInline,)
-    def save_model(self, request, topic, form, change):
-        if not change: # adding new topic
-            topic.creator = request.user
-        topic.save()
-        if topic.article and not topic.article.has_topic(topic):
-            TopicAssignment.objects.create(note=topic.article, topic=topic, creator=request.user)
-    def save_formset(self, request, form, formset, change):
-        aliases = formset.save(commit=False)
-        for alias in aliases:
-            alias.creator = request.user
-            alias.save()
-
+admin.site.register(Topic, TopicAdmin)
 admin.site.register(Note, NoteAdmin)
 admin.site.register(Source, SourceAdmin)
 admin.site.register(Transcript, TranscriptAdmin)
-admin.site.register(Topic, TopicAdmin)
+

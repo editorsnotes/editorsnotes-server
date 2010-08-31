@@ -3,25 +3,26 @@
 {% block title %}{% endblock %}
 
 {% block content %}
-    <section id="articles" class="span-5 colborder">
-      <h3>Articles</h3>
-      {% if article_list %}
-      <ul>
-      {% for topic in article_list %}
-      <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
-      {% endfor %}
-      </ul>
-      {% endif %}
-    </section>
-    <section id="topics" class="span-8 colborder">
-      <h3>All Topics</h3>
-      {% if topic_list %}
-      <ul>
-      {% for topic in topic_list %}
-      <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
-      {% endfor %}
-      </ul>
-      {% endif %}
+    <section id="topics" class="span-14 colborder">
+      <h3>Topics</h3>
+      <div class="span-7">
+        {% if topic_list_1 %}
+        <ul>
+          {% for topic in topic_list_1 %}
+          <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      <div class="span-7 last">
+        {% if topic_list_2 %}
+        <ul>
+          {% for topic in topic_list_2 %}
+          <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
     </section>
     <section id="activity" class="span-9 last">
       <h3>Recent Activity</h3>

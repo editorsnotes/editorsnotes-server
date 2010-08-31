@@ -7,7 +7,7 @@
           <span class="quiet">Related topics:</span> 
           <ul class="topic-list">
             {% for topic in topics %}
-              <li><a href="{{ topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
+              <li><a href="{{ topic.topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
             {% endfor %}
           </ul>
         </div>
@@ -32,6 +32,9 @@
           {% endfor %}
         </div>
         {% endif %}
+        <div class="span-2">
+          <a class="button" href="{{ note.get_admin_url }}">Edit</a>
+        </div>
         <div class="edit-history">
           {{ note.edit_history|safe }}
         </div>

@@ -14,10 +14,10 @@
     <header>
       <h2>{{ topic.preferred_name }}</h2>
       <div class="related-topics">
-        {% if related_articles %}
-        <span class="quiet">Related articles:</span> 
+        {% if related_topics %}
+        <span class="quiet">Related topics:</span> 
         <ul class="topic-list">
-          {% for topic in related_articles %}
+          {% for topic in related_topics %}
           <li><a href="{{ topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
           {% endfor %}
         </ul>
@@ -27,16 +27,42 @@
 
     <div id="tabs" class="span-24 last">
       <ul>
-        <li><a href="#article">Article</a></li>
+        <li><a href="#summary">Summary</a></li>
         <li><a href="#notes">Related Notes <span class="alt">&amp;</span> Queries</a></li>
       </ul>
 
-      <section id="article" class="span-23 last">
-        {% if article %}
-          {% include "article.include" %}
-        {% else %}
-          There is no article about <em>{{ topic.preferred_name }}</em> yet.
-        {% endif %}
+      <section id="summary" class="span-23 last">
+        <article id="{{ topic.slug }}-summary" class="note">
+          <div class="note-content">
+            {{ topic.summary_as_html|safe }}
+          </div>
+          {% if summary_cites.primary %}
+          <h4>Primary sources</h4>
+          <div class="citation-list">
+            {% for cite in summary_cites.primary %}
+            <div class="citation">
+              {{ cite.as_html|safe }}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if summary_cites.secondary %}
+          <h4>Secondary sources</h4>
+          <div class="citation-list">
+            {% for cite in summary_cites.secondary %}
+            <div class="citation">
+              {{ cite.as_html|safe }}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="span-2">
+            <a class="button" href="{{ topic.get_admin_url }}">Edit</a>
+          </div>
+          <div class="edit-history">
+            {{ topic.edit_history|safe }}
+          </div>
+        </article>
       </section>
 
       <section id="notes" class="span-23 last">
