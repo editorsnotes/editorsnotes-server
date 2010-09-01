@@ -141,7 +141,9 @@ def api_topics(request):
     results = EmptySearchQuerySet()
 
     if request.GET.get('q'):
-        query = 'names:%s' % request.GET.get('q')
+        query = ' AND '.join([ 'names:%s' % term for term 
+                               in request.GET.get('q').split() 
+                               if len(term) > 1 ])
         results = SearchQuerySet().models(Topic).narrow(query).load_all()
     
     topics = [ { 'preferred_name': r.object.preferred_name,
