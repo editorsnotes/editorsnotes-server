@@ -132,7 +132,7 @@ def search(request):
         name = r.verbose_name_plural.lower()
         if name not in o:
             o[name] = []
-            o[name].append(r)
+        o[name].append(r)
 
     return render_to_response('search.html', o)
 
