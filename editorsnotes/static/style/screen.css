@@ -290,8 +290,6 @@ ul {list-style-type:none;padding:0
 ;}
 ul.topic-list {display:inline;}
 ul.topic-list li {display:inline;}
-ul.message-list {margin:-1.5em 0 0 0;}
-ul.message-list li {margin:0;}
 hr {margin-bottom:2.95em;}
 #topnav, #stripe {height:42px;background:#E5ECF9;}
 #stripe {position:absolute;z-index:-1;width:100%;}
@@ -302,6 +300,7 @@ hr {margin-bottom:2.95em;}
 .citation {text-indent:-2em;padding-left:2em;}
 .citation div, .citation p {display:inline;}
 .note-link {vertical-align:bottom;}
+.message-list {margin-top:-1.5em;}
 a.subtle, a.footnote {text-decoration:none;}
 a.subtle:focus, a.subtle:hover {text-decoration:underline;}
 a.footnote:focus, a.footnote:hover {color:red;}
@@ -329,6 +328,7 @@ header {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right
 .note-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #login {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:270px;padding-left:320px;}
 #searchresults #message {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
+.message {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #topnav {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;margin-bottom:1.5em;}
 #logo h1 {color:#666;}
 #searchbutton {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:70px;}

@@ -30,13 +30,13 @@
         </div>
       </nav>
       {% if messages %}
-      <ul class="message-list">
+      <div class="message-list">
         {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <div class="message{% if message.tags %} {{ message.tags }}{% endif %}">
           {{ message }}
-        </li>
+        </div>
         {% endfor %}
-      </ul>
+      </div>
       {% endif %}      
       {% block content %}{% endblock %}
     </div>
