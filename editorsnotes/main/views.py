@@ -71,7 +71,8 @@ def topic(request, topic_slug):
     o['notes'] = zip(notes, 
                     [ [ ta.topic for ta in n.topics.exclude(topic=o['topic']) ] for n in notes ],
                     [ _sort_citations(n) for n in notes ])
-    return render_to_response('topic.html', o, context_instance=RequestContext(request))
+    return render_to_response(
+        'topic.html', o, context_instance=RequestContext(request))
 
 @login_required
 def note(request, note_id):
