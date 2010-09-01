@@ -19,15 +19,15 @@ class TopicTestCase(TestCase):
         self.topics.append(Topic.objects.create(
                 preferred_name=u'Foote, Edward B. (Edward Bliss) 1829-1906', 
                 summary='Foote was the man.',
-                creator=self.user))
+                creator=self.user, last_updater=self.user))
         self.topics.append(Topic.objects.create(
                 preferred_name=u'Räggler å paschaser på våra mål tå en bonne', 
                 summary='Weird language!',
-                creator=self.user))
+                creator=self.user, last_updater=self.user))
         self.topics.append(Topic.objects.create(
                 preferred_name=u'Not unicode', 
                 summary='Another test topic.',
-                creator=self.user))
+                creator=self.user, last_updater=self.user))
     def tearDown(self):
         for t in self.topics:
             t.delete()
@@ -50,14 +50,17 @@ class TopicTestCase(TestCase):
         Topic.objects.create(
             preferred_name=u'Doe, John', 
             summary='Yoyoyo!',
-            creator=self.user)
+            creator=self.user, last_updater=self.user)
         self.client.login(username='testuser', password='testuser')
         response = self.client.post('/admin/main/topic/add/', 
                                      { 'preferred_name': u'Doe, John',
                                        'summary': u'John Doe was a great man.',
                                        'aliases-TOTAL_FORMS': 0,
                                        'aliases-INITIAL_FORMS': 0,
-                                       'aliases-MAX_NUM_FORMS': 0 })
+                                       'aliases-MAX_NUM_FORMS': 0,
+                                       'main-citation-content_type-object_id-TOTAL_FORMS': 0,
+                                       'main-citation-content_type-object_id-INITIAL_FORMS': 0,
+                                       'main-citation-content_type-object_id-MAX_NUM_FORMS': 0 })
         self.assertEquals(len(response.context['errors']), 1)
         self.assertEquals(response.context['errors'][0][0], 
                           u'Topic with this Preferred name already exists.')
@@ -66,7 +69,10 @@ class TopicTestCase(TestCase):
                                        'summary': u'John Doe was a great man.',
                                        'aliases-TOTAL_FORMS': 0,
                                        'aliases-INITIAL_FORMS': 0,
-                                       'aliases-MAX_NUM_FORMS': 0 })
+                                       'aliases-MAX_NUM_FORMS': 0,
+                                       'main-citation-content_type-object_id-TOTAL_FORMS': 0,
+                                       'main-citation-content_type-object_id-INITIAL_FORMS': 0,
+                                       'main-citation-content_type-object_id-MAX_NUM_FORMS': 0 })
         self.assertEquals(response.context['errors'][0][0], 
                           u'Topic with a very similar Preferred name already exists.')
 
@@ -101,7 +107,7 @@ class NoteTestCase(TestCase):
         topic = Topic.objects.create(
             preferred_name=u'Example', 
             summary='An example topic',
-            creator=self.user)
+            creator=self.user, last_updater=self.user)
         self.assertFalse(note.has_topic(topic))
         TopicAssignment.objects.create(
             content_object=note, topic=topic, creator=self.user)
@@ -123,7 +129,7 @@ class NoteTransactionTestCase(TransactionTestCase):
         topic = Topic.objects.create(
             preferred_name=u'Example', 
             summary='An example topic',
-            creator=self.user)
+            creator=self.user, last_updater=self.user)
         TopicAssignment.objects.create(
             content_object=note, topic=topic, creator=self.user)
         self.assertRaises(IntegrityError, TopicAssignment.objects.create,

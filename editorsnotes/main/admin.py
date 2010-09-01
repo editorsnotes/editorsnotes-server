@@ -55,6 +55,12 @@ class VersionAdmin(reversion.admin.VersionAdmin):
             return HttpResponseRedirect(request.POST['_return_to'])
         else:
             return response
+    def delete_view(self, request, object_id, extra_context=None):
+        response = super(VersionAdmin, self).delete_view(request, object_id, extra_context)
+        if request.POST.has_key('_return_to'):
+            return HttpResponseRedirect(request.POST['_return_to'])
+        else:
+            return response
     def message_user(self, request, message):
         if 'success' in message.lower(): 
             messages.success(request, message)
@@ -93,6 +99,12 @@ class ModelAdmin(admin.ModelAdmin):
             request.POST.has_key('_continue') or 
             request.POST.has_key('_saveasnew') or 
             request.POST.has_key('_addanother')):
+            return HttpResponseRedirect(request.POST['_return_to'])
+        else:
+            return response
+    def delete_view(self, request, object_id, extra_context=None):
+        response = super(ModelAdmin, self).delete_view(request, object_id, extra_context)
+        if request.POST.has_key('_return_to'):
             return HttpResponseRedirect(request.POST['_return_to'])
         else:
             return response
