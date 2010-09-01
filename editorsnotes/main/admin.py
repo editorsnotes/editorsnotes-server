@@ -1,9 +1,10 @@
 from models import *
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
 from django.db import IntegrityError
-from reversion.admin import VersionAdmin
+from django.http import HttpResponseRedirect
+import reversion
 
 class FootnoteAdminForm(forms.ModelForm):
     stamp = forms.CharField(required=False, widget=forms.HiddenInput)
@@ -25,77 +26,91 @@ class AliasInline(admin.StackedInline):
 class FootnoteInline(admin.StackedInline):
     model = Footnote
     extra = 0
-    template = 'admin/edit_inline/footnote.html'
+    template = 'admin/main/footnote/edit_inline/stacked.html'
     form = FootnoteAdminForm
 
 class ScanInline(admin.StackedInline):
     model = Scan
 
-class TopicAdmin(VersionAdmin):
-    inlines = (AliasInline, CitationInline)
-    def save_model(self, request, topic, form, change):
-        if not change: # adding new topic
-            topic.creator = request.user
-        topic.last_updater = request.user
-        topic.save()
+################################################################################
+
+class VersionAdmin(reversion.admin.VersionAdmin):
+    def save_model(self, request, obj, form, change):
+        if not change: # adding new object
+            obj.creator = request.user
+        obj.last_updater = request.user
+        obj.save()
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
-        for instance in instances: # citations and aliases
+        for instance in instances:
             instance.creator = request.user
             instance.save()
+        formset.save_m2m()
+    def response_change(self, request, obj):
+        response = super(VersionAdmin, self).response_change(request, obj)
+        if request.POST.has_key('_return_to') and not (
+            request.POST.has_key('_continue') or 
+            request.POST.has_key('_saveasnew') or 
+            request.POST.has_key('_addanother')):
+            return HttpResponseRedirect(request.POST['_return_to'])
+        else:
+            return response
+    def message_user(self, request, message):
+        if 'success' in message.lower(): 
+            messages.success(request, message)
+        else:
+            messages.info(request, message)
     class Media:
         js = ('function/jquery-1.4.2.min.js',
               'function/wymeditor/jquery.wymeditor.pack.js',
               'function/jquery.timeago.js',
               'function/admin.js')
+
+class TopicAdmin(VersionAdmin):
+    inlines = (AliasInline, CitationInline)
 
 class NoteAdmin(VersionAdmin):
     inlines = (CitationInline, TopicAssignmentInline)
     list_display = ('excerpt', 'last_updater', 'last_updated_display')
     readonly_fields = ('edit_history',)
-    def save_model(self, request, note, form, change):
-        if not change: # adding new note
-            note.creator = request.user
-        note.last_updater = request.user
-        note.save()
+
+################################################################################
+
+class ModelAdmin(admin.ModelAdmin):
+    def save_model(self, request, obj, form, change):
+        if not change: # adding new object
+            obj.creator = request.user
+        obj.save()
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
-        for instance in instances: # citations and topic assignments
+        for instance in instances:
             instance.creator = request.user
             instance.save()
         formset.save_m2m()
-    class Media:
-        js = ('function/jquery-1.4.2.min.js',
-              'function/wymeditor/jquery.wymeditor.pack.js',
-              'function/jquery.timeago.js',
-              'function/admin.js')
+    def response_change(self, request, obj):
+        response = super(ModelAdmin, self).response_change(request, obj)
+        if request.POST.has_key('_return_to') and not (
+            request.POST.has_key('_continue') or 
+            request.POST.has_key('_saveasnew') or 
+            request.POST.has_key('_addanother')):
+            return HttpResponseRedirect(request.POST['_return_to'])
+        else:
+            return response
+    def message_user(self, request, message):
+        if 'success' in message.lower(): 
+            messages.success(request, message)
+        else:
+            messages.info(request, message)
 
 class SourceAdmin(admin.ModelAdmin):
     inlines = (ScanInline,)
     list_display = ('__unicode__', 'type', 'creator', 'created_display')
-    def save_model(self, request, source, form, change):
-        if not change: # adding new source
-            source.creator = request.user
-        source.save()
-    def save_formset(self, request, form, formset, change):
-        scans = formset.save(commit=False)
-        for scan in scans:
-            scan.creator = request.user
-            scan.save()
-        formset.save_m2m()
 
 class TranscriptAdmin(admin.ModelAdmin):
     inlines = (FootnoteInline,)
     list_display = ('__unicode__', 'creator', 'created_display')
-    def save_model(self, request, transcript, form, change):
-        if not change: # adding new transcript
-            transcript.creator = request.user
-        transcript.save()
     def save_formset(self, request, form, formset, change):
-        footnotes = formset.save(commit=False)
-        for footnote in footnotes: # footnotes
-            footnote.creator = request.user
-            footnote.save()
+        super(TranscriptAdmin, self).save_formset(request, form, formset, change)
         transcript = form.instance
         for footnote_form in formset.forms:
             stamp = footnote_form.cleaned_data['stamp']

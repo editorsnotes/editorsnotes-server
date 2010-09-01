@@ -1,0 +1,7 @@
+{% extends "admin/change_form.html" %}
+
+{% block form_top %}
+  {% if request.GET.return_to %}
+    <input type="hidden" name="_return_to" value="{{ request.GET.return_to }}" />
+  {% endif %}
+{% endblock %}

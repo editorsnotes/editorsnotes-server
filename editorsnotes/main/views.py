@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 from haystack.query import SearchQuerySet, EmptySearchQuerySet
 from models import *
 import utils
@@ -70,7 +71,7 @@ def topic(request, topic_slug):
     o['notes'] = zip(notes, 
                     [ [ ta.topic for ta in n.topics.exclude(topic=o['topic']) ] for n in notes ],
                     [ _sort_citations(n) for n in notes ])
-    return render_to_response('topic.html', o)
+    return render_to_response('topic.html', o, context_instance=RequestContext(request))
 
 @login_required
 def note(request, note_id):

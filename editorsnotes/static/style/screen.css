@@ -290,6 +290,8 @@ ul {list-style-type:none;padding:0
 ;}
 ul.topic-list {display:inline;}
 ul.topic-list li {display:inline;}
+ul.message-list {margin:-1.5em 0 0 0;}
+ul.message-list li {margin:0;}
 hr {margin-bottom:2.95em;}
 #topnav, #stripe {height:42px;background:#E5ECF9;}
 #stripe {position:absolute;z-index:-1;width:100%;}
@@ -312,6 +314,7 @@ aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 #searchinput {float:left;margin-right:10px;width:350px;}
 .note-link {float:left;margin-right:10px;width:750px;padding-left:40px;}
 .related-topics {margin-bottom:1.5em;}
+.message-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #searchresults {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #activity li {margin-bottom:1.5em;}
 .amp {color:#666;font-family:"Warnock Pro", "Goudy Old Style","Palatino","Book Antiqua", Georgia, serif;font-style:italic;font-weight:normal;font-size:0.89em;}
