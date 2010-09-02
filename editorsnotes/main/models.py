@@ -21,10 +21,12 @@ class CreationMetadata(models.Model):
     created_display.allow_tags = True
     created_display.short_description = 'created'
     created_display.admin_order_field = 'created'
+    def creator_display(self):
+        return UserProfile.get_for(self.creator).name_display()
+    creator_display.allow_tags = True
     def edit_history(self):
         return u'Created by %s %s.' % (
-            UserProfile.get_for(self.creator).name_display(), 
-            self.created_display())
+            self.creator_display(), self.created_display())
     edit_history.allow_tags = True
     class Meta:
         abstract = True
@@ -38,12 +40,13 @@ class LastUpdateMetadata(CreationMetadata):
     last_updated_display.allow_tags = True
     last_updated_display.short_description = 'last updated'
     last_updated_display.admin_order_field = 'last_updated'
+    def last_updater_display(self):
+        return UserProfile.get_for(self.last_updater).name_display()
+    last_updater_display.allow_tags = True
     def edit_history(self):
         return u'Created by %s %s.<br/>Last edited by %s %s.' % (
-            UserProfile.get_for(self.creator).name_display(), 
-            self.created_display(), 
-            UserProfile.get_for(self.last_updater).name_display(),
-            self.last_updated_display())
+            self.creator_display(), self.created_display(),
+            self.last_updater_display(), self.last_updated_display())
     edit_history.allow_tags = True
     class Meta:
         abstract = True
@@ -296,7 +299,7 @@ class UserProfile(models.Model):
         return utils.timeago(self.user.last_login)
     last_login_display.allow_tags = True
     def name_display(self):
-        return '<a class="subtle" href="%s">%s</a>' % (self.get_absolute_url(), self.display_name)
+        return '<a class="quiet subtle" href="%s">%s</a>' % (self.get_absolute_url(), self.display_name)
     name_display.allow_tags = True
     @staticmethod
     def get_for(user):

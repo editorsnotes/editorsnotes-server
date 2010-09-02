@@ -1,0 +1,1 @@
+<a href="{{ note.get_absolute_url }}">Note #{{ note.id }}</a><span class="quiet">, last edited by {{ note.last_updater_display|safe }} {{ note.last_updated_display|safe }}.</span>

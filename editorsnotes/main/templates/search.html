@@ -2,11 +2,13 @@
 
 {% block title %}: Results for '{{ query }}'{% endblock %}
 
+{% load highlight %}
+
 {% block content %}
 <div id="searchresults">
 {% if query %}
   <p id="message">Search results for <em>{{ query }}</em>:</p>
-  <section id="topics" class="span-8 colborder">
+  <section id="topics" class="span-11 colborder">
     <h3>Topics</h3>
     {% if topics %}
     <ol>
@@ -18,14 +20,21 @@
     <p id="message">No topics matching <em>{{ query }}</em>.</p> 
     {% endif %}
   </section>
-  <section id="notes" class="span-15 last">
+  <section id="notes" class="span-12 last">
     <h3>Notes</h3>
     {% if notes %}
-    <ol>
       {% for result in notes %}
-      <li><a href="{{ result.object.get_absolute_url }}">{{ result.object.excerpt }}</a></li>
+      <div class="searchresult">
+        {% with result.object as note %}
+          {% include "note_link.include" %}
+        {% endwith %}
+        <br/>
+        {% highlight result.text with query %}
+        {% with result.object as note %}
+          {% include "note_topics.include" %}
+        {% endwith %}
+      </div>
       {% endfor %}
-    </ol>
     {% else %}
     <p id="message">No notes matching <em>{{ query }}</em>.</p> 
     {% endif %}

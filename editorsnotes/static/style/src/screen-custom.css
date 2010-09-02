@@ -14,11 +14,13 @@ hr { margin-bottom: 2.95em; }
 #logo a { text-decoration: none; }
 #searchinput input { width: 338px; }
 #topics li { text-indent: -1em; padding-left: 1em; }
+.searchresult { margin-bottom: 1.5em; }
 .edit-history { text-align: right; }
 .citation { text-indent: -2em; padding-left: 2em; }
 .citation div, .citation p { display: inline; }
 .note-link { vertical-align: bottom; }
 .message-list { margin-top: -1.5em; }
+.highlighted { font-weight: bold; }
 a.subtle, a.footnote { text-decoration: none; }
 a.subtle:focus, a.subtle:hover { text-decoration: underline; }
 a.footnote:focus, a.footnote:hover { color: red; }
