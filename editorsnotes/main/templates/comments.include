@@ -1,29 +1,19 @@
 {% load i18n comments display %}
 <div class="comments-container">
 {% get_comment_count for object as comment_count %}
-<h3><a href="#">{{ comment_count }} comments</a></h3>
+<h3><a href="#">{% if comment_count == 0 %}Add a comment{% else %}{{ comment_count }} comments{% endif %}</a></h3>
 <div>
   {% get_comment_list for object as comments %}
   {% for comment in comments %}
-  <div class="comment">
+  <div class="comment" id="comment-{{ comment.id }}">
     <p>{{ comment.comment }}</p>
     <div class="quiet" style="text-align: right;">Posted by {{ comment.user|display_user }} {{ comment.submit_date|timeago }}</div>
   </div>
   <hr/>  
   {% endfor %}
   {% get_comment_form for object as form %}
-  <form action="{% comment_form_target %}" method="post">{% csrf_token %}
-    {{ form.content_type }} 
-    {{ form.object_pk }} 
-    {{ form.timestamp }} 
-    {{ form.security_hash }}
-    <input type="hidden" name="next" value="{{ object.get_absolute_url }}" />
-    {% if form.comment.errors %}{{ form.comment.errors }}{% endif %} 
-    <div {% if field.errors %} class="error"{% endif %}>{{ form.comment }}</div>
-    <div style="display: none;">{{ form.honeypot }}</div>
-    <div class="submit">
-      <button type="submit" name="post" class="submit-post">{% trans "Post" %}</button>
-    </div>
-  </form> 
+  {% with object.get_absolute_url as next %}
+    {% include "comment_form.include" %}
+  {% endwith %}
 </div>
 </div>

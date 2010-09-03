@@ -9,7 +9,7 @@
 
     $(".comments-container").accordion({ 
       collapsible: true,
-      header: 'h3' });//.accordion('activate', false);
+      header: 'h3' });
 
     function getQueryParam(key) {
       var re = new RegExp('[?&]' + key + '=([^&$]*)', 'i');
@@ -18,9 +18,11 @@
       return RegExp.$1;
     }
 
-    var comment = getQueryParam('c');
-    if (comment) { 
-      $('html, body').scrollTop($('#c' + comment).offset().top);
+    var comment_id = getQueryParam('c');
+    if (comment_id) { 
+      $('html, body').scrollTop($('#comment-' + comment_id).offset().top - 40);
+    } else if (window.location.hash.indexOf('#comment-') < 0) {
+      $(".comments-container").accordion('activate', false);
     }
   });
 </script>

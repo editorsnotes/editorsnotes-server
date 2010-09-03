@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}: Your comment{% endblock %}
+
+{% block content %}
+<div class="span-11 last">
+  {% load comments %}
+  {% with comment.content_object as object %}
+    {% include "comment_form.include" %}
+  {% endwith %}
+</div>
+{% endblock %}
