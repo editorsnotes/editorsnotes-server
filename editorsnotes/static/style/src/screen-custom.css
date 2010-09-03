@@ -1,7 +1,7 @@
 /* The font-size percentage is of 16px. */ 
 body { font-size: 87.5%; } /* (0.875 * 16px = 14px) */
 a { color: #222; }
-a.button, button { font-size: 12px; }
+a.button, button { font-size: 12px !important; }
 h1 { font-size: 2em; margin: 0.2em 0 0 0 }
 h2 { margin-bottom: 0; }
 h4 { font-variant: small-caps; letter-spacing: 1px; text-transform: lowercase; font-weight: bold; }
@@ -21,8 +21,8 @@ hr { margin-bottom: 2.95em; }
 .note-link { vertical-align: bottom; }
 .message-list { margin-top: -1.5em; }
 .highlighted { font-weight: bold; }
-a.subtle, a.footnote { text-decoration: none; }
-a.subtle:focus, a.subtle:hover { text-decoration: underline; }
+a.subtle, a.footnote, a.user-link { text-decoration: none; }
+a.subtle:focus, a.subtle:hover, a.user-link:hover { text-decoration: underline; color: #222; }
 a.footnote:focus, a.footnote:hover { color: red; }
 a.footnote sup { color: red; padding-left: 1px; }
 span.note-number { color:red; margin-left: -1.2em; }

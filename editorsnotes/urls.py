@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     (r'^accounts/profile/$', 'editorsnotes.main.views.user'),
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/', include(admin.site.urls)),
+    (r'^comments/', include('django.contrib.comments.urls')),
 
     # The following won't actually be called in production, since Apache will intercept them.
     (r'^favicon.ico$', 'django.views.generic.simple.redirect_to', 

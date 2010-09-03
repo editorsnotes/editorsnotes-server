@@ -264,7 +264,7 @@ p.incr, .incr p {font-size:10px;line-height:1.44em;margin-bottom:1.5em;}
 .caps {font-size:.95em;letter-spacing:1px;}
 
 /* buttons */
-a.button, button {display:block;float:left;margin:0.7em 0.5em 0.7em 0;padding:5px 10px 5px 7px;border:1px solid #dedede;border-top:1px solid #eee;border-left:1px solid #eee;background-color:#f5f5f5;font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;font-size:100%;line-height:130%;text-decoration:none;font-weight:bold;color:#565656;cursor:pointer;}
+a.button, button {display:block;float:left;margin:0.7em 0.5em 0.7em 0;padding:5px 10px 5px 7px;border:1px solid #dedede;border-top:1px solid #eee;border-left:1px solid #eee;background-color:#f5f5f5;font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif !important;font-size:100%;line-height:130%;text-decoration:none;font-weight:bold;color:#565656;cursor:pointer;}
 button {width:auto;overflow:visible;padding:4px 10px 3px 7px;}
 button[type] {padding:4px 10px 4px 7px;line-height:17px;}
 *:first-child+html button[type] {padding:4px 10px 3px 7px;}
@@ -281,7 +281,7 @@ a.negative:active {background-color:#d12f19;border:1px solid #d12f19;color:#fff;
 /* src/screen-custom.css */
 body {font-size:87.5%;}
 a {color:#222;}
-a.button, button {font-size:12px;}
+a.button, button {font-size:12px !important;}
 h1 {font-size:2em;margin:0.2em 0 0 0
 ;}
 h2 {margin-bottom:0;}
@@ -303,8 +303,8 @@ hr {margin-bottom:2.95em;}
 .note-link {vertical-align:bottom;}
 .message-list {margin-top:-1.5em;}
 .highlighted {font-weight:bold;}
-a.subtle, a.footnote {text-decoration:none;}
-a.subtle:focus, a.subtle:hover {text-decoration:underline;}
+a.subtle, a.footnote, a.user-link {text-decoration:none;}
+a.subtle:focus, a.subtle:hover, a.user-link:hover {text-decoration:underline;color:#222;}
 a.footnote:focus, a.footnote:hover {color:red;}
 a.footnote sup {color:red;padding-left:1px;}
 span.note-number {color:red;margin-left:-1.2em;}
@@ -327,8 +327,10 @@ aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 header {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #login p {padding-left:40px;}
 #searchform {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:430px;}
+.comments-container {margin-top:1.5em;}
 .note-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #login {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:270px;padding-left:320px;}
+a.user-link {color:#666;}
 #searchresults #message {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 .message {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #topnav {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;margin-bottom:1.5em;}

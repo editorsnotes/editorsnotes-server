@@ -5,7 +5,23 @@
 {% block js %}
 <script type="text/javascript">
   $(function() {
-    $("#tabs").tabs();
+    $('#tabs').tabs();
+
+    $(".comments-container").accordion({ 
+      collapsible: true,
+      header: 'h3' });//.accordion('activate', false);
+
+    function getQueryParam(key) {
+      var re = new RegExp('[?&]' + key + '=([^&$]*)', 'i');
+      var offset = location.search.search(re);
+      if (offset == -1) return null;
+      return RegExp.$1;
+    }
+
+    var comment = getQueryParam('c');
+    if (comment) { 
+      $('html, body').scrollTop($('#c' + comment).offset().top);
+    }
   });
 </script>
 {% endblock %}
@@ -63,6 +79,7 @@
             {{ topic.edit_history|safe }}
           </div>
         </article>
+        {% with topic as object %}{% include "comments.include" %}{% endwith %}
       </section>
 
       <section id="notes" class="span-23 last">

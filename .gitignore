@@ -19,5 +19,6 @@ secret.txt
 settings_local.py
 settings-*.py
 searchindex
+share
 src
 uploads
