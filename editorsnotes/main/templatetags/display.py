@@ -1,7 +1,7 @@
 from django import template
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
-from main.models import UserProfile
+from editorsnotes.main.models import UserProfile
 from isodate import datetime_isoformat
 
 register = template.Library()
