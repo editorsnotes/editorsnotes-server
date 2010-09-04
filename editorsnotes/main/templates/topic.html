@@ -35,8 +35,8 @@
         {% if related_topics %}
         <span class="quiet">Related topics:</span> 
         <ul class="topic-list">
-          {% for topic in related_topics %}
-          <li><a href="{{ topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
+          {% for related_topic in related_topics %}
+          <li><a href="{{ related_topic.get_absolute_url }}">{{ related_topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
           {% endfor %}
         </ul>
         {% endif %}
