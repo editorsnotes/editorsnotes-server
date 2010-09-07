@@ -6,8 +6,6 @@ from isodate import datetime_isoformat
 
 register = template.Library()
 
-
-
 @register.filter
 def display_user(user, autoescape=None):
     profile = UserProfile.get_for(user)
@@ -18,8 +16,7 @@ def display_user(user, autoescape=None):
 display_user.needs_autoescape = True
 
 @register.filter
-def timeago(datetime, autoescape=None):
+def timeago(datetime):
     return mark_safe(
         '<time class="timeago" datetime="%s">%s</time>' % (
             datetime_isoformat(datetime), datetime.strftime('%I:%M%p, %b %d %Y')))
-timeago.needs_autoescape = True
