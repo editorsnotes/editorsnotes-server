@@ -6,26 +6,12 @@
 <script type="text/javascript">
   $(function() {
     $('#tabs').tabs();
-
-    $(".comments-container").accordion({ 
-      collapsible: true,
-      header: 'h3' });
-
-    function getQueryParam(key) {
-      var re = new RegExp('[?&]' + key + '=([^&$]*)', 'i');
-      var offset = location.search.search(re);
-      if (offset == -1) return null;
-      return RegExp.$1;
-    }
-
-    var comment_id = getQueryParam('c');
-    if (comment_id) { 
-      $('html, body').scrollTop($('#comment-' + comment_id).offset().top - 40);
-    } else if (window.location.hash.indexOf('#comment-') < 0) {
-      $(".comments-container").accordion('activate', false);
-    }
   });
 </script>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/media/style/disqus.css" type="text/css"/>
 {% endblock %}
 
 {% block content %}
@@ -45,11 +31,12 @@
 
     <div id="tabs" class="span-24 last">
       <ul>
-        <li><a href="#summary">Summary</a></li>
+        <li><a href="#article">Article</a></li>
+        <li><a href="#discuss">Discussion</a></li>
         <li><a href="#notes">Related Notes <span class="alt">&amp;</span> Queries</a></li>
       </ul>
 
-      <section id="summary" class="span-23 last">
+      <section id="article" class="span-23 last">
         <article id="{{ topic.slug }}-summary" class="note">
           <div class="note-content">
             {{ topic.summary_as_html|safe }}
@@ -81,7 +68,26 @@
             {{ topic.edit_history|safe }}
           </div>
         </article>
-        {% with topic as object %}{% include "comments.include" %}{% endwith %}
+      </section>
+
+      <section id="discuss" class="span-23 last">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+var disqus_developer = 1;
+var disqus_identifier = 'topic-{{ topic.id }}';
+{% if user.is_authenticated %}
+var disqus_def_name = '{{ user.username }}';
+{% if user.email %}
+var disqus_def_email = '{{ user.email }}';
+{% endif %}
+{% endif %}
+(function() {
+  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+  dsq.src = 'http://editorsnotes.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript=editorsnotes">discussion</a>.</noscript>
       </section>
 
       <section id="notes" class="span-23 last">
