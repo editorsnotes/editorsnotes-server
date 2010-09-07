@@ -60,7 +60,7 @@ class Topic(LastUpdateMetadata):
     preferred_name = models.CharField(max_length='80', unique=True)
     slug = models.CharField(max_length='80', unique=True, editable=False)
     related_topics = models.ManyToManyField('self', blank=True)
-    summary = fields.XHTMLField()
+    summary = fields.XHTMLField(verbose_name='article')
     summary_citations = generic.GenericRelation('Citation')
     def summary_as_html(self):
         return etree.tostring(self.summary)
