@@ -73,8 +73,10 @@
       <section id="discuss" class="span-23 last">
         <div id="disqus_thread"></div>
         <script type="text/javascript">
-var disqus_developer = 1;
 var disqus_identifier = 'topic-{{ topic.id }}';
+{% if request.get_host == '127.0.0.1:8000' %}
+var disqus_developer = 1;
+{% endif %}
 {% if user.is_authenticated %}
 var disqus_def_name = '{{ user.username }}';
 {% if user.email %}
