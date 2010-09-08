@@ -74,6 +74,7 @@
         <div id="disqus_thread"></div>
         <script type="text/javascript">
 var disqus_identifier = 'topic-{{ topic.id }}';
+var disqus_title = '{{ topic.preferred_name }}';
 {% if request.get_host == '127.0.0.1:8000' %}
 var disqus_developer = 1;
 {% endif %}
