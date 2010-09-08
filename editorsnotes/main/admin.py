@@ -113,12 +113,17 @@ class ModelAdmin(admin.ModelAdmin):
             messages.success(request, message)
         else:
             messages.info(request, message)
+    class Media:
+        js = ('function/jquery-1.4.2.min.js',
+              'function/wymeditor/jquery.wymeditor.pack.js',
+              'function/jquery.timeago.js',
+              'function/admin.js')
 
-class SourceAdmin(admin.ModelAdmin):
+class SourceAdmin(ModelAdmin):
     inlines = (ScanInline,)
     list_display = ('__unicode__', 'type', 'creator', 'created_display')
 
-class TranscriptAdmin(admin.ModelAdmin):
+class TranscriptAdmin(ModelAdmin):
     inlines = (FootnoteInline,)
     list_display = ('__unicode__', 'creator', 'created_display')
     def save_formset(self, request, form, formset, change):
