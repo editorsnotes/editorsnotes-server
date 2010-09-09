@@ -6,11 +6,13 @@ h1 { font-size: 2em; margin: 0.2em 0 0 0 }
 h2 { margin-bottom: 0; }
 h4 { font-variant: small-caps; letter-spacing: 1px; text-transform: lowercase; font-weight: bold; }
 ul { list-style-type: none; padding: 0 }
-ul.topic-list { display: inline; }
-ul.topic-list li { display: inline; }
+#actions, ul.topic-list { display: inline; }
+#actions li, ul.topic-list li { display: inline; }
+#actions { padding: 0; margin-bottom: 0; }
 hr { margin-bottom: 2.95em; }
-#topnav, #stripe { height: 42px; background: #E5ECF9; }
-#stripe { position: absolute; z-index: -1; width: 100%; }
+#topnav { }
+#stripe-1 { position: absolute; z-index: -1; height: 42px; width: 100%; background: #e5ecf9; }
+#stripe-2 { position: absolute; z-index: -1; top: 42px; height: 44px; width: 100%; background: #aeb4be; }
 #logo a { text-decoration: none; }
 #searchinput input { width: 338px; }
 #topics li { text-indent: -1em; padding-left: 1em; }
@@ -20,8 +22,10 @@ hr { margin-bottom: 2.95em; }
 .citation div, .citation p { display: inline; }
 .note-link { vertical-align: bottom; }
 .message-list { margin-top: -1.5em; }
-.errorlist li { padding: .8em; background: #FBE3E4; color: #8a1f11; border: 2px solid #FBC2C4; }
+.error, .notice, .success { padding: 0.4em; }
+.errorlist li { padding: .8em; background: #fbe3e4; color: #8a1f11; border: 2px solid #fbc2c4; }
 .highlighted { font-weight: bold; }
+.awesome { background-color: #ff8000 !important; font-family: 'Lucida Grande', Tahoma, Arial, Verdana, sans-serif !important; font-size: 12px !important; }
 a.subtle, a.footnote, a.user-link { text-decoration: none; }
 a.subtle:focus, a.subtle:hover, a.user-link:hover { text-decoration: underline; color: #222; }
 a.footnote:focus, a.footnote:hover { color: red; }

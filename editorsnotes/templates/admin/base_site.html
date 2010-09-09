@@ -16,4 +16,9 @@
 <h1 id="site-name">{% trans "Editors' Notes" %}</h1>
 {% endblock %}
 
+{% block userlinks %}
+{{ block.super }}
+/ <a href="/">Back to site</a>
+{% endblock %}
+
 {% block nav-global %}{% endblock %}

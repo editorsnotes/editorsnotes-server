@@ -46,6 +46,14 @@ class VersionAdmin(reversion.admin.VersionAdmin):
             instance.creator = request.user
             instance.save()
         formset.save_m2m()
+    def response_add(self, request, obj, post_url_continue='../%s/'):
+        response = super(VersionAdmin, self).response_add(request, obj, post_url_continue)
+        if (request.POST.has_key('_continue') or 
+            request.POST.has_key('_popup') or 
+            request.POST.has_key('_addanother')):
+            return response
+        else:
+            return HttpResponseRedirect(obj.get_absolute_url())
     def response_change(self, request, obj):
         response = super(VersionAdmin, self).response_change(request, obj)
         if request.POST.has_key('_return_to') and not (
@@ -93,6 +101,14 @@ class ModelAdmin(admin.ModelAdmin):
             instance.creator = request.user
             instance.save()
         formset.save_m2m()
+    def response_add(self, request, obj, post_url_continue='../%s/'):
+        response = super(ModelAdmin, self).response_add(request, obj, post_url_continue)
+        if (request.POST.has_key('_continue') or 
+            request.POST.has_key('_popup') or 
+            request.POST.has_key('_addanother')):
+            return response
+        else:
+            return HttpResponseRedirect(obj.get_absolute_url())
     def response_change(self, request, obj):
         response = super(ModelAdmin, self).response_change(request, obj)
         if request.POST.has_key('_return_to') and not (

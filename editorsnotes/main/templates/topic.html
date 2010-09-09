@@ -16,7 +16,7 @@
 
 {% block content %}
     <header>
-      <h2>{{ topic.preferred_name }}</h2>
+      <h2 id="topic-name">{{ topic.preferred_name }}</h2>
       <div class="related-topics">
         {% if related_topics %}
         <span class="quiet">Related topics:</span> 
