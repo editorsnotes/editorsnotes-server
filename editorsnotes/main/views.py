@@ -34,7 +34,7 @@ def index(request):
     o['topic_list_2'] = topics[index:]
     o['activity'] = []
     prev_obj = None
-    for entry in LogEntry.objects.filter(content_type__app_label='main')[:10]:
+    for entry in LogEntry.objects.filter(content_type__app_label='main')[:20]:
         try:
             obj = entry.get_edited_object()
         except ObjectDoesNotExist:
