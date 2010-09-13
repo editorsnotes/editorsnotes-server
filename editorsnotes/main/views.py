@@ -22,6 +22,8 @@ def _sort_citations(instance):
         object_id=instance.id):
         if c.source.type == 'P': cites['primary'].append(c)
         elif c.source.type == 'S': cites['secondary'].append(c)
+    cites['primary'].sort(key=lambda c: c.source.ordering)
+    cites['secondary'].sort(key=lambda c: c.source.ordering)
     return cites
 
 @login_required
@@ -29,7 +31,7 @@ def index(request):
     o = {}
     topics = list(Topic.objects.all())
     index = (len(topics) / 2)  + 1 
-    o['source_list'] = [ t.source for t in Transcript.objects.all() ]
+    o['source_list'] = sorted([ t.source for t in Transcript.objects.all() ], key=lambda s: s.ordering)
     o['topic_list_1'] = topics[:index]
     o['topic_list_2'] = topics[index:]
     o['activity'] = []
