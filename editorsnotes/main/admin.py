@@ -129,15 +129,15 @@ class ModelAdmin(admin.ModelAdmin):
             messages.success(request, message)
         else:
             messages.info(request, message)
+
+class SourceAdmin(ModelAdmin):
+    inlines = (ScanInline,)
+    list_display = ('__unicode__', 'type', 'creator', 'created_display')
     class Media:
         js = ('function/jquery-1.4.2.min.js',
               'function/wymeditor/jquery.wymeditor.pack.js',
               'function/jquery.timeago.js',
               'function/admin.js')
-
-class SourceAdmin(ModelAdmin):
-    inlines = (ScanInline,)
-    list_display = ('__unicode__', 'type', 'creator', 'created_display')
 
 class TranscriptAdmin(ModelAdmin):
     inlines = (FootnoteInline,)
