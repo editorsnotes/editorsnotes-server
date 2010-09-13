@@ -297,6 +297,7 @@ hr {margin-bottom:2.95em;}
 #logo a {text-decoration:none;}
 #searchinput input {width:338px;}
 #topics li, #sources li {text-indent:-1em;padding-left:1em;}
+#sources p {margin:0;}
 .searchresult {margin-bottom:1.5em;}
 .edit-history {text-align:right;}
 .citation {text-indent:-2em;padding-left:2em;}
