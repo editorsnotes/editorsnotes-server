@@ -29,6 +29,7 @@ def index(request):
     o = {}
     topics = list(Topic.objects.all())
     index = (len(topics) / 2)  + 1 
+    o['source_list'] = [ t.source for t in Transcript.objects.all() ]
     o['topic_list_1'] = topics[:index]
     o['topic_list_2'] = topics[index:]
     o['activity'] = []
@@ -41,10 +42,13 @@ def index(request):
         if obj == prev_obj: continue
         e = {}
         e['action'] = entry.action_flag
-        e['who'] = UserProfile.get_for(entry.user).name_display()
-        e['what'] = '<a href="' + obj.get_absolute_url() + '">' + entry.content_type.name + '</a>'
-        if entry.content_type.name == 'note':
-            topics = [ ('<a class="subtle" href="' + ta.topic.get_absolute_url() + '">' + ta.topic.preferred_name + '</a>') for ta in obj.topics.all() ]
+        e['who'] = entry.user
+        if entry.content_type.name == 'topic':
+            e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
+        elif entry.content_type.name == 'note':
+            e['what'] = '<a href="%s">a note</a>' % obj.get_absolute_url()
+            topics = [ ('<a class="subtle" href="%s">%s</a>' % (ta.topic.get_absolute_url(), ta.topic.preferred_name)) 
+                       for ta in obj.topics.all() ]
             if len(topics) > 0:
                 e['what'] += ' about '
                 if len(topics) == 1:
@@ -53,6 +57,8 @@ def index(request):
                     e['what'] += ' and '.join(topics)
                 else:
                     e['what'] += (', '.join(topics[:-1]) + ', and ' + topics[-1])
+        else:
+            e['what'] = '<a href="%s">a %s</a>' % (obj.get_absolute_url(), entry.content_type.name)
         e['when'] = utils.timeago(entry.action_time)
         o['activity'].append(e)
         prev_obj = obj

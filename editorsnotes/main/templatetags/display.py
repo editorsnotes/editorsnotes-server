@@ -1,10 +1,15 @@
 from django import template
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
+from editorsnotes.main import utils
 from editorsnotes.main.models import UserProfile
 from isodate import datetime_isoformat
 
 register = template.Library()
+
+@register.filter
+def as_text(xhtml):
+    return utils.xhtml_to_text(xhtml)
 
 @register.filter
 def display_user(user, autoescape=None):

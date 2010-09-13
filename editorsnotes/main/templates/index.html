@@ -1,35 +1,49 @@
 {% extends "base.html" %}
 
+{% load display %}
+
 {% block title %}{% endblock %}
 
 {% block content %}
-    <section id="topics" class="span-14 colborder">
-      <h3>Topics</h3>
-      <div class="span-7">
-        {% if topic_list_1 %}
+    <div class="span-14 colborder">
+      <section id="sources" class="span-14">
+        <h3>Transcribed Sources</h3>
+        {% if source_list %}
         <ul>
-          {% for topic in topic_list_1 %}
-          <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
+          {% for source in source_list %}
+          <li><a class="subtle" href="{{ source.transcript.get_absolute_url }}">{{ source.description|as_text }}</a></li>
           {% endfor %}
         </ul>
         {% endif %}
-      </div>
-      <div class="span-7 last">
-        {% if topic_list_2 %}
-        <ul>
-          {% for topic in topic_list_2 %}
-          <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
-          {% endfor %}
-        </ul>
-        {% endif %}
-      </div>
-    </section>
+      </section>
+      <section id="topics" class="span-14">
+        <h3>Topics</h3>
+        <div class="span-7">
+          {% if topic_list_1 %}
+          <ul>
+            {% for topic in topic_list_1 %}
+            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+        <div class="span-7 last">
+          {% if topic_list_2 %}
+          <ul>
+            {% for topic in topic_list_2 %}
+            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+      </section>
+    </div>
     <section id="activity" class="span-9 last">
       <h3>Recent Activity</h3>
       {% if activity %}
       <ul>
       {% for entry in activity %}
-      <li>{{ entry.who|safe }} edited a {{ entry.what|safe }} {{ entry.when|safe }}.</li>
+      <li>{{ entry.who|display_user }} edited {{ entry.what|safe }} {{ entry.when|safe }}.</li>
       {% endfor %}
       </ul>
       {% endif %}

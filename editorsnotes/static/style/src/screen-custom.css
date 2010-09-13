@@ -15,7 +15,7 @@ hr { margin-bottom: 2.95em; }
 #stripe-2 { position: absolute; z-index: -1; top: 42px; height: 44px; width: 100%; background: #aeb4be; }
 #logo a { text-decoration: none; }
 #searchinput input { width: 338px; }
-#topics li { text-indent: -1em; padding-left: 1em; }
+#topics li, #sources li { text-indent: -1em; padding-left: 1em; }
 .searchresult { margin-bottom: 1.5em; }
 .edit-history { text-align: right; }
 .citation { text-indent: -2em; padding-left: 2em; }

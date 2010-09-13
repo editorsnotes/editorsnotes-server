@@ -292,11 +292,11 @@ ul {list-style-type:none;padding:0
 #actions li, ul.topic-list li {display:inline;}
 #actions {padding:0;margin-bottom:0;}
 hr {margin-bottom:2.95em;}
-#stripe-1 {position:absolute;z-index:-1;height:42px;width:100%;background:#E5ECF9;}
-#stripe-2 {position:absolute;z-index:-1;top:42px;height:44px;width:100%;background:#AEB4BE;}
+#stripe-1 {position:absolute;z-index:-1;height:42px;width:100%;background:#e5ecf9;}
+#stripe-2 {position:absolute;z-index:-1;top:42px;height:44px;width:100%;background:#aeb4be;}
 #logo a {text-decoration:none;}
 #searchinput input {width:338px;}
-#topics li {text-indent:-1em;padding-left:1em;}
+#topics li, #sources li {text-indent:-1em;padding-left:1em;}
 .searchresult {margin-bottom:1.5em;}
 .edit-history {text-align:right;}
 .citation {text-indent:-2em;padding-left:2em;}
@@ -304,7 +304,7 @@ hr {margin-bottom:2.95em;}
 .note-link {vertical-align:bottom;}
 .message-list {margin-top:-1.5em;}
 .error, .notice, .success {padding:0.4em;}
-.errorlist li {padding:.8em;background:#FBE3E4;color:#8a1f11;border:2px solid #FBC2C4;}
+.errorlist li {padding:.8em;background:#fbe3e4;color:#8a1f11;border:2px solid #fbc2c4;}
 .highlighted {font-weight:bold;}
 .awesome {background-color:#ff8000 !important;font-family:'Lucida Grande', Tahoma, Arial, Verdana, sans-serif !important;font-size:12px !important;}
 a.subtle, a.footnote, a.user-link {text-decoration:none;}
@@ -335,7 +335,6 @@ header {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right
 .comments-container {margin-top:1.5em;}
 .note-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #login {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:270px;padding-left:320px;}
-a.user-link {color:#666;}
 #searchresults #message {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 .message {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #topnav {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;margin-bottom:1.5em;}
