@@ -4,12 +4,17 @@ from django.utils.safestring import mark_safe
 from editorsnotes.main import utils
 from editorsnotes.main.models import UserProfile
 from isodate import datetime_isoformat
+from lxml import etree
 
 register = template.Library()
 
 @register.filter
-def as_text(xhtml):
-    return utils.xhtml_to_text(xhtml)
+def as_text(tree):
+    return utils.xhtml_to_text(tree)
+
+@register.filter
+def as_html(tree):
+    return mark_safe(etree.tostring(tree))
 
 @register.filter
 def display_user(user, autoescape=None):

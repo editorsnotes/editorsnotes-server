@@ -11,7 +11,7 @@
         {% if source_list %}
         <ul>
           {% for source in source_list %}
-          <li><a class="subtle" href="{{ source.transcript.get_absolute_url }}">{{ source.description|as_text }}</a></li>
+          <li><a class="subtle" href="{{ source.transcript.get_absolute_url }}">{{ source.description|as_html }}</a></li>
           {% endfor %}
         </ul>
         {% endif %}

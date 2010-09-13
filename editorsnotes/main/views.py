@@ -45,6 +45,10 @@ def index(request):
         e['who'] = entry.user
         if entry.content_type.name == 'topic':
             e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
+        elif entry.content_type.name == 'source':
+            e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
+        elif entry.content_type.name == 'transcript':
+            e['what'] = '<a href="%s">the transcript of %s</a>' % (obj.get_absolute_url(), obj.source)
         elif entry.content_type.name == 'note':
             e['what'] = '<a href="%s">a note</a>' % obj.get_absolute_url()
             topics = [ ('<a class="subtle" href="%s">%s</a>' % (ta.topic.get_absolute_url(), ta.topic.preferred_name)) 
@@ -62,7 +66,8 @@ def index(request):
         e['when'] = utils.timeago(entry.action_time)
         o['activity'].append(e)
         prev_obj = obj
-    return render_to_response('index.html', o)
+    return render_to_response(
+        'index.html', o, context_instance=RequestContext(request))
 
 @login_required
 def topic(request, topic_slug):
@@ -85,21 +90,24 @@ def note(request, note_id):
     o = {}
     o['note'] = get_object_or_404(Note, id=note_id)
     o['cites'] = _sort_citations(o['note'])
-    return render_to_response('note.html', o)
+    return render_to_response(
+        'note.html', o, context_instance=RequestContext(request))
 
 @login_required
 def source(request, source_id):
     o = {}
     o['source'] = get_object_or_404(Source, id=source_id)
     o['scans'] = o['source'].scans.all()
-    return render_to_response('source.html', o)
+    return render_to_response(
+        'source.html', o, context_instance=RequestContext(request))
 
 @login_required
 def transcript(request, transcript_id):
     o = {}
     o['transcript'] = get_object_or_404(Transcript, id=transcript_id)
     o['notes'] = o['transcript'].footnotes.all()
-    return render_to_response('transcript.html', o)
+    return render_to_response(
+        'transcript.html', o, context_instance=RequestContext(request))
 
 @login_required
 def user(request, username=None):
@@ -110,7 +118,8 @@ def user(request, username=None):
         user = get_object_or_404(User, username=username)
     o['profile'] = UserProfile.get_for(user)
     o['notes'] = Note.objects.filter(Q(creator=user) | Q(last_updater=user))
-    return render_to_response('user.html', o)
+    return render_to_response(
+        'user.html', o, context_instance=RequestContext(request))
 
 @login_required
 def search(request):
@@ -140,7 +149,8 @@ def search(request):
             o[name] = []
         o[name].append(r)
 
-    return render_to_response('search.html', o)
+    return render_to_response(
+        'search.html', o, context_instance=RequestContext(request))
 
 def api_topics(request):
     query = ''
