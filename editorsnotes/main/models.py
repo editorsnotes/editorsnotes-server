@@ -247,10 +247,12 @@ class Footnote(CreationMetadata):
     def get_absolute_url(self):
         return '/footnote/%s/' % self.id
     def delete(self, *args, **kwargs):
-        a = self.transcript.content.cssselect(
-            'a.footnote[href="' + self.get_absolute_url() + '"]')[0]
-        for element in a: a.addprevious(element)
-        a.drop_tree()
+        selector = 'a.footnote[href="%s"]' % self.get_absolute_url()
+        results = self.transcript.content.cssselect(selector)
+        if len(results) == 1:
+            a = results[0]
+            for element in a: a.addprevious(element)
+            a.drop_tree()
         super(Footnote, self).delete(*args, **kwargs)
     def __unicode__(self):
         return utils.truncate(utils.xhtml_to_text(self.content))
