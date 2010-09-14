@@ -141,6 +141,7 @@ class Note(LastUpdateMetadata):
     so it may have hyperlinks and all the other features that XHTML
     enables.
     """
+    title = models.CharField(max_length='80', unique=True)
     content = fields.XHTMLField()
     topics = generic.GenericRelation('TopicAssignment')
     citations = generic.GenericRelation('Citation')

@@ -10,7 +10,7 @@ textify = etree.XSLT(etree.parse(
 def xhtml_to_text(xhtml):
     return etree.tostring(textify(xhtml), method='text', encoding=unicode).strip()
 
-def truncate(text, length=100):
+def truncate(text, length=80):
     if len(text) <= length:
         return text
     l = text[:(length/2)].rsplit(' ', 1)[0]

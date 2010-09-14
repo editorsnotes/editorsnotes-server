@@ -2,43 +2,40 @@
 
 {% block title %}: Results for '{{ query }}'{% endblock %}
 
-{% load highlight %}
+{% load highlight display %}
 
 {% block content %}
-<div id="searchresults">
+<div id="searchresults" class="span-24 last">
 {% if query %}
+  {% if results %}
   <p id="message">Search results for <em>{{ query }}</em>:</p>
-  <section id="topics" class="span-11 colborder">
-    <h3>Topics</h3>
-    {% if topics %}
-    <ol>
-      {% for result in topics %}
-      <li><a href="{{ result.object.get_absolute_url }}">{{ result.object.preferred_name }}</a></li>
-      {% endfor %}
-    </ol>
-    {% else %}
-    <p id="message">No topics matching <em>{{ query }}</em>.</p> 
-    {% endif %}
-  </section>
-  <section id="notes" class="span-12 last">
-    <h3>Notes</h3>
-    {% if notes %}
-      {% for result in notes %}
-      <div class="searchresult">
-        {% with result.object as note %}
-          {% include "note_link.include" %}
-        {% endwith %}
-        <br/>
+  <ol class="span-18 last">
+    {% for result in results %}
+    <li class="searchresult">
+      {{ result.verbose_name }}:
+      <a href="{{ result.object.get_absolute_url }}">
+        {{ result.title }}
+      </a>
+      {% if result.object.last_updater %}
+      <div class="quiet">
+        Last edited by {{ result.object.last_updater|display_user }}
+        {{ result.object.last_updated|timeago }}.
+      </div>
+      {% endif %}
+      <div>
         {% highlight result.text with query %}
+      </div>
+      {% if result.verbose_name == 'Note' %}
         {% with result.object as note %}
           {% include "note_topics.include" %}
         {% endwith %}
-      </div>
-      {% endfor %}
-    {% else %}
-    <p id="message">No notes matching <em>{{ query }}</em>.</p> 
-    {% endif %}
-  </section>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p id="message">No results for <em>{{ query }}</em>.</p> 
+  {% endif %}
 </div>
 {% endif %}
 
