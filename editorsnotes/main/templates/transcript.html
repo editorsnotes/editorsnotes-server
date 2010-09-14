@@ -13,10 +13,10 @@
     </header>
     <section id="transcript" class="span-24 last">
       <article id="transcript{{ transcript.id }}" class="transcript">
-        <div id="transcript-content" class="span-18 colborder">
+        <div id="transcript-content" class="span-12 colborder">
           {{ transcript.content_as_html|typogrify }}
         </div>
-        <aside id="transcript-notes" class="span-5 last">
+        <aside id="transcript-notes" class="span-11 last">
           {% for note in notes %}
           <div id="note-{{ note.id }}" class="transcript-note">
             {{ note.content_as_html|typogrify }}
