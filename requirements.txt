@@ -1,5 +1,5 @@
 # Installed using pip
-Django==1.2
+Django==1.2.3
 South==0.7.2
 git+http://github.com/toastdriven/django-haystack.git#egg=django-haystack
 git+http://github.com/notanumber/xapian-haystack.git#egg=xapian-haystack
