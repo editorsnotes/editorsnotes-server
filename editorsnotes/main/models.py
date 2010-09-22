@@ -218,7 +218,7 @@ class Scan(CreationMetadata):
     image = models.ImageField(upload_to='scans/%Y/%m')
     ordering = models.IntegerField(blank=True, null=True)
     def __unicode__(self):
-        return self.image.url
+        return u'Scan for %s (order: %s)' % (self.source, self.ordering)
     class Meta:
         ordering = ['ordering'] 
 
