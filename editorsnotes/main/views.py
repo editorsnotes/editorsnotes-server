@@ -7,10 +7,11 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 #from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from haystack.query import SearchQuerySet, EmptySearchQuerySet
+from urllib import urlopen
 from models import *
 import utils
 import json
@@ -100,6 +101,7 @@ def source(request, source_id):
     o = {}
     o['source'] = get_object_or_404(Source, id=source_id)
     o['scans'] = o['source'].scans.all()
+    o['domain'] = Site.objects.get_current().domain
     return render_to_response(
         'source.html', o, context_instance=RequestContext(request))
 
@@ -164,3 +166,12 @@ def api_topics(request):
                                          r.object.get_absolute_url()) } 
                for r in results ]
     return HttpResponse(json.dumps(topics), mimetype='text/plain')
+
+# Proxy for cross-site AJAX requests. For development only.
+def proxy(request):
+    url = request.GET.get('url')
+    if url is None:
+        return HttpResponseBadRequest()
+    if not url.startswith('http://cache.zoom.it/'):
+        return HttpResponseForbidden()
+    return HttpResponse(urlopen(url).read(), mimetype='application/xml')

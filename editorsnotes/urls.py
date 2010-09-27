@@ -17,6 +17,7 @@ urlpatterns = patterns('',
      { 'document_root': '/Users/ryanshaw/Code/editorsnotes/uploads/scans' }),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve',
      { 'document_root': '/Users/ryanshaw/Code/editorsnotes/editorsnotes/static' }),
+    (r'^proxy$', 'editorsnotes.main.views.proxy'),
 )
 
 urlpatterns += patterns('editorsnotes.main.views',

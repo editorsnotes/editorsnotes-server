@@ -314,6 +314,8 @@ a.footnote:focus, a.footnote:hover {color:red;}
 a.footnote sup {color:red;padding-left:1px;font-weight:bold;}
 span.note-number {color:red;margin-left:-1.2em;}
 .transcript-note .dquo {margin-left:auto;}
+.scan-list, .scan-list li {display:inline;}
+#scan-viewer {width:auto;height:400px;background-color:black;border:1px solid black;color:white;}
 aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */
