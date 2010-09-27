@@ -146,10 +146,11 @@ class TranscriptAdmin(ModelAdmin):
         super(TranscriptAdmin, self).save_formset(request, form, formset, change)
         transcript = form.instance
         for footnote_form in formset.forms:
-            stamp = footnote_form.cleaned_data['stamp']
-            if stamp:
-                a = transcript.content.cssselect('a.footnote[href="' + stamp + '"]')[0]
-                a.attrib['href'] = footnote_form.instance.get_absolute_url()
+            if 'stamp' in footnote_form.cleaned_data:
+                stamp = footnote_form.cleaned_data['stamp']
+                if stamp:
+                    a = transcript.content.cssselect('a.footnote[href="' + stamp + '"]')[0]
+                    a.attrib['href'] = footnote_form.instance.get_absolute_url()
         transcript.save()
     class Media:
         css = { 'all': ('style/admin-transcript.css',) }
