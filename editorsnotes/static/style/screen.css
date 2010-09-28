@@ -270,7 +270,7 @@ button[type] {padding:4px 10px 4px 7px;line-height:17px;}
 *:first-child+html button[type] {padding:4px 10px 3px 7px;}
 button img, a.button img {margin:0 3px -3px 0 !important;padding:0;border:none;width:16px;height:16px;float:none;}
 button:hover, a.button:hover {background-color:#dff4ff;border:1px solid #c2e1ef;color:#336699;}
-a.button:active {background-color:#6299c5;border:1px solid #6299c5;color:#fff;}
+a.button:active, a.pushed, a.pushed:hover {background-color:#6299c5;border:1px solid #6299c5;color:#fff;}
 body .positive {color:#529214;}
 a.positive:hover, button.positive:hover {background-color:#E6EFC2;border:1px solid #C6D880;color:#529214;}
 a.positive:active {background-color:#529214;border:1px solid #529214;color:#fff;}
@@ -314,8 +314,9 @@ a.footnote:focus, a.footnote:hover {color:red;}
 a.footnote sup {color:red;padding-left:1px;font-weight:bold;}
 span.note-number {color:red;margin-left:-1.2em;}
 .transcript-note .dquo {margin-left:auto;}
-.scan-list, .scan-list li {display:inline;}
-#scan-viewer {width:auto;height:400px;background-color:black;border:1px solid black;color:white;}
+.scan-list li {display:inline;}
+#scan-viewer {width:auto;height:400px;background-color:black;border:2px solid black;color:white;}
+#progress-notify {width:400px;height:53px;z-index:10;color:white;}
 aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */

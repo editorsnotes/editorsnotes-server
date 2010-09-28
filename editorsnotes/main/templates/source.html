@@ -21,9 +21,14 @@
     <section id="scans" class=span-24 last">
       <ul class="scan-list">
         {% for scan in scans %}
-        <li><a class="scan" href="http://{{ domain }}{{ scan.image.url }}">{{ forloop.counter }}</a></li>
+        <li><a class="scan button" href="http://{{ domain }}{{ scan.image.url }}">{{ forloop.counter }}</a></li>
         {% endfor %}
       </ul>
+      <br/>
       <div id="scan-viewer"></div>
+      <div id="progress-notify">
+        <span id="progress-message">Loading scanned document...</span>
+        <div id="progressbar"></div>
+      </div>
     </section>
 {% endblock %}

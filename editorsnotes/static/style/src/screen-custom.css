@@ -33,8 +33,9 @@ a.footnote:focus, a.footnote:hover { color: red; }
 a.footnote sup { color: red; padding-left: 1px; font-weight: bold; }
 span.note-number { color:red; margin-left: -1.2em; }
 .transcript-note .dquo { margin-left: auto; }
-.scan-list, .scan-list li { display: inline; }
-#scan-viewer { width: auto; height: 400px; background-color: black; border: 1px solid black; color: white; }
+.scan-list li { display: inline; }
+#scan-viewer { width: auto; height: 400px; background-color: black; border: 2px solid black; color: white; }
+#progress-notify { width: 400px; height: 53px; z-index: 10; color: white; }
 /* Reduced size type with incremental leading
 
    Using this class, it reduces your font size and line-height so that for
