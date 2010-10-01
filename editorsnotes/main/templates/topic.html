@@ -47,6 +47,7 @@
             {% for cite in summary_cites.primary %}
             <div class="citation">
               {{ cite.as_html|safe }}
+              <a href="{{ cite.source.get_absolute_url }}">More info</a>
             </div>
             {% endfor %}
           </div>
@@ -57,6 +58,7 @@
             {% for cite in summary_cites.secondary %}
             <div class="citation">
               {{ cite.as_html|safe }}
+              <a href="{{ cite.source.get_absolute_url }}">More info</a>
             </div>
             {% endfor %}
           </div>
@@ -97,6 +99,7 @@ var disqus_def_email = '{{ user.email }}';
         {% if notes %}
           {% for note, topics, cites in notes %}
             {% include "note.include" %}
+            {% if forloop.last %}{% else %}<hr/>{% endif %}
           {% endfor %}
         {% else %}
           There are no notes or queries related to <em>{{ topic.preferred_name }}</em>.

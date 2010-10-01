@@ -31,8 +31,11 @@ def _sort_citations(instance):
 def index(request):
     o = {}
     topics = list(Topic.objects.all())
-    index = (len(topics) / 2)  + 1 
-    o['source_list'] = sorted([ t.source for t in Transcript.objects.all() ], key=lambda s: s.ordering)
+    index = (len(topics) / 2)  + 1
+    sources = set()
+    sources.update([ t.source for t in Transcript.objects.all() ])
+    sources.update([ s.source for s in Scan.objects.all() ])
+    o['source_list'] = sorted(sources, key=lambda s: s.ordering)
     o['topic_list_1'] = topics[:index]
     o['topic_list_2'] = topics[index:]
     o['activity'] = []
@@ -100,6 +103,8 @@ def note(request, note_id):
 def source(request, source_id):
     o = {}
     o['source'] = get_object_or_404(Source, id=source_id)
+    o['related_topics'] =[ c.content_object for c in o['source'].citations.filter(
+            content_type=ContentType.objects.get_for_model(Topic)) ]
     o['scans'] = o['source'].scans.all()
     o['domain'] = Site.objects.get_current().domain
     return render_to_response(

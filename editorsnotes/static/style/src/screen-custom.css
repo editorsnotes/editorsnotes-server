@@ -4,6 +4,9 @@ a { color: #222; }
 a.button, button { font-size: 12px !important; }
 h1 { font-size: 2em; margin: 0.2em 0 0 0 }
 h2 { margin-bottom: 0; }
+h3 { margin-bottom: 0.5em; }
+h3 p { margin: 0; }
+h1, h2, h3 { text-rendering: optimizeLegibility; }
 h4 { font-variant: small-caps; letter-spacing: 1px; text-transform: lowercase; font-weight: bold; }
 ul { list-style-type: none; padding: 0 }
 #actions, ul.topic-list { display: inline; }
@@ -30,9 +33,10 @@ hr { margin-bottom: 2.95em; }
 a.subtle, a.footnote, a.user-link { text-decoration: none; }
 a.subtle:focus, a.subtle:hover, a.user-link:hover { text-decoration: underline; color: #222; }
 a.footnote:focus, a.footnote:hover { color: red; }
+a.active-footnote { color: red; }
 a.footnote sup { color: red; padding-left: 1px; font-weight: bold; }
 span.note-number { color:red; margin-left: -1.2em; }
-.transcript-note .dquo { margin-left: auto; }
+.transcript-notes { display: none; }
 .scan-list li { display: inline; }
 #scan-viewer { width: auto; height: 400px; background-color: black; border: 2px solid black; color: white; }
 #progress-notify { width: 400px; height: 53px; z-index: 10; color: white; }
@@ -47,7 +51,7 @@ span.note-number { color:red; margin-left: -1.2em; }
      84px / 5 = 16.8px (new line height)
      16.8px / 12px = 1.4 (new line height in em's) */
 aside p {
-  font-size: 12px;
-  line-height: 1.4em;
-  margin-bottom: 1.5em;
+    font-size: 12px;
+    line-height: 1.4em;
+    margin-bottom: 1.5em;
 }

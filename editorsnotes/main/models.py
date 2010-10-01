@@ -187,19 +187,6 @@ class Source(CreationMetadata):
             return ''
     def description_as_text(self):
         return utils.xhtml_to_text(self.description)
-    def description_as_html(self):
-        e = deepcopy(self.description)
-        if self.url:
-            a = etree.SubElement(e, 'a')
-            a.attrib['href'] = self.url
-            a.text = self.url
-            utils.prepend_space(a)
-        if self.transcript:
-            a = etree.SubElement(e, 'a')
-            a.attrib['href'] = self.transcript.get_absolute_url()
-            a.text = 'View transcript'
-            utils.prepend_space(a)
-        return etree.tostring(e)
     def save(self, *args, **kwargs):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
         super(Source, self).save(*args, **kwargs)
@@ -207,6 +194,8 @@ class Source(CreationMetadata):
         return utils.truncate(self.description_as_text())
     def get_absolute_url(self):
         return '/source/%s/' % self.id
+    def get_admin_url(self):
+        return urlresolvers.reverse('admin:main_source_change', args=(self.id,))
     class Meta:
         ordering = ['ordering']    
 
@@ -234,6 +223,8 @@ class Transcript(CreationMetadata):
         return utils.xhtml_to_text(self.content)
     def get_absolute_url(self):
         return '/transcript/%s/' % self.id
+    def get_admin_url(self):
+        return urlresolvers.reverse('admin:main_transcript_change', args=(self.id,))
     def __unicode__(self):
         return u'Transcript of %s' % self.source
 

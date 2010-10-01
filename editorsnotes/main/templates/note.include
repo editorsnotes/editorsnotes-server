@@ -39,4 +39,3 @@
           {{ note.edit_history|safe }}
         </div>
       </article>
-      <hr/>

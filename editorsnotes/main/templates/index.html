@@ -1,17 +1,21 @@
 {% extends "base.html" %}
 
-{% load display %}
+{% load typogrify display %}
 
 {% block title %}{% endblock %}
 
 {% block content %}
     <div class="span-14 colborder">
       <section id="sources" class="span-14">
-        <h3>Transcribed Sources</h3>
+        <h3>Featured Sources</h3>
         {% if source_list %}
         <ul>
           {% for source in source_list %}
-          <li><a class="subtle" href="{{ source.transcript.get_absolute_url }}">{{ source.description|as_html }}</a></li>
+          <li>
+            <a class="subtle" href="{{ source.get_absolute_url }}">
+              {{ source.description|as_html|typogrify }}
+            </a>
+          </li>
           {% endfor %}
         </ul>
         {% endif %}
@@ -22,7 +26,7 @@
           {% if topic_list_1 %}
           <ul>
             {% for topic in topic_list_1 %}
-            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
+            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic|typogrify }}</a></li>
             {% endfor %}
           </ul>
           {% endif %}
@@ -31,7 +35,7 @@
           {% if topic_list_2 %}
           <ul>
             {% for topic in topic_list_2 %}
-            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic }}</a></li>
+            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic|typogrify }}</a></li>
             {% endfor %}
           </ul>
           {% endif %}
@@ -43,7 +47,11 @@
       {% if activity %}
       <ul>
       {% for entry in activity %}
-      <li>{{ entry.who|display_user }} edited {{ entry.what|safe }} {{ entry.when|safe }}.</li>
+      <li>
+        {% filter typogrify %}
+        {{ entry.who|display_user }} edited {{ entry.what|safe }} {{ entry.when|safe }}.
+        {% endfilter %}
+      </li>
       {% endfor %}
       </ul>
       {% endif %}
