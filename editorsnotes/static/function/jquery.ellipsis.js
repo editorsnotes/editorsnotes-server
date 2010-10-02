@@ -12,7 +12,7 @@
       var words = t.text().split(' ');
       while(words.length > 0 && t.width() > width) {
         words.pop();
-	t.text(words.join(' ') + '...');
+	t.html(words.join(' ') + ' &hellip;');
       }
       el.text(t.text());
       t.remove();

@@ -95,8 +95,48 @@ $(document).ready(function() {
     width: 800,
     display: null,
     setup: function() {
-      $('a.footnote').attr('title', 'Click to read footnote');
-      $('a.footnote').click(footnote.show);
+      var footnotes = $('a.footnote');
+      footnotes.attr('title', 'Click to read footnote');
+      footnotes.click(footnote.show);
+      var markers = $(document.createElement('ul'));
+      markers.attr('id', 'footnote-markers').appendTo($('#transcript-content'));
+      var i = 1;
+      footnotes.each(function() {
+        var a = $(this);
+        var marker = $(document.createElement('li'));
+        marker.appendTo(markers);
+        marker.position({
+          my: 'center top',
+          at: 'left top',
+          of: a,
+          collision: 'none',
+          using: function(position) {
+            position.top -= 4;
+            position.left = -10;
+            $(this).css(position);
+          }
+        });
+        var punc = '';
+        if (a[0].nextSibling && a[0].nextSibling.nodeType == 3) { // text node
+          var text = $(a[0].nextSibling).text();
+          if (text.length > 0 && (text[0] == ',' || text[0] == '.')) {
+            punc = text[0];
+            $(a[0].nextSibling).replaceWith(
+              $(document.createTextNode(text.slice(1))));
+          }
+        }
+        var number = $(document.createElement('span'));
+        number.addClass('footnote-number');
+        number.html(punc + '<small><sup title="Click to read footnote">' + i + '</sup></small>');
+        a.after(number);
+        number.hover(function() { a.toggleClass('hover-footnote'); },
+                     function() { a.toggleClass('hover-footnote'); } );
+        a.hover(function() { number.toggleClass('hover-footnote'); },
+                function() { number.toggleClass('hover-footnote'); } );
+        number.click(function() { a.click(); });
+        a.data('footnote-number', i);
+        i += 1;
+      });
     },
     resize: function(event, ui) {
       var title = $('#ui-dialog-title-footnote-display');
@@ -130,12 +170,17 @@ $(document).ready(function() {
         });
       }
       $('a.active-footnote').removeClass('active-footnote');
-      $(this).addClass('active-footnote');
-      footnote.display.html($('#note-' + $(this).attr('href').split('/')[2]).html());
-      footnote.display.dialog('option', 'title', $(this).text());
+      var link = $(this);
+      link.addClass('active-footnote');
+      footnote.display.html($('#note-' + link.attr('href').split('/')[2]).html());
+      var linktext = link.text();
+      if (! linktext.match(/^[A-Z"']/)) {
+        linktext = '&hellip; ' + linktext;
+      }
+      footnote.display.dialog('option', 'title', link.data('footnote-number') + '. ' + linktext);
       footnote.display.dialog('option', 'width', footnote.width);
       footnote.display.dialog('option', 'position', {
-        my: 'top', at: 'bottom', of: $(this), offset: '0 5', collision: 'none', 
+        my: 'top', at: 'bottom', of: link, offset: '0 5', collision: 'none', 
         using: footnote.using });
       footnote.display.dialog('open');
       footnote.display.bind('dialogresize', footnote.resize);

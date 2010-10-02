@@ -32,11 +32,13 @@ hr { margin-bottom: 2.95em; }
 .awesome { background-color: #ff8000 !important; font-family: 'Lucida Grande', Tahoma, Arial, Verdana, sans-serif !important; font-size: 12px !important; }
 a.subtle, a.footnote, a.user-link { text-decoration: none; }
 a.subtle:focus, a.subtle:hover, a.user-link:hover { text-decoration: underline; color: #222; }
-a.footnote:focus, a.footnote:hover { color: red; }
-a.active-footnote { color: red; }
-a.footnote sup { color: red; padding-left: 1px; font-weight: bold; }
+a.footnote:focus, a.footnote:hover, a.active-footnote, a.hover-footnote, span.hover-footnote, span.footnote-number:hover { color: red; }
+span.footnote-number { cursor: pointer; }
+sup { color: red; padding-left: 1px; font-weight: bold; }
 span.note-number { color:red; margin-left: -1.2em; }
 .transcript-notes { display: none; }
+#footnote-markers { position: absolute; color: red; list-style: disc inside; }
+#footnote-markers li { position: absolute; height: 14px; width: 4px; }
 .scan-list li { display: inline; }
 #scan-viewer { width: auto; height: 400px; background-color: black; border: 2px solid black; color: white; }
 #progress-notify { width: 400px; height: 53px; z-index: 10; color: white; }
