@@ -26,7 +26,6 @@ urlpatterns += patterns('editorsnotes.main.views',
     url(r'^note/(?P<note_id>\d+)/$', 'note', name='note_view'),
     url(r'^user/(?P<username>[\w@\+\.\-]+)/$', 'user', name='user_view'),
     url(r'^source/(?P<source_id>\d+)/$', 'source', name='source_view'),
-    url(r'^transcript/(?P<transcript_id>\d+)/$', 'transcript', name='transcript_view'),
     url(r'^search/$', 'search', name='search_view'),
     url(r'^api/topics/$', 'api_topics', name='api_topics_view'),
 )

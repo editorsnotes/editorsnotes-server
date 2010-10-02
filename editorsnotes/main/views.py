@@ -111,14 +111,6 @@ def source(request, source_id):
         'source.html', o, context_instance=RequestContext(request))
 
 @login_required
-def transcript(request, transcript_id):
-    o = {}
-    o['transcript'] = get_object_or_404(Transcript, id=transcript_id)
-    o['notes'] = o['transcript'].footnotes.all()
-    return render_to_response(
-        'transcript.html', o, context_instance=RequestContext(request))
-
-@login_required
 def user(request, username=None):
     o = {}
     if not username:
