@@ -36,7 +36,7 @@ a.footnote:focus, a.footnote:hover, a.active-footnote, a.hover-footnote, span.ho
 span.footnote-number { cursor: pointer; }
 small sup { color: red; padding-left: 1px; font-weight: bold; }
 span.note-number { color:red; margin-left: -1.2em; }
-.transcript-notes { display: none; }
+#transcript-notes { display: none; }
 #footnote-markers { position: absolute; color: red; list-style: disc inside; }
 #footnote-markers li { position: absolute; height: 14px; width: 4px; }
 .scan-list li { display: inline; }
