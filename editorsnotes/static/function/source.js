@@ -42,10 +42,9 @@ $(document).ready(function() {
             $('#progress-notify').hide();
             viewer.openDzi(o.dzi.url);
           } else if (o.failed) {
-            self.abort(self, o.url + ' failed to convert.');
+            self.abort(self, o.url + ' failed to convert: ' + o.shareUrl);
           } else {
             var percent = Math.round(100 * o.progress);
-            console.log(o.url + ' is ' + percent + '% done.');
             $('#progress-notify').show();
             $('#progressbar').progressbar('option', 'value', percent);
             if (data.redirectLocation) {
