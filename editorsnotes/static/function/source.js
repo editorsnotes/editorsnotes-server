@@ -1,19 +1,11 @@
 Seadragon.Config.proxyUrl = '/proxy?url='
 $(document).ready(function() {
 
-  // Initialize scan viewer.
-  var viewer = new Seadragon.Viewer('scan-viewer');
-  $('#progressbar').progressbar({ value: 0 });
-  $('#progress-notify').position({
-    of: $('#scan-viewer'),
-    my: 'center center',
-    at: 'center center'
-  }).hide();
-
   // Scan processing monitor for progress bar.
   var monitor = {
-    init: function(url) {
+    init: function(viewer, url) {
       this.stop_polling(this);
+      this.viewer = viewer;
       this.url = url;
       $('#progressbar').progressbar('option', 'value', 0);
     },
@@ -29,7 +21,7 @@ $(document).ready(function() {
           if (o.ready && o.dzi) {
             self.stop_polling(self);
             $('#progress-notify').hide();
-            viewer.openDzi(o.dzi.url);
+            self.viewer.openDzi(o.dzi.url);
           } else if (o.failed) {
             self.abort(self, o.url + ' failed to convert: ' + o.shareUrl);
           } else {
@@ -66,16 +58,7 @@ $(document).ready(function() {
     }
   };
 
-  // Handle scan button clicks.
-  $('a.scan').click(function(event) {
-    event.preventDefault();
-    $('a.pushed').removeClass('pushed');
-    $(this).addClass('pushed');
-    viewer.close();
-    monitor.init('http://api.zoom.it/v1/content/?url=' + encodeURIComponent(this.href));
-    monitor.start();
-  });
-
+  // Footnote interface for transcripts.
   var footnote = {
     done: false,
     width: 800,
@@ -83,7 +66,6 @@ $(document).ready(function() {
     setup: function() {
       if (footnote.done) { return; }
       footnote.done = true;
-      console.log('setting up footnotes');
       var footnotes = $('a.footnote');
       footnotes.attr('title', 'Click to read footnote');
       footnotes.click(footnote.show);
@@ -163,9 +145,9 @@ $(document).ready(function() {
       link.addClass('active-footnote');
       footnote.display.html($('#note-' + link.attr('href').split('/')[2]).html());
       var linktext = link.text();
-      if (! linktext.match(/^[A-Z"']/)) {
-        linktext = '&hellip; ' + linktext;
-      }
+      //if (! linktext.match(/^[A-Z"']/)) {
+      //  linktext = '&hellip; ' + linktext;
+      //}
       footnote.display.dialog('option', 'title', link.data('footnote-number') + '. ' + linktext);
       footnote.display.dialog('option', 'width', footnote.width);
       footnote.display.dialog('option', 'position', {
@@ -177,10 +159,33 @@ $(document).ready(function() {
     }
   }
 
+  // Main routine starts here  --------------------------------------------------
+
+  $('#scan-viewer').each(function() {
+
+    // Initialize scan viewer.
+    var viewer = new Seadragon.Viewer(this);
+    $('#progressbar').progressbar({ value: 0 });
+    $('#progress-notify').position({
+      of: $(this),
+      my: 'center center',
+      at: 'center center'
+    }).hide();
+
+    // Handle scan button clicks.
+    $('a.scan').click(function(event) {
+      event.preventDefault();
+      $('a.pushed').removeClass('pushed');
+      $(this).addClass('pushed');
+      viewer.close();
+      monitor.init(viewer, 'http://api.zoom.it/v1/content/?url=' + encodeURIComponent(this.href));
+      monitor.start();
+    });
+  });
+
   // Initialize tabs.
   $('#tabs').tabs({
     show: function(event, ui) { 
-      console.log(ui);
       if (ui.panel.id == 'scans') {
         if ($('a.pushed').click().length == 0) {
           $('a.scan:first').click();
