@@ -315,7 +315,7 @@ a.subtle, a.footnote, a.user-link {text-decoration:none;}
 a.subtle:focus, a.subtle:hover, a.user-link:hover {text-decoration:underline;color:#222;}
 a.footnote:focus, a.footnote:hover, a.active-footnote, a.hover-footnote, span.hover-footnote, span.footnote-number:hover {color:red;}
 span.footnote-number {cursor:pointer;}
-sup {color:red;padding-left:1px;font-weight:bold;}
+small sup {color:red;padding-left:1px;font-weight:bold;}
 span.note-number {color:red;margin-left:-1.2em;}
 .transcript-notes {display:none;}
 #footnote-markers {position:absolute;color:red;list-style:disc inside;}
