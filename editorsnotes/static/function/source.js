@@ -1,17 +1,6 @@
 Seadragon.Config.proxyUrl = '/proxy?url='
 $(document).ready(function() {
 
-  // Initialize tabs.
-  $('#tabs').tabs({
-    select: function(event, ui) { 
-      if (ui.panel.id == 'scans') {
-        if ($('a.pushed').click().length == 0) {
-          $('a.scan:first').click();
-        }
-      }
-    },
-  });
-
   // Initialize scan viewer.
   var viewer = new Seadragon.Viewer('scan-viewer');
   $('#progressbar').progressbar({ value: 0 });
@@ -87,13 +76,14 @@ $(document).ready(function() {
     monitor.start();
   });
 
-  // Load first scan.
-  $('a.scan:first').click();
-
   var footnote = {
+    done: false,
     width: 800,
     display: null,
     setup: function() {
+      if (footnote.done) { return; }
+      footnote.done = true;
+      console.log('setting up footnotes');
       var footnotes = $('a.footnote');
       footnotes.attr('title', 'Click to read footnote');
       footnotes.click(footnote.show);
@@ -187,6 +177,18 @@ $(document).ready(function() {
     }
   }
 
-  footnote.setup();
+  // Initialize tabs.
+  $('#tabs').tabs({
+    show: function(event, ui) { 
+      console.log(ui);
+      if (ui.panel.id == 'scans') {
+        if ($('a.pushed').click().length == 0) {
+          $('a.scan:first').click();
+        }
+      } else if (ui.panel.id == 'transcript') {
+        footnote.setup();
+      }
+    },
+  });
 
 });
