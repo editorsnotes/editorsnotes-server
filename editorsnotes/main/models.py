@@ -154,7 +154,7 @@ class Note(LastUpdateMetadata):
     def excerpt(self):
         return utils.truncate(utils.xhtml_to_text(self.content))
     def __unicode__(self):
-        return self.excerpt()
+        return self.title
     def get_absolute_url(self):
         return '/note/%s/' % self.id
     def get_admin_url(self):

@@ -45,6 +45,9 @@ def index(request):
             obj = entry.get_edited_object()
         except ObjectDoesNotExist:
             continue
+        if entry.content_type.name == 'transcript':
+            obj = obj.source
+            entry.content_type.name = 'source'
         if obj == prev_obj: continue
         e = {}
         e['action'] = entry.action_flag
@@ -53,20 +56,11 @@ def index(request):
             e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
         elif entry.content_type.name == 'source':
             e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
-        elif entry.content_type.name == 'transcript':
-            e['what'] = '<a href="%s">the transcript of %s</a>' % (obj.get_absolute_url(), obj.source)
+        elif entry.content_type.name == 'footnote':
+            e['what'] = '<a href="%s">a footnote</a> for <a href="%s">%s</a>' % (
+                obj.get_absolute_url(), obj.transcript.source.get_absolute_url(), obj.transcript.source)
         elif entry.content_type.name == 'note':
-            e['what'] = '<a href="%s">a note</a>' % obj.get_absolute_url()
-            topics = [ ('<a class="subtle" href="%s">%s</a>' % (ta.topic.get_absolute_url(), ta.topic.preferred_name)) 
-                       for ta in obj.topics.all() ]
-            if len(topics) > 0:
-                e['what'] += ' about '
-                if len(topics) == 1:
-                    e['what'] += topics[0]
-                elif len(topics) == 2:
-                    e['what'] += ' and '.join(topics)
-                else:
-                    e['what'] += (', '.join(topics[:-1]) + ', and ' + topics[-1])
+            e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
         else:
             e['what'] = '<a href="%s">a %s</a>' % (obj.get_absolute_url(), entry.content_type.name)
         e['when'] = utils.timeago(entry.action_time)
