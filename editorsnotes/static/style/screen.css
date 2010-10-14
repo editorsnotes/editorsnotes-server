@@ -323,6 +323,7 @@ span.note-number {color:red;margin-left:-1.2em;}
 .scan-list li {display:inline;}
 #scan-viewer {width:auto;height:400px;background-color:black;border:2px solid black;color:white;}
 #progress-notify {width:400px;height:53px;z-index:10;color:white;}
+.footnote-of p, .footnote-of div {display:inline;}
 aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */
@@ -334,6 +335,7 @@ aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 #activity li {margin-bottom:1.5em;}
 .amp {color:#666;font-family:"Warnock Pro", "Goudy Old Style","Palatino","Book Antiqua", Georgia, serif;font-style:italic;font-weight:normal;font-size:0.89em;}
 .edit-history {color:#666;}
+.footnote-of {margin-bottom:1.5em;}
 #logo {float:left;margin-right:10px;width:510px;}
 #notes-and-queries {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 .note-updated {color:#666;margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:150px;}

@@ -162,7 +162,7 @@ class Note(LastUpdateMetadata):
     class Meta:
         ordering = ['-last_updated']  
 
-class Source(CreationMetadata):
+class Source(LastUpdateMetadata):
     u"""
     A documented source for assertions made in notes. 
     """
@@ -211,7 +211,7 @@ class Scan(CreationMetadata):
     class Meta:
         ordering = ['ordering'] 
 
-class Transcript(CreationMetadata):
+class Transcript(LastUpdateMetadata):
     u"""
     A text transcript of a primary source document.
     """
@@ -228,7 +228,7 @@ class Transcript(CreationMetadata):
     def __unicode__(self):
         return u'Transcript of %s' % self.source
 
-class Footnote(CreationMetadata):
+class Footnote(LastUpdateMetadata):
     u"""
     A footnote attached to a transcript.
     """
@@ -238,6 +238,8 @@ class Footnote(CreationMetadata):
         return etree.tostring(self.content)
     def get_absolute_url(self):
         return '/footnote/%s/' % self.id
+    def get_admin_url(self):
+        return urlresolvers.reverse('admin:main_footnote_change', args=(self.id,))
     def delete(self, *args, **kwargs):
         selector = 'a.footnote[href="%s"]' % self.get_absolute_url()
         results = self.transcript.content.cssselect(selector)

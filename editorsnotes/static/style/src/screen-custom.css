@@ -42,6 +42,7 @@ span.note-number { color:red; margin-left: -1.2em; }
 .scan-list li { display: inline; }
 #scan-viewer { width: auto; height: 400px; background-color: black; border: 2px solid black; color: white; }
 #progress-notify { width: 400px; height: 53px; z-index: 10; color: white; }
+.footnote-of p, .footnote-of div { display: inline; }
 /* Reduced size type with incremental leading
 
    Using this class, it reduces your font size and line-height so that for

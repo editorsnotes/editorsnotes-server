@@ -88,6 +88,7 @@ def topic(request, topic_slug):
     o['notes'] = zip(notes, 
                     [ [ ta.topic for ta in n.topics.exclude(topic=o['topic']) ] for n in notes ],
                     [ _sort_citations(n) for n in notes ])
+    o['thread'] = { 'id': 'topic-%s' % o['topic'].id, 'title': o['topic'].preferred_name }
     return render_to_response(
         'topic.html', o, context_instance=RequestContext(request))
 
@@ -98,6 +99,20 @@ def note(request, note_id):
     o['cites'] = _sort_citations(o['note'])
     return render_to_response(
         'note.html', o, context_instance=RequestContext(request))
+
+@login_required
+def footnote(request, footnote_id):
+    o = {}
+    o['footnote'] = get_object_or_404(Footnote, id=footnote_id)
+    selector = 'a.footnote[href="%s"]' % o['footnote'].get_absolute_url()
+    results = o['footnote'].transcript.content.cssselect(selector)
+    if len(results) == 1:
+        o['footnoted_text'] = results[0].xpath('string()')
+    else:
+        o['footnoted_text'] = 'Footnote %s' % footnote_id
+    o['thread'] = { 'id': 'footnote-%s' % o['footnote'].id, 'title': o['footnoted_text'] }
+    return render_to_response(
+        'footnote.html', o, context_instance=RequestContext(request))
 
 @login_required
 def source(request, source_id):

@@ -76,7 +76,7 @@
 
       <section id="transcript" class="span-23 last">
         {% if source.transcript %}
-        <article id="transcript{{ source.transcript.id }}" class="transcript">
+        <article id="transcript-{{ source.transcript.id }}" class="transcript">
           <div id="transcript-content" class="span-23 last">
             {{ source.transcript.content_as_html|typogrify }}
           </div>
@@ -84,6 +84,7 @@
             {% for note in source.transcript.footnotes.all %}
             <div id="note-{{ note.id }}" class="transcript-note">
               {{ note.content_as_html|typogrify }}
+              <a href="{{ note.get_absolute_url }}">More information about this footnote</a>
             </div>
             {% endfor %}
           </div>

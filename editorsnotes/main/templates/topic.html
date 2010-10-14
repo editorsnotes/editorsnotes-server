@@ -73,26 +73,7 @@
       </section>
 
       <section id="discuss" class="span-23 last">
-        <div id="disqus_thread"></div>
-        <script type="text/javascript">
-var disqus_identifier = 'topic-{{ topic.id }}';
-var disqus_title = '{{ topic.preferred_name }}';
-{% if request.get_host == '127.0.0.1:8000' %}
-var disqus_developer = 1;
-{% endif %}
-{% if user.is_authenticated %}
-var disqus_def_name = '{{ user.username }}';
-{% if user.email %}
-var disqus_def_email = '{{ user.email }}';
-{% endif %}
-{% endif %}
-(function() {
-  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-  dsq.src = 'http://editorsnotes.disqus.com/embed.js';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-})();
-        </script>
-        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript=editorsnotes">discussion</a>.</noscript>
+        {% include "disqus.include" %}
       </section>
 
       <section id="notes" class="span-23 last">

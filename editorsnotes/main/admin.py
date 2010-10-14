@@ -88,49 +88,7 @@ class NoteAdmin(VersionAdmin):
     list_display = ('excerpt', 'last_updater', 'last_updated_display')
     readonly_fields = ('edit_history',)
 
-################################################################################
-
-class ModelAdmin(admin.ModelAdmin):
-    def save_model(self, request, obj, form, change):
-        if not change: # adding new object
-            obj.creator = request.user
-        obj.save()
-    def save_formset(self, request, form, formset, change):
-        instances = formset.save(commit=False)
-        for instance in instances:
-            instance.creator = request.user
-            instance.save()
-        formset.save_m2m()
-    def response_add(self, request, obj, post_url_continue='../%s/'):
-        response = super(ModelAdmin, self).response_add(request, obj, post_url_continue)
-        if (request.POST.has_key('_continue') or 
-            request.POST.has_key('_popup') or 
-            request.POST.has_key('_addanother')):
-            return response
-        else:
-            return HttpResponseRedirect(obj.get_absolute_url())
-    def response_change(self, request, obj):
-        response = super(ModelAdmin, self).response_change(request, obj)
-        if request.POST.has_key('_return_to') and not (
-            request.POST.has_key('_continue') or 
-            request.POST.has_key('_saveasnew') or 
-            request.POST.has_key('_addanother')):
-            return HttpResponseRedirect(request.POST['_return_to'])
-        else:
-            return response
-    def delete_view(self, request, object_id, extra_context=None):
-        response = super(ModelAdmin, self).delete_view(request, object_id, extra_context)
-        if request.POST.has_key('_return_to'):
-            return HttpResponseRedirect(request.POST['_return_to'])
-        else:
-            return response
-    def message_user(self, request, message):
-        if 'success' in message.lower(): 
-            messages.success(request, message)
-        else:
-            messages.info(request, message)
-
-class SourceAdmin(ModelAdmin):
+class SourceAdmin(VersionAdmin):
     inlines = (ScanInline,)
     list_display = ('__unicode__', 'type', 'creator', 'created_display')
     class Media:
@@ -139,7 +97,7 @@ class SourceAdmin(ModelAdmin):
               'function/jquery.timeago.js',
               'function/admin.js')
 
-class TranscriptAdmin(ModelAdmin):
+class TranscriptAdmin(VersionAdmin):
     inlines = (FootnoteInline,)
     list_display = ('__unicode__', 'creator', 'created_display')
     def save_formset(self, request, form, formset, change):
@@ -159,8 +117,11 @@ class TranscriptAdmin(ModelAdmin):
               'function/jquery.timeago.js',
               'function/admin-transcript.js')
 
+class FootnoteAdmin(VersionAdmin):
+    readonly_fields = ('edit_history',)
+
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Note, NoteAdmin)
 admin.site.register(Source, SourceAdmin)
 admin.site.register(Transcript, TranscriptAdmin)
-
+admin.site.register(Footnote, FootnoteAdmin)

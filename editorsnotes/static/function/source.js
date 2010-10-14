@@ -1,6 +1,19 @@
 Seadragon.Config.proxyUrl = '/proxy?url='
 $(document).ready(function() {
 
+  // Parse URL params.
+  var url_params = {};
+  (function () {
+    var e,
+        a = /\+/g,  // Regex for replacing addition symbol with a space
+        r = /([^&=]+)=?([^&]*)/g,
+        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+        q = window.location.search.substring(1);
+    while (e = r.exec(q)) {
+      url_params[d(e[1])] = d(e[2]);
+    }
+  })();
+
   // Scan processing monitor for progress bar.
   var monitor = {
     init: function(viewer, url) {
@@ -191,7 +204,16 @@ $(document).ready(function() {
           $('a.scan:first').click();
         }
       } else if (ui.panel.id == 'transcript') {
+        var firstshow = (! footnote.done);
         footnote.setup();
+        if (firstshow && 'fn' in url_params) {
+          var fn = $('a.footnote[href="/footnote/' + url_params.fn + '/"]');
+          if (fn.length == 1) {
+            window.setTimeout(function() {
+              $('html,body').scrollTop(fn.offset().top - 10);
+            }, 100);
+          }
+        }
       }
     },
   });

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load typogrify display %}
+
+{% block title %}: "{{ footnoted_text }}"{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+  $(function() {
+    $('#tabs').tabs();
+  });
+</script>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/media/style/disqus.css" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+    <header>
+      <h3>
+      {% filter typogrify %}
+      "{{ footnoted_text }}"
+      {% endfilter %}
+      </h3>
+      <div class="footnote-of">
+        <span class="quiet">Footnote for </span>
+        {% with footnote.transcript.source as source %}
+        <a href="{{ source.get_absolute_url }}?fn={{ footnote.id }}#transcript">
+          {{ source.description|as_html|typogrify }}
+        </a>
+        {% endwith %}
+      </div>
+    </header>
+
+    <div id="tabs" class="span-24 last">
+      <ul>
+        <li><a href="#footnote">Footnote</a></li>
+        <li><a href="#discuss">Discussion</a></li>
+      </ul>
+
+      <section id="footnote" class="span-23 last">
+        <article id="footnote-{{ footnote.id }}-content" class="note">
+          <div class="note-content">
+            {{ footnote.content|as_html|typogrify }}
+          </div>
+          <div class="span-2">
+            <a class="button" href="{{ footnote.get_admin_url }}?return_to={{ footnote.get_absolute_url }}">Edit</a>
+          </div>
+          <div class="edit-history">
+            {{ footnote.edit_history|safe }}
+          </div>
+        </article>
+      </section>
+
+      <section id="discuss" class="span-23 last">
+        {% include "disqus.include" %}
+      </section>
+    </div>
+
+{% endblock %}
