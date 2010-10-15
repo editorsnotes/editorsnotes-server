@@ -1,0 +1,8 @@
+{% load typogrify display %}
+
+<div class="citation">
+  {% filter typogrify %}
+  {{ cite.as_html|safe }}
+  <a href="{{ cite.source.get_absolute_url }}">More info</a>
+  {% endfilter %}
+</div>

@@ -1,3 +1,5 @@
+{% load typogrify display %}
+
       <article id="note{{ note.id }}" class="note">
         <div class="note-content">
           {{ note.content_as_html|safe }}
@@ -16,9 +18,7 @@
         <h4>Primary sources</h4>
         <div class="citation-list">
           {% for cite in cites.primary %}
-          <div class="citation">
-            {{ cite.as_html|safe }}
-          </div>
+            {% include "citation.include" %}
           {% endfor %}
         </div>
         {% endif %}
@@ -26,9 +26,7 @@
         <h4>Secondary sources</h4>
         <div class="citation-list">
           {% for cite in cites.secondary %}
-          <div class="citation">
-            {{ cite.as_html|safe }}
-          </div>
+            {% include "citation.include" %}
           {% endfor %}
         </div>
         {% endif %}

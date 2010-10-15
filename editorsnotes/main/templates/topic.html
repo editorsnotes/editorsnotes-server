@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load typogrify display %}
 
 {% block title %}: {{ topic.preferred_name }}{% endblock %}
 
@@ -45,10 +46,7 @@
           <h4>Primary sources</h4>
           <div class="citation-list">
             {% for cite in summary_cites.primary %}
-            <div class="citation">
-              {{ cite.as_html|safe }}
-              <a href="{{ cite.source.get_absolute_url }}">More info</a>
-            </div>
+              {% include "citation.include" %}
             {% endfor %}
           </div>
           {% endif %}
@@ -56,10 +54,7 @@
           <h4>Secondary sources</h4>
           <div class="citation-list">
             {% for cite in summary_cites.secondary %}
-            <div class="citation">
-              {{ cite.as_html|safe }}
-              <a href="{{ cite.source.get_absolute_url }}">More info</a>
-            </div>
+              {% include "citation.include" %}
             {% endfor %}
           </div>
           {% endif %}

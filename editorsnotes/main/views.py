@@ -39,8 +39,8 @@ def index(request):
     o['topic_list_1'] = topics[:index]
     o['topic_list_2'] = topics[index:]
     o['activity'] = []
-    prev_obj = None
-    for entry in LogEntry.objects.filter(content_type__app_label='main')[:20]:
+    listed_objects = []
+    for entry in LogEntry.objects.filter(content_type__app_label='main')[:30]:
         try:
             obj = entry.get_edited_object()
         except ObjectDoesNotExist:
@@ -48,7 +48,7 @@ def index(request):
         if entry.content_type.name == 'transcript':
             obj = obj.source
             entry.content_type.name = 'source'
-        if obj == prev_obj: continue
+        if obj in listed_objects: continue
         e = {}
         e['action'] = entry.action_flag
         e['who'] = entry.user
@@ -65,7 +65,7 @@ def index(request):
             e['what'] = '<a href="%s">a %s</a>' % (obj.get_absolute_url(), entry.content_type.name)
         e['when'] = utils.timeago(entry.action_time)
         o['activity'].append(e)
-        prev_obj = obj
+        listed_objects.append(obj)
     return render_to_response(
         'index.html', o, context_instance=RequestContext(request))
 

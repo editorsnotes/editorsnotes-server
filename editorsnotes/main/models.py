@@ -266,16 +266,6 @@ class Citation(CreationMetadata):
             s = etree.SubElement(e, 'span')
             s.text = self.locator + '.'
             utils.prepend_space(s)
-        if self.source.url:
-            a = etree.SubElement(e, 'a')
-            a.attrib['href'] = self.source.url
-            a.text = self.source.url
-            utils.prepend_space(a)
-        if self.source.transcript:
-            a = etree.SubElement(e, 'a')
-            a.attrib['href'] = self.source.transcript.get_absolute_url()
-            a.text = 'View transcript'
-            utils.prepend_space(a)
         return etree.tostring(e)
 
 class UserProfile(models.Model):

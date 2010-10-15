@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% load typogrify display %}
 
-{% block title %}: Note #{{ note.id }}{% endblock %}
+{% block title %}: {{ note.title }}{% endblock %}
 
 {% block content %}
     <header>
-      <h2>Note #{{ note.id }}</h2>
+      <h2>{{ note.title|typogrify }}</h2>
     </header>
-    <section id="note" class="span-18 last">
+    <section id="note" class="span-24 last">
       {% include "note.include" %}
     </section>
 {% endblock %}
