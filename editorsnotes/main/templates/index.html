@@ -45,11 +45,11 @@
     <section id="activity" class="span-9 last">
       <h3>Recent Activity</h3>
       {% if activity %}
-      <ul>
+      <ul class="activity-log">
       {% for entry in activity %}
-      <li>
+      <li class="activity-log-entry">
         {% filter typogrify %}
-        {{ entry.who|display_user }} edited {{ entry.what|safe }} {{ entry.when|safe }}.
+        {{ entry.who|as_link }} edited {{ entry.what|as_link }} {{ entry.when|timeago }}.
         {% endfilter %}
       </li>
       {% endfor %}

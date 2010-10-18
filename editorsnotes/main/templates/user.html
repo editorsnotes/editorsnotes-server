@@ -1,40 +1,29 @@
 {% extends "base.html" %}
+{% load typogrify display %}
 
 {% block title %}: {{ profile.display_name }}{% endblock %}
 
 {% block content %}
     <header>
       <h2>{{ profile.display_name }}</h2>
-      <div id="loggedin" class="quiet">
-        Last logged in {{ profile.last_login_display|safe }}</span>
+      <div id="loggedin" class="quiet append-bottom">
+        Last logged in {{ profile.user.last_login|timeago }}</span>
       </div>    
     </header>
 
-    {% if notes %}
-    <section id="notes-and-queries"> 
-      <h3>Notes and Queries</h3>
-      <ul class="note-list">
-      {% for note in notes %}
-        <li>
-          <ul class="topic-list">
-          {% for topic in note.topics.all %}
-            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
-          {% empty %}
-            <li><em>no topics assigned</em></li>
-          {% endfor %}
-          </ul>
-          <div class="note-link">
-            <span class="quiet">{{ note.type }}:</span>
-            <a href="{{ note.get_admin_url }}">{{ note.excerpt }}</a>
-          </div>
-          <div class="note-updated">{{ note.last_updated_display|safe }}</div>
+    <section id="user_activity" class="span-24 last"> 
+      <h3>Recent edits</h3>
+      <ul class="activity-log">
+        {% for entry in log_entries %}
+        {% with entry.get_edited_object as object %}
+        <li class="activity-log-entry">
+          {{ object|as_link }}
+          <span class="quiet">edited {{ entry.action_time|timeago }}.</span> 
         </li>
-      {% endfor %}
+        {% endwith %}
+        {% empty %}
+        <li>{{ profile.display_name }} hasn't made any edits yet.</li>
+        {% endfor %}
       </ul>
     </section>
-    {% else %}
-    <div id="no-notes-or-queries">
-      {{ profile.display_name }} hasn't created or edited any notes or queries yet.
-    </div>
-    {% endif %}
 {% endblock %}

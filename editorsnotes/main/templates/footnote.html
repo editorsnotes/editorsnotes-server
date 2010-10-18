@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load typogrify display %}
 
-{% block title %}: "{{ footnoted_text }}"{% endblock %}
+{% block title %}: "{{ footnote.footnoted_text }}"{% endblock %}
 
 {% block js %}
 <script type="text/javascript">
@@ -19,13 +19,13 @@
     <header>
       <h3>
       {% filter typogrify %}
-      "{{ footnoted_text }}"
+      "{{ footnote.footnoted_text }}"
       {% endfilter %}
       </h3>
       <div class="footnote-of">
         <span class="quiet">Footnote for </span>
         {% with footnote.transcript.source as source %}
-        <a href="{{ source.get_absolute_url }}?fn={{ footnote.id }}#transcript">
+        <a class="model-link source-link" href="{{ source.get_absolute_url }}?fn={{ footnote.id }}#transcript">
           {{ source.description|as_html|typogrify }}
         </a>
         {% endwith %}
@@ -47,7 +47,7 @@
             <a class="button" href="{{ footnote.get_admin_url }}?return_to={{ footnote.get_absolute_url }}">Edit</a>
           </div>
           <div class="edit-history">
-            {{ footnote.edit_history|safe }}
+            {{ footnote|display_edit_history }}
           </div>
         </article>
       </section>

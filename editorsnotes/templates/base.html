@@ -42,7 +42,7 @@
       <div class="message-list">
         {% for message in messages %}
         <div class="message{% if message.tags %} {{ message.tags }}{% endif %}">
-          {{ message }}
+          {{ message|safe }}
         </div>
         {% endfor %}
       </div>

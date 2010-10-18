@@ -2,9 +2,12 @@ from models import *
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models.fields import FieldDoesNotExist
 from django.http import HttpResponseRedirect
 import reversion
+from lxml import etree
 
 class FootnoteAdminForm(forms.ModelForm):
     stamp = forms.CharField(required=False, widget=forms.HiddenInput)
@@ -43,7 +46,12 @@ class VersionAdmin(reversion.admin.VersionAdmin):
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         for instance in instances:
-            instance.creator = request.user
+            try:
+                instance.creator
+            except ObjectDoesNotExist:
+                instance.creator = request.user
+            if 'last_updated' in instance._meta.get_all_field_names():
+                instance.last_updater = request.user
             instance.save()
         formset.save_m2m()
     def response_add(self, request, obj, post_url_continue='../%s/'):
@@ -63,34 +71,38 @@ class VersionAdmin(reversion.admin.VersionAdmin):
             return HttpResponseRedirect(request.POST['_return_to'])
         else:
             return response
-    def delete_view(self, request, object_id, extra_context=None):
-        response = super(VersionAdmin, self).delete_view(request, object_id, extra_context)
-        if request.POST.has_key('_return_to'):
-            return HttpResponseRedirect(request.POST['_return_to'])
-        else:
-            return response
+    # def delete_view(self, request, object_id, extra_context=None):
+    #     response = super(VersionAdmin, self).delete_view(request, object_id, extra_context)
+    #     if request.POST.has_key('_return_to'):
+    #         return HttpResponseRedirect(request.POST['_return_to'])
+    #     else:
+    #         return response
     def message_user(self, request, message):
         if 'success' in message.lower(): 
             messages.success(request, message)
         else:
             messages.info(request, message)
+
+class TopicAdmin(VersionAdmin):
+    inlines = (AliasInline, CitationInline)
     class Media:
         js = ('function/jquery-1.4.2.min.js',
               'function/wymeditor/jquery.wymeditor.pack.js',
               'function/jquery.timeago.js',
               'function/admin.js')
 
-class TopicAdmin(VersionAdmin):
-    inlines = (AliasInline, CitationInline)
-
 class NoteAdmin(VersionAdmin):
     inlines = (CitationInline, TopicAssignmentInline)
-    list_display = ('excerpt', 'last_updater', 'last_updated_display')
-    readonly_fields = ('edit_history',)
+    list_display = ('title', 'last_updater', 'last_updated')
+    class Media:
+        js = ('function/jquery-1.4.2.min.js',
+              'function/wymeditor/jquery.wymeditor.pack.js',
+              'function/jquery.timeago.js',
+              'function/admin.js')
 
 class SourceAdmin(VersionAdmin):
     inlines = (ScanInline,)
-    list_display = ('__unicode__', 'type', 'creator', 'created_display')
+    list_display = ('__unicode__', 'type', 'creator', 'created')
     class Media:
         js = ('function/jquery-1.4.2.min.js',
               'function/wymeditor/jquery.wymeditor.pack.js',
@@ -99,16 +111,24 @@ class SourceAdmin(VersionAdmin):
 
 class TranscriptAdmin(VersionAdmin):
     inlines = (FootnoteInline,)
-    list_display = ('__unicode__', 'creator', 'created_display')
+    list_display = ('__unicode__', 'creator', 'created')
     def save_formset(self, request, form, formset, change):
-        super(TranscriptAdmin, self).save_formset(request, form, formset, change)
         transcript = form.instance
+        # Update the transcript HTML to remove any links to deleted footnotes.
         for footnote_form in formset.forms:
-            if 'stamp' in footnote_form.cleaned_data:
+            if formset._should_delete_form(footnote_form):
+                footnote_form.instance.remove_self_from(transcript)
+        # Save the transcript formset.
+        super(TranscriptAdmin, self).save_formset(request, form, formset, change)
+        # Update the transcript HTML with correct links to any new footnotes.
+        for footnote_form in formset.forms:
+            if (hasattr(footnote_form, 'cleaned_data') and 
+                'stamp' in footnote_form.cleaned_data):
                 stamp = footnote_form.cleaned_data['stamp']
                 if stamp:
                     a = transcript.content.cssselect('a.footnote[href="' + stamp + '"]')[0]
                     a.attrib['href'] = footnote_form.instance.get_absolute_url()
+        # Save the transcript HTML.
         transcript.save()
     class Media:
         css = { 'all': ('style/admin-transcript.css',) }
@@ -118,7 +138,11 @@ class TranscriptAdmin(VersionAdmin):
               'function/admin-transcript.js')
 
 class FootnoteAdmin(VersionAdmin):
-    readonly_fields = ('edit_history',)
+    class Media:
+        js = ('function/jquery-1.4.2.min.js',
+              'function/wymeditor/jquery.wymeditor.pack.js',
+              'function/jquery.timeago.js',
+              'function/admin.js')
 
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Note, NoteAdmin)

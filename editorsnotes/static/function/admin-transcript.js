@@ -62,6 +62,8 @@ $(document).ready(function () {
       }
     });
 
+    $('#footnotes-group .add-row a').hide();
+
     // Friendlier labels on footnote rows.
     $('.dynamic-footnotes').each(function(index) {
       var row_id = $(this).attr('id');

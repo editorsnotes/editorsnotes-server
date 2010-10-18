@@ -39,33 +39,26 @@ def index(request):
     o['topic_list_1'] = topics[:index]
     o['topic_list_2'] = topics[index:]
     o['activity'] = []
-    listed_objects = []
-    for entry in LogEntry.objects.filter(content_type__app_label='main')[:30]:
+    object_urls = set()
+    for entry in LogEntry.objects.filter(
+        content_type__app_label='main',
+        content_type__model__in=['topic', 'note', 'source', 'transcript', 'footnote']):
+        object_url = '/%s/%s/' % (entry.content_type.model, entry.object_id)
+        if object_url in object_urls: 
+            continue
+        object_urls.add(object_url)
         try:
             obj = entry.get_edited_object()
         except ObjectDoesNotExist:
             continue
-        if entry.content_type.name == 'transcript':
-            obj = obj.source
-            entry.content_type.name = 'source'
-        if obj in listed_objects: continue
+        object_urls.add(obj.get_absolute_url())
         e = {}
-        e['action'] = entry.action_flag
-        e['who'] = entry.user
-        if entry.content_type.name == 'topic':
-            e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
-        elif entry.content_type.name == 'source':
-            e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
-        elif entry.content_type.name == 'footnote':
-            e['what'] = '<a href="%s">a footnote</a> for <a href="%s">%s</a>' % (
-                obj.get_absolute_url(), obj.transcript.source.get_absolute_url(), obj.transcript.source)
-        elif entry.content_type.name == 'note':
-            e['what'] = '<a href="%s">%s</a>' % (obj.get_absolute_url(), obj)
-        else:
-            e['what'] = '<a href="%s">a %s</a>' % (obj.get_absolute_url(), entry.content_type.name)
-        e['when'] = utils.timeago(entry.action_time)
+        e['who'] = UserProfile.get_for(entry.user)
+        e['what'] = obj
+        e['when'] = entry.action_time
         o['activity'].append(e)
-        listed_objects.append(obj)
+        if len(o['activity']) == 25: 
+            break
     return render_to_response(
         'index.html', o, context_instance=RequestContext(request))
 
@@ -98,13 +91,8 @@ def note(request, note_id):
 def footnote(request, footnote_id):
     o = {}
     o['footnote'] = get_object_or_404(Footnote, id=footnote_id)
-    selector = 'a.footnote[href="%s"]' % o['footnote'].get_absolute_url()
-    results = o['footnote'].transcript.content.cssselect(selector)
-    if len(results) == 1:
-        o['footnoted_text'] = results[0].xpath('string()')
-    else:
-        o['footnoted_text'] = 'Footnote %s' % footnote_id
-    o['thread'] = { 'id': 'footnote-%s' % o['footnote'].id, 'title': o['footnoted_text'] }
+    o['thread'] = { 'id': 'footnote-%s' % o['footnote'].id, 
+                    'title': o['footnote'].footnoted_text() }
     return render_to_response(
         'footnote.html', o, context_instance=RequestContext(request))
 
@@ -127,7 +115,24 @@ def user(request, username=None):
     else:
         user = get_object_or_404(User, username=username)
     o['profile'] = UserProfile.get_for(user)
-    o['notes'] = Note.objects.filter(Q(creator=user) | Q(last_updater=user))
+    o['log_entries'] = []
+    object_urls = set()
+    for entry in LogEntry.objects.filter(
+        content_type__app_label='main', 
+        content_type__model__in=['topic', 'note', 'source', 'transcript', 'footnote'], 
+        user=user):
+        object_url = '/%s/%s/' % (entry.content_type.model, entry.object_id)
+        if object_url in object_urls: 
+            continue
+        object_urls.add(object_url)
+        try:
+            obj = entry.get_edited_object()
+        except ObjectDoesNotExist:
+            continue
+        object_urls.add(obj.get_absolute_url())
+        o['log_entries'].append(entry)
+        if len(o['log_entries']) == 50: 
+            break
     return render_to_response(
         'user.html', o, context_instance=RequestContext(request))
 

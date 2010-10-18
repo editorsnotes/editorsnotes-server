@@ -23,7 +23,7 @@
         <span class="quiet">Related topics:</span> 
         <ul class="topic-list">
           {% for related_topic in related_topics %}
-          <li><a href="{{ related_topic.get_absolute_url }}">{{ related_topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
+          <li>{{ related_topic|as_link }}</a>{% if not forloop.last %}, {% endif %}</li>
           {% endfor %}
         </ul>
         {% endif %}
@@ -40,7 +40,7 @@
       <section id="article" class="span-23 last">
         <article id="{{ topic.slug }}-summary" class="note">
           <div class="note-content">
-            {{ topic.summary_as_html|safe }}
+            {{ topic.summary|as_html }}
           </div>
           {% if summary_cites.primary %}
           <h4>Primary sources</h4>
@@ -62,7 +62,7 @@
             <a class="button" href="{{ topic.get_admin_url }}?return_to={{ topic.get_absolute_url }}">Edit</a>
           </div>
           <div class="edit-history">
-            {{ topic.edit_history|safe }}
+            {{ topic|display_edit_history }}
           </div>
         </article>
       </section>

@@ -1,9 +1,10 @@
-{% with note.topics.all as topics %}
+{% load display %}
+{% with note.topics.all as topic_assignments %}
 {% if topics %}
 <div class="quiet">Related topics:
   <ul class="topic-list">
-    {% for topic in topics %}
-    <li><a class="quiet subtle" href="{{ topic.topic.get_absolute_url }}">{{ topic.topic.preferred_name }}</a>{% if not forloop.last %}, {% endif %}</li>
+    {% for topic_assignment in topic_assignments %}
+    <li>{{ topic_assignment.topic|as_link }}{% if not forloop.last %}, {% endif %}</li>
     {% endfor %}
   </ul>
 </div>

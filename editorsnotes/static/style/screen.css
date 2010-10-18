@@ -299,20 +299,20 @@ hr {margin-bottom:2.95em;}
 #stripe-2 {position:absolute;z-index:-1;top:42px;height:44px;width:100%;background:#aeb4be;}
 #logo a {text-decoration:none;}
 #searchinput input {width:338px;}
-#topics li, #sources li {text-indent:-1em;padding-left:1em;}
+#topics li, #sources li, .activity-log li {text-indent:-1em;padding-left:1em;}
 #sources p {margin:0;}
 .searchresult {margin-bottom:1.5em;}
+.searchresult a.model-link {text-decoration:underline;}
 .edit-history {text-align:right;}
 .citation {text-indent:-2em;padding-left:2em;}
 .citation div, .citation p {display:inline;}
-.note-link {vertical-align:bottom;}
 .message-list {margin-top:-1.5em;}
 .error, .notice, .success {padding:0.4em;}
 .errorlist li {padding:.8em;background:#fbe3e4;color:#8a1f11;border:2px solid #fbc2c4;}
 .highlighted {font-weight:bold;}
 .awesome {background-color:#ff8000 !important;font-family:'Lucida Grande', Tahoma, Arial, Verdana, sans-serif !important;font-size:12px !important;}
-a.subtle, a.footnote, a.user-link {text-decoration:none;}
-a.subtle:focus, a.subtle:hover, a.user-link:hover {text-decoration:underline;color:#222;}
+a.subtle, a.footnote, a.model-link {text-decoration:none;}
+a.subtle:focus, a.subtle:hover, a.model-link:hover {text-decoration:underline;color:#222;}
 a.footnote:focus, a.footnote:hover, a.active-footnote, a.hover-footnote, span.hover-footnote, span.footnote-number:hover {color:red;}
 span.footnote-number {cursor:pointer;}
 small sup {color:red;padding-left:1px;font-weight:bold;}
@@ -323,16 +323,15 @@ span.note-number {color:red;margin-left:-1.2em;}
 .scan-list li {display:inline;}
 #scan-viewer {width:auto;height:400px;background-color:black;border:2px solid black;color:white;}
 #progress-notify {width:400px;height:53px;z-index:10;color:white;}
-.footnote-of p, .footnote-of div {display:inline;}
+a.model-link p, a.model-link div {display:inline;}
+.activity-log-entry .dquo {margin-left:0;}
 aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */
 #searchinput {float:left;margin-right:10px;width:350px;}
-.note-link {float:left;margin-right:10px;width:750px;padding-left:40px;}
 .related-topics {margin-bottom:1.5em;}
 .message-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #searchresults {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
-#activity li {margin-bottom:1.5em;}
 .amp {color:#666;font-family:"Warnock Pro", "Goudy Old Style","Palatino","Book Antiqua", Georgia, serif;font-style:italic;font-weight:normal;font-size:0.89em;}
 .edit-history {color:#666;}
 .footnote-of {margin-bottom:1.5em;}

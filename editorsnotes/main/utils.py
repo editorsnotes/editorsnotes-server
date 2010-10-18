@@ -12,7 +12,7 @@ def xhtml_to_text(xhtml):
     if string: string = string.strip() 
     return string
 
-def truncate(text, length=80):
+def truncate(text, length=120):
     if len(text) <= length:
         return text
     l = text[:(length/2)].rsplit(' ', 1)[0]

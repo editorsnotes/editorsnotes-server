@@ -17,16 +17,34 @@ def as_html(tree):
     return mark_safe(etree.tostring(tree))
 
 @register.filter
-def display_user(user, autoescape=None):
-    profile = UserProfile.get_for(user)
-    esc = autoescape and conditional_escape or (lambda x: x)
+def as_link(obj):
     return mark_safe(
-        '<a class="user-link" href="%s">%s</a>' % (
-            profile.get_absolute_url(), esc(profile.display_name)))
-display_user.needs_autoescape = True
+        '<a class="model-link %s-link" href="%s">%s</a>' % (
+            obj._meta.module_name, obj.get_absolute_url(), obj.as_html()))
 
 @register.filter
 def timeago(datetime):
     return mark_safe(
         '<time class="timeago" datetime="%s">%s</time>' % (
             datetime_isoformat(datetime), datetime.strftime('%I:%M%p, %b %d %Y')))
+
+@register.filter
+def display_last_updated(obj):
+    if 'last_updated' in obj._meta.get_all_field_names():
+        return mark_safe(
+            '''<div class="last-updated">Last edited by %s %s.</div>''' % (
+                as_link(UserProfile.get_for(obj.last_updater)), timeago(obj.last_updated)))
+    else:
+        return mark_safe(
+            '''<div class="last-updated">Last edited by %s %s.</div>''' % (
+                as_link(UserProfile.get_for(obj.creator)), timeago(obj.created)))
+
+@register.filter
+def display_edit_history(obj):
+    return mark_safe(
+        '''<div class="edit-history">
+Created by %s %s.<br/>
+Last edited by %s %s.</div>''' % (
+            as_link(UserProfile.get_for(obj.creator)), timeago(obj.created),
+            as_link(UserProfile.get_for(obj.last_updater)), timeago(obj.last_updated)))
+

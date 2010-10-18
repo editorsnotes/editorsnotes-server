@@ -78,12 +78,12 @@
         {% if source.transcript %}
         <article id="transcript-{{ source.transcript.id }}" class="transcript">
           <div id="transcript-content" class="span-23 last">
-            {{ source.transcript.content_as_html|typogrify }}
+            {{ source.transcript.content|as_html|typogrify }}
           </div>
           <div id="transcript-notes" class="span-23 last">
             {% for note in source.transcript.footnotes.all %}
             <div id="note-{{ note.id }}" class="transcript-note">
-              {{ note.content_as_html|typogrify }}
+              {{ note.content|as_html|typogrify }}
               <a href="{{ note.get_absolute_url }}">More information about this footnote</a>
             </div>
             {% endfor %}
@@ -91,7 +91,7 @@
           <div class="span-23 last">
             <a class="button" href="{{ source.transcript.get_admin_url }}?return_to={{ source.get_absolute_url }}">Edit</a>
             <div class="edit-history">
-              {{ source.transcript.edit_history|safe }}
+              {{ source.transcript|display_edit_history }}
             </div>
           </div>
         </article>

@@ -4,6 +4,7 @@ from django.test import TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 from django.forms.formsets import formset_factory
 from django.db import IntegrityError, transaction
+from lxml import etree
 from models import *
 import utils
 
@@ -85,7 +86,7 @@ class NoteTestCase(TestCase):
             content=u'<style>garbage</style><h1>hey</h1><p>this is a <em>note</em></p>', 
             creator=self.user, last_updater=self.user)
         self.assertEquals(
-            note.content_as_html(),
+            etree.tostring(note.content),
             '<div><h1>hey</h1><p>this is a <em>note</em></p></div>')
         note.delete()
     def testAddCitations(self):
@@ -94,7 +95,7 @@ class NoteTestCase(TestCase):
             creator=self.user, last_updater=self.user)
         source = Source.objects.create(
             description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
-            type='P', creator=self.user)
+            type='P', creator=self.user, last_updater=self.user)
         note.citations.create(source=source, locator='98-113', creator=self.user)
         self.assertEquals(1, len(note.citations.all()))
         self.assertEquals(source, note.citations.all()[0].source)

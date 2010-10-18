@@ -2,7 +2,7 @@
 
 {% block title %}: Results for '{{ query }}'{% endblock %}
 
-{% load highlight display %}
+{% load highlight display typogrify %}
 
 {% block content %}
 <div id="searchresults" class="span-24 last">
@@ -13,15 +13,7 @@
     {% for result in results %}
     <li class="searchresult">
       {{ result.verbose_name }}:
-      <a href="{{ result.object.get_absolute_url }}">
-        {{ result.title }}
-      </a>
-      {% if result.object.last_updater %}
-      <div class="quiet">
-        Last edited by {{ result.object.last_updater|display_user }}
-        {{ result.object.last_updated|timeago }}.
-      </div>
-      {% endif %}
+      {{ result.object|as_link }}
       <div>
         {% highlight result.text with query %}
       </div>
