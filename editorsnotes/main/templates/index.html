@@ -49,7 +49,9 @@
       {% for entry in activity %}
       <li class="activity-log-entry">
         {% filter typogrify %}
-        {{ entry.who|as_link }} edited {{ entry.what|as_link }} {{ entry.when|timeago }}.
+        <span class="quiet">{{ entry.who|as_link }} edited</span> 
+        {{ entry.what|as_link }}
+        <span class="quiet">{{ entry.when|timeago }}.</span>
         {% endfilter %}
       </li>
       {% endfor %}
