@@ -104,6 +104,11 @@ def source(request, source_id):
             content_type=ContentType.objects.get_for_model(Topic)) ]
     o['scans'] = o['source'].scans.all()
     o['domain'] = Site.objects.get_current().domain
+    notes = [ c.content_object for c in o['source'].citations.filter(
+            content_type=ContentType.objects.get_for_model(Note)) ]
+    o['notes'] = zip(notes, 
+                     [ [ ta.topic for ta in n.topics.all() ] for n in notes ],
+                     [ _sort_citations(n) for n in notes ])    
     return render_to_response(
         'source.html', o, context_instance=RequestContext(request))
 

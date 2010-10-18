@@ -1,6 +1,7 @@
 {% load typogrify display %}
 
       <article id="note-{{ note.id }}" class="note">
+        <h5>{{ note.title }}</h5>
         <div class="note-content">
           {{ note.content|as_html }}
         </div>
