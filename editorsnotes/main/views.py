@@ -52,20 +52,32 @@ def index(request):
         o['user_activity'].append({ 'what': obj, 'when': entry.action_time })
         if len(o['user_activity']) == max_count:
             break
-    for model in [Topic, Note, Source, Transcript]:
+    for model in [Topic, Note, Source]:
         model_name = model._meta.module_name
-        if model_name == 'transcript':
-            listname = 'source_list'
-        else:
-            listname = '%s_list' % model_name
-        o[listname] = model.objects.exclude(
+        listname = '%s_list' % model_name
+        o[listname] = list(model.objects.exclude(
             id__in=object_ids[model_name]).order_by(
-            '-last_updated')[:max_count]
-    o['source_list'] = sorted(o['source_list'],
+            '-last_updated')[:max_count])
+    transcript_list = list(Transcript.objects.select_related(
+            'source').exclude(id__in=object_ids['transcript']).order_by(
+            '-last_updated')[:max_count])
+    o['source_list'] = sorted(o['source_list'] + transcript_list,
                               key=lambda x: x.last_updated, 
                               reverse=True)[:max_count]
     return render_to_response(
         'index.html', o, context_instance=RequestContext(request))
+
+@login_required
+def all_topics(request):
+    pass
+
+@login_required
+def all_sources(request):
+    pass
+
+@login_required
+def all_notes(request):
+    pass
 
 @login_required
 def topic(request, topic_slug):
@@ -127,9 +139,9 @@ def user(request, username=None):
     o['profile'] = UserProfile.get_for(user)
     o['log_entries'] = []
     object_urls = set()
-    for entry in LogEntry.objects.filter(
+    for entry in LogEntry.objects.select_related('content_type__model').filter(
         content_type__app_label='main', 
-        content_type__model__in=['topic', 'note', 'source', 'transcript', 'footnote'], 
+        content_type__model__in=['topic', 'note', 'source', 'transcript'], 
         user=user):
         object_url = '/%s/%s/' % (entry.content_type.model, entry.object_id)
         if object_url in object_urls: 

@@ -30,7 +30,7 @@
         <li>{{ source|as_link|typogrify }}</li>
         {% endfor %}
         {% if source_list %}
-        <li><a class="more-link" href="">See all</a></li>
+        <li><a class="more-link" href="{% url all_sources_view %}">See all</a></li>
         {% endif %}      
       </ul>
     </section>
@@ -42,7 +42,7 @@
           <li>{{ topic|as_link|typogrify }}</li>
           {% endfor %}
           {% if topic_list %}
-          <li><a class="more-link" href="">See all</a></li>
+          <li><a class="more-link" href="{% url all_topics_view %}">See all</a></li>
           {% endif %}      
         </ul>
       </section>
@@ -53,7 +53,7 @@
           <li>{{ note|as_link|typogrify }}</li>
           {% endfor %}
           {% if note_list %}
-          <li><a class="more-link" href="">See all</a></li>
+          <li><a class="more-link" href="{% url all_notes_view %}">See all</a></li>
           {% endif %}      
         </ul>
       </section>
