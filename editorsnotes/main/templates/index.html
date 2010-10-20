@@ -5,57 +5,57 @@
 {% block title %}{% endblock %}
 
 {% block content %}
-    <div class="span-14 colborder">
-      <section id="sources" class="span-14">
-        <h3>Featured Documents</h3>
-        {% if source_list %}
-        <ul>
-          {% for source in source_list %}
-          <li>
-            <a class="subtle" href="{{ source.get_absolute_url }}">
-              {{ source.description|as_html|typogrify }}
-            </a>
-          </li>
-          {% endfor %}
-        </ul>
+    <section id="user-activity" class="span-24 last">
+      <h3>Your Recent Edits</h3>
+      <ul class="activity-log">
+        {% for entry in user_activity %}
+        <li class="activity-log-entry">
+          {% filter typogrify %}
+          {{ entry.what|as_link }}
+          <span class="quiet">{{ entry.when|timeago }}</span>
+          {% endfilter %}
+        </li>
+        {% empty %}
+        <li>You haven't edited anything yet.</li>
+        {% endfor %}
+        {% if user_activity %}
+        <li><a class="more-link" href="{% url user_view request.user %}">See all</a></li>
         {% endif %}
+      </ul>
+    </section>
+    <section id="sources" class="span-24 last">
+      <h3>Recently Edited Documents</h3>
+      <ul>
+        {% for source in source_list %}
+        <li>{{ source|as_link|typogrify }}</li>
+        {% endfor %}
+        {% if source_list %}
+        <li><a class="more-link" href="">See all</a></li>
+        {% endif %}      
+      </ul>
+    </section>
+    <div class="span-24 last">
+      <section id="topics" class="span-11 colborder">
+        <h3>Recently Edited Topics</h3>
+        <ul>
+          {% for topic in topic_list %}
+          <li>{{ topic|as_link|typogrify }}</li>
+          {% endfor %}
+          {% if topic_list %}
+          <li><a class="more-link" href="">See all</a></li>
+          {% endif %}      
+        </ul>
       </section>
-      <section id="topics" class="span-14">
-        <h3>Topics</h3>
-        <div class="span-7">
-          {% if topic_list_1 %}
-          <ul>
-            {% for topic in topic_list_1 %}
-            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic|typogrify }}</a></li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-        </div>
-        <div class="span-7 last">
-          {% if topic_list_2 %}
-          <ul>
-            {% for topic in topic_list_2 %}
-            <li><a class="subtle" href="{{ topic.get_absolute_url }}">{{ topic|typogrify }}</a></li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-        </div>
+      <section id="notes" class="span-12 last">
+        <h3>Recently Edited Notes</h3>
+        <ul>
+          {% for note in note_list %}
+          <li>{{ note|as_link|typogrify }}</li>
+          {% endfor %}
+          {% if note_list %}
+          <li><a class="more-link" href="">See all</a></li>
+          {% endif %}      
+        </ul>
       </section>
     </div>
-    <section id="activity" class="span-9 last">
-      <h3>Recent Activity</h3>
-      {% if activity %}
-      <ul class="activity-log">
-      {% for entry in activity %}
-      <li class="activity-log-entry">
-        {% filter typogrify %}
-        <span class="quiet">{{ entry.who|as_link }} edited</span> 
-        {{ entry.what|as_link }}
-        <span class="quiet">{{ entry.when|timeago }}.</span>
-        {% endfilter %}
-      </li>
-      {% endfor %}
-      </ul>
-      {% endif %}
-    </section>
 {% endblock %}

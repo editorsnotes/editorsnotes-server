@@ -324,7 +324,6 @@ span.note-number {color:red;margin-left:-1.2em;}
 #scan-viewer {width:auto;height:400px;background-color:black;border:2px solid black;color:white;}
 #progress-notify {width:400px;height:53px;z-index:10;color:white;}
 a.model-link p, a.model-link div {display:inline;}
-.activity-log-entry .dquo {margin-left:0;}
 aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */

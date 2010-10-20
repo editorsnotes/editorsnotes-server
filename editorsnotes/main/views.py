@@ -29,36 +29,41 @@ def _sort_citations(instance):
 
 @login_required
 def index(request):
-    o = {}
-    topics = list(Topic.objects.all())
-    index = (len(topics) / 2)  + 1
-    sources = set()
-    sources.update([ t.source for t in Transcript.objects.all() ])
-    sources.update([ s.source for s in Scan.objects.all() ])
-    o['source_list'] = sorted(sources, key=lambda s: s.ordering)
-    o['topic_list_1'] = topics[:index]
-    o['topic_list_2'] = topics[index:]
-    o['activity'] = []
+    max_count = 6
     object_urls = set()
-    for entry in LogEntry.objects.filter(
+    object_ids = { 'topic': [], 'note': [], 'source': [], 'transcript': [] }
+    o = {}
+    o['user_activity'] = []
+    for entry in LogEntry.objects.select_related('content_type__name').filter(
         content_type__app_label='main',
-        content_type__model__in=['topic', 'note', 'source', 'transcript', 'footnote']):
-        object_url = '/%s/%s/' % (entry.content_type.model, entry.object_id)
-        if object_url in object_urls: 
+        content_type__model__in=object_ids.keys(),
+        user=request.user):
+        if entry.object_id in object_ids[entry.content_type.name]:
             continue
-        object_urls.add(object_url)
+        object_ids[entry.content_type.name].append(entry.object_id)
         try:
             obj = entry.get_edited_object()
         except ObjectDoesNotExist:
             continue
-        object_urls.add(obj.get_absolute_url())
-        e = {}
-        e['who'] = UserProfile.get_for(entry.user)
-        e['what'] = obj
-        e['when'] = entry.action_time
-        o['activity'].append(e)
-        if len(o['activity']) == 25: 
+        object_url = obj.get_absolute_url().split('#')[0]
+        if object_url in object_urls:
+            continue
+        object_urls.add(object_url)
+        o['user_activity'].append({ 'what': obj, 'when': entry.action_time })
+        if len(o['user_activity']) == max_count:
             break
+    for model in [Topic, Note, Source, Transcript]:
+        model_name = model._meta.module_name
+        if model_name == 'transcript':
+            listname = 'source_list'
+        else:
+            listname = '%s_list' % model_name
+        o[listname] = model.objects.exclude(
+            id__in=object_ids[model_name]).order_by(
+            '-last_updated')[:max_count]
+    o['source_list'] = sorted(o['source_list'],
+                              key=lambda x: x.last_updated, 
+                              reverse=True)[:max_count]
     return render_to_response(
         'index.html', o, context_instance=RequestContext(request))
 

@@ -43,9 +43,6 @@ span.note-number { color:red; margin-left: -1.2em; }
 #scan-viewer { width: auto; height: 400px; background-color: black; border: 2px solid black; color: white; }
 #progress-notify { width: 400px; height: 53px; z-index: 10; color: white; }
 a.model-link p, a.model-link div { display: inline; }
-.activity-log-entry .dquo { margin-left: 0; }
-
-
 /* Reduced size type with incremental leading
 
    Using this class, it reduces your font size and line-height so that for
