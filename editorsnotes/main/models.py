@@ -173,7 +173,7 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible):
                     e.message_dict['preferred_name'].append(u'Topic with a very similar Preferred name already exists.')
             raise e
     class Meta:
-        ordering = ['preferred_name']
+        ordering = ['slug']
 
 
 class Note(LastUpdateMetadata, Administered, URLAccessible):

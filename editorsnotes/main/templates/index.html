@@ -19,7 +19,7 @@
         <li>You haven't edited anything yet.</li>
         {% endfor %}
         {% if user_activity %}
-        <li><a class="more-link" href="{% url user_view request.user %}">See all</a></li>
+        <li><a class="more-link" href="{% url user_view request.user %}">All your edits</a></li>
         {% endif %}
       </ul>
     </section>
@@ -30,7 +30,7 @@
         <li>{{ source|as_link|typogrify }}</li>
         {% endfor %}
         {% if source_list %}
-        <li><a class="more-link" href="{% url all_sources_view %}">See all</a></li>
+        <li><a class="more-link" href="{% url all_sources_view %}">All sources</a></li>
         {% endif %}      
       </ul>
     </section>
@@ -42,7 +42,7 @@
           <li>{{ topic|as_link|typogrify }}</li>
           {% endfor %}
           {% if topic_list %}
-          <li><a class="more-link" href="{% url all_topics_view %}">See all</a></li>
+          <li><a class="more-link" href="{% url all_topics_view %}">All topics</a></li>
           {% endif %}      
         </ul>
       </section>
@@ -53,7 +53,7 @@
           <li>{{ note|as_link|typogrify }}</li>
           {% endfor %}
           {% if note_list %}
-          <li><a class="more-link" href="{% url all_notes_view %}">See all</a></li>
+          <li><a class="more-link" href="{% url all_notes_view %}">All notes</a></li>
           {% endif %}      
         </ul>
       </section>

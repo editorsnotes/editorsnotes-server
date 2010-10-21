@@ -69,7 +69,26 @@ def index(request):
 
 @login_required
 def all_topics(request):
-    pass
+    o = {}
+    o['topics_1'] = []
+    o['topics_2'] = []
+    o['topics_3'] = []
+    all_topics = list(Topic.objects.all())
+    prev_letter = 'A'
+    topic_index = 1
+    list_index = 1 
+    for topic in all_topics:
+        first_letter = topic.slug[0].upper()
+        if not first_letter == prev_letter:
+            if topic_index > (len(all_topics) / 3.0):
+                topic_index = 1
+                list_index += 1
+            prev_letter = first_letter
+        o['topics_%s' % list_index].append(
+            { 'topic': topic, 'first_letter': first_letter })
+        topic_index += 1
+    return render_to_response(
+        'all-topics.html', o, context_instance=RequestContext(request))
 
 @login_required
 def all_sources(request):
