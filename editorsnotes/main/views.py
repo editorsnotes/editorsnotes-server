@@ -108,7 +108,33 @@ WHERE main_scan.source_id = main_source.id''' }
 
 @login_required
 def all_notes(request):
-    pass
+    o = {}
+    # TODO: Make this a custom manager method for Note
+    notes = dict((n.id, n) for n in Note.objects.all())
+    o['notes_by_topic'] = []
+    topic = None
+    categorized_note_ids = set()
+    for ta in TopicAssignment.objects\
+        .select_related('topic')\
+        .filter(content_type=ContentType.objects.get_for_model(Note))\
+        .order_by('topic__slug'):
+        if topic and not ta.topic.slug == topic['slug']:
+            o['notes_by_topic'].append(topic)
+            topic = None
+        if not topic:
+            topic = { 'slug': ta.topic.slug, 
+                      'name': ta.topic.preferred_name, 
+                      'notes': [] }
+        topic['notes'].append(notes[ta.object_id])
+        categorized_note_ids.add(ta.object_id)
+    uncategorized_notes = []
+    for note_id in (set(notes.keys()) - categorized_note_ids):
+        uncategorized_notes.append(notes[note_id])
+    o['notes_by_topic'].append({ 'slug': 'uncategorized',
+                                 'name': 'uncategorized', 
+                                 'notes': uncategorized_notes })
+    return render_to_response(
+        'all-notes.html', o, context_instance=RequestContext(request))
 
 @login_required
 def topic(request, topic_slug):

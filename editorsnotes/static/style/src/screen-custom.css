@@ -45,8 +45,9 @@ span.note-number { color:red; margin-left: -1.2em; }
 a.model-link p, a.model-link div { display: inline; }
 .alpha-list > li { margin-bottom: 1.5em; }
 .alpha-index { float: left; font-size: 110%; font-weight: bold; margin-top: -2px; }
-.alpha-items { margin-left: 2em; } 
-.alpha-items li { text-indent: -1em; padding-left: 1em; }
+.topic-index { font-size: 110%; font-weight: bold; }
+.alpha-items, .topic-items { margin-left: 2em; } 
+.alpha-items li, .topic-items li { text-indent: -1em; padding-left: 1em; }
 #all-sources .has-scans-or-transcript { font-weight: bold; }
 /* Reduced size type with incremental leading
 
