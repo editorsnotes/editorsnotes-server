@@ -61,7 +61,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'devserver',
+#    'devserver',
 #    'django_extensions',
     'reversion',
     'south',
