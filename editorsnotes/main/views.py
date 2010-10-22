@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.core.exceptions import ObjectDoesNotExist
 #from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
@@ -30,38 +29,20 @@ def _sort_citations(instance):
 @login_required
 def index(request):
     max_count = 6
-    object_urls = set()
-    object_ids = { 'topic': [], 'note': [], 'source': [], 'transcript': [] }
     o = {}
-    o['user_activity'] = []
-    for entry in LogEntry.objects.select_related('content_type__name').filter(
-        content_type__app_label='main',
-        content_type__model__in=object_ids.keys(),
-        user=request.user):
-        if entry.object_id in object_ids[entry.content_type.name]:
-            continue
-        object_ids[entry.content_type.name].append(entry.object_id)
-        try:
-            obj = entry.get_edited_object()
-        except ObjectDoesNotExist:
-            continue
-        object_url = obj.get_absolute_url().split('#')[0]
-        if object_url in object_urls:
-            continue
-        object_urls.add(object_url)
-        o['user_activity'].append({ 'what': obj, 'when': entry.action_time })
-        if len(o['user_activity']) == max_count:
-            break
-    for model in [Topic, Note, Source]:
+    o['user_activity'], skip_object_ids = UserProfile.get_activity_for(
+        request.user, max_count)
+    for model in [Topic, Note, Source, Transcript]:
         model_name = model._meta.module_name
-        listname = '%s_list' % model_name
-        o[listname] = list(model.objects.exclude(
-            id__in=object_ids[model_name]).order_by(
-            '-last_updated')[:max_count])
-    transcript_list = list(Transcript.objects.select_related(
-            'source').exclude(id__in=object_ids['transcript']).order_by(
-            '-last_updated')[:max_count])
-    o['source_list'] = sorted(o['source_list'] + transcript_list,
+        if model_name == 'transcript':
+            listname = 'source_list'
+        else:
+            listname = '%s_list' % model_name
+        o[listname] = list(
+            model.objects\
+                .exclude(id__in=skip_object_ids[model_name])\
+                .order_by('-last_updated')[:max_count])
+    o['source_list'] = sorted(o['source_list'],
                               key=lambda x: x.last_updated, 
                               reverse=True)[:max_count]
     return render_to_response(
@@ -80,7 +61,7 @@ def all_topics(request):
     for topic in all_topics:
         first_letter = topic.slug[0].upper()
         if not first_letter == prev_letter:
-            if topic_index > (len(all_topics) / 3.0):
+            if list_index < 3 and topic_index > (len(all_topics) / 3.0):
                 topic_index = 1
                 list_index += 1
             prev_letter = first_letter
@@ -94,12 +75,7 @@ def all_topics(request):
 def all_sources(request):
     o = {}
     o['sources'] = []
-    # Should do this:
-    # http://docs.djangoproject.com/en/dev/topics/db/managers/#adding-extra-manager-methods
-    for source in Source.objects.select_related('_transcript').extra(
-        select = { 'scan_count': '''SELECT COUNT(*) FROM main_scan 
-WHERE main_scan.source_id = main_source.id''' }
-        ).all():
+    for source in Source.objects.all():
         first_letter = source.ordering[0].upper()
         o['sources'].append(
             { 'source': source, 'first_letter': first_letter })
@@ -109,30 +85,39 @@ WHERE main_scan.source_id = main_source.id''' }
 @login_required
 def all_notes(request):
     o = {}
-    # TODO: Make this a custom manager method for Note
+    # TODO: Make this a custom manager method for Note, maybe
     notes = dict((n.id, n) for n in Note.objects.all())
-    o['notes_by_topic'] = []
+    o['notes_by_topic_1'] = []
+    o['notes_by_topic_2'] = []
+    topic_assignments = list(
+        TopicAssignment.objects\
+            .select_related('topic')\
+            .filter(content_type=ContentType.objects.get_for_model(Note))\
+            .order_by('topic__slug'))
+    ta_index = 1
+    list_index = 1
     topic = None
     categorized_note_ids = set()
-    for ta in TopicAssignment.objects\
-        .select_related('topic')\
-        .filter(content_type=ContentType.objects.get_for_model(Note))\
-        .order_by('topic__slug'):
+    for ta in topic_assignments:
         if topic and not ta.topic.slug == topic['slug']:
-            o['notes_by_topic'].append(topic)
+            o['notes_by_topic_%s' % list_index].append(topic)
             topic = None
+            if list_index < 2 and ta_index > (len(topic_assignments) / 2.2):
+                ta_index = 1
+                list_index += 1        
         if not topic:
             topic = { 'slug': ta.topic.slug, 
                       'name': ta.topic.preferred_name, 
                       'notes': [] }
         topic['notes'].append(notes[ta.object_id])
         categorized_note_ids.add(ta.object_id)
+        ta_index += 1
     uncategorized_notes = []
     for note_id in (set(notes.keys()) - categorized_note_ids):
         uncategorized_notes.append(notes[note_id])
-    o['notes_by_topic'].append({ 'slug': 'uncategorized',
-                                 'name': 'uncategorized', 
-                                 'notes': uncategorized_notes })
+    o['notes_by_topic_1'].insert(0, { 'slug': 'uncategorized',
+                                      'name': 'uncategorized', 
+                                      'notes': uncategorized_notes })
     return render_to_response(
         'all-notes.html', o, context_instance=RequestContext(request))
 
@@ -194,24 +179,7 @@ def user(request, username=None):
     else:
         user = get_object_or_404(User, username=username)
     o['profile'] = UserProfile.get_for(user)
-    o['log_entries'] = []
-    object_urls = set()
-    for entry in LogEntry.objects.select_related('content_type__model').filter(
-        content_type__app_label='main', 
-        content_type__model__in=['topic', 'note', 'source', 'transcript'], 
-        user=user):
-        object_url = '/%s/%s/' % (entry.content_type.model, entry.object_id)
-        if object_url in object_urls: 
-            continue
-        object_urls.add(object_url)
-        try:
-            obj = entry.get_edited_object()
-        except ObjectDoesNotExist:
-            continue
-        object_urls.add(obj.get_absolute_url())
-        o['log_entries'].append(entry)
-        if len(o['log_entries']) == 50: 
-            break
+    o['log_entries'], ignored = UserProfile.get_activity_for(user)
     return render_to_response(
         'user.html', o, context_instance=RequestContext(request))
 

@@ -7,11 +7,12 @@ from copy import deepcopy
 from lxml import etree
 from unaccent import unaccent
 from django.db import models
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core import urlresolvers
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import NoReverseMatch
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
@@ -54,6 +55,16 @@ class URLAccessible():
 # Primary models. These have their own URLs and administration interfaces.
 # -------------------------------------------------------------------------------
 
+class SourceManager(models.Manager):
+    # Include whether or not sources have scans/transcripts in default query.
+    def get_query_set(self):
+        return super(SourceManager, self).get_query_set()\
+            .select_related('_transcript')\
+            .extra(select = { 'scan_count': '''SELECT COUNT(*) 
+FROM main_scan WHERE main_scan.source_id = main_source.id''',
+                              '_has_transcript': '''EXISTS ( SELECT 1 
+FROM main_transcript WHERE main_transcript.source_id = main_source.id )''' })
+
 class Source(LastUpdateMetadata, Administered, URLAccessible):
     u"""
     A documented source for assertions made in notes. 
@@ -62,6 +73,7 @@ class Source(LastUpdateMetadata, Administered, URLAccessible):
     type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
     ordering = models.CharField(max_length=32, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
+    objects = SourceManager()
     @property
     def transcript(self):
         try:
@@ -75,6 +87,8 @@ class Source(LastUpdateMetadata, Administered, URLAccessible):
     def has_scans(self):
         return self.get_scan_count() > 0
     def has_transcript(self):
+        if hasattr(self, '_has_transcript'):
+            return self._has_transcript
         return self.transcript is not None
     def as_text(self):
         return utils.xhtml_to_text(self.description)
@@ -90,12 +104,19 @@ class Source(LastUpdateMetadata, Administered, URLAccessible):
     class Meta:
         ordering = ['ordering']    
 
+class TranscriptManager(models.Manager):
+    # Include sources in default query.
+    def get_query_set(self):
+        return super(TranscriptManager, self).get_query_set()\
+            .select_related('source')
+
 class Transcript(LastUpdateMetadata, Administered, URLAccessible):
     u"""
     A text transcript of a primary source document.
     """
     source = models.OneToOneField(Source, related_name='_transcript')
     content = fields.XHTMLField()
+    objects = TranscriptManager()
     def get_absolute_url(self):
         # Transcripts don't have their own URLs; use the document URL.
         return '%s#transcript' % self.source.get_absolute_url()
@@ -226,6 +247,35 @@ class UserProfile(models.Model, URLAccessible):
             return user.get_profile()
         except UserProfile.DoesNotExist:
             return UserProfile.objects.create(user=user)
+    @staticmethod
+    def get_activity_for(user, max_count=50):
+        object_urls = set()
+        checked_object_ids = { 
+            'topic': [], 'note': [], 'source': [], 'transcript': [] }
+        activity = []
+        for entry in LogEntry.objects\
+                .select_related('content_type__name')\
+                .filter(content_type__app_label='main',  
+                        content_type__model__in=checked_object_ids.keys(), 
+                        user=user):
+            if entry.object_id in checked_object_ids[entry.content_type.name]:
+                continue
+            checked_object_ids[entry.content_type.name].append(entry.object_id)
+            if entry.is_deletion():
+                continue
+            try:
+                obj = entry.get_edited_object()
+            except ObjectDoesNotExist:
+                continue
+            object_url = obj.get_absolute_url().split('#')[0]
+            if object_url in object_urls:
+                continue
+            object_urls.add(object_url)
+            activity.append({ 'what': obj, 'when': entry.action_time })
+            if len(activity) == max_count:
+                break
+        return activity, checked_object_ids
+        
 
 # -------------------------------------------------------------------------------
 # Support models.

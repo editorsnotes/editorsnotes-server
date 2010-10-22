@@ -15,12 +15,12 @@
       <h3>Recent edits</h3>
       <ul class="activity-log">
         {% for entry in log_entries %}
-        {% with entry.get_edited_object as object %}
         <li class="activity-log-entry">
-          {{ object|as_link }}
-          <span class="quiet">edited {{ entry.action_time|timeago }}.</span> 
+          {% filter typogrify %}
+          {{ entry.what|as_link }}
+          <span class="quiet">{{ entry.when|timeago }}</span>
+          {% endfilter %}          
         </li>
-        {% endwith %}
         {% empty %}
         <li>{{ profile.display_name }} hasn't made any edits yet.</li>
         {% endfor %}
