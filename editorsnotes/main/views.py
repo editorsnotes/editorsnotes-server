@@ -92,7 +92,19 @@ def all_topics(request):
 
 @login_required
 def all_sources(request):
-    pass
+    o = {}
+    o['sources'] = []
+    # Should do this:
+    # http://docs.djangoproject.com/en/dev/topics/db/managers/#adding-extra-manager-methods
+    for source in Source.objects.select_related('_transcript').extra(
+        select = { 'scan_count': '''SELECT COUNT(*) FROM main_scan 
+WHERE main_scan.source_id = main_source.id''' }
+        ).all():
+        first_letter = source.ordering[0].upper()
+        o['sources'].append(
+            { 'source': source, 'first_letter': first_letter })
+    return render_to_response(
+        'all-sources.html', o, context_instance=RequestContext(request))
 
 @login_required
 def all_notes(request):

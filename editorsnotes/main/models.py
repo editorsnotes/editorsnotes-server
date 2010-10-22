@@ -68,11 +68,22 @@ class Source(LastUpdateMetadata, Administered, URLAccessible):
             return self._transcript
         except Transcript.DoesNotExist:
             return None
+    def get_scan_count(self):
+        if hasattr(self, 'scan_count'):
+            return self.scan_count
+        return self.scans.count()
+    def has_scans(self):
+        return self.get_scan_count() > 0
+    def has_transcript(self):
+        return self.transcript is not None
     def as_text(self):
         return utils.xhtml_to_text(self.description)
     def as_html(self):
         return mark_safe(
-            '<div class="source">%s</div>' % etree.tostring(self.description))
+            '<div class="source%s">%s</div>' % (
+                (self.has_transcript() or self.has_scans()) 
+                 and ' has-scans-or-transcript' or '',
+                etree.tostring(self.description)))
     def save(self, *args, **kwargs):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
         super(Source, self).save(*args, **kwargs)
