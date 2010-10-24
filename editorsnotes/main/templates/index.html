@@ -23,14 +23,14 @@
         {% endif %}
       </ul>
     </section>
-    <section id="sources" class="span-24 last">
+    <section id="documents" class="span-24 last">
       <h3>Recently Edited Documents</h3>
       <ul>
-        {% for source in source_list %}
-        <li>{{ source|as_link|typogrify }}</li>
+        {% for document in document_list %}
+        <li>{{ document|as_link|typogrify }}</li>
         {% endfor %}
-        {% if source_list %}
-        <li><a class="more-link" href="{% url all_sources_view %}">All documents</a></li>
+        {% if document_list %}
+        <li><a class="more-link" href="{% url all_documents_view %}">All documents</a></li>
         {% endif %}      
       </ul>
     </section>

@@ -2,8 +2,8 @@
 
 <div class="citation">
   {% filter typogrify %}
-  {{ cite.source.as_html }}
+  {{ cite.document.as_html }}
   {{ cite.locator }}
-  <a href="{{ cite.source.get_absolute_url }}">More info</a>
+  <a href="{{ cite.document.get_absolute_url }}">More info</a>
   {% endfilter %}
 </div>

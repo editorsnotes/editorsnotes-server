@@ -24,9 +24,9 @@
       </h3>
       <div class="footnote-of">
         <span class="quiet">Footnote for </span>
-        {% with footnote.transcript.source as source %}
-        <a class="model-link source-link" href="{{ source.get_absolute_url }}?fn={{ footnote.id }}#transcript">
-          {{ source.description|as_html|typogrify }}
+        {% with footnote.transcript.document as document %}
+        <a class="model-link document-link" href="{{ document.get_absolute_url }}?fn={{ footnote.id }}#transcript">
+          {{ document.description|as_html|typogrify }}
         </a>
         {% endwith %}
       </div>

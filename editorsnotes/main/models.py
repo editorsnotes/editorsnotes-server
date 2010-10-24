@@ -55,25 +55,28 @@ class URLAccessible():
 # Primary models. These have their own URLs and administration interfaces.
 # -------------------------------------------------------------------------------
 
-class SourceManager(models.Manager):
-    # Include whether or not sources have scans/transcripts in default query.
+class DocumentManager(models.Manager):
+    # Include whether or not documents have scans/transcripts in default query.
     def get_query_set(self):
-        return super(SourceManager, self).get_query_set()\
+        return super(DocumentManager, self).get_query_set()\
             .select_related('_transcript')\
             .extra(select = { 'scan_count': '''SELECT COUNT(*) 
-FROM main_scan WHERE main_scan.source_id = main_source.id''',
+FROM main_scan WHERE main_scan.document_id = main_document.id''',
                               '_has_transcript': '''EXISTS ( SELECT 1 
-FROM main_transcript WHERE main_transcript.source_id = main_source.id )''' })
+FROM main_transcript WHERE main_transcript.document_id = main_document.id )''' })
 
-class Source(LastUpdateMetadata, Administered, URLAccessible):
+class Document(LastUpdateMetadata, Administered, URLAccessible):
     u"""
-    A documented source for assertions made in notes. 
+    Anything that can be taken as evidence for (documentation of) something.
+
+    Documents are best defined by example: letters, newspaper articles, 
+    contracts, photographs, database records, whole databases, etc. etc.
     """
     description = fields.XHTMLField()
     type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
     ordering = models.CharField(max_length=32, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
-    objects = SourceManager()
+    objects = DocumentManager()
     @property
     def transcript(self):
         try:
@@ -94,36 +97,36 @@ class Source(LastUpdateMetadata, Administered, URLAccessible):
         return utils.xhtml_to_text(self.description)
     def as_html(self):
         return mark_safe(
-            '<div class="source%s">%s</div>' % (
+            '<div class="document%s">%s</div>' % (
                 (self.has_transcript() or self.has_scans()) 
                  and ' has-scans-or-transcript' or '',
                 etree.tostring(self.description)))
     def save(self, *args, **kwargs):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
-        super(Source, self).save(*args, **kwargs)
+        super(Document, self).save(*args, **kwargs)
     class Meta:
         ordering = ['ordering']    
 
 class TranscriptManager(models.Manager):
-    # Include sources in default query.
+    # Include related document in default query.
     def get_query_set(self):
         return super(TranscriptManager, self).get_query_set()\
-            .select_related('source')
+            .select_related('document')
 
 class Transcript(LastUpdateMetadata, Administered, URLAccessible):
     u"""
-    A text transcript of a primary source document.
+    A text transcript of a document.
     """
-    source = models.OneToOneField(Source, related_name='_transcript')
+    document = models.OneToOneField(Document, related_name='_transcript', null=True)
     content = fields.XHTMLField()
     objects = TranscriptManager()
     def get_absolute_url(self):
         # Transcripts don't have their own URLs; use the document URL.
-        return '%s#transcript' % self.source.get_absolute_url()
+        return '%s#transcript' % self.document.get_absolute_url()
     def as_text(self):
-        return self.source.as_text()
+        return self.document.as_text()
     def as_html(self):
-        return self.source.as_html()
+        return self.document.as_html()
 
 class Footnote(LastUpdateMetadata, Administered, URLAccessible):
     u"""
@@ -251,7 +254,7 @@ class UserProfile(models.Model, URLAccessible):
     def get_activity_for(user, max_count=50):
         object_urls = set()
         checked_object_ids = { 
-            'topic': [], 'note': [], 'source': [], 'transcript': [] }
+            'topic': [], 'note': [], 'document': [], 'transcript': [] }
         activity = []
         for entry in LogEntry.objects\
                 .select_related('content_type__name')\
@@ -308,21 +311,21 @@ class TopicAssignment(CreationMetadata):
 
 class Scan(CreationMetadata):
     u"""
-    A scanned image associated with a source.
+    A scanned image of (part of) a dcument.
     """
-    source = models.ForeignKey(Source, related_name='scans')
+    document = models.ForeignKey(Document, related_name='scans', null=True)
     image = models.ImageField(upload_to='scans/%Y/%m')
     ordering = models.IntegerField(blank=True, null=True)
     def __unicode__(self):
-        return u'Scan for %s (order: %s)' % (self.source, self.ordering)
+        return u'Scan for %s (order: %s)' % (self.document, self.ordering)
     class Meta:
         ordering = ['ordering'] 
 
 class Citation(CreationMetadata):
     u"""
-    A reference to or citation of a documented source.
+    A reference to or citation of a document.
     """
-    source = models.ForeignKey(Source, related_name='citations')
+    document = models.ForeignKey(Document, related_name='citations', null=True)
     locator = models.CharField(max_length=16, blank=True)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()

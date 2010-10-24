@@ -1,0 +1,6 @@
+Push Document "type" (primary/secondary) into Citation.
+
+Make a custom manager method for gettings Notes by Topic.
+
+Need to get tests running again, which will require a new fixture.
+Or perhaps, redo tests so as to not require fixture.

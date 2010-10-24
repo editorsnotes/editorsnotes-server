@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models.fields import FieldDoesNotExist
 from django.http import HttpResponseRedirect
-import reversion
+from reversion import admin as reversion_admin
 from lxml import etree
 
 class FootnoteAdminForm(forms.ModelForm):
@@ -37,7 +37,7 @@ class ScanInline(admin.StackedInline):
 
 ################################################################################
 
-class VersionAdmin(reversion.admin.VersionAdmin):
+class VersionAdmin(reversion_admin.VersionAdmin):
     def save_model(self, request, obj, form, change):
         if not change: # adding new object
             obj.creator = request.user
@@ -100,7 +100,7 @@ class NoteAdmin(VersionAdmin):
               'function/jquery.timeago.js',
               'function/admin.js')
 
-class SourceAdmin(VersionAdmin):
+class DocumentAdmin(VersionAdmin):
     inlines = (ScanInline,)
     list_display = ('__unicode__', 'type', 'creator', 'created')
     class Media:
@@ -146,6 +146,6 @@ class FootnoteAdmin(VersionAdmin):
 
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Note, NoteAdmin)
-admin.site.register(Source, SourceAdmin)
+admin.site.register(Document, DocumentAdmin)
 admin.site.register(Transcript, TranscriptAdmin)
 admin.site.register(Footnote, FootnoteAdmin)

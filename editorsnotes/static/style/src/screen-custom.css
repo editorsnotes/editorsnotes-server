@@ -18,8 +18,8 @@ hr { margin-bottom: 2.95em; }
 #stripe-2 { position: absolute; z-index: -1; top: 42px; height: 44px; width: 100%; background: #aeb4be; }
 #logo a { text-decoration: none; }
 #searchinput input { width: 338px; }
-#topics li, #sources li, .activity-log li { text-indent: -1em; padding-left: 1em; }
-#sources p { margin: 0; }
+#topics li, #documents li, .activity-log li { text-indent: -1em; padding-left: 1em; }
+#documents p { margin: 0; }
 .searchresult { margin-bottom: 1.5em; }
 .searchresult a.model-link { text-decoration: underline; }
 .edit-history { text-align: right; }
@@ -49,7 +49,7 @@ a.model-link p, a.model-link div { display: inline; }
 #uncategorized .topic-index { font-style: italic; }
 .alpha-items, .topic-items { margin-left: 2em; } 
 .alpha-items li, .topic-items li { text-indent: -1em; padding-left: 1em; }
-#all-sources .has-scans-or-transcript { font-weight: bold; }
+#all-documents .has-scans-or-transcript { font-weight: bold; }
 /* Reduced size type with incremental leading
 
    Using this class, it reduces your font size and line-height so that for

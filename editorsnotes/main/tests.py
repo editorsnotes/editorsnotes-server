@@ -93,14 +93,14 @@ class NoteTestCase(TestCase):
         note = Note.objects.create(
             content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
             creator=self.user, last_updater=self.user)
-        source = Source.objects.create(
+        document = Document.objects.create(
             description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
             type='P', creator=self.user, last_updater=self.user)
-        note.citations.create(source=source, locator='98-113', creator=self.user)
+        note.citations.create(document=document, locator='98-113', creator=self.user)
         self.assertEquals(1, len(note.citations.all()))
-        self.assertEquals(source, note.citations.all()[0].source)
+        self.assertEquals(document, note.citations.all()[0].document)
         note.delete()
-        source.delete()
+        document.delete()
     def testAssignTopics(self):
         note = Note.objects.create(
             content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 

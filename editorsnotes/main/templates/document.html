@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load typogrify display %}
 
-{% block title %}: {{ source }}{% endblock %}
+{% block title %}: {{ document }}{% endblock %}
 
 {% block css %}
 <style type="text/css">
@@ -21,12 +21,12 @@
 {% block js %}
 <script type="text/javascript" src="http://seadragon.com/ajax/0.8/seadragon-min.js"></script>
 <script type="text/javascript" src="/media/function/jquery.ellipsis.js"></script>
-<script type="text/javascript" src="/media/function/source.js"></script>
+<script type="text/javascript" src="/media/function/document.js"></script>
 {% endblock %}
 
 {% block content %}
     <header>
-      <h3>{{ source.description|as_html|typogrify }}</h3>
+      <h3>{{ document.description|as_html|typogrify }}</h3>
       <div class="related-topics">
         {% if related_topics %}
         <span class="quiet">Related topics:</span> 
@@ -61,27 +61,27 @@
         </div>
         {% else %}
         <div class="span-23 last">
-          {% if source.url %}
+          {% if document.url %}
           This document has not been scanned, but it is available online
-          <a href="{{ source.url }}">elsewhere</a>.
+          <a href="{{ document.url }}">elsewhere</a>.
           {% else %}
           This document has not been scanned.
           {% endif %}
         </div>
         {% endif %}
         <div class="span-2 last">
-          <a class="button" href="{{ source.get_admin_url }}?return_to={{ source.get_absolute_url }}">Edit</a>
+          <a class="button" href="{{ document.get_admin_url }}?return_to={{ document.get_absolute_url }}">Edit</a>
         </div>
       </section>
 
       <section id="transcript" class="span-23 last">
-        {% if source.transcript %}
-        <article id="transcript-{{ source.transcript.id }}" class="transcript">
+        {% if document.transcript %}
+        <article id="transcript-{{ document.transcript.id }}" class="transcript">
           <div id="transcript-content" class="span-23 last">
-            {{ source.transcript.content|as_html|typogrify }}
+            {{ document.transcript.content|as_html|typogrify }}
           </div>
           <div id="transcript-notes" class="span-23 last">
-            {% for note in source.transcript.footnotes.all %}
+            {% for note in document.transcript.footnotes.all %}
             <div id="note-{{ note.id }}" class="transcript-note">
               {{ note.content|as_html|typogrify }}
               <a href="{{ note.get_absolute_url }}">More information about this footnote</a>
@@ -89,9 +89,9 @@
             {% endfor %}
           </div>
           <div class="span-23 last">
-            <a class="button" href="{{ source.transcript.get_admin_url }}?return_to={{ source.get_absolute_url }}">Edit</a>
+            <a class="button" href="{{ document.transcript.get_admin_url }}?return_to={{ document.get_absolute_url }}">Edit</a>
             <div class="edit-history">
-              {{ source.transcript|display_edit_history }}
+              {{ document.transcript|display_edit_history }}
             </div>
           </div>
         </article>
@@ -100,7 +100,7 @@
           This document has not been transcribed.
         </div>
         <div class="span-2 last">
-          <a class="button" href="{% url admin:main_transcript_add %}?source={{ source.id }}&amp;return_to={{ source.get_absolute_url }}">Edit</a>
+          <a class="button" href="{% url admin:main_transcript_add %}?document={{ document.id }}&amp;return_to={{ document.get_absolute_url }}">Edit</a>
         </div>
         {% endif %}
       </section>

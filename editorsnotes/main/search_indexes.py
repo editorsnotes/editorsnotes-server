@@ -2,9 +2,9 @@
 
 from haystack import site
 from haystack.indexes import *
-from models import Source, Transcript, Footnote, Topic, Note
+from models import Document, Transcript, Footnote, Topic, Note
 
-class SourceIndex(SearchIndex):
+class DocumentIndex(SearchIndex):
     title = CharField(model_attr='as_text')
     text = CharField(document=True, use_template=True)
 
@@ -26,7 +26,7 @@ class NoteIndex(SearchIndex):
     text = CharField(document=True, use_template=True)
 
 
-site.register(Source, SourceIndex)
+site.register(Document, DocumentIndex)
 site.register(Transcript, TranscriptIndex)
 site.register(Footnote, FootnoteIndex)
 site.register(Topic, TopicIndex)

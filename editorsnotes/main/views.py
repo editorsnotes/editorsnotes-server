@@ -20,10 +20,10 @@ def _sort_citations(instance):
     for c in Citation.objects.filter(
         content_type=ContentType.objects.get_for_model(instance), 
         object_id=instance.id):
-        if c.source.type == 'P': cites['primary'].append(c)
-        elif c.source.type == 'S': cites['secondary'].append(c)
-    cites['primary'].sort(key=lambda c: c.source.ordering)
-    cites['secondary'].sort(key=lambda c: c.source.ordering)
+        if c.document.type == 'P': cites['primary'].append(c)
+        elif c.document.type == 'S': cites['secondary'].append(c)
+    cites['primary'].sort(key=lambda c: c.document.ordering)
+    cites['secondary'].sort(key=lambda c: c.document.ordering)
     return cites
 
 @login_required
@@ -32,17 +32,17 @@ def index(request):
     o = {}
     o['user_activity'], skip_object_ids = UserProfile.get_activity_for(
         request.user, max_count)
-    for model in [Topic, Note, Source, Transcript]:
+    for model in [Topic, Note, Document, Transcript]:
         model_name = model._meta.module_name
         if model_name == 'transcript':
-            listname = 'source_list'
+            listname = 'document_list'
         else:
             listname = '%s_list' % model_name
         o[listname] = list(
             model.objects\
                 .exclude(id__in=skip_object_ids[model_name])\
                 .order_by('-last_updated')[:max_count])
-    o['source_list'] = sorted(o['source_list'],
+    o['document_list'] = sorted(o['document_list'],
                               key=lambda x: x.last_updated, 
                               reverse=True)[:max_count]
     return render_to_response(
@@ -72,15 +72,15 @@ def all_topics(request):
         'all-topics.html', o, context_instance=RequestContext(request))
 
 @login_required
-def all_sources(request):
+def all_documents(request):
     o = {}
-    o['sources'] = []
-    for source in Source.objects.all():
-        first_letter = source.ordering[0].upper()
-        o['sources'].append(
-            { 'source': source, 'first_letter': first_letter })
+    o['documents'] = []
+    for document in Document.objects.all():
+        first_letter = document.ordering[0].upper()
+        o['documents'].append(
+            { 'document': document, 'first_letter': first_letter })
     return render_to_response(
-        'all-sources.html', o, context_instance=RequestContext(request))
+        'all-documents.html', o, context_instance=RequestContext(request))
 
 @login_required
 def all_notes(request):
@@ -156,20 +156,20 @@ def footnote(request, footnote_id):
         'footnote.html', o, context_instance=RequestContext(request))
 
 @login_required
-def source(request, source_id):
+def document(request, document_id):
     o = {}
-    o['source'] = get_object_or_404(Source, id=source_id)
-    o['related_topics'] =[ c.content_object for c in o['source'].citations.filter(
+    o['document'] = get_object_or_404(Document, id=document_id)
+    o['related_topics'] =[ c.content_object for c in o['document'].citations.filter(
             content_type=ContentType.objects.get_for_model(Topic)) ]
-    o['scans'] = o['source'].scans.all()
+    o['scans'] = o['document'].scans.all()
     o['domain'] = Site.objects.get_current().domain
-    notes = [ c.content_object for c in o['source'].citations.filter(
+    notes = [ c.content_object for c in o['document'].citations.filter(
             content_type=ContentType.objects.get_for_model(Note)) ]
     o['notes'] = zip(notes, 
                      [ [ ta.topic for ta in n.topics.all() ] for n in notes ],
                      [ _sort_citations(n) for n in notes ])    
     return render_to_response(
-        'source.html', o, context_instance=RequestContext(request))
+        'document.html', o, context_instance=RequestContext(request))
 
 @login_required
 def user(request, username=None):
