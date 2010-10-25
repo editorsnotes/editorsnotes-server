@@ -89,11 +89,7 @@ def all_notes(request):
     notes = dict((n.id, n) for n in Note.objects.all())
     o['notes_by_topic_1'] = []
     o['notes_by_topic_2'] = []
-    topic_assignments = list(
-        TopicAssignment.objects\
-            .select_related('topic')\
-            .filter(content_type=ContentType.objects.get_for_model(Note))\
-            .order_by('topic__slug'))
+    topic_assignments = list(TopicAssignment.objects.assigned_to_model(Note))
     ta_index = 1
     list_index = 1
     topic = None

@@ -209,7 +209,6 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible):
     class Meta:
         ordering = ['slug']
 
-
 class Note(LastUpdateMetadata, Administered, URLAccessible):
     u""" 
     Text written by an editor or curator. The text is stored as XHTML,
@@ -295,6 +294,12 @@ class Alias(CreationMetadata):
         unique_together = ('topic', 'name')
         verbose_name_plural = 'aliases'
 
+class TopicAssignmentManager(models.Manager):
+    def assigned_to_model(self, model):
+        return self.select_related('topic')\
+            .filter(content_type=ContentType.objects.get_for_model(model))\
+            .order_by('topic__slug')
+
 class TopicAssignment(CreationMetadata):
     u""" 
     An assignment of a topic to any other object.
@@ -303,6 +308,7 @@ class TopicAssignment(CreationMetadata):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
+    objects = TopicAssignmentManager()
     def __unicode__(self):
         return self.topic.preferred_name
     class Meta(CreationMetadata.Meta):
