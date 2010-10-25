@@ -70,4 +70,7 @@ AUTH_PROFILE_MODULE = 'main.UserProfile'
 
 from settings_local import *
 
-INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
+try:
+    INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
+except NameError:
+    pass
