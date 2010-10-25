@@ -73,7 +73,6 @@ class Document(LastUpdateMetadata, Administered, URLAccessible):
     contracts, photographs, database records, whole databases, etc. etc.
     """
     description = fields.XHTMLField()
-    type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
     ordering = models.CharField(max_length=32, editable=False)
     url = models.URLField(blank=True, verify_exists=True)
     objects = DocumentManager()
@@ -327,6 +326,7 @@ class Citation(CreationMetadata):
     """
     document = models.ForeignKey(Document, related_name='citations')
     locator = models.CharField(max_length=16, blank=True)
+    type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()

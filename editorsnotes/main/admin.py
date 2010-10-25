@@ -38,6 +38,7 @@ class ScanInline(admin.StackedInline):
 ################################################################################
 
 class VersionAdmin(reversion_admin.VersionAdmin):
+    list_display = ('as_text', 'last_updater', 'last_updated')
     def save_model(self, request, obj, form, change):
         if not change: # adding new object
             obj.creator = request.user
@@ -93,7 +94,6 @@ class TopicAdmin(VersionAdmin):
 
 class NoteAdmin(VersionAdmin):
     inlines = (CitationInline, TopicAssignmentInline)
-    list_display = ('title', 'last_updater', 'last_updated')
     class Media:
         js = ('function/jquery-1.4.2.min.js',
               'function/wymeditor/jquery.wymeditor.pack.js',
@@ -102,7 +102,6 @@ class NoteAdmin(VersionAdmin):
 
 class DocumentAdmin(VersionAdmin):
     inlines = (ScanInline,)
-    list_display = ('__unicode__', 'type', 'creator', 'created')
     class Media:
         js = ('function/jquery-1.4.2.min.js',
               'function/wymeditor/jquery.wymeditor.pack.js',
@@ -111,7 +110,6 @@ class DocumentAdmin(VersionAdmin):
 
 class TranscriptAdmin(VersionAdmin):
     inlines = (FootnoteInline,)
-    list_display = ('__unicode__', 'creator', 'created')
     def save_formset(self, request, form, formset, change):
         transcript = form.instance
         # Update the transcript HTML to remove any links to deleted footnotes.

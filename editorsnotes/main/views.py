@@ -20,8 +20,8 @@ def _sort_citations(instance):
     for c in Citation.objects.filter(
         content_type=ContentType.objects.get_for_model(instance), 
         object_id=instance.id):
-        if c.document.type == 'P': cites['primary'].append(c)
-        elif c.document.type == 'S': cites['secondary'].append(c)
+        if c.type == 'P': cites['primary'].append(c)
+        elif c.type == 'S': cites['secondary'].append(c)
     cites['primary'].sort(key=lambda c: c.document.ordering)
     cites['secondary'].sort(key=lambda c: c.document.ordering)
     return cites
