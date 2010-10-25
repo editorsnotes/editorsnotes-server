@@ -117,7 +117,7 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible):
     u"""
     A text transcript of a document.
     """
-    document = models.OneToOneField(Document, related_name='_transcript', null=True)
+    document = models.OneToOneField(Document, related_name='_transcript')
     content = fields.XHTMLField()
     objects = TranscriptManager()
     def get_absolute_url(self):
@@ -313,7 +313,7 @@ class Scan(CreationMetadata):
     u"""
     A scanned image of (part of) a dcument.
     """
-    document = models.ForeignKey(Document, related_name='scans', null=True)
+    document = models.ForeignKey(Document, related_name='scans')
     image = models.ImageField(upload_to='scans/%Y/%m')
     ordering = models.IntegerField(blank=True, null=True)
     def __unicode__(self):
@@ -325,7 +325,7 @@ class Citation(CreationMetadata):
     u"""
     A reference to or citation of a document.
     """
-    document = models.ForeignKey(Document, related_name='citations', null=True)
+    document = models.ForeignKey(Document, related_name='citations')
     locator = models.CharField(max_length=16, blank=True)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
