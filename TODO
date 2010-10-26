@@ -1,3 +1,10 @@
+Change transcript editing interface to use floating dialogs for editing 
+footnotes.
+
+Populate new footnote forms with contents of user's clipboard.
+
+Add notes field to Citation.
+
 Make a custom manager method for gettings Notes by Topic.
 
 Need to get tests running again, which will require a new fixture.
