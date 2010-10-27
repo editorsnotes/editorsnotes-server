@@ -5,6 +5,8 @@ Populate new footnote forms with contents of user's clipboard.
 
 Add notes field to Citation.
 
+Make print stylesheet for transcript with all footnotes at bottom.
+
 Make a custom manager method for gettings Notes by Topic.
 
 Need to get tests running again, which will require a new fixture.
