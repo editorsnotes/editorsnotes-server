@@ -1,4 +1,5 @@
 from models import *
+from fields import XHTMLField, ReadonlyXHTMLWidget
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
@@ -7,7 +8,6 @@ from django.db import IntegrityError
 from django.db.models.fields import FieldDoesNotExist
 from django.http import HttpResponseRedirect
 from reversion import admin as reversion_admin
-from lxml import etree
 from urlparse import urlparse, parse_qsl, urlunparse
 from urllib import urlencode
 
@@ -33,6 +33,7 @@ class FootnoteInline(admin.StackedInline):
     extra = 0
     template = 'admin/main/footnote/edit_inline/stacked.html'
     form = FootnoteAdminForm
+    formfield_overrides = { XHTMLField: { 'widget': ReadonlyXHTMLWidget } }
 
 class ScanInline(admin.StackedInline):
     model = Scan
@@ -133,10 +134,13 @@ class TranscriptAdmin(VersionAdmin):
         # Save the transcript HTML.
         transcript.save()
     class Media:
-        css = { 'all': ('style/admin-transcript.css',) }
+        css = { 'all': ('style/custom-theme/jquery-ui-1.8.5.custom.css',
+                        'style/admin-transcript.css') }
         js = ('function/jquery-1.4.2.min.js',
+              'function/jquery-ui-1.8.5.custom.min.js',
               'function/wymeditor/jquery.wymeditor.pack.js',
               'function/jquery.timeago.js',
+              'function/jquery.ellipsis.js',
               'function/admin-transcript.js')
 
 class FootnoteAdmin(VersionAdmin):

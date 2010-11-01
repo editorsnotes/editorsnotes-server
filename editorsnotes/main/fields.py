@@ -16,7 +16,7 @@ class XHTMLWidget(forms.Textarea):
         if value is None:
             return ''
         if isinstance(value, html.HtmlElement):
-            return etree.tostring(value)
+            return etree.tostring(value, encoding=unicode)
         if isinstance(value, str) or isinstance(value, unicode):
             return value
         raise TypeError('%s cannot be formatted as XHTML' % value)
@@ -25,6 +25,19 @@ class XHTMLWidget(forms.Textarea):
         return mark_safe(u'<textarea%s>%s</textarea>' % (
                 forms.util.flatatt(final_attrs),
                 conditional_escape(force_unicode(self._format_value(value)))))
+
+class ReadonlyXHTMLWidget(XHTMLWidget):
+    def render(self, name, value, attrs=None):
+        extra_attrs = { 'style': 'display: none', 'class': 'hidden-textarea' }
+        if attrs:
+            attrs.update(extra_attrs);
+        else:
+            attrs = extra_attrs
+        return (mark_safe(
+                '<div class="readonly">' 
+                + self._format_value(value)
+                + '</div>') 
+                + super(ReadonlyXHTMLWidget, self).render(name, value, attrs))
 
 class XHTMLField(models.Field):
     description = 'A parsed XHTML fragment'

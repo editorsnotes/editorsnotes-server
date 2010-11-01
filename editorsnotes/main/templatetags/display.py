@@ -47,4 +47,3 @@ Created by %s %s.<br/>
 Last edited by %s %s.</div>''' % (
             as_link(UserProfile.get_for(obj.creator)), timeago(obj.created),
             as_link(UserProfile.get_for(obj.last_updater)), timeago(obj.last_updated)))
-

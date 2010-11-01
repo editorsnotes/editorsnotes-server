@@ -147,7 +147,7 @@ class Footnote(LastUpdateMetadata, Administered, URLAccessible):
         if footnoted_text is None:
             return utils.xhtml_to_text(self.content)
         else:
-            return u'"%s"' % footnoted_text
+            return footnoted_text
     def remove_self_from(self, transcript):
         selector = 'a.footnote[href="%s"]' % self.get_absolute_url()
         results = transcript.content.cssselect(selector)
