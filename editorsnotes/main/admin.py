@@ -49,7 +49,6 @@ class VersionAdmin(reversion_admin.VersionAdmin):
         obj.last_updater = request.user
         obj.save()
     def save_formset(self, request, form, formset, change):
-        import pdb; pdb.set_trace()
         instances = formset.save(commit=False)
         for instance in instances:
             try:
