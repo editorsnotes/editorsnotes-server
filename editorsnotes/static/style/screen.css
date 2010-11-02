@@ -337,6 +337,7 @@ aside p {font-size:12px;line-height:1.4em;margin-bottom:1.5em;}
 
 /* semantic class names */
 #searchinput {float:left;margin-right:10px;width:350px;}
+.citation-notes {margin-bottom:1.5em;}
 .related-topics {margin-bottom:1.5em;}
 .message-list {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}
 #searchresults {margin-right:0;padding-right:0;float:left;margin-right:10px;margin-right:0;width:950px;margin-right:0;}

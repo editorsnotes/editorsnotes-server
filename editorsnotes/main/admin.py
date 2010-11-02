@@ -19,6 +19,7 @@ class FootnoteAdminForm(forms.ModelForm):
 class CitationInline(generic.GenericStackedInline):
     model = Citation
     extra = 0
+    template = 'admin/main/edit_inline/stacked.html'
 
 class TopicAssignmentInline(generic.GenericStackedInline):
     model = TopicAssignment
@@ -48,6 +49,7 @@ class VersionAdmin(reversion_admin.VersionAdmin):
         obj.last_updater = request.user
         obj.save()
     def save_formset(self, request, form, formset, change):
+        import pdb; pdb.set_trace()
         instances = formset.save(commit=False)
         for instance in instances:
             try:

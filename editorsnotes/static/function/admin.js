@@ -19,7 +19,16 @@ $(document).ready(function () {
   };
 
   // Initialize WYMeditors.
-  $('textarea').wymeditor(wymconfig);
+  $('textarea').filter(function() {
+    // Skip the hidden template form.
+    return (! this.id.match(/__prefix__/))
+  }).wymeditor(wymconfig);
+
+  // Initialize WYMeditors in new inline rows when they are added.
+  $('body').bind('inlineadded', function(e, row) {
+    // Need to rewrap the row in non-Django jQuery, which has wymeditor loaded.
+    $(row[0]).find('textarea').wymeditor(wymconfig);
+  });
 
   // Initialize timeago.
   $('time.timeago').timeago();

@@ -53,7 +53,7 @@ class XHTMLField(models.Field):
             return value
         if not (isinstance(value, str) or isinstance(value, unicode)):
             raise TypeError('%s cannot be parsed to XHTML' % type(value))
-        if len(value) == 0:
+        if len(value) == 0 or value == '<br/>':
             return None
         # strip out entity-encoded carriage returns (pasted MS Word garbage)
         value = re.sub(r'(&#13;\n)+', ' ', value)
