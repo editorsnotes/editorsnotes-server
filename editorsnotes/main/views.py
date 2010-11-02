@@ -138,7 +138,7 @@ def topic(request, topic_slug):
 def note(request, note_id):
     o = {}
     o['note'] = get_object_or_404(Note, id=note_id)
-    o['topics'] = [ ta.topic for ta in o['note'].topics ]
+    o['topics'] = [ ta.topic for ta in o['note'].topics.all() ]
     o['cites'] = _sort_citations(o['note'])
     return render_to_response(
         'note.html', o, context_instance=RequestContext(request))
