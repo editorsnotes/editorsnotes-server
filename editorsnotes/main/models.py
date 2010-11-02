@@ -167,7 +167,7 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible):
     preferred_name = models.CharField(max_length='80', unique=True)
     slug = models.CharField(max_length='80', unique=True, editable=False)
     related_topics = models.ManyToManyField('self', blank=True)
-    summary = fields.XHTMLField(verbose_name='article')
+    summary = fields.XHTMLField(verbose_name='article', blank=True, null=True)
     summary_citations = generic.GenericRelation('Citation')
     def __init__(self, *args, **kwargs):
         super(Topic, self).__init__(*args, **kwargs)
@@ -181,6 +181,8 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible):
         super(Topic, self).__setattr__(key, value)
         if key == 'preferred_name':
             self.slug = self._make_slug(value)
+    def has_summary(self):
+        return self.summary is not None
     def get_aliases(self):
         return u' '.join([ a.name for a in self.aliases.all() ])
     @models.permalink
