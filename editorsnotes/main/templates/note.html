@@ -10,8 +10,8 @@
       <div class="related-topics">
         <span class="quiet">Related topics:</span> 
         <ul class="topic-list">
-          {% for topic_assignment in note.topics %}
-          <li>{{ topic_assignment.topic|as_link }}{% if not forloop.last %}, {% endif %}</li>
+          {% for topic in topics %}
+          <li>{{ topic|as_link }}{% if not forloop.last %}, {% endif %}</li>
           {% endfor %}
         </ul>
       </div>
