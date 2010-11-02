@@ -8,6 +8,8 @@ textify = etree.XSLT(etree.parse(
         os.path.abspath(os.path.join(os.path.dirname(__file__), 'textify.xsl'))))
 
 def xhtml_to_text(xhtml):
+    if xhtml is None: 
+        return ''
     string = etree.tostring(textify(xhtml), method='text', encoding=unicode)
     if string: string = string.strip() 
     return string

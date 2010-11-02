@@ -7,3 +7,8 @@
   <a href="{{ cite.document.get_absolute_url }}">More info</a>
   {% endfilter %}
 </div>
+{% if cite.has_notes %}
+<div class="citation-notes">
+  {{ cite.notes|as_html|typogrify }}
+</div>
+{% endif %}

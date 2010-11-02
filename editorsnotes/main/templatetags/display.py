@@ -10,10 +10,14 @@ register = template.Library()
 
 @register.filter
 def as_text(tree):
+    if tree is None:
+        return ''
     return utils.xhtml_to_text(tree)
 
 @register.filter
 def as_html(tree):
+    if tree is None:
+        return ''
     return mark_safe(etree.tostring(tree))
 
 @register.filter

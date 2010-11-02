@@ -47,6 +47,8 @@ class XHTMLField(models.Field):
     def db_type(self):
         return 'xml'
     def to_python(self, value):
+        if value is None:
+            return None
         if isinstance(value, html.HtmlElement):
             return value
         if not (isinstance(value, str) or isinstance(value, unicode)):
@@ -62,7 +64,10 @@ class XHTMLField(models.Field):
             fragment = html.fragment_fromstring(value, create_parent='div')
         return cleaner.clean_html(fragment)
     def get_db_prep_value(self, value):
-        return etree.tostring(value)
+        if value is None:
+            return None
+        else:
+            return etree.tostring(value)
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
@@ -70,5 +75,6 @@ class XHTMLField(models.Field):
         defaults = {'widget': XHTMLWidget}
         defaults.update(kwargs)
         return super(XHTMLField, self).formfield(**defaults)
-    def south_field_triple(self):
-        return ('main.fields.XHTMLField', [], {})
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ['^editorsnotes\.main\.fields\.XHTMLField'])

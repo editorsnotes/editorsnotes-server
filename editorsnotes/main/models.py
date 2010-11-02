@@ -333,6 +333,9 @@ class Citation(CreationMetadata):
     document = models.ForeignKey(Document, related_name='citations')
     locator = models.CharField(max_length=16, blank=True)
     type = models.CharField(max_length=1, choices=(('P','primary source'),('S','secondary source')), default='S')
+    notes = fields.XHTMLField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
+    def has_notes(self):
+        return self.notes is not None

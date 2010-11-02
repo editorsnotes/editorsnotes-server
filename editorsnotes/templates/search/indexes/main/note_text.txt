@@ -1,2 +1,5 @@
 {% load display %}
 {{ object.content|as_text }}
+{% for cite in object.citations.all %}
+{{ cite.notes|as_text }}
+{% endfor %}
