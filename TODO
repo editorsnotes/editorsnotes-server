@@ -10,6 +10,8 @@ Change name of Note to Report?
 
 Make print stylesheet for transcript with all footnotes at bottom.
 
+Add related topics to footnotes.
+
 Make a custom manager method for gettings Notes by Topic.
 
 Need to get tests running again, which will require a new fixture.
