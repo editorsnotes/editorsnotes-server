@@ -11,8 +11,9 @@ def xhtml_to_text(xhtml):
     if xhtml is None: 
         return ''
     string = etree.tostring(textify(xhtml), method='text', encoding=unicode)
-    if string: string = string.strip() 
-    return string
+    if string is None:
+        return ''
+    return string.strip()
 
 def truncate(text, length=120):
     if len(text) <= length:
