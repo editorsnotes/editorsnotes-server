@@ -12,10 +12,15 @@ class UtilsTestCase(TestCase):
     def test_truncate(self):
         self.assertEquals(utils.truncate(u'xxxxxxxxxx', 4), u'xx... xx')
 
+def create_test_user():
+    user = User(username='testuser', is_staff=True, is_superuser=True)
+    user.set_password('testuser')
+    user.save()
+    return user
+
 class TopicTestCase(TestCase):
-    fixtures = [ 'test' ]
     def setUp(self):
-        self.user = User.objects.get(username='testuser')
+        self.user = create_test_user()
         self.topics = []
         self.topics.append(Topic.objects.create(
                 preferred_name=u'Foote, Edward B. (Edward Bliss) 1829-1906', 
@@ -52,7 +57,7 @@ class TopicTestCase(TestCase):
             preferred_name=u'Doe, John', 
             summary='Yoyoyo!',
             creator=self.user, last_updater=self.user)
-        self.client.login(username='testuser', password='testuser')
+        self.assertTrue(self.client.login(username='testuser', password='testuser'))
         response = self.client.post('/admin/main/topic/add/', 
                                      { 'preferred_name': u'Doe, John',
                                        'summary': u'John Doe was a great man.',
@@ -78,9 +83,8 @@ class TopicTestCase(TestCase):
                           u'Topic with a very similar Preferred name already exists.')
 
 class NoteTestCase(TestCase):
-    fixtures = [ 'test' ]
     def setUp(self):
-        self.user = User.objects.get(username='testuser')    
+        self.user = create_test_user()
     def testStripStyleElementsFromContent(self):
         note = Note.objects.create(
             content=u'<style>garbage</style><h1>hey</h1><p>this is a <em>note</em></p>', 
@@ -95,7 +99,7 @@ class NoteTestCase(TestCase):
             creator=self.user, last_updater=self.user)
         document = Document.objects.create(
             description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
-            type='P', creator=self.user, last_updater=self.user)
+            creator=self.user, last_updater=self.user)
         note.citations.create(document=document, locator='98-113', creator=self.user)
         self.assertEquals(1, len(note.citations.all()))
         self.assertEquals(document, note.citations.all()[0].document)
@@ -120,9 +124,8 @@ class NoteTestCase(TestCase):
         topic.delete()
 
 class NoteTransactionTestCase(TransactionTestCase):
-    fixtures = [ 'test' ]
     def setUp(self):
-        self.user = User.objects.get(username='testuser')     
+        self.user = create_test_user()
     def testAssignTopicTwice(self):
         note = Note.objects.create(
             content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
