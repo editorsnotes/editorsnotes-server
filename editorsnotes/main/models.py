@@ -138,7 +138,7 @@ class Footnote(LastUpdateMetadata, Administered, URLAccessible):
             selector = 'a.footnote[href="%s"]' % self.get_absolute_url()
             results = self.transcript.content.cssselect(selector)
             if len(results) == 1:
-                return results[0].xpath('string()')
+                return unicode(results[0].xpath('string()'))
         except NoReverseMatch: # footnote has been deleted
             pass
         return None 
