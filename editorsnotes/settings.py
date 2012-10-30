@@ -44,7 +44,12 @@ SITE_ID = 1
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 ROOT_URLCONF = 'editorsnotes.urls'
+
 AUTH_PROFILE_MODULE = 'main.UserProfile'
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'django_browserid.auth.BrowserIDBackend',
+)
 
 HAYSTACK_SITECONF = 'editorsnotes.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'xapian'
@@ -105,6 +110,7 @@ MIDDLEWARE_CLASSES = (
 
 INSTALLED_APPS = (
     'django.contrib.auth',
+    'django_browserid',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',

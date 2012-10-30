@@ -8,10 +8,11 @@ admin.autodiscover()
 urlpatterns = patterns('',
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
     (r'^accounts/profile/$', 'editorsnotes.main.views.user'),
+    (r'^accounts/browserid/', include('django_browserid.urls')),
 )
 
 urlpatterns += patterns('',
-    (r'^admin/', include('editorsnotes.admin.urls'))
+    (r'^admin/', include('editorsnotes.admin.urls')),
 )
 
 urlpatterns += patterns('',
