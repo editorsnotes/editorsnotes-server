@@ -26,7 +26,7 @@ $(document).ready(function () {
       event.preventDefault();
       $(this)
         .siblings('input[name$="DELETE"]').attr('checked', true)
-        .parents('.control-group').fadeOut('slow');
+        .parents('.topicassignment').fadeOut('slow');
     });
 
 
@@ -42,12 +42,16 @@ $(document).ready(function () {
     })
     .filter('.collapse-on-show').trigger('click');
 
-  $('.related-topic input[name$="DELETE"]').each(function () {
+  $('.related-topics input[name$="DELETE"]').each(function () {
+    var $this = $(this);
+
+    $this.closest('.control-group').replaceWith($this);
+
     $('<a>', {
       'class': 'remove-related-topic',
       'href': '#',
       'html': '<i class="icon-remove-sign"></i>'
-    }).appendTo($(this).hide().parents('.control-group'));
+    }).appendTo($(this).hide().parents('.topicassignment'));
   });
 
   $('<input type="text" placeholder="Add topic (type to search)">')
@@ -56,7 +60,7 @@ $(document).ready(function () {
       // since it's just used for autocomplete & won't be saved
       event.stopPropagation();
     })
-    .appendTo('.related-topics-field .fieldset-content')
+    .appendTo('.related-topics .fieldset-content')
     .after($('<img>', {
       id: 'related-topics-loading',
       src: '/static/style/icons/ajax-loader.gif',
@@ -87,7 +91,7 @@ $(document).ready(function () {
         at: 'left top'
       },
       select: function (event, ui) {
-        var $oldExtraField = $('.related-topic:last').trigger('change')
+        var $oldExtraField = $('.related-topics .topicassignment:last').trigger('change')
           , $newExtraField = $oldExtraField.clone().insertAfter($oldExtraField)
           , oldFieldCounter
           , newFieldCounter

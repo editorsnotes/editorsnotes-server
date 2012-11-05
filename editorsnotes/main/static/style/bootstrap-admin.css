@@ -12,12 +12,20 @@
         margin-bottom: 0px;
     }
     .fieldset-content {
-        padding-top: 8px;
+        padding-top: 6px;
     }
 
     /* Add space between fields */
     fieldset {
         margin-bottom: 1em;
+    }
+
+    .error-message {
+        margin-top: 6px;
+        margin-bottom: 0;
+    }
+    .error-message ul {
+        margin-bottom: 0 ;
     }
 
 
@@ -48,8 +56,17 @@
     .fieldset-content .btn-toolbar {
         margin-bottom: 0;
     }
+
+    .topicassignment {
+        margin-bottom: 3px;
+    }
+    .related-topics .ui-autocomplete-input {
+        margin-top: 10px;
+    }
+
     /* Hide extra empty related topic */
-    .related-topic:last-of-type {
+    .related-topics .topicassignment:last-of-type {
         display: none;
     }
+
 

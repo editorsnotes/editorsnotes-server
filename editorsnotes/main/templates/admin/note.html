@@ -24,82 +24,29 @@
 
   <form method="post" class="form-horizontal">{% csrf_token %}
 
-    {% if form.non_field_errors %}
-    <div class="alert alert-error">
-      {{ form.non_field_errors }}
-    </div>
-    {% endif %}
+    {% include "admin/includes/bootstrap_errors.html" with errors=form.non_field_errors %}
 
     <fieldset class="title-field">
-      <legend>
-        Title
-      </legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.title.errors %}
+      <legend>Title</legend>
       <div class="fieldset-content">
         {{ form.title }}
       </div>
     </fieldset>
 
     <fieldset class="description-field collapsable">
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.content.errors %}
       <legend>Description</legend>
       <div class="fieldset-content">
-        <div id="content-toolbar" class="btn-toolbar" style="display: none;">
-          <div class="btn-group">
-            <a data-wysihtml5-command="bold" class="btn">
-              <i class="icon-bold"></i>
-            </a>
-            <a data-wysihtml5-command="italic" class="btn">
-              <i class="icon-italic"></i>
-            </a>
-            <a data-wysihtml5-command="formatBlock"
-               data-wysihtml5-command-value="p"
-              class="btn">
-              <strong>P</strong>
-            </a>
-            <a data-wysihtml5-command="formatBlock"
-               data-wysihtml5-command-value="h1"
-              class="btn">
-              <strong>H1</strong>
-            </a>
-            <a data-wysihtml5-command="formatBlock"
-               data-wysihtml5-command-value="h2"
-              class="btn">
-              <strong>H2</strong>
-            </a>
-            <a data-wysihtml5-command="formatBlock"
-               data-wysihtml5-command-value="h3"
-              class="btn">
-              <strong>H3</strong>
-            </a>
-            <a data-wysihtml5-command="insertOrderedList" class="btn">
-              <i class="icon-list-ol"></i>
-            </a>
-            <a data-wysihtml5-command="insertUnorderedList" class="btn">
-              <i class="icon-list-ul"></i>
-            </a>
-            <a data-wysihtml5-command="createLink" class="btn">
-              <i class="icon-link"></i>
-            </a>
-          </div>
-
-          <div data-wysihtml5-dialog="createLink" style="display: none;">
-            <label>
-              Link:
-              <input data-wysihtml5-dialog-field="href" value="http://">
-            </label>
-            <a data-wysihtml5-dialog-action="save" class="btn">OK</a>
-            <a data-wysihtml5-dialog action="cancel" class="btn">Cancel</a>
-          </div>
-
-        </div>
+        {% include "admin/includes/wysihtml5_full_toolbar.html" with toolbar_id="content-toolbar" %}
         {{ form.content }}
       </div>
     </fieldset>
 
 
     <fieldset class="status-field collapsable">
-      <legend>
-        Status
-      </legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.status.errors %}
+      <legend>Status</legend>
       <div class="fieldset-content">
         {{ form.status }}
       </div>
@@ -108,29 +55,17 @@
     {% for formset in formsets %}
 
     {% if formset.prefix == 'topicassignment' %}
-    <fieldset class="related-topics-field collapsable">
-      {{ formset.management_form }}
-      <legend>
-        Related topics
-      </legend>
-      <div class="fieldset-content">
-        {% for form in formset %}
-        <div class="control-group related-topic">
-          {{ form.id }}
-          {{ form.topic }}
-          {{ form.DELETE }}
-        </div>
-        {% endfor %}
-      </div>
+    <fieldset class="collapsable related-topics">
+      <legend>Related topics</legend>
+      {% include "admin/includes/bootstrap_formset.html" %}
     </fieldset>
     {% endif %}
 
     {% endfor %}
 
     <fieldset class="assigned-users-field collapsable">
-      <legend>
-        Assigned users
-      </legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.assigned_users.errors %}
+      <legend>Assigned users</legend>
       <div class="fieldset-content">
         {{ form.assigned_users }}
       </div>
@@ -139,7 +74,6 @@
     <hr/>
 
     <input type="submit" value="Save note" class="btn btn-primary" />
-
 
   </form>
 

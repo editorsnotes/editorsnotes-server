@@ -14,92 +14,42 @@
 
   <form enctype="multipart/form-data" method="post" class="form-horizontal">{% csrf_token %}
 
-    {% if form.non_field_errors %}
-    <div class="alert alert-error">
-      {{ form.non_field_errors }}
-    </div>
-    {% endif %}
+    {% include "admin/includes/bootstrap_errors.html" with errors=form.non_field_errors %}
 
     <fieldset>
       <legend>Description</legend>
       <div class="document-description-edit fieldset-content span11">
-        {% if form.description.errors %}
-          <div class="alert alert-error">
-            {{ form.description.errors }}
-          </div>
-        {% endif %}
+        {% include "admin/includes/bootstrap_errors.html" with errors=form.description.errors %}
+
         {{ form.description }}
+
       </div>
     </fieldset>
 
     <fieldset class="collapsable">
       <legend>Zotero data</legend>
       <div class="fieldset-content">
-        {% if form.zotero_string.errors %}
-        <div class="alert alert-error">
-          {{ form.zotero_string.errors }}
-        </div>
-        {% endif %}
+        {% include "admin/includes/bootstrap_errors.html" with errors=form.zotero_string.errors %}
+
         <div class="zotero-container">
         </div>
         {{ form.zotero_string }}
+
       </div>
     </fieldset>
 
     {% for formset in formsets %}
 
     {% if formset.prefix == 'topicassignment' %}
-      <fieldset class="collapsable related-topics-field">
-        {{ formset.management_form }}
+      <fieldset class="collapsable related-topics">
         <legend>Related topics</legend>
-        <div class="fieldset-content">
-          {% if formset.non_form_errors %}
-            <div class="alert alert-error">
-              {{ formset.non_form_errors }}
-            </div>
-          {% endif %}
-          {% for form in formset %}
-            <div class="control-group related-topic">
-              {{ form.id }}
-              {{ form.topic }}
-              {{ form.DELETE }}
-            </div>
-          {% endfor %}
-        </div>
+        {% include "admin/includes/bootstrap_formset.html" %}
       </fieldset>
 
     {% elif formset.prefix == 'documentlink' %}
       <fieldset class="collapsable">
-        {{ formset.management_form }}
-        <legend>External links</legend>
-        <div class="fieldset-content">
-          {% for form in formset %}
-            {% if form.errors %} <div class="alert alert-error"> {{ form.errors }} </div> {% endif %}
-            {{ form.document }}
-            {{ form.id }}
-
-            <div class="control-group">
-              <label class="control-label" for="{{ form.url.auto_id }}">URL</label>
-              <div class="controls">
-                {{ form.url }}
-              </div>
-            </div>
-
-            <div class="control-group">
-              <label class="control-label" for="{{ form.description.auto_id }}">Description</label>
-              <div class="controls">
-                {{ form.description }}
-              </div>
-            </div>
-
-            <div class="control-group">
-              <label class="control-label" for="{{ form.DELETE.auto_id }}">Delete?</label>
-              <div class="controls">
-                {{ form.DELETE }}
-              </div>
-            </div>
-          {% endfor %}
-        </div>
+        <legend>Document Links</legend>
+        {% include "admin/includes/bootstrap_formset.html" %}
       </fieldset>
 
     {% elif formset.prefix == 'scan' %}
