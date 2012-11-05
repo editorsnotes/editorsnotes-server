@@ -18,82 +18,75 @@
 
     <fieldset>
       <legend>Description</legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.description.errors %}
       <div class="document-description-edit fieldset-content span11">
-        {% include "admin/includes/bootstrap_errors.html" with errors=form.description.errors %}
-
         {{ form.description }}
-
       </div>
     </fieldset>
 
     <fieldset class="collapsable">
       <legend>Zotero data</legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.zotero_string.errors %}
       <div class="fieldset-content">
-        {% include "admin/includes/bootstrap_errors.html" with errors=form.zotero_string.errors %}
-
-        <div class="zotero-container">
-        </div>
+        <div class="zotero-container"></div>
         {{ form.zotero_string }}
-
       </div>
     </fieldset>
 
-    {% for formset in formsets %}
+    {% with formset=formsets.topicassignment %}
+    <fieldset class="collapsable related-topics">
+      <legend>Related topics</legend>
+      {% include "admin/includes/bootstrap_formset.html" %}
+    </fieldset>
+    {% endwith %}
 
-    {% if formset.prefix == 'topicassignment' %}
-      <fieldset class="collapsable related-topics">
-        <legend>Related topics</legend>
-        {% include "admin/includes/bootstrap_formset.html" %}
-      </fieldset>
+    {% with formset=formsets.documentlink %}
+    <fieldset class="collapsable">
+      <legend>Document Links</legend>
+      {% include "admin/includes/bootstrap_formset.html" %}
+    </fieldset>
+    {% endwith %}
 
-    {% elif formset.prefix == 'documentlink' %}
-      <fieldset class="collapsable">
-        <legend>Document Links</legend>
-        {% include "admin/includes/bootstrap_formset.html" %}
-      </fieldset>
+    {% with formset=formsets.scan %}
+    <fieldset class="collapsable scan-field">
+      <legend>Scans</legend>
+      <div class="fieldset-content">
 
-    {% elif formset.prefix == 'scan' %}
-
-      <fieldset class="collapsable scan-field">
-        <legend>Scans</legend>
-        <div class="fieldset-content">
-
-          <div class="additional-scan">
-            {% if formset.non_form_errors %}
-            <div class="alert alert-error">
-              {% for error in formset.non_form_errors %}
-                {{ error }}
-              {% endfor %}
-            </div>
-            {% endif %}
-
-            {{ formset.management_form }}
-
-            <ol>
-              {% for form in formset %}
-                {{ form.id }}
-                {{ form.document }}
-                {{ form.ordering }}
-                {% if not forloop.last %}
-                  <li class="existing-scan">
-                    {{ form.image }}
-                    {{ form.DELETE }}
-                  </li>
-                {% else %}
-                <div>
-                  <label for="{{ form.image.auto_id }}">Add scans:</label>
-                  {{ form.image }}
-                </div>
-                {% endif %}
-              {% endfor %}
-            </ol>
+        <div class="additional-scan">
+          {% if formset.non_form_errors %}
+          <div class="alert alert-error">
+            {% for error in formset.non_form_errors %}
+              {{ error }}
+            {% endfor %}
           </div>
+          {% endif %}
 
+          {{ formset.management_form }}
+
+          <ol>
+            {% for form in formset %}
+              {{ form.id }}
+              {{ form.document }}
+              {{ form.ordering }}
+              {% if not forloop.last %}
+                <li class="existing-scan">
+                  {{ form.image }}
+                  {{ form.DELETE }}
+                </li>
+              {% else %}
+              <div>
+                <label for="{{ form.image.auto_id }}">Add scans:</label>
+                {{ form.image }}
+              </div>
+              {% endif %}
+            {% endfor %}
+          </ol>
         </div>
-      </fieldset>
 
-    {% endif %}
-    {% endfor %}
+      </div>
+    </fieldset>
+    {% endwith %}
+
 
     <fieldset class="collapsable">
       <legend>Transcript</legend>

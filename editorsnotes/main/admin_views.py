@@ -30,22 +30,27 @@ class ProcessInlineFormsetsView(View):
         form_class = self.get_form_class()
         form = self.get_form(form_class)
         formsets = self.collect_formsets()
-        if all(map(lambda f: f.is_valid(), [form] + formsets)):
+        for fs in formsets:
+            valid = formsets[fs].is_valid()
+        if all([form.is_valid()] + map(lambda fs: formsets[fs].is_valid(), formsets)):
             return self.form_valid(form, formsets)
         else:
             return self.form_invalid(form, formsets)
 
     def collect_formsets(self):
-        fs = []
+        fs = {}
         if hasattr(self, 'formset_classes'):
             for formset in self.formset_classes:
+                prefix = formset.model._meta.module_name
+
                 fs_kwargs = self.get_form_kwargs()
                 fs_kwargs.pop('initial', 0)
-                fs_kwargs['prefix'] = formset.model._meta.module_name
-                fs.append(formset(**fs_kwargs))
+                fs_kwargs['prefix'] = prefix
+
+                fs[prefix] = formset(**fs_kwargs)
         return fs
     def save_formsets(self, formsets):
-        for fs in formsets:
+        for fs in formsets.values():
             save_method = getattr(
                 self, 'save_%s_formset_form' % fs.prefix, 'save_formset_form')
             for form in fs:

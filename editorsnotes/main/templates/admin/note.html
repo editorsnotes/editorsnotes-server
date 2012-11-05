@@ -35,8 +35,8 @@
     </fieldset>
 
     <fieldset class="description-field collapsable">
-      {% include "admin/includes/bootstrap_errors.html" with errors=form.content.errors %}
       <legend>Description</legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.content.errors %}
       <div class="fieldset-content">
         {% include "admin/includes/wysihtml5_full_toolbar.html" with toolbar_id="content-toolbar" %}
         {{ form.content }}
@@ -52,16 +52,12 @@
       </div>
     </fieldset>
 
-    {% for formset in formsets %}
-
-    {% if formset.prefix == 'topicassignment' %}
+    {% with formset=formsets.topicassigment %}
     <fieldset class="collapsable related-topics">
       <legend>Related topics</legend>
       {% include "admin/includes/bootstrap_formset.html" %}
     </fieldset>
-    {% endif %}
-
-    {% endfor %}
+    {% endwith %}
 
     <fieldset class="assigned-users-field collapsable">
       {% include "admin/includes/bootstrap_errors.html" with errors=form.assigned_users.errors %}
