@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 
-from main.admin_views import NoteAdminView, DocumentAdminView
+from main.admin_views import NoteAdminView, DocumentAdminView, TopicAdminView
 
 admin.autodiscover()
 
@@ -16,6 +16,8 @@ urlpatterns += patterns('editorsnotes.main.admin_views',
     url(r'^admin/main/project/(?P<project_id>\d+)/$', 'change_project', name='project_edit_view'),
     url(r'^admin/main/project/(?P<project_id>\d+)/roster/$', 'project_roster', name='project_roster_view'),
     url(r'^admin/main/project/(?P<project_id>\d+)/featured_items/$', 'change_featured_items', name='change_featured_items_view'),
+    url(r'^admin/main/topic/add/$', TopicAdminView.as_view(), name='admin:main_topic_add'),
+    url(r'^admin/main/topic/(?P<topic_id>\d+)/$', TopicAdminView.as_view(), name='admin:main_topic_change'),
     url(r'^admin/main/document/add/$', DocumentAdminView.as_view(), name='admin:main_document_add'),
     url(r'^admin/main/document/(?P<document_id>\d+)/$', DocumentAdminView.as_view(), name='admin:main_document_change'),
     url(r'^admin/main/note/add/$', NoteAdminView.as_view(), name='admin:main_note_add'),

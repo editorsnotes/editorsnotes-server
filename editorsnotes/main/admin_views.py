@@ -201,6 +201,17 @@ class NoteAdminView(BaseAdminView):
         obj.creator = request.user
         obj.save()
 
+class TopicAdminView(BaseAdminView):
+    form_class = main_forms.TopicForm
+    formset_classes = (
+        main_forms.TopicAssignmentFormset,
+        main_forms.AliasFormset,
+        main_forms.CitationFormset,
+    )
+    template_base = 'admin/topic_%s.html'
+    def get_object(self, topic_id=None):
+        return topic_id and get_object_or_404(main_models.Topic, id=topic_id)
+
 @reversion.revision.create_on_success
 def note_sections(request, note_id):
     note = get_object_or_404(main_models.Note, id=note_id)

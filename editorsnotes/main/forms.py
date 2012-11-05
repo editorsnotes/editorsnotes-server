@@ -233,6 +233,44 @@ NoteSectionFormset = inlineformset_factory(
     main_models.Note, main_models.NoteSection, form=NoteSectionForm, extra=1)
 
 ################################################################################
+# Topic form and formsets
+################################################################################
+
+class TopicForm(ModelForm):
+    class Media:
+        js = (
+            "function/wysihtml5/wysihtml5-0.3.0.min.js",
+            "function/wysihtml5/parser_rules.js",
+            "function/admin-bootstrap-base.js",
+            "function/admin-bootstrap-topic.js",
+            "function/wymeditor/jquery.wymeditor.pack.js",
+        )
+        css = {
+            'all' : (
+                "style/bootstrap-admin.css",
+            )
+        }
+    class Meta:
+        model = main_models.Topic
+        fields = ('preferred_name', 'type', 'summary',)
+
+class AliasForm(ModelForm):
+    class Meta:
+        model = main_models.Alias
+        fields = ('name',)
+
+AliasFormset = inlineformset_factory(
+    main_models.Topic, main_models.Alias, form=AliasForm, extra=1)
+
+class CitationForm(ModelForm):
+    class Meta:
+        model = main_models.Citation
+
+CitationFormset = generic_inlineformset_factory(
+    main_models.Citation, form=CitationForm, extra=1)
+
+
+################################################################################
 # Topic assignment form, used in multiple places
 ################################################################################
 
