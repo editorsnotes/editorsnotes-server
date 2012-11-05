@@ -266,6 +266,9 @@ AliasFormset = inlineformset_factory(
 class CitationForm(ModelForm):
     class Meta:
         model = main_models.Citation
+        fields = ('document', 'notes', 'ordering',)
+        widgets = {'document': forms.widgets.HiddenInput(),
+                   'ordering': forms.widgets.HiddenInput()}
 
 CitationFormset = generic_inlineformset_factory(
     main_models.Citation, form=CitationForm, extra=1)

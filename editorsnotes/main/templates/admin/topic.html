@@ -1,0 +1,64 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin %}
+  <form method="post" class="form-horizontal">{% csrf_token %}
+
+    {% include "admin/includes/bootstrap_errors.html" with errors=form.non_field_errors %}
+
+    <fieldset>
+      <legend>Name</legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.preferred_name.errors %}
+      <div class="fieldset-content">
+        {{ form.preferred_name }}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Type</legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.type.errors %}
+      <div class="fieldset-content">
+        {{ form.type }}
+      </div>
+    </fieldset>
+
+    {% with formset=formsets.alias %}
+    <fieldset>
+      <legend>Alternate forms</legend>
+      {% include "admin/includes/bootstrap_formset.html" %}
+    <fieldset>
+    {% endwith %}
+
+    {% with formset=formsets.topicassignment %}
+    <fieldset class="related-topics">
+      <legend>Related topics</legend>
+      {% include "admin/includes/bootstrap_formset.html" %}
+    </fieldset>
+    {% endwith %}
+
+    <fieldset>
+      <legend>Article</legend>
+      {% include "admin/includes/bootstrap_errors.html" with errors=form.summary.errors %}
+      <div class="fieldset-content article">
+        {% include "admin/includes/wysihtml5_full_toolbar.html" with toolbar_id="summary-toolbar" %}
+        {{ form.summary }}
+      </div>
+
+      {% with formset=formsets.citation %}
+      <div class="fieldset-content article-citations">
+        {% include "admin/includes/wysihtml5_full_toolbar.html" with toolbar_id="citations-toolbar" %}
+        {{ formset.management_form }}
+
+        {% for citation in formset %}
+        {% with citation.instance as cs %}
+        <div class="citation">
+        </div>
+        {% endwith %}
+        {% endfor %}
+
+      </div>
+      {% endwith %}
+
+  </fieldset>
+
+  </form>
+{% endblock %}
