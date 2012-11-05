@@ -125,12 +125,12 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
             return
         if form.instance and form.instance.id:
             return
-        if form.cleaned_data['topic'] in self.instance.topics.all():
+        if form.cleaned_data['topic'] in self.object.topics.all():
             return
         ta = form.save(commit=False)
         ta.creator = self.request.user
         ta.topic = form.cleaned_data['topic']
-        ta.content_object = obj
+        ta.content_object = self.object
         ta.save()
         return ta
 
@@ -152,8 +152,8 @@ class DocumentAdminView(BaseAdminView):
 
     def save_formset_form(self, form):
         obj = form.save(commit=False)
-        obj.document = document
-        obj.creator = request.user
+        obj.document = self.object
+        obj.creator = self.request.user
         obj.save()
         return obj
 
@@ -195,8 +195,8 @@ class NoteAdminView(BaseAdminView):
         return note_id and get_object_or_404(main_models.Note, id=note_id)
     def save_formset_form(self, form):
         obj = form.save(commit=False)
-        obj.note = note
-        obj.creator = request.user
+        obj.note = self.object
+        obj.creator = self.request.user
         obj.save()
 
 class TopicAdminView(BaseAdminView):
