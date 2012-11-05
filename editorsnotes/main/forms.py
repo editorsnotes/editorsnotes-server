@@ -114,6 +114,7 @@ class DocumentForm(ModelForm):
 class DocumentLinkForm(ModelForm):
     class Meta:
         model = main_models.DocumentLink
+        exclude = ('affiliated_projects',)
         widgets = {
             'description': forms.widgets.Textarea(
                 attrs={ 'cols': 80, 'rows': 2 })

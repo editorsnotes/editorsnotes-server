@@ -67,14 +67,12 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
         return super(BaseAdminView, self).dispatch(*args, **kwargs)
     def get(self, request, *args, **kwargs):
         self.object = self.get_object(**kwargs)
-        self.template_name = self.template_base % ('change' if self.object else 'add')
         if self.object and not self.object.attempt('change', self.request.user):
             return http.HttpResponseForbidden(
                 'You do not have permission to change this object')
         return super(BaseAdminView, self).get(request, *args, **kwargs)
     def post(self, request, *args, **kwargs):
         self.object = self.get_object(**kwargs)
-        self.template_name = self.template_base % ('change' if self.object else 'add')
         if self.object and not self.object.attempt('change', self.request.user):
             return http.HttpResponseForbidden(
                 'You do not have permission to change this object')
@@ -143,7 +141,7 @@ class DocumentAdminView(BaseAdminView):
         main_forms.DocumentLinkFormset,
         main_forms.ScanFormset
     )
-    template_base = 'admin/document_%s.html'
+    template_name = 'admin/document.html'
     def post(self, request, *args, **kwargs):
         if request.is_ajax():
             return self.ajax_post(request, *args, **kwargs)
@@ -185,7 +183,7 @@ class NoteAdminView(BaseAdminView):
     formset_classes = (
         main_forms.TopicAssignmentFormset,
     )
-    template_base = 'admin/note_%s.html'
+    template_name = 'admin/note.html'
     def get_form(self, form_class):
         form = form_class(**self.get_form_kwargs())
         form.fields['assigned_users'].queryset=\
@@ -208,7 +206,7 @@ class TopicAdminView(BaseAdminView):
         main_forms.AliasFormset,
         main_forms.CitationFormset,
     )
-    template_base = 'admin/topic_%s.html'
+    template_name = 'admin/topic.html'
     def get_object(self, topic_id=None):
         return topic_id and get_object_or_404(main_models.Topic, id=topic_id)
 
