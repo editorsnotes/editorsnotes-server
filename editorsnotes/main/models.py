@@ -739,7 +739,7 @@ class Scan(CreationMetadata):
     class Meta:
         ordering = ['ordering'] 
 
-class Citation(CreationMetadata):
+class Citation(LastUpdateMetadata):
     u"""
     A reference to or citation of a document.
     """
