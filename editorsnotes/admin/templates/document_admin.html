@@ -1,4 +1,4 @@
-{% extends "admin/admin_base.html" %}
+{% extends "admin_base.html" %}
 
 {% block admin %}
 
@@ -14,11 +14,11 @@
 
   <form enctype="multipart/form-data" method="post" class="form-horizontal">{% csrf_token %}
 
-    {% include "admin/includes/bootstrap_errors.html" with errors=form.non_field_errors %}
+    {% include "includes/bootstrap_errors.html" with errors=form.non_field_errors %}
 
     <fieldset>
       <legend>Description</legend>
-      {% include "admin/includes/bootstrap_errors.html" with errors=form.description.errors %}
+      {% include "includes/bootstrap_errors.html" with errors=form.description.errors %}
       <div class="document-description-edit fieldset-content span11">
         {{ form.description }}
       </div>
@@ -26,7 +26,7 @@
 
     <fieldset class="collapsable">
       <legend>Zotero data</legend>
-      {% include "admin/includes/bootstrap_errors.html" with errors=form.zotero_string.errors %}
+      {% include "includes/bootstrap_errors.html" with errors=form.zotero_string.errors %}
       <div class="fieldset-content">
         <div class="zotero-container"></div>
         {{ form.zotero_string }}
@@ -36,14 +36,14 @@
     {% with formset=formsets.topicassignment %}
     <fieldset class="collapsable related-topics">
       <legend>Related topics</legend>
-      {% include "admin/includes/bootstrap_formset.html" %}
+      {% include "includes/bootstrap_formset.html" %}
     </fieldset>
     {% endwith %}
 
     {% with formset=formsets.documentlink %}
     <fieldset class="collapsable">
       <legend>Document Links</legend>
-      {% include "admin/includes/bootstrap_formset.html" %}
+      {% include "includes/bootstrap_formset.html" %}
     </fieldset>
     {% endwith %}
 

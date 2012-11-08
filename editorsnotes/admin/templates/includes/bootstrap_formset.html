@@ -2,7 +2,7 @@
 <div class="fieldset-content">
   {% for form in formset %}
 
-    {% include "admin/includes/bootstrap_errors.html" with errors=form.non_field_errors %}
+    {% include "includes/bootstrap_errors.html" with errors=form.non_field_errors %}
 
     <div class="{{ formset.prefix }}">
       {% for field in form.hidden_fields %}
@@ -10,7 +10,7 @@
       {% endfor %}
 
       {% for field in form.visible_fields %}
-        {% include "admin/includes/bootstrap_field.html" %}
+        {% include "includes/bootstrap_field.html" %}
       {% endfor %}
     </div>
 

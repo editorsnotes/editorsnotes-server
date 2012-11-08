@@ -1,16 +1,16 @@
+from django import http
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django import http
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.generic.edit import View, ModelFormMixin, TemplateResponseMixin
 
-from editorsnotes.main import forms as main_forms
 from editorsnotes.main import models as main_models
+import forms as admin_forms
 
 import reversion
 import json
@@ -140,13 +140,13 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
         return ta
 
 class DocumentAdminView(BaseAdminView):
-    form_class = main_forms.DocumentForm
+    form_class = admin_forms.DocumentForm
     formset_classes = (
-        main_forms.TopicAssignmentFormset,
-        main_forms.DocumentLinkFormset,
-        main_forms.ScanFormset
+        admin_forms.TopicAssignmentFormset,
+        admin_forms.DocumentLinkFormset,
+        admin_forms.ScanFormset
     )
-    template_name = 'admin/document.html'
+    template_name = 'document_admin.html'
     def post(self, request, *args, **kwargs):
         if request.is_ajax():
             return self.ajax_post(request, *args, **kwargs)
@@ -184,11 +184,11 @@ class DocumentAdminView(BaseAdminView):
             return http.HttpResponse(json.dumps(form.errors), status=400)
 
 class NoteAdminView(BaseAdminView):
-    form_class = main_forms.NoteForm
+    form_class = admin_forms.NoteForm
     formset_classes = (
-        main_forms.TopicAssignmentFormset,
+        admin_forms.TopicAssignmentFormset,
     )
-    template_name = 'admin/note.html'
+    template_name = 'note_admin.html'
     def get_form(self, form_class):
         form = form_class(**self.get_form_kwargs())
         form.fields['assigned_users'].queryset=\
@@ -205,13 +205,13 @@ class NoteAdminView(BaseAdminView):
         obj.save()
 
 class TopicAdminView(BaseAdminView):
-    form_class = main_forms.TopicForm
+    form_class = admin_forms.TopicForm
     formset_classes = (
-        main_forms.TopicAssignmentFormset,
-        main_forms.AliasFormset,
-        main_forms.CitationFormset,
+        admin_forms.TopicAssignmentFormset,
+        admin_forms.AliasFormset,
+        admin_forms.CitationFormset,
     )
-    template_name = 'admin/topic.html'
+    template_name = 'topic_admin.html'
     def get_object(self, topic_id=None):
         return topic_id and get_object_or_404(main_models.Topic, id=topic_id)
 
@@ -221,7 +221,7 @@ def note_sections(request, note_id):
     o = {}
     o['note'] = note
     if request.method == 'POST':
-        o['sections_formset'] = main_forms.NoteSectionFormset(
+        o['sections_formset'] = admin_forms.NoteSectionFormset(
             request.POST, instance=note, auto_id=False)
         if o['sections_formset'].is_valid():
             for form in o['sections_formset']:
@@ -242,10 +242,10 @@ def note_sections(request, note_id):
                 request, messages.SUCCESS, 'Note %s updated' % note.title)
             return http.HttpResponseRedirect(note.get_absolute_url())
     else:
-        o['sections_formset'] = main_forms.NoteSectionFormset(instance=note,
+        o['sections_formset'] = admin_forms.NoteSectionFormset(instance=note,
                                                               auto_id=False)
     return render_to_response(
-        'admin/note-sections.html', o, context_instance=RequestContext(request))
+        'note_sections_admin.html', o, context_instance=RequestContext(request))
 
 
 ###########################################################################
@@ -271,7 +271,7 @@ def project_roster(request, project_id):
             messages.add_message(request, messages.ERROR,
                                  'Cannot edit project roster')
         else:
-            formset = main_forms.ProjectUserFormSet(request.POST)
+            formset = admin_forms.ProjectUserFormSet(request.POST)
             if formset.is_valid():
                 for form in formset:
                     form.project = project
@@ -286,7 +286,7 @@ def project_roster(request, project_id):
     # Render project form, disabling inputs if user can't change them
     project_roster = User.objects.filter(userprofile__affiliation=project)\
             .order_by('-is_active', '-last_login')
-    o['formset'] = main_forms.ProjectUserFormSet(queryset=project_roster)
+    o['formset'] = admin_forms.ProjectUserFormSet(queryset=project_roster)
     for form in o['formset']:
         u = form.instance
         if not o['can_change']:
@@ -299,7 +299,7 @@ def project_roster(request, project_id):
                 f.widget.attrs['readonly'] = 'readonly'
         form.initial['project_role'] = u.get_profile().get_project_role(project)
     return render_to_response(
-        'admin/project_roster.html', o, context_instance=RequestContext(request))
+        'project_roster.html', o, context_instance=RequestContext(request))
 
 @login_required
 @reversion.revision.create_on_success
@@ -313,7 +313,7 @@ def change_project(request, project_id):
             content='You do not have permission to edit the details of %s' % project.name)
 
     if request.method == 'POST':
-        form = main_forms.ProjectForm(request.POST, request.FILES, instance=project)
+        form = admin_forms.ProjectForm(request.POST, request.FILES, instance=project)
         if form.is_valid():
             form.save()
             messages.add_message(
@@ -323,9 +323,9 @@ def change_project(request, project_id):
             return http.HttpResponseRedirect(redirect)
         else:
             pass
-    o['form'] = main_forms.ProjectForm(instance=project)
+    o['form'] = admin_forms.ProjectForm(instance=project)
     return render_to_response(
-        'admin/project_change.html', o, context_instance=RequestContext(request))
+        'project_change.html', o, context_instance=RequestContext(request))
 
 @login_required
 @reversion.revision.create_on_success
@@ -364,10 +364,12 @@ def change_featured_items(request, project_id):
                                         project=project,
                                         creator=request.user)
         if deleted:
-            main_models.FeaturedItem.objects.filter(project=project, id__in=deleted).delete()
+            main_models.FeaturedItem.objects\
+                .filter(project=project, id__in=deleted)\
+                .delete()
         messages.add_message(request, messages.SUCCESS, 'Featured items saved.')
         return http.HttpResponseRedirect(redirect)
 
     return render_to_response(
-        'admin/featured_items_change.html', o, context_instance=RequestContext(request))
+        'featured_items_change.html', o, context_instance=RequestContext(request))
 
