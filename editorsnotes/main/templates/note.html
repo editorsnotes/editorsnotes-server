@@ -103,7 +103,7 @@
 
       <section id="note-tab" class="tab-pane active">
 
-      {% if note.sections.all %}
+      {% if cites %}
         <div class="sort">
           <ul class="unstyled">
             <li><span class="big">Sort by:</span></li>
@@ -117,19 +117,19 @@
           </ul>
         </div>
         <div id="note-sections">
-        {% for section in note.sections.all %}
-          <div class="note-section{% if section.document %} has-document{% endif %}{% if section.has_content %} has-content{% endif %}">
-          {% if section.document %}
+        {% for cite in cites %}
+          <div class="note-section has-document{% if cite.has_notes %} has-content{% endif %}">
             <div class="note-section-document">
-              <a href="{{ section.document.get_absolute_url }}"><i class="icon-file"></i></a>
-              {{ section.document.as_html }}
+              <a href="{{ cite.document.get_absolute_url }}"><i class="icon-file"></i></a>
+              {{ cite.document.as_html }}
             </div>
-          {% endif %}
-          {% if section.has_content %}
+
+            {% if cite.has_notes %}
             <div class="note-section-content">
-              {{ section.content|as_html }}
+              {{ cite.notes|as_html }}
             </div>
-          {% endif %}
+            {% endif %}
+
           </div>
         {% endfor %}
         </div>
