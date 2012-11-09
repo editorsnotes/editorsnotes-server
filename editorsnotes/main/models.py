@@ -739,6 +739,12 @@ class Scan(CreationMetadata):
     class Meta:
         ordering = ['ordering'] 
 
+class CitationManager(models.Manager):
+    def get_for_object(self, obj):
+        return self.filter(
+            content_type=ContentType.objects.get_for_model(obj),
+            object_id=obj.id)
+
 class Citation(LastUpdateMetadata):
     u"""
     A reference to or citation of a document.
@@ -749,6 +755,9 @@ class Citation(LastUpdateMetadata):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
+
+    objects = CitationManager()
+
     def has_notes(self):
         return self.notes is not None
     def __unicode__(self):
