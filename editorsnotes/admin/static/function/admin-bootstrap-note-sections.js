@@ -1,28 +1,49 @@
 $(document).ready(function () {
-  var deactivateSections
-    , formToObject
-    , editSection
-    , addSection
-    , addDocumentModal
-    , saveDocument
 
+  /*
   $('#sections').sortable({
-    placeholder: 'note-section-placeholder'
+    placeholder: 'citation-placeholder'
   });
+  */
+
+  $('body')
+    .on('click', '#add-citation', function (event) {
+      event.preventDefault();
+      deactivateSections();
+      addSection();
+    })
+    .on('click', '.citation-edit:not(.citation-edit-active)', function (event) {
+      event.preventDefault();
+      deactivateSections();
+      editSection($(this));
+    })
+    .on('click', '.add-new-document', function (event) {
+      event.preventDefault();
+      addDocumentModal($(this).siblings('input'));
+    })
+    .on('submit', '#main form', function () {
+      deactivateSections();
+      return true;
+    })
+    .on('click', '.save-document', function (event) {
+      event.preventDefault();
+      saveDocument($(this).closest('.modal'));
+    })
+
 
   /**
    * Removes current wysihtml5 instance and updates form values to reflect
    * any changes made to previous active section.
    *
    */
-  deactivateSections = function () {
-    $('.note-section-active').each(function () {
+  function deactivateSections() {
+    $('.citation-edit-active').each(function () {
       var $this = $(this)
         , wysihtml5Selectors
         , isBlankSection
 
       // Update text content that will be displayed with edited value in textarea
-      $('.note-section-content', $this)
+      $('.citation-notes', $this)
         .html($this.data('editor').getValue())
         .show();
 
@@ -32,20 +53,20 @@ $(document).ready(function () {
         '.btn-toolbar'
       ]
 
-      $this.removeClass('note-section-active')
+      $this.removeClass('citation-edit-active')
         .find(wysihtml5Selectors.join(', '))
           .remove();
 
       // Right now, a section is blank if it doesn't cite a document. This will
       // need to be updated when we have different kinds of sections
-      isBlankSection = !$('.note-section-document', $this).text().trim().length;
+      isBlankSection = !$('.citation-document', $this).text().trim().length;
 
       if (isBlankSection) {
         $this.remove();
       }
 
       // Update the management after everything else has been done
-      $('input[name="sections-TOTAL_FORMS"]').val($('.note-section').length);
+      $('input[name="citation-TOTAL_FORMS"]').val($('.citation-edit').length);
 
     });
   };
@@ -54,7 +75,7 @@ $(document).ready(function () {
    * Returns representation of form as an object, for use in, e.g., ajax POST
    *
    */
-  formToObject = function (form) {
+  function formToObject(form) {
     var formArray = $(':input', form).serializeArray()
       , formObject = {}
 
@@ -70,13 +91,13 @@ $(document).ready(function () {
    * Initialize a wysihtml5 instance for a given section
    *
    */
-  editSection = function ($section) {
+  function editSection($section) {
     var editor
       , toolbar
-      , textarea = $section.find('textarea[name$="content"]')
-      , $content = $section.find('.note-section-content');
+      , textarea = $section.find('textarea[name$="notes"]')
+      , $content = $section.find('.citation-notes');
 
-    $section.addClass('note-section-active');
+    $section.addClass('citation-edit-active');
 
     textarea
       .attr('id', textarea.attr('name'))
@@ -90,7 +111,7 @@ $(document).ready(function () {
 
     $content.hide();
 
-    toolbar = $('#note-section-toolbar').clone().show()
+    toolbar = $('#citation-toolbar').clone().show()
       .attr('id', $section.attr('id') + '-toolbar')
       .insertBefore(textarea);
 
@@ -112,25 +133,25 @@ $(document).ready(function () {
    * of a new document (triggered by an anchor)
    *
    */
-  addSection = function (after) {
+  function addSection(after) {
     var $newSection = $('<div>')
       , $documentInput = $('<input type="text">')
       , lastSectionID
       , $newDocumentButton
       , autocompleteOptions = $('body').data('baseAutocompleteOptions');
 
-    lastSectionID = Math.max.apply(Math, $('.note-section').map(function () {
+    lastSectionID = Math.max.apply(Math, $('.citation-edit').map(function () {
       return (/\d+/).exec(this.id);
-    }))
+    }));
 
     $newSection
-      .addClass('note-section')
-      .prop('id', 'note-sections-' + (lastSectionID + 1))
-      .append('<div class="note-section-document"><i class="icon-file"></i></div>')
-      .append('<div class="note-section-content"></div>')
-      .prependTo('#sections');
+      .addClass('citation-edit')
+      .prop('id', 'citation-' + (lastSectionID + 1))
+      .append('<div class="citation-document"><i class="icon-file"></i></div>')
+      .append('<div class="citation-notes"></div>')
+      .prependTo('#citation-items');
 
-    $('#note-sections-' + lastSectionID + ' .note-section-fields')
+    $('#citation-' + lastSectionID + ' .citation-fields')
       .clone()
       .appendTo($newSection)
       .children(':input').each(function () {
@@ -139,7 +160,7 @@ $(document).ready(function () {
         case 'id':
           $(this).remove();
           break;
-        case 'content':
+        case 'notes':
           $(this).val('').html('').css('height', '1px');
           break;
         case 'note':
@@ -154,7 +175,7 @@ $(document).ready(function () {
       });
 
     $documentInput 
-      .appendTo($newSection.find('.note-section-document'))
+      .appendTo($newSection.find('.citation-document'))
       .addClass('document-autocomplete')
       .data('search-target', 'documents')
       .prop('placeholder', 'Type to search for a document, or add a new one by clicking the icon to the right.')
@@ -165,9 +186,18 @@ $(document).ready(function () {
       })
       .autocomplete($.extend(autocompleteOptions, {
         'select': function (event, ui) {
-          $(event.target).replaceWith($('<div class="document">').html(ui.item.value));
-          $('input[name$="document"]', $newSection).val(ui.item.id);
+          $this = $(event.target);
+
+          $this.closest('.citation-document')
+            .append(ui.item.value);
+        
+          $this.closest('.citation-edit')
+            .find('input[name$="document"]')
+              .val(ui.item.id);
+
+          $this.remove();
           $newDocumentButton.remove();
+
         }
       }));
 
@@ -182,7 +212,7 @@ $(document).ready(function () {
    * Initialize a modal to add a document asynchronously
    *
    */
-  addDocumentModal = function (sourceInput) {
+  function addDocumentModal(sourceInput) {
     var $w = $(window)
       , $modal = $('.add-document-modal').clone()
       , textarea = $('textarea', $modal).prop('id', 'add-document-modal')
@@ -247,7 +277,7 @@ $(document).ready(function () {
 
   };
 
-  saveDocument = function ($modal) {
+  function saveDocument($modal) {
     var zoteroContainer = $('.zotero-information-edit', $modal)
       , zoteroData = zoteroContainer.data('asZoteroObject')
       , description = zoteroContainer.data('editor').getValue()
@@ -277,7 +307,7 @@ $(document).ready(function () {
           .siblings('.add-new-document').remove();
         
         oldInput
-          .closest('.note-section').find('input[name$="document"]')
+          .closest('.citation-edit').find('input[name$="document"]')
             .val(newDocumentObj.id);
 
         oldInput
@@ -289,41 +319,5 @@ $(document).ready(function () {
       }
     });
   }
-
-
-  /***********************************************
-   * Bindings
-   **********************************************/
-  $('body')
-    /*
-    .on('click', function () {
-      deactivateSections();
-    })
-    .on('click', '#main, .modal, .modal-backdrop', function (e) {
-      e.stopPropagation();
-    })
-    */
-    .on('click', '#add-note-section', function (event) {
-      event.preventDefault();
-      deactivateSections();
-      addSection();
-    })
-    .on('click', '.note-section:not(.note-section-active)', function (event) {
-      event.preventDefault();
-      deactivateSections();
-      editSection($(this));
-    })
-    .on('click', '.add-new-document', function (event) {
-      event.preventDefault();
-      addDocumentModal($(this).siblings('input'));
-    })
-    .on('submit', '#main form', function () {
-      deactivateSections();
-      return true;
-    })
-    .on('click', '.save-document', function (event) {
-      event.preventDefault();
-      saveDocument($(this).closest('.modal'));
-    })
     
 });

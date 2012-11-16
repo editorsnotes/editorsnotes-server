@@ -264,19 +264,9 @@ class AliasForm(ModelForm):
 AliasFormset = inlineformset_factory(
     main_models.Topic, main_models.Alias, form=AliasForm, extra=1)
 
-class CitationForm(ModelForm):
-    class Meta:
-        model = main_models.Citation
-        fields = ('document', 'notes', 'ordering',)
-        widgets = {'document': forms.widgets.HiddenInput(),
-                   'ordering': forms.widgets.HiddenInput()}
-
-CitationFormset = generic_inlineformset_factory(
-    main_models.Citation, form=CitationForm, extra=1)
-
 
 ################################################################################
-# Topic assignment form, used in multiple places
+# Generic forms used in multiple places
 ################################################################################
 
 class TopicAssignmentWidget(forms.widgets.HiddenInput):
@@ -294,9 +284,16 @@ class TopicAssignmentWidget(forms.widgets.HiddenInput):
 class TopicAssignmentForm(ModelForm):
     class Meta:
         model = main_models.TopicAssignment
-        widgets = {
-            'topic': TopicAssignmentWidget()
-        }
+        widgets = {'topic': TopicAssignmentWidget()}
 
 TopicAssignmentFormset = generic_inlineformset_factory(
     main_models.TopicAssignment, form=TopicAssignmentForm, extra=1)
+
+class CitationForm(ModelForm):
+    class Meta:
+        model = main_models.Citation
+        fields = ('document', 'notes', 'ordering',)
+        widgets = {'document': forms.widgets.HiddenInput()}
+
+CitationFormset = generic_inlineformset_factory(
+    main_models.Citation, form=CitationForm, extra=0)

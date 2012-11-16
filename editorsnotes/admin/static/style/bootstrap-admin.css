@@ -74,3 +74,63 @@
     }
 
 
+/******************************************************************** 
+ * Citation formsets
+ ********************************************************************/
+
+  .citation-edit {
+    padding: 7px 10px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+  }
+  .citation-edit:last-child {
+    margin-bottom: 50px;
+  }
+  .citation-edit:not(.citation-edit-active):hover {
+    cursor: pointer;
+  }
+  .citation-edit:hover,
+  .citation-edit-active {
+    border-width: 2px;
+    border: 1px solid #999;
+    padding: 6px 9px;
+  }
+  .citation-notes :last-child {
+    margin-bottom: 0px;
+  }
+  .citation-document i[class$="file"] {
+    position: relative;
+    top: 2px;
+    color: #444;
+    font-size: 20px;
+    margin-right: 6px;
+  }
+  .citation-notes > :first-child,
+  .citation-edit .btn-toolbar {
+    border-top: 1px dotted #c0c0c0;
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+  .citation-edit .btn-toolbar {
+    margin-bottom: 2px;
+    padding-top: 8px;
+  }
+  .citation-edit .citation-fields input,
+  .citation-edit .citation-fields textarea {
+    display: none;
+  }
+  .citation-placeholder {
+    height: 50px;
+    background: #ccc;
+    opacity: .5;
+  }
+
+  .add-new-document i[class$="plus-sign"] {
+    font-size: 18px;
+    padding: 3px;
+    position: relative;
+    top: 3px;
+  }
+  .add-new-document:hover {
+    text-decoration: none;
+  }
