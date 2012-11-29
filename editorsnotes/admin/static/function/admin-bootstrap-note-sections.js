@@ -38,37 +38,40 @@ $(document).ready(function () {
    */
   function deactivateSections() {
     $('.citation-edit-active').each(function () {
-      var $this = $(this)
-        , wysihtml5Selectors
+      var $activeSection = $(this)
+        , toRemove
         , isBlankSection
 
-      // Update text content that will be displayed with edited value in textarea
-      $('.citation-notes', $this)
-        .html($this.data('editor').getValue())
-        .show();
-
-      wysihtml5Selectors = [
+      toRemove = [
         'iframe.wysihtml5-sandbox',
         'input[name="_wysihtml5_mode"]',
-        '.btn-toolbar'
+        '.btn-toolbar',
+        '.edit-row'
       ]
 
-      $this.removeClass('citation-edit-active')
-        .find(wysihtml5Selectors.join(', '))
+      // Update text content that will be displayed with edited value in textarea
+      $('.citation-notes', $activeSection)
+        .html($activeSection.data('editor').getValue())
+        .show();
+
+      $activeSection
+        .removeClass('citation-edit-active')
+        .find(toRemove.join(', '))
           .remove();
 
       // Right now, a section is blank if it doesn't cite a document. This will
       // need to be updated when we have different kinds of sections
-      isBlankSection = !$('.citation-document', $this).text().trim().length;
+      isBlankSection = !$('.citation-document', $activeSection).text().trim().length;
 
       if (isBlankSection) {
-        $this.remove();
+        $activeSection.remove();
       }
 
-      // Update the management after everything else has been done
-      $('input[name="citation-TOTAL_FORMS"]').val($('.citation-edit').length);
-
     });
+
+    // Update management form
+    $('input[name="citation-TOTAL_FORMS"]').val($('.citation-edit').length);
+    reorderSections();
   };
 
   /**
