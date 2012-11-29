@@ -242,12 +242,12 @@ NoteSectionFormset = inlineformset_factory(
 
 class TopicForm(ModelForm):
     class Media:
-        js = (
+        js = ZOTERO_JS + (
             "function/wysihtml5/wysihtml5-0.3.0.min.js",
             "function/wysihtml5/parser_rules.js",
             "function/admin-bootstrap-base.js",
             "function/admin-bootstrap-topic.js",
-            "function/wymeditor/jquery.wymeditor.pack.js",
+            "function/admin-bootstrap-note-sections.js",
         )
         css = {
             'all' : (
