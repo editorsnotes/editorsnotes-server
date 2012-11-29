@@ -12,7 +12,7 @@
 
       <div class="citation-document">
         <i class="icon-file"></i>
-        {% if c.document %} {{ c.document }} {% endif %}
+        {% if c.document %} {{ c.document.description|as_text }} {% endif %}
       </div>
 
       <div class="citation-notes">

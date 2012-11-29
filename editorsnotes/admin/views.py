@@ -177,7 +177,7 @@ class DocumentAdminView(BaseAdminView):
                 document.save()
                 form.save_zotero_data()
             return http.HttpResponse(json.dumps(
-                {'description': document.as_html(),
+                {'value': document.as_text(),
                  'id': document.id}
             ))
         else:

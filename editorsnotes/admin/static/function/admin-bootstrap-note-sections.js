@@ -311,7 +311,7 @@ $(document).ready(function () {
             .val(newDocumentObj.id);
 
         oldInput
-          .replaceWith(newDocumentObj.description)
+          .replaceWith(newDocumentObj.value)
 
         $modal.modal('hide').remove();
       },
