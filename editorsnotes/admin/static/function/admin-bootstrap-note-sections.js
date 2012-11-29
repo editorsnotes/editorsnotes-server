@@ -139,7 +139,8 @@ $(document).ready(function () {
     textarea
       .attr('id', textarea.attr('name'))
       .css({
-        'width': '97%',
+        'margin-bottom': '8px',
+        'width': '99%',
         'height': (function (h) {
           return (h < 380 ? h : 380) + 120 + 'px'
         })($content.innerHeight())
@@ -160,6 +161,12 @@ $(document).ready(function () {
     });
 
     $section.data('editor', editor);
+
+    $('<div class="row edit-row"><a class="btn pull-right">OK</a></div>')
+      .appendTo($section)
+      .on('click', function() {
+        deactivateSections();
+      });
 
   };
 
