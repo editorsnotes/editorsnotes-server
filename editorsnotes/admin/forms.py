@@ -60,14 +60,17 @@ class ProjectForm(ModelForm):
 # Document form & formsets
 ################################################################################
 
+ZOTERO_JS = (
+    'function/zotero.jquery.js',
+    'function/citeproc-js/xmle4x.js',
+    'function/citeproc-js/xmldom.js',
+    'function/citeproc-js/citeproc.js',
+)
+
 class DocumentForm(ModelForm):
     zotero_string = forms.CharField(required=False, widget=ZoteroWidget())
     class Media:
-        js = (
-            "function/zotero.jquery.js",
-            "function/citeproc-js/xmle4x.js",
-            "function/citeproc-js/xmldom.js",
-            "function/citeproc-js/citeproc.js",
+        js = ZOTERO_JS + (
             "function/admin-bootstrap-base.js",
             "function/admin-bootstrap-document.js",
             "function/wysihtml5/wysihtml5-0.3.0.min.js",
@@ -211,7 +214,6 @@ class NoteForm(ModelForm):
             "function/wysihtml5/parser_rules.js",
             "function/admin-bootstrap-base.js",
             "function/admin-bootstrap-note.js",
-            "function/wymeditor/jquery.wymeditor.pack.js",
         )
         css = {
             'all' : (
