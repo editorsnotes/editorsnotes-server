@@ -78,6 +78,11 @@
  * Citation formsets
  ********************************************************************/
 
+  #citation-items.sort-active .citation-edit {
+    max-height: 100px;
+    overflow: hidden;
+  }
+
   .citation-edit {
     padding: 7px 10px;
     border-radius: 2px;
@@ -121,8 +126,16 @@
   }
   .citation-placeholder {
     height: 50px;
-    background: #ccc;
+    border-radius: 2px;
+    border: 1px dashed black;
+    margin: 8px 0;
+    text-align: center;
     opacity: .5;
+  }
+  .citation-placeholder:after {
+    position: relative;
+    top: 16px;
+    content: '(reposition here)';
   }
 
   .add-new-document i[class$="plus-sign"] {

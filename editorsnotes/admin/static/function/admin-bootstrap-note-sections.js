@@ -1,10 +1,36 @@
 $(document).ready(function () {
 
-  /*
-  $('#sections').sortable({
-    placeholder: 'citation-placeholder'
-  });
-  */
+  $('#citation-items').sortable({
+    placeholder: 'citation-placeholder',
+
+    helper: function(event, item) {
+      return $('<div>')
+        .html($('.citation-document', item).text())
+        .css({
+          'height': '20px'
+        });
+    },
+    cursor: 'pointer',
+    cursorAt: {
+      'left': 200,
+      'top': 20
+    },
+
+    start: function(event, ui) {
+      deactivateSections();
+      $(this).addClass('sort-active');
+      ui.item.hide();
+      $('#citation-items').sortable('refreshPositions');
+    },
+    stop: function() {
+      $(this).removeClass('sort-active');
+    },
+    update: function (event, ui) {
+      ui.item.show();
+      reorderSections();
+    }
+
+  })
 
   $('body')
     .on('click', '#add-citation', function (event) {
@@ -87,6 +113,14 @@ $(document).ready(function () {
     }
 
     return formObject;
+  }
+
+  function reorderSections() {
+    var $sections = $('.citation-edit:visible');
+    $sections.each(function () {
+      $('input[name$="ordering"]', this)
+        .val(Array.prototype.indexOf.call($sections, this) + 1)
+    });
   }
   
   
