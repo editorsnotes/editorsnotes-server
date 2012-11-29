@@ -296,4 +296,4 @@ class CitationForm(ModelForm):
         widgets = {'document': forms.widgets.HiddenInput()}
 
 CitationFormset = generic_inlineformset_factory(
-    main_models.Citation, form=CitationForm, extra=0)
+    main_models.Citation, form=CitationForm, extra=1)
