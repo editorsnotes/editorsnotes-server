@@ -355,7 +355,7 @@ class TranscriptManager(models.Manager):
         return super(TranscriptManager, self).get_query_set()\
             .select_related('document')
 
-class Transcript(LastUpdateMetadata, Administered, URLAccessible):
+class Transcript(LastUpdateMetadata, Administered, URLAccessible, ProjectSpecific):
     u"""
     A text transcript of a document.
     """
