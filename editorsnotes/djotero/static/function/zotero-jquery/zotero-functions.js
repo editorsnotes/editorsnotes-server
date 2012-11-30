@@ -6,7 +6,6 @@ EditorsNotes.zotero.zoteroToCSL = function (zoteroObject) {
     , typeMap
     , cslFieldMap
     , cslCreatorMap
-    , getFieldKey
 
   typeMap = z2csl.find('typeMap[zType="' + zoteroObject.itemType + '"]');
   cslFieldMap = z2csl.find('cslFieldMap');
@@ -14,9 +13,9 @@ EditorsNotes.zotero.zoteroToCSL = function (zoteroObject) {
 
   cslObject.type = typeMap.attr('cslType');
 
-  getFieldKey = function (key) {
+  function getFieldKey(key) {
     var baseField = typeMap.find('field[value="' + key + '"]').attr('baseField');
-    return baseField ? baseField : key;
+    return baseField || key;
   };
 
   $.each(zoteroObject, function (key, val) {
@@ -36,18 +35,24 @@ EditorsNotes.zotero.zoteroToCSL = function (zoteroObject) {
       $.each(val, function () {
         var creatorObject = {}
           , creatorType = this.creatorType
-          , cslCreatorKey
+          , cslCreatorKey = getFieldKey(creatorType)
 
-        cslCreatorKey = getFieldKey(creatorType);
+        // Skip empty creators
+        if (!(this.firstName || this.lastName || this.name)) {
+          return;
+        }
+
         if (!cslObject[cslCreatorKey]) {
           cslObject[cslCreatorKey] = [];
         }
+
         if (this.firstName || this.lastName) {
           creatorObject.given = this.firstName;
           creatorObject.family = this.lastName;
         } else {
           creatorObject.literal = this.name;
         }
+
         cslObject[cslCreatorKey].push(creatorObject);
       });
       break;
