@@ -74,6 +74,12 @@
     }
 
 
+    /* Transcript editor should be large */
+    fieldset[name="transcript_content"] textarea {
+        height: 400px;
+    }
+
+
 /******************************************************************** 
  * Citation formsets
  ********************************************************************/

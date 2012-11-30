@@ -222,6 +222,22 @@ class TopicAdminView(BaseAdminView):
         obj.last_updater = self.request.user
         obj.save()
 
+class TranscriptAdminView(BaseAdminView):
+    form_class = admin_forms.TranscriptForm
+    formset_classes = (
+        admin_forms.FootnoteFormset,
+    )
+    template_name = 'transcript_admin.html'
+    def get_object(self, document_id=None):
+        document = get_object_or_404(main_models.Document, id=document_id)
+        return document.transcript if document.has_transcript else None
+    def save_footnote_formset_form(self, form):
+        obj = form.save(commit=False)
+        if not obj.id:
+            obj.transcript = self.object
+            obj.creator = self.request.user
+        obj.last_updater = self.request.user
+        obj.save()
 
 
 @reversion.revision.create_on_success

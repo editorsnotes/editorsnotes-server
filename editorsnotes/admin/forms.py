@@ -236,6 +236,7 @@ class NoteSectionForm(ModelForm):
 NoteSectionFormset = inlineformset_factory(
     main_models.Note, main_models.NoteSection, form=NoteSectionForm, extra=1)
 
+
 ################################################################################
 # Topic form and formsets
 ################################################################################
@@ -268,6 +269,36 @@ AliasFormset = inlineformset_factory(
 
 
 ################################################################################
+# Transcript form 
+################################################################################
+
+class TranscriptForm(ModelForm):
+    class Media:
+        js = (
+            'function/wysihtml5/wysihtml5-0.3.0.min.js',
+            'function/wysihtml5/parser_rules.js',
+            'function/admin-bootstrap-base.js',
+            'function/admin-bootstrap-transcript.js',
+        )
+        css = {
+            'all': (
+                'style/bootstrap-admin.css',
+            )
+        }
+    class Meta:
+        model = main_models.Transcript
+        fields = ('content',)
+
+class FootnoteForm(ModelForm):
+    class Meta:
+        model = main_models.Footnote
+        fields = ('content',)
+
+FootnoteFormset = inlineformset_factory(
+    main_models.Transcript, main_models.Footnote, form=FootnoteForm, extra=1)
+
+
+################################################################################
 # Generic forms used in multiple places
 ################################################################################
 
@@ -280,8 +311,6 @@ class TopicAssignmentWidget(forms.widgets.HiddenInput):
         else:
             extra_content = ''
         return mark_safe(extra_content + hidden_input)
-
-
 
 class TopicAssignmentForm(ModelForm):
     class Meta:
