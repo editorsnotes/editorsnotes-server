@@ -92,33 +92,28 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
             kwargs.update({'instance': self.object})
         return kwargs
 
+    def save_object(self, form, formsets):
+        obj = form.save(commit=False)
+        action = 'add' if not obj.id else 'change'
+        if action == 'add':
+            obj.creator = self.request.user
+        obj.last_updater = self.request.user
+        obj.save()
+        return obj, action
+
     def form_valid(self, form, formsets):
         with reversion.create_revision():
-            obj = form.save(commit=False)
-            action = 'add' if not obj.id else 'change'
-            if action == 'add':
-                obj.creator = self.request.user
-            obj.last_updater = self.request.user
-            obj.save()
-            self.object = obj
+            self.object, action = self.save_object(form, formsets)
 
             # Set reversion metadata
             reversion.set_user(self.request.user)
-            reversion.set_comment('%sed %s.' % (action, obj._meta.module_name))
+            reversion.set_comment('%sed %s.' % (action, self.object._meta.module_name))
 
             # Now save models that depend on this object existing
-            obj.affiliated_projects.add(
+            self.object.affiliated_projects.add(
                 *main_models.Project.get_affiliation_for(self.request.user))
             self.save_formsets(formsets)
             form.save_m2m()
-
-            # Sorry for this :( It's complicated saving the zotero string in
-            # the document form, since it's a separate model. I would just
-            # stick this inside the DocumentForm's save_m2m, where, really,
-            # it makes sense, but that method is dynamically created from
-            # save_instance() in django/forms/models.py
-            if hasattr(form, 'save_zotero_data'):
-                form.save_zotero_data()
 
         return redirect(self.get_success_url())
     def form_invalid(self, form, formsets):
@@ -154,6 +149,11 @@ class DocumentAdminView(BaseAdminView):
 
     def get_object(self, document_id=None):
         return document_id and get_object_or_404(main_models.Document, id=document_id)
+
+    def save_object(self, form, formsets):
+        obj, action = super(DocumentAdminView, self).save_object(form, formsets)
+        form.save_zotero_data()
+        return obj, action
 
     def save_formset_form(self, form):
         obj = form.save(commit=False)
