@@ -1,3 +1,103 @@
+(function ($) {
+
+  function incrementFields(form, formset) {
+    var $inputs = $(':input', form)
+      , oldCounter
+      , newCounter
+
+    newCounter = 1 + Math.max.apply(Math, $(':input', formset).map(function () {
+      return (/\d+/).exec(this.name);
+    }));
+
+    oldCounter = parseInt($inputs
+        .attr('name')
+        .match(/\d+/)[0], 10);
+
+    $inputs.each(function () {
+      var $this = $(this);
+      if ($this.attr('name')) {
+        $this.attr('name', $this.attr('name').replace(oldCounter, newCounter));
+      }
+      if ($this.attr('id')) {
+        $this.attr('id', $this.attr('id').replace(oldCounter, newCounter));
+      }
+    });
+  }
+
+  function updateFields(selector, data) {
+    var $container = $(selector);
+    $.each(data, function(key, val) {
+      $container.find(':input[name$="' + key + '"]').val(val);
+    });
+  }
+
+  $.fn.appendFormset = function (selector, data) {
+    return this.each(function () {
+      var $formset = $(this)
+        , items = $(selector, $formset)
+        , lastForm
+        , newForm
+
+      lastForm = items.filter(':hidden').length ?
+        items.filter(':hidden').last() :
+        items.last();
+
+      newForm = lastForm.clone();
+
+      if (lastForm.is(':hidden')) {
+        newForm.insertBefore(lastForm);
+      } else {
+        newForm.insertAfter(lastForm);
+      }
+      
+      incrementFields(newForm, this);
+      updateFields(newForm, data || {});
+
+      newForm
+        .find('input[name$="-id"]').remove();
+
+      $('input[name$="TOTAL_FORMS"]', $formset)
+        .val($(selector, $formset).length);
+
+      $formset
+        .trigger('formsetAppended', newForm, lastForm)
+        .trigger('formsetUpdated', newForm);
+      
+    });
+  }
+
+
+    $('<div class="row section-edit-row"><a class="btn pull-right">OK</a></div>')
+      .appendTo($section)
+      .on('click', function(e) {
+        $section.trigger('deactivate');
+      });
+
+    $section.closest('form').on('deactivate', function () {
+      var toRemove = [
+        'iframe.wysihtml5-sandbox',
+        'input[name="_wysihtml5_mode"]',
+        '.btn-toolbar',
+        '.section-edit-row'
+      ]
+      
+      $content
+        .html(editor.getValue())
+        .show()
+
+      $section
+        .removeClass('section-edit-active')
+        .find(toRemove.join(', '))
+          .remove();
+
+      $section
+        .trigger('deactivated')
+
+    });
+  }
+
+})($);
+
 $(document).ready(function () {
 
   $('form')
