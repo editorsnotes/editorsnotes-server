@@ -61,11 +61,6 @@
     </fieldset>
 
     <style type="text/css">
-      .footnote-edit {
-        border: 1px solid #aaa;
-        margin-bottom: 1em;
-        padding: 4px;
-      }
       .footnote-edit .footnote-anchor {
         border-bottom: 1px dashed #ccc;
         margin-bottom: 3px;
@@ -81,7 +76,8 @@
         {% for footnote in formset %}
         {% with footnote.instance as fn %}
 
-        <div class="footnote-edit {% if forloop.last %}hide{% endif %}">
+        <div {% if fn.id %}id="footnote-{{ fn.id }}"{% endif %}
+             class="footnote-edit {% if forloop.last %}hide{% endif %}">
           <div class="footnote-anchor">
             {{ fn.as_text }}
           </div>
@@ -90,7 +86,7 @@
             {{ fn.content|as_html }}
           </div>
 
-          <div class="footnote-fields hide">
+          <div class="footnote-fields">
             {% for field in footnote %} {{ field }} {% endfor %}
           </div>
         </div>
@@ -98,6 +94,9 @@
         {% endwith %}
         {% endfor %}
       </div>
+
+      {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="footnote-toolbar" %}
+
     </fieldset>
     {% endwith %}
 

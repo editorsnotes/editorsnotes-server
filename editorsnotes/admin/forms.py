@@ -293,6 +293,7 @@ class FootnoteForm(ModelForm):
     class Meta:
         model = main_models.Footnote
         fields = ('content',)
+    stamp = forms.CharField(required=False, widget=forms.HiddenInput)
 
 FootnoteFormset = inlineformset_factory(
     main_models.Transcript, main_models.Footnote, form=FootnoteForm, extra=1)

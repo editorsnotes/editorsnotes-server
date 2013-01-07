@@ -241,12 +241,20 @@ class TranscriptAdminView(BaseAdminView):
         obj.save()
         return obj, action
     def save_footnote_formset_form(self, form):
-        obj = form.save(commit=False)
-        if not obj.id:
-            obj.transcript = self.object
-            obj.creator = self.request.user
-        obj.last_updater = self.request.user
-        obj.save()
+        footnote = form.save(commit=False)
+        transcript = self.object
+        stamp = form.cleaned_data.get('stamp', None)
+
+        if not footnote.id:
+            footnote.transcript = transcript
+            footnote.creator = self.request.user
+        footnote.last_updater = self.request.user
+        footnote.save()
+
+        if stamp:
+            a = transcript.content.cssselect('a.footnote[href$="%s"]' % stamp)[0]
+            a.attrib['href'] = footnote.get_absolute_url()
+            transcript.save()
 
 
 @reversion.revision.create_on_success

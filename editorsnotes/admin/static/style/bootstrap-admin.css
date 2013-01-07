@@ -89,19 +89,24 @@
     overflow: hidden;
   }
 
-  .citation-edit {
+  .citation-edit,
+  .footnote-edit {
     padding: 7px 10px;
     border-radius: 2px;
     margin-bottom: 2px;
   }
-  .citation-edit:last-child {
+  .citation-edit:last-child,
+  .footenote-edit:last-child {
     margin-bottom: 50px;
   }
-  .citation-edit:not(.citation-edit-active):hover {
+  .citation-edit:not(.citation-edit-active):hover,
+  .footnote-edit:not(.footnote-edit-active):hover {
     cursor: pointer;
   }
   .citation-edit:hover,
-  .citation-edit-active {
+  .citation-edit-active,
+  .footnote-edit:hover,
+  .section-edit-active {
     border-width: 2px;
     border: 1px solid #999;
     padding: 6px 9px;
@@ -127,7 +132,9 @@
     padding-top: 8px;
   }
   .citation-edit .citation-fields input,
-  .citation-edit .citation-fields textarea {
+  .citation-edit .citation-fields textarea,
+  .footnote-edit .footnote-fields input,
+  .footnote-edit .footnote-fields textarea {
     display: none;
   }
   .citation-placeholder {
