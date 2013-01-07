@@ -228,9 +228,9 @@ class TranscriptAdminView(BaseAdminView):
         admin_forms.FootnoteFormset,
     )
     template_name = 'transcript_admin.html'
-    def get_object(self, document_id=None):
-        self.document = get_object_or_404(main_models.Document, id=document_id)
-        return self.document.transcript if self.document.has_transcript else None
+    def get_object(self, transcript_id=None):
+        return transcript_id and get_object_or_404(
+            main_models.Transcript, id=transcript_id)
     def save_object(self, form, formsets):
         obj = form.save(commit=False)
         action = 'add' if not obj.id else 'change'
