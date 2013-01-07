@@ -66,6 +66,43 @@
     });
   }
 
+  $.fn.editText = function (opts) {
+    var $section = $(this)
+      , options = opts || {}
+      , $textarea = options.textarea || $('textarea', $section)
+      , $content = options.content || $('[class$="-content"]', $section)
+      , $toolbar
+      , editor
+
+    $section
+      .trigger('deactivate')
+      .addClass('section-edit-active');
+
+    $textarea
+      .attr('id', $textarea.attr('name'))
+      .css({
+        'width': '99%',
+        'height': (function (h) {
+          return (h < 380 ? h : 380) + 120 + 'px';
+        })($section.innerHeight())
+      })
+      .show();
+
+    $content
+      .hide()
+
+    $toolbar = (options.toolbar || $('[id$="-toolbar"]', $section.parent()))
+      .clone()
+      .attr('id', $section.attr('id') + '-toolbar')
+      .insertBefore($textarea)
+      .show()
+
+    editor = new wysihtml5.Editor($textarea.attr('id'), {
+      toolbar: $toolbar.attr('id'),
+      parserRules: options.parserRules || wysihtml5ParserRules,
+      stylesheets: ['/static/function/wysihtml5/stylesheet.css'],
+      useLineBreaks: false
+    });
 
     $('<div class="row section-edit-row"><a class="btn pull-right">OK</a></div>')
       .appendTo($section)
