@@ -96,4 +96,86 @@ $(document).ready(function () {
     stylesheets: ['/static/function/wysihtml5/stylesheet.css']
   });
 
+  editor.on('load', function () {
+    var footnotes = getFootnoteIds(editor);
+
+    function arrDifference(arr, without) {
+      var difference = [];
+
+      for (var i = 0; i < arr.length; i++) {
+        if (without.indexOf(arr[i]) === -1) {
+          difference.push(arr[i])
+        }
+      }
+
+      return difference;
+    }
+
+
+    function getFootnoteIds(editor) {
+      var footnotes = editor.composer.element.querySelectorAll('a.footnote')
+        , footnoteIds = []
+
+      for (var i = 0; i < footnotes.length; i++) {
+        if (footnotes[i].pathname) {
+          footnoteIds.push(footnotes[i].pathname);
+        }
+      }
+
+      return footnoteIds;
+    }
+
+    function getFootnoteNode(href) {
+      var footnoteDOMid = /newfootnote/.test(href) ?
+        href.match(/newfootnote\d+/)[0] :
+        href.match(/\d+/)[0];
+      return $('#footnote-' + footnoteDOMid);
+    }
+
+    $(editor.composer.element).on('keypress cut paste undo:composer redo:composer', function () {
+      setTimeout(function () {
+        var footnotesNow = getFootnoteIds(editor)
+          , deletedFootnotes
+          , undeletedFootnotes
+
+        // Footnotes have been deleted
+        if (footnotesNow.length < footnotes.length) {
+          deletedFootnotes = arrDifference(footnotes, footnotesNow);
+          deletedFootnotes.forEach(function (footnoteHref) {
+            var $footnoteNode = getFootnoteNode(footnoteHref);
+            if (!$footnoteNode.length) { 
+              return;
+            }
+            $footnoteNode
+              .css({'background': 'red'})
+              .fadeOut('slow')
+              .find(':input[name$="DELETE"]')
+                .prop('checked', true);
+          });
+          footnotes = footnotesNow;
+
+        // Footnotes have been restored
+        } else if (footnotesNow.length > footnotes.length) {
+          undeletedFootnotes = arrDifference(footnotesNow, footnotes);
+          undeletedFootnotes.forEach(function (footnoteHref) {
+            var $footnoteNode = getFootnoteNode(footnoteHref);
+            if (!$footnoteNode.length) {
+              return;
+            }
+            $footnoteNode
+              .css('background', 'green')
+              .fadeIn('slow', function () {
+                $footnoteNode.css('background', 'none');
+              })
+              .find(':input[name$="DELETE"]')
+                .prop('checked', false);
+          });
+          footnotes = footnotesNow;
+        }
+
+      }, 5);
+    });
+
+  });
+
 });
