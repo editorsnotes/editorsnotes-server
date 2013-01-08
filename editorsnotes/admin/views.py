@@ -228,6 +228,16 @@ class TranscriptAdminView(BaseAdminView):
         admin_forms.FootnoteFormset,
     )
     template_name = 'transcript_admin.html'
+    def get(self, request, *args, **kwargs):
+        response = super(TranscriptAdminView, self).get(request, *args, **kwargs)
+
+        footnote_fs = response.context_data['formsets']['footnote']
+        footnote_ids = self.object.get_footnote_href_ids()
+
+        footnote_fs.forms.sort(key=lambda fn: footnote_ids.index(fn.instance.id)
+                               if fn.instance.id in footnote_ids else 9999)
+
+        return response
     def get_object(self, transcript_id=None):
         return transcript_id and get_object_or_404(
             main_models.Transcript, id=transcript_id)

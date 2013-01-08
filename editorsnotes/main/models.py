@@ -369,6 +369,15 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible, ProjectSpecifi
         return self.document.as_text()
     def as_html(self):
         return self.document.as_html()
+    def get_footnote_href_ids(self):
+        anchors = (self.content.cssselect('a.footnote') 
+                   if self.content is not None else [])
+        return [int(re.findall('\d+', a.attrib.get('href'))[0]) for a in anchors]
+    def get_footnotes(self):
+        fn_ids = self.get_footnote_href_ids()
+        return sorted(self.footnotes.all(),
+                      key=lambda fn: fn_ids.index(fn.id)
+                      if fn.id in fn_ids else 9999)
 
 class Footnote(LastUpdateMetadata, Administered, URLAccessible):
     u"""
