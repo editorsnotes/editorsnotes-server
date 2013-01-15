@@ -6,6 +6,7 @@ from time import sleep
 from fabric.api import *
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists
+from fabric.decorators import task
 from fabric.utils import abort
 from fabfile_local import *
 from subprocess import call
@@ -17,6 +18,7 @@ env.project_name = 'editorsnotes'
 
 # Environments
 
+@task
 def beta():
     "Use the beta-testing webserver."
     env.hosts = ['beta.editorsnotes.org']
@@ -26,6 +28,7 @@ def beta():
     env.site_packages = ['/usr/lib64/python2.7/site-packages',
                          '/usr/lib/python2.7/site-packages']
 
+@task
 def pro():
     "Use the production webserver."
     env.hosts = ['editorsnotes.org']
@@ -37,16 +40,19 @@ def pro():
 
 # Tasks
 
+@task
 def test():
     "Run the test suite locally."
     local("python manage.py test" % env)
     
+@task
 def test_remote():
     "Run the test suite remotely."
     require('hosts', provided_by=[dev])
     require('project_path')
     run('cd %(project_path)s/releases/current;  ../../bin/python manage.py test' % env)
     
+@task
 def setup():
     """
     Setup a fresh virtualenv as well as a few useful directories, then
@@ -61,6 +67,7 @@ def setup():
         run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     deploy()
     
+@task
 def deploy():
     """
     Deploy the latest version of the site to the servers, install any
@@ -88,6 +95,7 @@ def deploy():
     except:
         local('open http://%(host)s/' % env)
     
+@task
 def deploy_version(version):
     "Specify a specific version to be made live."
     require('hosts', provided_by=[dev])
@@ -98,6 +106,7 @@ def deploy_version(version):
         run('ln -s %(version)s releases/current' % env)
     restart_webserver()
     
+@task
 def rollback():
     """
     Limited rollback capability. Simple loads the previously current
@@ -111,6 +120,7 @@ def rollback():
         run('mv releases/_previous releases/previous;')
     restart_webserver()
 
+@task
 def clean():
     "Clean out old packages and releases."
     require('hosts', provided_by=[dev])
@@ -122,6 +132,7 @@ def clean():
             run('mkdir -p packages; mkdir -p releases')
             run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     
+
 # Helpers. These are called by other functions rather than directly.
 
 def upload_tar_from_git():
