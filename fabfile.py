@@ -8,7 +8,7 @@ import random
 
 import deploy
 
-PROJ_ROOT = os.path.normpath(os.path.join(env.real_fabfile, '..'))
+PROJ_ROOT = os.path.dirname(env.real_fabfile)
 env.project_name = 'editorsnotes'
 
 @task
@@ -70,8 +70,8 @@ def symlink_packages():
         abort('Install "psycopg2" python package in order to continue.')
 
     packages = os.path.join(PROJ_ROOT, 'lib', 'python2.7', 'site-packages')
-    xapian_path = os.path.normpath(os.path.join(xapian.__file__, '..'))
-    psycopg2_path = os.path.normpath(os.path.join(psycopg2.__file__, '..'))
+    xapian_path = os.path.dirname(xapian.__file__)
+    psycopg2_path = os.path.dirname(psycopg2.__file__)
 
     local('ln -f -s {} {}'.format(xapian_path, packages))
     local('ln -f -s {} {}'.format(psycopg2_path, packages))
