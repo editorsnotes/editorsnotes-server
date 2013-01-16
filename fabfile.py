@@ -28,9 +28,10 @@ def test():
 
 @task
 def sync_database():
-    "Sync db & run South migrations"
+    "Sync db, make cache tables, and run South migrations"
     with lcd(PROJ_ROOT):
         local('./bin/python manage.py syncdb')
+        create_cache_tables()
         local('./bin/python manage.py migrate')
 
 @task
@@ -59,6 +60,17 @@ def make_settings():
             for line in fileinput.input(settings_file, inplace=True):
                 print line.replace("SECRET_KEY = ''",
                                    "SECRET_KEY = '{}'".format(secret_key)),
+
+@task
+def create_cache_tables():
+    caches = ['zotero_cache']
+    tables = local('./bin/python manage.py inspectdb | grep "db_table ="', capture=True)
+    for cache in caches:
+        if "'{}'".format(cache) in tables:
+            continue
+        with lcd(PROJ_ROOT):
+            local('./bin/python manage.py createcachetable {}'.format(cache))
+
 
 def make_virtual_env():
     "Make a virtual environment for local dev use"
