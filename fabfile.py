@@ -63,7 +63,7 @@ def make_settings():
 
 @task
 def create_cache_tables():
-    caches = ['zotero_cache']
+    caches = ['zotero_cache', 'compress_cache']
     tables = local('./bin/python manage.py inspectdb | grep "db_table ="', capture=True)
     for cache in caches:
         if "'{}'".format(cache) in tables:

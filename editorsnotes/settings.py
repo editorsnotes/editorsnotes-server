@@ -27,8 +27,13 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'zotero_cache'
+    },
+    'compress': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'compress_cache'
     }
 }
+COMPRESS_CACHE_BACKEND = 'compress'
 
 
 #################
@@ -105,10 +110,17 @@ INSTALLED_APPS = (
     'reversion',
     'south',
     'haystack',
+    'compressor',
     'editorsnotes.main',
     'editorsnotes.djotero',
     'editorsnotes.refine',
     'editorsnotes.admin',
+)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 )
 
 
