@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 from time import sleep
 from fabric.api import *
 from fabric.contrib.console import confirm
@@ -41,8 +42,7 @@ def pro():
 @task
 def test_remote():
     "Run the test suite remotely."
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     run('cd %(project_path)s/releases/current;  ../../bin/python manage.py test' % env)
     
 @task
@@ -51,12 +51,11 @@ def setup():
     Setup a fresh virtualenv as well as a few useful directories, then
     run a full deployment.
     """
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     run('mkdir -p %(project_path)s' % env)
     with cd(env.project_path):
         run('virtualenv -p %(python)s --no-site-packages .' % env)
-        run('mkdir -p logs; mkdir -p releases; mkdir -p shared; mkdir -p packages' % env)
+        run('mkdir -p logs releases shared packages' % env)
         run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     deploy()
     
@@ -67,8 +66,7 @@ def deploy():
     required third party modules, install the virtual host and then
     restart the webserver.
     """
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     import time
     env.release = time.strftime('%Y%m%d%H%M%S')
     upload_tar_from_git()
@@ -82,17 +80,13 @@ def deploy():
     collect_static()
     restart_webserver()
     sleep(2)
-    try:
-        type(env.gnome)
-        local('gnome-open http://%(host)s/' % env)
-    except:
-        local('open http://%(host)s/' % env)
+    local('%s http://%s/' % (
+        'xdg-open' if sys.platform.startswith('linux') else 'open', env['host']))
     
 @task
 def deploy_version(version):
     "Specify a specific version to be made live."
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     env.version = version
     with cd(env.project_path):
         run('rm releases/previous; mv releases/current releases/previous')
@@ -102,11 +96,10 @@ def deploy_version(version):
 @task
 def rollback():
     """
-    Limited rollback capability. Simple loads the previously current
+    Limited rollback capability. Simply loads the previously current
     version of the code. Rolling back again will swap between the two.
     """
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     with cd(env.project_path):
         run('mv releases/current releases/_previous;')
         run('mv releases/previous releases/current;')
@@ -116,8 +109,7 @@ def rollback():
 @task
 def clean():
     "Clean out old packages and releases."
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     if (confirm('Are you sure you want to delete everything on %(host)s?' % env, 
                 default=False)):
         with cd(env.project_path):
@@ -163,8 +155,7 @@ def install_requirements():
 
 def symlink_system_packages():
     "Create symlinks to system site-packages."
-    require('site_packages', provided_by=[dev])
-    require('project_path')
+    require('site_packages', 'project_path', provided_by=[dev])
     site_packages = env.project_path + '/lib/python2.7/site-packages'
     with cd(site_packages):
         with open('requirements.txt') as reqs:
@@ -195,8 +186,7 @@ def symlink_current_release():
     
 def migrate():
     "Update the database"
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     with cd('%(project_path)s/releases/current' % env):
         run('../../bin/python manage.py syncdb --noinput')
         for app in [ 'main', 'djotero', 'refine', 'reversion' ]:
@@ -204,8 +194,7 @@ def migrate():
 
 def collect_static():
     "Collect static files"
-    require('hosts', provided_by=[dev])
-    require('project_path')
+    require('hosts', 'project_path', provided_by=[dev])
     with cd('%(project_path)s/releases/current' % env):
         run('../../bin/python manage.py collectstatic --noinput')
     
