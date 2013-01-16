@@ -24,8 +24,6 @@ def beta():
     env.project_path = '/db/projects/%(project_name)s-beta' % env
     env.vhosts_path = '/etc/httpd/sites.d'
     env.python = '/usr/bin/python2.7'
-    env.site_packages = ['/usr/lib64/python2.7/site-packages',
-                         '/usr/lib/python2.7/site-packages']
 
 @task
 def pro():
@@ -34,8 +32,6 @@ def pro():
     env.project_path = '/db/projects/%(project_name)s' % env
     env.vhosts_path = '/etc/httpd/sites.d'
     env.python = '/usr/bin/python2.7'
-    env.site_packages = ['/usr/lib64/python2.7/site-packages',
-                         '/usr/lib/python2.7/site-packages']
 
 # Tasks
 
@@ -155,20 +151,21 @@ def install_requirements():
 
 def symlink_system_packages():
     "Create symlinks to system site-packages."
-    require('site_packages', 'project_path', provided_by=[dev])
-    site_packages = env.project_path + '/lib/python2.7/site-packages'
-    with cd(site_packages):
-        with open('requirements.txt') as reqs:
-            for line in reqs:
-                if line.startswith('# symlink: '):
-                    found = False
-                    for sys_site_packages in env.site_packages:
-                        target = sys_site_packages + '/' + line[11:-1]
-                        if exists(target):
-                            run('ln -f -s %s' % target)
-                            found = True
-                    if not found:
-                        abort('Missing %s' % target)
+    require('python', 'project_path', provided_by=[dev])
+    missing = []
+    requirements = (req.rstrip().replace('# symlink: ', '')
+                    for req in open('requirements.txt', 'r')
+                    if req.startswith('# symlink: '))
+    for req in requirements:
+        req_file = run('%s -c "import os, %s; print os.path.dirname(%s.__file__)"' % (
+            env.python, req, req), warn_only=True, quiet=True)
+        if req_file.failed:
+            missing.append(req)
+            continue
+        with cd(os.path.join(env.project_path, 'lib', 'python2.7', 'site-packages')):
+            run('ln -f -s %s' % req_file)
+    if missing:
+        abort('Missing python packages: %s' % ', '.join(missing))
 
 def install_site():
     "Add the virtualhost file to apache."

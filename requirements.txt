@@ -12,5 +12,5 @@ pytz==2011b
 refine-client==0.2.1
 
 # Symlinks to system packages
-# symlink: xapian/
+# symlink: xapian
 # symlink: psycopg2

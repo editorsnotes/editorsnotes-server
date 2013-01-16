@@ -3,6 +3,7 @@ from fabric.decorators import task, runs_once
 from fabric.utils import abort
 
 import fileinput
+import importlib
 import os
 import random
 
@@ -59,22 +60,20 @@ def make_virtual_env():
 
 def symlink_packages():
     "Symlink python packages not installed with pip"
-    try:
-        import xapian
-    except ImportError:
-        abort('Install "xapian" python package in order to continue.')
-
-    try:
-        import psycopg2
-    except ImportError:
-        abort('Install "psycopg2" python package in order to continue.')
-
-    packages = os.path.join(PROJ_ROOT, 'lib', 'python2.7', 'site-packages')
-    xapian_path = os.path.dirname(xapian.__file__)
-    psycopg2_path = os.path.dirname(psycopg2.__file__)
-
-    local('ln -f -s {} {}'.format(xapian_path, packages))
-    local('ln -f -s {} {}'.format(psycopg2_path, packages))
+    missing = []
+    requirements = (req.rstrip().replace('# symlink: ', '')
+                    for req in open('requirements.txt', 'r')
+                    if req.startswith('# symlink: '))
+    for req in requirements:
+        try:
+            module = importlib.import_module(req)
+        except ImportError:
+            missing.append(req)
+            continue
+        with lcd(os.path.join(PROJ_ROOT, 'lib', 'python2.7', 'site-packages')):
+            local('ln -f -s {}'.format(os.path.dirname(module.__file__)))
+    if missing:
+        abort('Missing python packages: {}'.format(', '.join(missing)))
 
 def collect_static():
     with lcd(PROJ_ROOT):
