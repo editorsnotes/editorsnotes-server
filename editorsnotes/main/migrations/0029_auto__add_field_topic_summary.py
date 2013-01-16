@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding field 'Topic.summary'
-        db.add_column('main_topic', 'summary', self.gf('main.fields.XHTMLField')(default='EMPTY'), keep_default=False)
+        db.add_column('main_topic', 'summary', self.gf('editorsnotes.main.fields.XHTMLField')(default=None), keep_default=False)
 
 
     def backwards(self, orm):
