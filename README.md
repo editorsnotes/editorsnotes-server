@@ -7,7 +7,7 @@ and make sure you have the following dependencies
 * libxml2
 * libxslt
 * psycopg2
-* python-xapian
+* [xapian](http://xapian.org/download) with python bindings
 
 Run the command `fab setup` inside the project directory and edit the generated
 "editorsnotes/settings\_local.py" file with your database information.  Finally, 
