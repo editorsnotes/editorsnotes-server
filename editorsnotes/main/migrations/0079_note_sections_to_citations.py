@@ -10,14 +10,14 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
 
-	try:
+        # See previous migration (0079). These contenttypes do not exist when a
+        # user is performing migrations sequentially from the beginning.
+        try:
             note_ct = orm['contenttypes.contenttype'].objects.get(
                 app_label='main', model='note')
             citation_ct = orm['contenttypes.contenttype'].objects.get(
                 app_label='main', model='citation')
         except ObjectDoesNotExist:
-            # See previous migration. These contenttypes do not exist when a
-            # user is performing migrations sequentially from the beginning.
             return
 
         # Disable auto_now* so we can set timestamps ourselves
