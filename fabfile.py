@@ -23,7 +23,15 @@ def setup():
 @task
 def test():
     "Run the test suite locally."
-    local("python manage.py test" % env)
+    with lcd(PROJ_ROOT):
+        local('./bin/python manage.py test' % env)
+
+@task
+def sync_database():
+    "Sync db & run South migrations"
+    with lcd(PROJ_ROOT):
+        local('./bin/python manage.py syncdb')
+        local('./bin/python manage.py migrate')
 
 @task
 def runserver():
