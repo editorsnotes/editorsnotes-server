@@ -9,13 +9,16 @@ from fabric.contrib.console import confirm
 from fabric.contrib.files import exists
 from fabric.decorators import task
 from fabric.utils import abort
-from fabfile_local import *
 from subprocess import call
 from datetime import datetime
 
 # Environments
 
 # Define custom environments in a file in this directory called fabfile_local.py
+try:
+    from fabfile_local import *
+except:
+    pass
 
 @task
 def beta():
