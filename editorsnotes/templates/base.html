@@ -7,10 +7,10 @@
     <title>Editors' Notes{% if project %}: {{ project }}{% else %}{% endif %}{% block title %}{% endblock %}</title>
 
     {% compress css %}
-    <link rel="stylesheet" href="{% static "style/custom-theme/jquery-ui-1.8.10.custom.css" %}" type="text/css"/>
     <link rel="stylesheet" href="{% static "style/bootstrap/css/bootstrap.css" %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static "style/jquery-ui/jquery-ui-1.8.10.custom.css" %}" type="text/css"/>
     <link rel="stylesheet" href="{% static "style/font-awesome/font-awesome.css" %}" type="text/css"/>
-    <link rel="stylesheet" href="{% static "style/bootstrap/css/bootstrap-custom.css" %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static "style/bootstrap-custom.css" %}" type="text/css"/>
     {% block css %}{% endblock %}
     {% endcompress %}
     {% block css_nocompress %}{% endblock %}
