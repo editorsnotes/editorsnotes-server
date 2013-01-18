@@ -1,4 +1,5 @@
 from fabric.api import env, local, lcd
+from fabric.colors import red
 from fabric.decorators import task, runs_once
 from fabric.utils import abort
 
@@ -6,6 +7,7 @@ import fileinput
 import importlib
 import os
 import random
+import sys
 
 import deploy
 
@@ -14,11 +16,21 @@ env.project_name = 'editorsnotes'
 
 @task
 def setup():
-    "Set up a local development environment"
+    """
+    Set up a local development environment
+
+    This command must be run with Fabric installed globally (not inside a
+    virtual environment)
+    """
+    if os.getenv('VIRTUAL_ENV') or hasattr(sys, 'real_prefix'):
+        abort(red('Deactivate any virtual environments before continuing.'))
     make_settings()
     make_virtual_env()
     symlink_packages()
     collect_static()
+    print ('\nDevelopment environment successfully created.\n' +
+           'Create a Postgres database, enter its information into ' +
+           'editorsnotes/settings_local.py, and run `fab sync_database` to finish.')
 
 @task
 def test():
