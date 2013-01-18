@@ -9,8 +9,6 @@ import os
 import random
 import sys
 
-import deploy
-
 PROJ_ROOT = os.path.dirname(env.real_fabfile)
 env.project_name = 'editorsnotes'
 
