@@ -56,8 +56,8 @@ def make_settings():
     for settings_file in to_create:
         secret_key = generate_secret_key()
         with lcd(PROJ_ROOT):
-            local('cp -n editorsnotes/example-settings_local.py {}'.format(settings_file),
-                  capture=True)
+            local('if [ ! -f {0} ]; then cp {1} {0}; fi'.format(
+                settings_file, 'editorsnotes/example-settings_local.py'))
             for line in fileinput.input(settings_file, inplace=True):
                 print line.replace("SECRET_KEY = ''",
                                    "SECRET_KEY = '{}'".format(secret_key)),
