@@ -31,7 +31,11 @@ MANAGERS = ADMINS
 # USE_L10N = True
 # USE I18N = True
 
-# LOCAL_PATH = ''
+
+# Edit STORAGE_PATH to change where uploads, static files, and search indexes
+# will be stored, or change each of the settings individually.
+# STORAGE_PATH = ''
+
 # MEDIA_ROOT = ''
 # STATIC_ROOT = ''
 # HAYSTACK_XAPIAN_PATH = ''
