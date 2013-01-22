@@ -55,20 +55,24 @@ HAYSTACK_SEARCH_ENGINE = 'xapian'
 #################
 import os
 
-EN_ROOT_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
+EN_PROJECT_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
 
 TEMPLATE_DIRS = (
-    os.path.abspath(os.path.join(EN_ROOT_PATH, 'editorsnotes', 'templates')),
+    os.path.abspath(os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'templates')),
 )
 STATICFILES_DIRS = (
-    os.path.abspath(os.path.join(EN_ROOT_PATH, 'editorsnotes', 'static')),
+    os.path.abspath(os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'static')),
 )
 
 # Override these variables in settings_local.py if desired
-LOCAL_PATH = os.path.abspath(EN_ROOT_PATH)
-HAYSTACK_XAPIAN_PATH = os.path.abspath(os.path.join(EN_ROOT_PATH, 'searchindex'))
-MEDIA_ROOT = os.path.abspath(os.path.join(EN_ROOT_PATH, 'uploads'))
-STATIC_ROOT = os.path.abspath(os.path.join(EN_ROOT_PATH, 'static'))
+try:
+    from settings_local import STORAGE_PATH
+except ImportError:
+    STORAGE_PATH = EN_PROJECT_PATH
+
+HAYSTACK_XAPIAN_PATH = os.path.abspath(os.path.join(STORAGE_PATH, 'searchindex'))
+MEDIA_ROOT = os.path.abspath(os.path.join(STORAGE_PATH, 'uploads'))
+STATIC_ROOT = os.path.abspath(os.path.join(STORAGE_PATH, 'static'))
 
 
 ###################

@@ -1,6 +1,7 @@
 # Installed using pip
 Django==1.4
 South==0.7.5
+psycopg2==2.4.5
 django-haystack==1.2.7
 xapian-haystack==1.1.5beta
 django-reversion==1.6
@@ -15,4 +16,3 @@ BeautifulSoup<4.0
 
 # Symlinks to system packages
 # symlink: xapian
-# symlink: psycopg2

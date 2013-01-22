@@ -1,4 +1,5 @@
 from fabric.api import env, local, lcd
+from fabric.colors import red
 from fabric.decorators import task, runs_once
 from fabric.utils import abort
 
@@ -6,19 +7,28 @@ import fileinput
 import importlib
 import os
 import random
-
-import deploy
+import sys
 
 PROJ_ROOT = os.path.dirname(env.real_fabfile)
 env.project_name = 'editorsnotes'
 
 @task
 def setup():
-    "Set up a local development environment"
+    """
+    Set up a local development environment
+
+    This command must be run with Fabric installed globally (not inside a
+    virtual environment)
+    """
+    if os.getenv('VIRTUAL_ENV') or hasattr(sys, 'real_prefix'):
+        abort(red('Deactivate any virtual environments before continuing.'))
     make_settings()
     make_virtual_env()
     symlink_packages()
     collect_static()
+    print ('\nDevelopment environment successfully created.\n' +
+           'Create a Postgres database, enter its information into ' +
+           'editorsnotes/settings_local.py, and run `fab sync_database` to finish.')
 
 @task
 def test():
@@ -56,7 +66,8 @@ def make_settings():
     for settings_file in to_create:
         secret_key = generate_secret_key()
         with lcd(PROJ_ROOT):
-            local('cp -n editorsnotes/example-settings_local.py {}'.format(settings_file))
+            local('if [ ! -f {0} ]; then cp {1} {0}; fi'.format(
+                settings_file, 'editorsnotes/example-settings_local.py'))
             for line in fileinput.input(settings_file, inplace=True):
                 print line.replace("SECRET_KEY = ''",
                                    "SECRET_KEY = '{}'".format(secret_key)),
