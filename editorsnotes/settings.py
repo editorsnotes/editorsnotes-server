@@ -127,10 +127,7 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-COMPRESS_PRECOMPILERS = (
-    ('text/less', 'lessc {infile} {outfile}'),
-)
-
+LESSC_BINARY = 'lessc'
 
 # Add in local settings
 from settings_local import *
@@ -139,3 +136,7 @@ try:
     INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
 except NameError:
     pass
+
+COMPRESS_PRECOMPILERS = (
+    ('text/less', LESSC_BINARY + ' {infile} {outfile}'),
+)
