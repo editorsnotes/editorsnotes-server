@@ -3,12 +3,24 @@
 // Navbars
 //---------
 .navbar-inner {
-  border-radius: 0px;
-  box-shadow: none;
+  .border-radius(0);
+  .box-shadow(0 3px 4px rgba(0,0,0,.065));
+  border: none;
+  border-bottom: none;
 }
 
 .navbar .container {
   width: 940px;
+}
+
+.navbar .nav > li > a {
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+.navbar .nav > li > a:hover,
+.navbar .nav > li > a.brand:hover {
+  text-shadow: none;
 }
 
 .navbar-search .search-query {
