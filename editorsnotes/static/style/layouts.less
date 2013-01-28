@@ -15,14 +15,43 @@
   border-radius: 14px;
 }
 
+
+// Tabs
+// -----
+.nav-tabs a {
+  color: @textColor;
+}
+
+
+
 // Lists of models
 // ----------------
 .model-list > h4 {
   margin-bottom: 1px;
 }
-.model-list a {
-  color: @textColor;
+.model-list {
+  a {
+    color: @textColor;
+  }
+  li.show-all-link {
+    margin-top: 4px;
+  }
 }
-.model-list li.show-all-link {
-  margin-top: 4px;
+
+
+// Document page
+// --------------
+td.zotero-key {
+  width: 125px;
+  text-align: right;
+  span {
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: bold;
+  }
+}
+
+#document-header {
+  font-size: @fontSizeLarge;
+  line-height: 22px;
 }
