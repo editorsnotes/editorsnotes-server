@@ -127,8 +127,8 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
+COMPRESS_JS_FILTERS = ['compressor.filters.jsmin.SlimItFilter']
 LESSC_BINARY = 'lessc'
-JSMIN_BINARY = 'jsmin'
 
 # Add in local settings
 from settings_local import *
@@ -140,5 +140,4 @@ except NameError:
 
 COMPRESS_PRECOMPILERS = (
     ('text/less', LESSC_BINARY + ' {infile} {outfile}'),
-    ('text/javascript', JSMIN_BINARY + ' {infile} > {outfile}')
 )

@@ -11,8 +11,12 @@
     <link rel="stylesheet" href="{% static "style/jquery-ui/jquery-ui-1.8.10.custom.css" %}" type="text/css"/>
     <link rel="stylesheet" href="{% static "style/font-awesome/font-awesome.css" %}" type="text/css"/>
     <link rel="stylesheet" href="{% static "style/bootstrap-custom.css" %}" type="text/css"/>
+    {% endcompress %}
+
+    {% compress css %}
     {% block css %}{% endblock %}
     {% endcompress %}
+
     {% block css_nocompress %}{% endblock %}
 
     {% compress js %}
@@ -23,8 +27,12 @@
     <script type="text/javascript" src="{% static "function/jquery/jquery.ba-bbq.min.js" %}"></script>
     <script type="text/javascript" src="{% static "function/base.js" %}"></script>
     <script type="text/javascript" src="{% static "function/bootstrap.min.js" %}"></script>
+    {% endcompress %}
+
+    {% compress js %}
     {% block js %}{% endblock %}
     {% endcompress %}
+
     {% block js_nocompress %}{% endblock %}
 
   </head>
