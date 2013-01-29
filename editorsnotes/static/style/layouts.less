@@ -67,3 +67,90 @@ td.zotero-key {
   font-size: @fontSizeLarge;
   line-height: 22px;
 }
+
+// Facets
+//--------
+#facets.loaded .facet-header img {
+  display: none;
+}
+
+#facets {
+  .makeRow();
+  margin-top: .75em;
+
+  .facet-header {
+    .makeColumn(12);
+    cursor: hand;
+    cursor: pointer;
+    h3 { display: inline-block; }
+    i { vertical-align: baseline; }
+  }
+
+  .facets-available {
+    .makeColumn(2);
+    ul {
+      margin-left: 0;
+      li {
+        .btn;
+        display: block;
+        text-align: left;
+        margin: 0 0 6px;
+        padding-left: 8px;
+        padding-right: 8px;
+        i { opacity: .7; }
+      }
+      li.facet-selected {
+        .btn-primary;
+      }
+    }
+  }
+
+  .facet-form {
+    .makeColumn(10);
+
+    .facet-selection {
+      .makeRow();
+
+      div[class^="select-facets-"] {
+        .makeColumn(10);
+        display: none;
+        margin-bottom: 10px;
+
+        h5 {
+          font-size: 14px;
+          margin: 0 0 3px 0;
+          padding: 0 0 1px 3px;
+          border-bottom: 1px dashed @grayLight;
+        }
+        // If there's only one column of facets, make it take up the entire row
+        .facet-list {
+          .makeColumn(5);
+        }
+        .facet-list:only-of-type {
+          .makeColumn(10)
+        }
+
+        .facet-list {
+          margin: 0 !important;
+          padding-right: 8px !important;
+          list-style-type: none;
+          li {
+            margin-bottom: 2px;
+          }
+          input {
+            margin: 0 2px 1px 0;
+          }
+          label { 
+            display: inline;
+            margin: 0;
+          }
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
