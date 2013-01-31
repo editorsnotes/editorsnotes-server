@@ -29,12 +29,14 @@ ul.model-item-list > li * {
     line-height: inherit;
   }
 
+/*
 .citation div, .citation p {
     display: inline;
 }
 .citation {
     margin-bottom: 1em;
 }
+*/
 .edit-history {
     text-align: right;
 }

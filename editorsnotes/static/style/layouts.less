@@ -175,3 +175,137 @@ td.zotero-key {
 
 }
 
+
+// Admin
+//-------
+
+/******************************************************************** 
+ * Citation formsets
+ ********************************************************************/
+
+.content-separation-border {
+  border-top: 1px dotted #c0c0c0;
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+// For editing & viewing citations (and editing footnotes)
+.citation,
+.footnote-edit {
+  margin-bottom: 4px;
+  border-radius: 2px;
+
+  .citation-document {
+    * {
+      display: inline;
+    }
+    a {
+      color: @textColor;
+    }
+    .icon-file {
+      margin: 0 2px;
+      color: #444;
+      font-size: 20px;
+      position: relative;
+      top: 1px;
+    }
+  }
+
+  .citation-notes,
+  .footnote-content {
+    border: 1px solid darken(@grayLighter, 7%);
+    padding : 3px 10px 6px;
+    margin-top: 2px;
+
+    &:empty {
+      border: none;
+      padding-bottom: 0px;
+      margin-bottom: -5px;
+    }
+    > :last-child {
+      margin-bottom: 0px;
+    }
+  }
+
+  .btn-toolbar {
+    .content-separation-border;
+  }
+}
+
+.citation:not(.citation-edit):not(:last-of-type) {
+  margin-bottom: 1.5em;
+  &:after {
+    text-align: center;
+  }
+}
+
+// For editing citations and editing footnotes
+.citation-edit,
+.footnote-edit {
+  padding: 10px;
+
+  // Space at the bottom of editing citations & footnotes
+  &:last-child {
+    margin-bottom: 50px;
+  }
+
+  &:not([class*="active"]):hover {
+    cursor: pointer;
+  }
+
+  &:hover, &-active {
+    border-width: 2px;
+    border: 1px solid #999;
+    padding: 9px;
+  }
+
+  [class$="-fields"] {
+    input, textarea {
+      display: none;
+    }
+  }
+
+  .btn-toolbar {
+    padding-top: 8px;
+  }
+
+}
+
+// Specific to editing citations
+#citation-items {
+  .citation div, .citation p {
+    display: block;
+  }
+  &.sort-active .citation-edit {
+    max-height: 100px;
+    overflow: hidden;
+  }
+  .citation-placeholder {
+    height: 50px;
+    border-radius: 2px;
+    border: 1px dashed black;
+    margin: 8px 0;
+    text-align: center;
+    opacity: .5;
+
+    &:after {
+      position: relative;
+      top: 16px;
+      content: '(reposition here)';
+    }
+  }
+
+  .citation-document a.add-new-document {
+    color: black;
+    &:hover {
+      text-decoration: none;
+    }
+    i.icon-plus-sign {
+      font-size: 18px;
+      position: relative;
+      top: 2px;
+      left: 2px;
+    }
+  }
+
+}
