@@ -2,7 +2,10 @@
 
 {% load display %}
 
-{% block js %} {{ form.media }} {% endblock %}
+{% if form.media %}
+{% block js %} {{ form.media.js }} {% endblock %}
+{% block css %} {{ form.media.css }} {% endblock %}
+{% endif %}
 
 {% block content %}
   <h2>{% if form.instance.id %}Change{% else %}Add{% endif %} {{ form.Meta.model|object_name|lower }}</h2>
