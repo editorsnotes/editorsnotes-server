@@ -13,14 +13,34 @@
   width: 940px;
 }
 
-.navbar .nav > li > a {
-  padding-left: 11px;
-  padding-right: 11px;
+.navbar .nav > li { 
+  > a {
+    padding-left: 11px;
+    padding-right: 11px;
+    text-shadow: none;
+  }
+
+  > a:hover,
+  &.dropdown.open > a.dropdown-toggle {
+    background-color: @linkColor;
+    color: white;
+    b.caret {
+      border-top-color: #fff !important;
+      border-bottom-color: #fff !important;
+    }
+  }
 }
 
-.navbar .nav > li > a:hover,
-.navbar .nav > li > a.brand:hover {
-  text-shadow: none;
+.navbar .nav > li > .btn-group {
+  margin-left: 12px;
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+  b.caret {
+    border-top-color: @gray !important;
+    border-bottom-color: @gray !important;
+  }
 }
 
 .navbar-search .search-query {
@@ -67,6 +87,7 @@ td.zotero-key {
   font-size: @fontSizeLarge;
   line-height: 22px;
 }
+
 
 // Facets
 //--------
