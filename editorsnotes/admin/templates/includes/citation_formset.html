@@ -15,9 +15,7 @@
         {% if c.document %} {{ c.document.description|as_text }} {% endif %}
       </div>
 
-      <div class="citation-notes">
-        {% if c.has_notes %} {{ c.notes|as_html }} {% endif %}
-      </div>
+      <div class="citation-notes">{% if c.has_notes %}{{ c.notes|as_html }}{% endif %}</div>
 
       <div class="citation-fields">
         {% for field in citation %} {{ field }} {% endfor %}

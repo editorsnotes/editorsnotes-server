@@ -6,13 +6,21 @@
 
     <title>Editors' Notes{% if project %}: {{ project }}{% else %}{% endif %}{% block title %}{% endblock %}</title>
 
+    {% comment %}
+    There are three blocks for css/js, enabling good bundling/caching:
+      1. Common files for use on every page, bundled & compressed
+      2. Page-specific files, bundled & compressed
+      3. Page-specific files, not bundled or compressed
+    {% endcomment %}
+
     {% compress css %}
     <link rel="stylesheet" href="{% static "style/main.less" %}" type="text/less"/>
     <link rel="stylesheet" href="{% static "style/jquery-ui/jquery-ui-1.8.10.custom.css" %}" type="text/css"/>
     <link rel="stylesheet" href="{% static "style/font-awesome/font-awesome.css" %}" type="text/css"/>
     <link rel="stylesheet" href="{% static "style/bootstrap-custom.css" %}" type="text/css"/>
-    {% block css %}{% endblock %}
     {% endcompress %}
+
+    {% compress css %}{% block css %}{% endblock %}{% endcompress %}
     {% block css_nocompress %}{% endblock %}
 
     {% compress js %}
@@ -23,8 +31,9 @@
     <script type="text/javascript" src="{% static "function/jquery/jquery.ba-bbq.min.js" %}"></script>
     <script type="text/javascript" src="{% static "function/base.js" %}"></script>
     <script type="text/javascript" src="{% static "function/bootstrap.min.js" %}"></script>
-    {% block js %}{% endblock %}
     {% endcompress %}
+
+    {% compress js %}{% block js %}{% endblock %}{% endcompress %}
     {% block js_nocompress %}{% endblock %}
 
   </head>
