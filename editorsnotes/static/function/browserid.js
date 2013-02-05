@@ -1,14 +1,14 @@
 ;
 
 (function () {
-  var failStr = 'bid_login_failed=1'
-    , loginFailed = location.search.indexOf(failStr) !== -1
-    , logoutURL = loginFailed ? '/accounts/login/?bad_email=1' : null
+  var logoutURL = null
+    , loginFailed = location.search.indexOf('bid_login_failed=1') !== -1
   ;
 
   $(document).on('click', '.browserid-login', function (e) {
+    var $loginButton = $(this)
+    ;
     e.preventDefault();
-    $loginButton = $(this);
     navigator.id.request({
       'siteName': "Editorsʼ Notes" // apostrophe is blocked, this is u02bc
     });
@@ -25,6 +25,7 @@
 
     onlogin: function (assertion) {
       if (loginFailed) {
+        // No account for this email, logout from this browserid
         navigator.id.logout();
         return;
       }
@@ -36,7 +37,11 @@
     },
 
     onlogout: function () {
-      if (logoutURL !== null) {
+      if (loginFailed) {
+        // Redirect back to login page with alert that no account was connected
+        // to the given email.
+        window.location.replace('/accounts/login/?bad_email=1');
+      } else if (logoutURL) {
         window.location = logoutURL;
       }
     }

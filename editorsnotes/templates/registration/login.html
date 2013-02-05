@@ -9,6 +9,12 @@
     <legend>Login</legend>
   </div>
 
+  {% if request.GET.bid_login_failed %}
+    <p>
+    Attempting to log in
+    </p>
+  {% else %}
+
   {% if form.errors %}
   <div class="alert alert-error">
     Your username and password didn't match. Please try again.
@@ -20,7 +26,6 @@
     Failed to log in with given email.
   </div>
   {% endif %}
-
 
   <div class="row">
 
@@ -55,5 +60,8 @@
     </div>
 
   </div>
+
+  {% endif %}
+
 </div>
 {% endblock %}
