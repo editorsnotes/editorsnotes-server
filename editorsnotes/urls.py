@@ -1,14 +1,14 @@
 from django.conf.urls import patterns, url, include
 from django.contrib import admin
-from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
+from editorsnotes.main.views import CustomBrowserIDVerify
 
 admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
     (r'^accounts/profile/$', 'editorsnotes.main.views.user'),
-    (r'^accounts/browserid/', include('django_browserid.urls')),
+    url(r'^accounts/browserid/$', CustomBrowserIDVerify.as_view(), name='browserid_verify'),
 )
 
 urlpatterns += patterns('',

@@ -1,7 +1,7 @@
 from django.conf import settings
+from django.contrib import auth
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry
-from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -9,8 +9,12 @@ from django.contrib.sites.models import Site
 from django.core.mail import mail_admins
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
+
+from django_browserid import verify, get_audience
+from django_browserid.views import Verify
+
 from haystack.query import SearchQuerySet, EmptySearchQuerySet
 from itertools import chain
 from reversion import get_unique_for_object
@@ -49,8 +53,13 @@ def proxy(request):
 # Auth
 # ------------------------------------------------------------------------------
 
+class CustomBrowserIDVerify(Verify):
+    failure_url = '/accounts/login/'
+    def get_success_url(self):
+        return self.request.user.get_profile().get_absolute_url()
+
 def user_logout(request):
-    logout(request)
+    auth.logout(request)
     return render_to_response(
         'logout.html', context_instance=RequestContext(request))
 

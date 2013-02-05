@@ -4,27 +4,56 @@
 
 {% block content %}
 <div id="login">
-    {% if form.errors %}
-    <div class="error">Your username and password didn't match. Please try again.</div>
-    {% endif %}
 
-    <form method="post" action="{% url django.contrib.auth.views.login %}">
-      <fieldset>
-        <legend>Login</legend>
-        <p>
-          {{ form.username.label_tag }}<br/>
-          {{ form.username }}
-        </p>
-        <p>
-          {{ form.password.label_tag }}<br/>
-          {{ form.password }}
-        </p>
-        <p>
-          <button type="submit">Login</button>
-        </p>
-      </fieldset>
-      <input type="hidden" name="next" value="{{ next }}" />
-      {% csrf_token %}
-    </form>  
+  <div>
+    <legend>Login</legend>
+  </div>
+
+  {% if form.errors %}
+  <div class="alert alert-error">
+    Your username and password didn't match. Please try again.
+  </div>
+  {% endif %}
+
+  {% if request.GET.bad_email %}
+  <div class="alert alert-error">
+    Failed to log in with given email.
+  </div>
+  {% endif %}
+
+
+  <div class="row">
+
+    <div id="persona-login" class="span6">
+      <a class="browserid-login" href="{% url django.contrib.auth.views.login %}">
+        <img src="https://developer.mozilla.org/files/3961/persona_sign_in_black.png">
+      </a>
+      <form method="post" action="{% url browserid_verify %}">
+        {% csrf_token %}
+        {{ browserid_form.as_p }}
+      </form>
+    </div>
+
+    <div id="name-pass-login span6">
+      <form method="post" action="{% url django.contrib.auth.views.login %}">
+        {% csrf_token %}
+        <fieldset>
+          <p>
+            {{ form.username.label_tag }}
+            {{ form.username }}
+          </p>
+          <p>
+            {{ form.password.label_tag }}
+            {{ form.password }}
+          </p>
+          <p>
+            <button type="submit">Login</button>
+          </p>
+        </fieldset>
+        <input type="hidden" name="next" value="{{ next }}" />
+      </form>  
+    </div>
+
+  </div>
 </div>
 {% endblock %}
