@@ -3,12 +3,30 @@
 {% block css %}
 <style type="text/css">
   td { vertical-align: middle !important; }
-  select { margin-bottom: 0px !important; }
+  table select { margin-bottom: 0px; }
+  .project-invitations select,
+  .project-invitations input {
+    margin-bottom: 0px;
+  }
+  .project-invitations div {
+    margin-bottom: .75em;
+  }
+  .remove-project-invitation {
+    position: relative;
+    left: 2px;
+    top: 1px;
+  }
+  .remove-project-invitation:not(:hover) {
+    color: black;
+  }
+  .remove-project-invitation:hover {
+    text-decoration: none;
+  }
 </style>
 {% endblock %}
 
 {% block js %}
-{% if formset %}
+{% if roster_formset %}
 <script type="text/javascript">
   $(document).ready(function () {
     $('.project-user-form').each(function () {
@@ -21,8 +39,15 @@
 
       $('.project-user-role', '#project-user-' + thisId)
         .html($this.find('select'))
-
     });
+
+    $('.project-invitations').on('click', '.remove-project-invitation', function (e) {
+      e.preventDefault();
+      $thisInvitation = $(this).closest('.project-invitation');
+      $('input[name$="DELETE"]', $thisInvitation).attr('checked', true).val('on');
+      $thisInvitation.fadeOut();
+    });
+
   });
 </script>
 {% endif %}
@@ -30,13 +55,13 @@
 
 {% block content %}
 
-  {% if formset %}
+  {% if roster_formset %}
   <form method="post">
     <div style="display: none;">
       {% csrf_token %}
-      {{ formset.management_form }}
+      {{ roster_formset.management_form }}
 
-      {% for form in formset.forms %}
+      {% for form in roster_formset.forms %}
       <div class="project-user-form">
         {{ form.id }}
         {{ form.project_role }}
@@ -45,6 +70,7 @@
     </div>
   {% endif %}
 
+  <legend>{{ project.name }}</legend>
   <table class="table table-condensed table-bordered table-striped">
     <thead>
       <tr>
@@ -72,9 +98,46 @@
     </tbody>
   </table>
 
-  {% if formset %}
+  {% if invitation_formset %}
+  <div class="project-invitations">
+    <legend>Add project members</legend>
+    {{ invitation_formset.management_form }}
+    {% for form in invitation_formset %}
+    <div class="project-invitation">
+      {% if form.errors %}
+      <div class="alert alert-error">
+        {% for field in form %}
+        {% if field.errors %}
+        <p><strong>{{ field.label }}</strong>: {{ field.errors|striptags }}</p>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      {{ form.id }}
+      {{ form.project.as_hidden }}
+      {{ form.DELETE.as_hidden }}
+      {% if form.instance.id %}
+      Invited {{ form.instance.created|date:"F d, Y" }}: 
+      {{ form.email.value }} ({{ form.role.value }})
+      {{ form.email.as_hidden }} {{ form.role.as_hidden }}
+      {% else %}
+      <br />
+      {{ form.email }}
+      {{ form.role }}
+      {% endif %}
+      {% if form.instance.id %}
+      <a href="#" class="remove-project-invitation">
+        <i class="icon-remove-sign"></i>
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+
+  {% if roster_formset %}
     <div>
-      <a class="btn">Add user</a>
       <input class="btn pull-right" type="submit" value="Save" />
     </div>
   </form>

@@ -313,21 +313,38 @@ def project_roster(request, project_id):
     user = request.user
     project = get_object_or_404(main_models.Project, id=project_id)
     can_change = project.attempt('change', user)
-    ProjectRosterFormset = admin_forms.make_project_roster_formset(project)
+    ProjectRosterFormSet = admin_forms.make_project_roster_formset(project)
+    ProjectInvitationFormSet = admin_forms.make_project_invitation_formset(project)
     if not project.attempt('view', user):
         return http.HttpResponseForbidden(VIEW_ERROR_MSG.format(project))
 
     if request.method == 'POST':
         if not can_change:
             return http.HttpResponseForbidden(CHANGE_ERROR_MSG.format(project))
-        o['formset'] = ProjectRosterFormset(request.POST)
-        if o['formset'].is_valid():
-            o['formset'].save()
+        o['roster_formset'] = ProjectRosterFormSet(
+            request.POST, prefix='roster')
+        o['invitation_formset'] = ProjectInvitationFormSet(
+            request.POST, prefix='invitation')
+        if o['roster_formset'].is_valid() and o['invitation_formset'].is_valid():
+            o['roster_formset'].save()
+            for form in o['invitation_formset']:
+                if form.cleaned_data.get('DELETE', False):
+                    if form.instance:
+                        form.instance.delete()
+                    continue
+                obj = form.save(commit=False)
+                if not obj.id:
+                    if not form.cleaned_data.has_key('email'):
+                        continue
+                    obj.creator = request.user
+                    obj.project = project
+                obj.save()
             messages.add_message(request, messages.SUCCESS,
                                  'Roster for {} saved.'.format(project.name))
             return http.HttpResponseRedirect(request.path)
     elif can_change:
-        o['formset'] = ProjectRosterFormset()
+        o['roster_formset'] = ProjectRosterFormSet(prefix='roster')
+        o['invitation_formset'] = ProjectInvitationFormSet(prefix='invitation')
 
     o['project'] = project
     o['roster'] = [(u, u.get_project_role(project))

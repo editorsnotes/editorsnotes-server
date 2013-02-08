@@ -16,10 +16,49 @@ from fields import MultipleFileInput
 # Project forms
 ################################################################################
 
-PROJECT_ROLES = (
-    ('editor', 'Editor'),
-    ('researcher', 'Researcher')
-)
+def make_project_invitation_formset(project):
+    if not isinstance(project, main_models.Project):
+        raise ValueError('{} is not a project.'.format(project))
+
+    project_invitations = main_models.ProjectInvitation.objects\
+            .select_related('project')\
+            .filter(project__id=project.id)
+
+    class ProjectInvitationFormSet(BaseModelFormSet):
+        def __init__(self, *args, **kwargs):
+            kwargs['queryset'] = project_invitations
+            super(ProjectInvitationFormSet, self).__init__(*args, **kwargs)
+
+    class ProjectInvitationForm(ModelForm):
+        class Meta:
+            model = main_models.ProjectInvitation
+            fields = ('email', 'role',)
+        def __init__(self, *args, **kwargs):
+            super(ProjectInvitationForm, self).__init__(*args, **kwargs)
+            self.fields['email'].widget.attrs['placeholder'] = 'Email to invite'
+        def clean_email(self):
+            data = self.cleaned_data['email']
+            user = User.objects.filter(email=data)
+            if user.count() > 1:
+                msg = 'Multiple users with this email address.'
+                raise forms.ValidationError(msg)
+            elif user.count() == 1 and user[0].get_profile().affiliation == project:
+                msg = 'User with email {} already in project'.format(data)
+                raise forms.ValidationError(msg)
+            existing_invite = main_models.ProjectInvitation.objects.filter(
+                email=data, project=project)
+            if not self.instance.id and existing_invite.count():
+                msg = 'User with email {} already invited.'.format(data)
+                raise forms.ValidationError(msg)
+            return data
+    return modelformset_factory(
+        main_models.ProjectInvitation,
+        formset=ProjectInvitationFormSet,
+        form=ProjectInvitationForm,
+        can_delete=True,
+        extra=1
+    )
+
 
 def make_project_roster_formset(project):
     """
@@ -39,7 +78,7 @@ def make_project_roster_formset(project):
             super(ProjectRosterFormSet, self).__init__(*args, **kwargs)
 
     class ProjectMemberForm(ModelForm):
-        project_role = forms.ChoiceField(choices=PROJECT_ROLES)
+        project_role = forms.ChoiceField(choices=main_models.PROJECT_ROLES)
         class Meta:
             model = User
         def __init__(self, *args, **kwargs):
@@ -62,7 +101,12 @@ def make_project_roster_formset(project):
             return user
 
     return modelformset_factory(
-        User, formset=ProjectRosterFormSet, form=ProjectMemberForm, fields=(), extra=0)
+        User,
+        formset=ProjectRosterFormSet,
+        form=ProjectMemberForm,
+        fields=(),
+        extra=0
+    )
 
 class ProjectForm(ModelForm):
     class Meta:
