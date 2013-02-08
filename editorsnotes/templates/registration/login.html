@@ -1,13 +1,45 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}: Login{% endblock %}
 
-{% block content %}
-<div id="login">
+{% block css %}
+<style type="text/css">
 
-  <div>
-    <legend>Login</legend>
-  </div>
+  .center {
+    text-align: center;
+  }
+
+  .browserid-login-container, hr {
+    margin-bottom: 2em;
+  }
+  p {
+    font-size: 12px;
+    margin-bottom: 1.5em;
+  }
+
+  #invitation-notice {
+    font-family: "Open Sans", sans-serif;
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  #name-pass-login input {
+    margin-bottom: 0px;
+  }
+
+</style>
+{% endblock %}
+
+{% block css_nocompress %}
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+{% endblock %}
+
+{% block content %}
+<div id="login" class="row">
+
+  <div class="span8 offset2">
 
   {% if request.GET.bid_login_failed %}
     <p>
@@ -27,41 +59,55 @@
   </div>
   {% endif %}
 
-  <div class="row">
+  <p id="invitation-notice" class="center">
+   Accounts are currently open only via invitation. If you have not received an invitation, <a href="/about/">send us a message</a> to request one.
+  </p>
 
-    <div id="persona-login" class="span6">
+  <hr />
+
+  <div class="center" id="persona-login">
+    <p>
+      Use the button below to sign in using your email with <a href="https://login.persona.org/about">Mozilla Persona</a>.
+    </p>
+    <div class="browserid-login-container">
       <a class="browserid-login" href="{% url django.contrib.auth.views.login %}">
-        <img src="https://developer.mozilla.org/files/3961/persona_sign_in_black.png">
+        <img src="{% static "style/icons/plain_sign_in_black.png" %}">
       </a>
       <form method="post" action="{% url browserid_verify %}">
         {% csrf_token %}
         {{ browserid_form.as_p }}
       </form>
     </div>
+  </div>
 
-    <div id="name-pass-login span6">
-      <form method="post" action="{% url django.contrib.auth.views.login %}">
-        {% csrf_token %}
-        <fieldset>
-          <p>
-            {{ form.username.label_tag }}
-            {{ form.username }}
-          </p>
-          <p>
-            {{ form.password.label_tag }}
-            {{ form.password }}
-          </p>
-          <p>
-            <button type="submit">Login</button>
-          </p>
-        </fieldset>
-        <input type="hidden" name="next" value="{{ next }}" />
-      </form>  
-    </div>
+  <hr />
 
+  <div class="center" id="name-pass-login">
+    <p>
+    Alternatively, sign in with your username and password.
+    </p>
+    <form method="post" action="{% url django.contrib.auth.views.login %}">
+      {% csrf_token %}
+      <fieldset>
+        <p>
+          <label>Username</label> {{ form.username }}
+        </p>
+
+        <p>
+          <label>Password</label> {{ form.password }}
+        </p>
+
+        <p>
+          <button type="submit">Login</button>
+        </p>
+      </fieldset>
+      <input type="hidden" name="next" value="{{ next }}" />
+    </form>  
   </div>
 
   {% endif %}
+
+  </div>
 
 </div>
 {% endblock %}
