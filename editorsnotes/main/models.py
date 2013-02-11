@@ -608,6 +608,8 @@ class ProjectInvitation(CreationMetadata):
     email = models.EmailField()
     role = models.CharField(
         max_length=10, choices=PROJECT_ROLES, default='researcher')
+    def __unicode__(self):
+        return '{} ({})'.format(self.email, self.project.name)
         
 class UserProfile(models.Model, URLAccessible):
     user = models.ForeignKey(User, unique=True)
