@@ -1,5 +1,9 @@
 // Our layouts
 
+#main {
+  margin-bottom: 18px;
+}
+
 // Navbars
 //---------
 .navbar-inner {
@@ -53,7 +57,6 @@
 .nav-tabs a {
   color: @textColor;
 }
-
 
 
 // Lists of models
@@ -222,7 +225,8 @@ td.zotero-key {
       padding-bottom: 0px;
       margin-bottom: -5px;
     }
-    > :last-child {
+    > last-child,
+    > div > :last-child {
       margin-bottom: 0px;
     }
   }
@@ -233,7 +237,7 @@ td.zotero-key {
 }
 
 .citation:not(.citation-edit):not(:last-of-type) {
-  margin-bottom: 1.5em;
+  margin-bottom: 1.25em;
   &:after {
     text-align: center;
   }

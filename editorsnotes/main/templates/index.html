@@ -6,37 +6,31 @@
 
 {% block css %}
 <style type="text/css">
-  #main a {
-    color: #107887;
+  #main * {
+    font-family: 'Source Sans Pro', sans-serif !important;
   }
 
   p.message {
-    font-family: 'Open Sans', sans-serif !important;
+    font-family: 'Source Sans Pro', sans-serif !important;
     font-size: 24px;
     line-height: 36px;
     text-align: justify;
-    max-width: 864px;
-    margin: 4px auto 0px;
+    max-width: 790px;
+    margin: 10px auto 28px;
   }
 
   #examples {
     line-height: 18px;
     font-size: 16px;
-    margin-top: 30px;
-  }
-
-  #examples h4 {
-    font-size: 16px;
+    margin: 22px 0;
   }
 
   #examples li {
-    margin-top: 18px;
+    margin-top: 10px;
   }
 
   #features {
-    margin-top: 15px;
-    border-top: 1px solid #eee;
-    padding-top: 18px;
+    margin-top: 22px;
   }
 
   #features-toggle {
@@ -58,7 +52,7 @@
     border-radius: 2px;
     background: #ddd;
 
-    font-family: 'Open Sans', sans-serif !important;
+    font-family: 'Source Sans Pro', sans-serif !important;
     color: black;
     text-align: center;
     text-decoration: none;
@@ -88,7 +82,7 @@
 {% endblock %}
 
 {% block css_nocompress %}
-<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400' rel='stylesheet' type='text/css'>
 {% endblock %}
 
 {% block js %}
@@ -122,19 +116,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
   <p class="message">
     Editors' Notes is an <a href="http://github.com/editorsnotes/editorsnotes">open-source</a>, web-based tool for recording, organizing, preserving, and opening access to research notes, built with the needs of documentary editing projects, archives, and library special collections in mind.
   </p>
 
   <div id="examples">
     <h4>A few ways projects are using Editors' Notes:</h4>
-    <ul class="unstyled">
+    <ul>
       <li>
         <a href="{% url project_view 'sanger' %}">The Margaret Sanger Papers</a> are researching <a href="{% url topic_view 'india-birth-control-movement-in' %}#notes">the birth control movement in India</a>.
       </li>
       <li>
-        <a href="{% url project_view 'ecssba' %}">The Elizabeth Cady Stanton &amp; Susan B. Anthony Papers Project</a> are collecting sources about <a href="{% url topic_view 'women-already-voters-test-cases-during-reconstruction' %}">women using direct action to test voting laws during reconstruction</a>.
+        <a href="{% url project_view 'ecssba' %}">The Elizabeth Cady Stanton &amp; Susan B. Anthony Papers</a> are collecting sources about <a href="{% url topic_view 'women-already-voters-test-cases-during-reconstruction' %}">women using direct action to test voting laws</a>.
       </li>
       <li>
         <a href="{% url project_view 'labadie' %}">The Labadie Collection</a> is sharing items in its collection that mention <a href="{% url note_view 341 %}">Emma Goldman's visits to Detroit</a>.
@@ -144,6 +137,8 @@
       </li>
     </ul>
   </div>
+
+  <hr />
 
   <div id="features">
 
@@ -255,5 +250,4 @@
     </div>
 
   </div>
-</div>
 {% endblock %}
