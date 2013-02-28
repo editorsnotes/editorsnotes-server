@@ -747,6 +747,8 @@ class TopicAssignment(CreationMetadata):
     objects = TopicAssignmentManager()
     def __unicode__(self):
         return self.topic.preferred_name
+    class Meta:
+        unique_together = ('content_type', 'object_id', 'topic')
 
 class Scan(CreationMetadata):
     u"""
