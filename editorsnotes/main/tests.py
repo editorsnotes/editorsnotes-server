@@ -88,29 +88,42 @@ class TopicTestCase(TestCase):
             summary='Yoyoyo!',
             creator=self.user, last_updater=self.user)
         self.assertTrue(self.client.login(username='testuser', password='testuser'))
-        response = self.client.post('/admin/main/topic/add/', 
-                                     { 'preferred_name': u'Doe, John',
-                                       'summary': u'John Doe was a great man.',
-                                       'aliases-TOTAL_FORMS': 0,
-                                       'aliases-INITIAL_FORMS': 0,
-                                       'aliases-MAX_NUM_FORMS': 0,
-                                       'main-citation-content_type-object_id-TOTAL_FORMS': 0,
-                                       'main-citation-content_type-object_id-INITIAL_FORMS': 0,
-                                       'main-citation-content_type-object_id-MAX_NUM_FORMS': 0 })
-        self.assertEquals(len(response.context['errors']), 1)
-        self.assertEquals(response.context['errors'][0][0], 
-                          u'Topic with this Preferred name already exists.')
-        response = self.client.post('/admin/main/topic/add/', 
-                                     { 'preferred_name': u'Doe John',
-                                       'summary': u'John Doe was a great man.',
-                                       'aliases-TOTAL_FORMS': 0,
-                                       'aliases-INITIAL_FORMS': 0,
-                                       'aliases-MAX_NUM_FORMS': 0,
-                                       'main-citation-content_type-object_id-TOTAL_FORMS': 0,
-                                       'main-citation-content_type-object_id-INITIAL_FORMS': 0,
-                                       'main-citation-content_type-object_id-MAX_NUM_FORMS': 0 })
-        self.assertEquals(response.context['errors'][0][0], 
-                          u'Topic with a very similar Preferred name already exists.')
+        response = self.client.post(
+            '/admin/main/topic/add/', 
+            {
+                'preferred_name': u'Doe, John',
+                'summary': u'John Doe was a great man.',
+                'alias-TOTAL_FORMS': 0,
+                'alias-INITIAL_FORMS': 0,
+                'alias-MAX_NUM_FORMS': 0,
+                'citation-TOTAL_FORMS': 0,
+                'citation-INITIAL_FORMS': 0,
+                'citation-MAX_NUM_FORMS': 0,
+                'topicassignment-TOTAL_FORMS': 0,
+                'topicassignment-INITIAL_FORMS': 0,
+                'topicassignment-MAX_NUM_FORMS': 0,
+            }
+        )
+        self.assertFormError(response, 'form', 'preferred_name',
+                             u'Topic with this Preferred name already exists.')
+        response = self.client.post(
+            '/admin/main/topic/add/', 
+            {
+                'preferred_name': u'Doe John',
+                'summary': u'John Doe was a great man.',
+                'alias-TOTAL_FORMS': 0,
+                'alias-INITIAL_FORMS': 0,
+                'alias-MAX_NUM_FORMS': 0,
+                'citation-TOTAL_FORMS': 0,
+                'citation-INITIAL_FORMS': 0,
+                'citation-MAX_NUM_FORMS': 0,
+                'topicassignment-TOTAL_FORMS': 0,
+                'topicassignment-INITIAL_FORMS': 0,
+                'topicassignment-MAX_NUM_FORMS': 0,
+            }
+        )
+        self.assertFormError(response, 'form', 'preferred_name',
+                             u'Topic with a very similar Preferred name already exists.')
 
 class NoteTestCase(TestCase):
     def setUp(self):
