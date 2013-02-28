@@ -131,7 +131,7 @@ class NoteTestCase(TestCase):
             description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
             creator=self.user, last_updater=self.user)
         note.citations.create(
-            document=document, creator=self.user)
+            document=document, creator=self.user, last_updater=self.user)
         self.assertEquals(1, len(note.citations.all()))
         self.assertEquals(document, note.citations.all()[0].document)
         note.delete()
