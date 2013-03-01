@@ -57,3 +57,33 @@ class TopicAdminTestCase(TestCase):
         self.assertFormError(
             response, 'form', 'preferred_name',
             u'Topic with a very similar Preferred name already exists.')
+
+    def test_related_topics(self):
+        topic = models.Topic.objects.create(
+            preferred_name=u'Троцкий, Лев Давидович',
+            summary=u'Также мужчина; также коммунисть.',
+            creator=self.user, last_updater=self.user)
+        data = self.blank_form_data.copy()
+        data.update({
+            'preferred_name': topic.preferred_name,
+            'summary': topic.summary,
+            'citation-TOTAL_FORMS': 1,
+            'alias-TOTAL_FORMS': 1,
+            'topicassignment-TOTAL_FORMS': 1,
+            'topicassignment-0-id': u'',
+            'topicassignment-0-topic': self.topics[0].id
+        })
+        response = self.client.post(topic.get_admin_url(), data)
+        self.assertEqual(topic.related_topics.count(), 1)
+
+        data.update({
+            'topicassignment-INITIAL_FORMS': 1,
+            'topicassignment-TOTAL_FORMS': 2,
+            'topicassignment-0-id': topic.related_topics.all()[0].id,
+            'topicassignment-0-topic': self.topics[0].id,
+            'topicassignment-0-DELETE': True,
+            'topicassignment-1-id': u'',
+            'topicassignment-1-topics': u''
+        })
+        response = self.client.post(topic.get_admin_url(), data)
+        self.assertEqual(topic.related_topics.count(), 0)
