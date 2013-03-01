@@ -82,48 +82,6 @@ class TopicTestCase(TestCase):
             related = t.related_topics.all()
             self.assertEquals(len(related), 1)
             self.assertEquals(related[0], self.topics[0])
-    def testDuplicateSlug(self):
-        Topic.objects.create(
-            preferred_name=u'Doe, John', 
-            summary='Yoyoyo!',
-            creator=self.user, last_updater=self.user)
-        self.assertTrue(self.client.login(username='testuser', password='testuser'))
-        response = self.client.post(
-            '/admin/main/topic/add/', 
-            {
-                'preferred_name': u'Doe, John',
-                'summary': u'John Doe was a great man.',
-                'alias-TOTAL_FORMS': 0,
-                'alias-INITIAL_FORMS': 0,
-                'alias-MAX_NUM_FORMS': 0,
-                'citation-TOTAL_FORMS': 0,
-                'citation-INITIAL_FORMS': 0,
-                'citation-MAX_NUM_FORMS': 0,
-                'topicassignment-TOTAL_FORMS': 0,
-                'topicassignment-INITIAL_FORMS': 0,
-                'topicassignment-MAX_NUM_FORMS': 0,
-            }
-        )
-        self.assertFormError(response, 'form', 'preferred_name',
-                             u'Topic with this Preferred name already exists.')
-        response = self.client.post(
-            '/admin/main/topic/add/', 
-            {
-                'preferred_name': u'Doe John',
-                'summary': u'John Doe was a great man.',
-                'alias-TOTAL_FORMS': 0,
-                'alias-INITIAL_FORMS': 0,
-                'alias-MAX_NUM_FORMS': 0,
-                'citation-TOTAL_FORMS': 0,
-                'citation-INITIAL_FORMS': 0,
-                'citation-MAX_NUM_FORMS': 0,
-                'topicassignment-TOTAL_FORMS': 0,
-                'topicassignment-INITIAL_FORMS': 0,
-                'topicassignment-MAX_NUM_FORMS': 0,
-            }
-        )
-        self.assertFormError(response, 'form', 'preferred_name',
-                             u'Topic with a very similar Preferred name already exists.')
 
 class NoteTestCase(TestCase):
     def setUp(self):
