@@ -6,7 +6,6 @@ import fields
 import json
 from copy import deepcopy
 from lxml import etree
-from unaccent import unaccent
 from django.db import models
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User, Group, Permission
@@ -16,7 +15,9 @@ from django.core import urlresolvers
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import NoReverseMatch
 from django.dispatch import receiver
+from django.utils.encoding import smart_text
 from django.utils.html import conditional_escape, escape
+from django.utils.http import urlquote_plus
 from django.utils.safestring import mark_safe
 from io import StringIO
 import reversion
@@ -435,9 +436,9 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible, ProjectSpecific):
             self.slug = Topic.make_slug(kwargs['preferred_name'])
     @staticmethod
     def make_slug(preferred_name):
-        return '-'.join(
-            [ x for x in re.split('\W+', unaccent(unicode(preferred_name)))
-              if len(x) > 0 ]).lower()
+        unicode_name = smart_text(preferred_name).replace(' ', '_')
+        unicode_slug = re.sub(ur'(?u)[^\w.,-]|[_.,-]+$', '', unicode_name)
+        return urlquote_plus(unicode_slug)
     def __setattr__(self, key, value):
         super(Topic, self).__setattr__(key, value)
         if key == 'preferred_name':
