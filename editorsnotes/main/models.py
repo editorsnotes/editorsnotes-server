@@ -21,6 +21,7 @@ from django.utils.http import urlquote_plus
 from django.utils.safestring import mark_safe
 from io import StringIO
 import reversion
+import unicodedata
 
 # -------------------------------------------------------------------------------
 # Abstract base classes and interfaces.
@@ -436,9 +437,7 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible, ProjectSpecific):
             self.slug = Topic.make_slug(kwargs['preferred_name'])
     @staticmethod
     def make_slug(preferred_name):
-        unicode_name = smart_text(preferred_name).replace(' ', '_')
-        unicode_slug = re.sub(ur'(?u)[^\w.,-]|[_.,-]+$', '', unicode_name)
-        return urlquote_plus(unicode_slug)
+        return urlquote_plus(utils.slugify(preferred_name))
     def __setattr__(self, key, value):
         super(Topic, self).__setattr__(key, value)
         if key == 'preferred_name':
