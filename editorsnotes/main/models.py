@@ -437,7 +437,7 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible, ProjectSpecific):
             self.slug = Topic.make_slug(kwargs['preferred_name'])
     @staticmethod
     def make_slug(preferred_name):
-        return urlquote_plus(utils.slugify(preferred_name))
+        return utils.unicode_slugify(preferred_name)
     def __setattr__(self, key, value):
         super(Topic, self).__setattr__(key, value)
         if key == 'preferred_name':
@@ -448,7 +448,7 @@ class Topic(LastUpdateMetadata, Administered, URLAccessible, ProjectSpecific):
         return u' '.join([ a.name for a in self.aliases.all() ])
     @models.permalink
     def get_absolute_url(self):
-        return ('topic_view', [str(self.slug)])
+        return ('topic_view', [self.slug])
     def as_text(self):
         return self.preferred_name
     def validate_unique(self, exclude=None):

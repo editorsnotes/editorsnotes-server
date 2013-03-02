@@ -66,7 +66,7 @@ def alpha_columns(items, sortattr, num_columns=3, itemkey='item'):
         item_index += 1
     return columns
 
-def slugify(s):
+def unicode_slugify(s):
     """Return a unicode slug for the given string
 
     Adapted from Mozilla's unicode-slugify. License included below."""
