@@ -139,6 +139,10 @@ BROWSERID_CREATE_USER = 'editorsnotes.main.views.create_invited_user'
 
 LESSC_BINARY = 'lessc'
 
+REST_FRAMEWORK = {
+    'FILTER_BACKEND': 'editorsnotes.api.filters.HaystackFilterBackend'
+}
+
 # Add in local settings
 from settings_local import *
 DATABASES['default'].update(POSTGRES_DB)
