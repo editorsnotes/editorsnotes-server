@@ -1,8 +1,10 @@
 from django.conf.urls import patterns, url
 import views
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url('^$', views.root, name='api-root'),
+    url('^auth-token/$', 'rest_framework.authtoken.views.obtain_auth_token', name='obtain-auth-token'),
     url('^topics/$', views.TopicList.as_view(), name='api-topics-list'),
     url('^topics/(?P<pk>\d+)/$', views.TopicDetail.as_view(), name='api-topics-detail'),
     url('^notes/$', views.NoteList.as_view(), name='api-notes-list'),

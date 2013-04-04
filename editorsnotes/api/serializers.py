@@ -12,6 +12,14 @@ class TopicSerializer(serializers.ModelSerializer):
         fields = ('id', 'preferred_name', 'type', 'topics', 'summary',
                   'creator', 'last_updater')
 
+class DocumentSerializer(serializers.ModelSerializer):
+    topics = RelatedField('topics', many=True)
+    creator = serializers.Field(source='creator.username')
+    last_updater = serializers.Field(source='last_updater.username')
+    class Meta:
+        model = main_models.Document
+        fields = ('id', 'description', 'creator', 'last_updater')
+
 class NoteSerializer(serializers.ModelSerializer):
     topics = RelatedField('topics', many=True)
     creator = serializers.Field(source='creator.username')
@@ -20,11 +28,3 @@ class NoteSerializer(serializers.ModelSerializer):
         model = main_models.Note
         fields = ('id', 'title', 'topics', 'content', 'status',
                   'creator', 'last_updater')
-
-class DocumentSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
-    creator = serializers.Field(source='creator.username')
-    last_updater = serializers.Field(source='last_updater.username')
-    class Meta:
-        model = main_models.Document
-        fields = ('id', 'description', 'creator', 'last_updater')

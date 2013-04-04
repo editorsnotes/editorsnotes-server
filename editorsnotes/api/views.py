@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 import serializers
+from permissions import ProjectSpecificPermission
 from editorsnotes.main.models import Topic, Note, Document
 
 class BaseListAPIView(generics.ListCreateAPIView):
@@ -23,6 +24,7 @@ class BaseDetailView(generics.RetrieveUpdateDestroyAPIView):
 @api_view(('GET',))
 def root(request):
     return Response({
+        'auth-token': reverse('obtain-auth-token'),
         'notes': reverse('api-notes-list'),
         'topics': reverse('api-topics-list'),
         'documents': reverse('api-documents-list')
@@ -47,6 +49,8 @@ class NoteList(BaseListAPIView):
 class NoteDetail(BaseDetailView):
     model = Note
     serializer_class = serializers.NoteSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly, ProjectSpecificPermission)
     def post(self, request, *args, **kwargs):
         """Add a note section"""
         raise NotImplementedError()
