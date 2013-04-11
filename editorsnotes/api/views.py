@@ -44,7 +44,7 @@ class TopicDetail(BaseDetailView):
 
 class NoteList(BaseListAPIView):
     model = Note
-    serializer_class = serializers.NoteSerializer
+    serializer_class = serializers.MinimalNoteSerializer
 
 class NoteDetail(BaseDetailView):
     model = Note
