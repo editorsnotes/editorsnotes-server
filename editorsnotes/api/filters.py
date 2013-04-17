@@ -14,7 +14,7 @@ class HaystackFilterBackend(BaseFilterBackend):
             query += self.make_field_query(field, request.QUERY_PARAMS)
 
         if not query:
-            return view_model.objects.all()
+            return queryset or view_model.objects.all()
 
         qs = SearchQuerySet()\
                 .models(view_model)\

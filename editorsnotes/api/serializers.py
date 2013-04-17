@@ -32,9 +32,17 @@ class NoteSectionField(serializers.RelatedField):
             raise NotImplementedError('No such note section type')
         return serializer.data
 
+class MinimalNoteSerializer(serializers.ModelSerializer):
+    topics = RelatedField('topics', many=True)
+    class Meta:
+        model = main_models.Note
+        fields = ('id', 'title', 'topics', 'content', 'status',)
+
 class SectionOrderingField(serializers.WritableField):
+    def section_ids(note):
+        return [ns.note_section_id for ns in note.sections.all()]
     def field_to_native(self, obj, field_name):
-        return [ns.id for ns in obj.sections.all()]
+        return section_ids(note)
     def field_from_native(self, data, files, field_name, into):
         note = self.root.object
         ids = data[field_name]
@@ -43,14 +51,14 @@ class SectionOrderingField(serializers.WritableField):
             raise serializers.ValidationError('Must be a list')
 
         different_ids = set.symmetric_difference(
-            set(ids), {s.id for s in note.sections.all()})
+            set(ids), set(section_ids(note)))
+
         if len(different_ids):
             raise serializers.ValidationError(
                 'Must contain every section id and no more')
 
         for section in note.sections.all():
-            order = data[field_name].index(section.id)
-            section.ordering = data[field_name].index(section.id)
+            section.ordering = data[field_name].index(section.note_section_id)
             section.save()
 
         # we don't need to update the "into" dict, because nothing changed.
@@ -71,15 +79,11 @@ class CitationNSSerializer(serializers.ModelSerializer):
         fields = ('id', 'section_type', 'document', 'content',)
 
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
+    note_reference = MinimalNoteSerializer()
+    note_reference_id = serializers.WritableField(source='note_reference_id')
     class Meta:
         model = main_models.notes.NoteReferenceNS
         fields = ('id', 'note_reference')
-
-class MinimalNoteSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
-    class Meta:
-        model = main_models.Note
-        fields = ('id', 'title', 'topics', 'content', 'status',)
 
 
 class NoteSerializer(serializers.ModelSerializer):
