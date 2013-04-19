@@ -52,32 +52,28 @@ class NoteDetail(BaseDetailView):
     serializer_class = serializers.NoteSerializer
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly, ProjectSpecificPermission)
-    def post(self, request, format=None):
+    def post(self, request, *args, **kwargs):
         """Add a new note section"""
         section_type = request.DATA.get('section_type', None)
         if section_type is None:
             raise Exception('need a section type')
 
-        if section_type == 'citation':
-            sec_serializer = serializers.CitationNSSerializer
-        elif section_type == 'text':
-            sec_serializer = serializers.TextNSSerializer
-        elif section_type == 'note_reference':
-            sec_serializer = serializers.NoteReferenceNSSerializer
-        else:
-            raise NotImplementedError('invalid section type')
-
-        serializer = sec_serializer(request.DATA)
+        sec_serializer = serializers._serializer_from_section_type(section_type)
+        serializer = sec_serializer(data=request.DATA)
         if serializer.is_valid():
+            serializer.object.note = self.get_object()
+            serializer.object.creator = request.user
+            serializer.object.last_updater = request.user
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serialzer.data, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 class NoteSectionDetail(BaseDetailView):
     def get_object(self, queryset=None):
         if queryset is None:
-            raise Exception
+            queryset = self.get_queryset()
         obj = queryset.get()
         self.check_object_permissions(self.request, obj)
         return obj
@@ -92,15 +88,8 @@ class NoteSectionDetail(BaseDetailView):
         self.model = qs[0].__class__
         return qs
     def get_serializer_class(self):
-        section_type = getattr(self.object, 'section_type', '')
-        if section_type == 'citation':
-            return serializers.CitationNSSerializer
-        elif section_type == 'text':
-            return serializers.TextNSSerializer
-        elif section_type == 'note_reference':
-            return serializers.NoteReferenceNSSerializer
-        else:
-            raise Exception
+        section_type = getattr(self.object, 'section_type_label')
+        return serializers._serializer_from_section_type(section_type)
 
 ########
 

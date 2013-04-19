@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.relations import RelatedField
+from rest_framework.relations import RelatedField, HyperlinkedRelatedField
 from editorsnotes.main import models as main_models
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -20,38 +20,73 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 ######
 
+class TextNSSerializer(serializers.ModelSerializer):
+    section_id = serializers.Field(source='note_section_id')
+    section_type = serializers.Field(source='section_type_label')
+    class Meta:
+        model = main_models.notes.TextNS
+        fields = ('section_id', 'section_type', 'content',)
+
+class CitationNSSerializer(serializers.ModelSerializer):
+    section_id = serializers.Field(source='note_section_id')
+    note_id = serializers.Field(source='note_id')
+    section_type = serializers.Field(source='section_type_label')
+    document = HyperlinkedRelatedField(view_name='api-documents-detail')
+    class Meta:
+        model = main_models.notes.CitationNS
+        fields = ('note_id', 'section_id', 'section_type', 'document', 'content',)
+
+class NoteReferenceNSSerializer(serializers.ModelSerializer):
+    section_id = serializers.Field(source='note_section_id')
+    section_type = serializers.Field(source='section_type_label')
+    note_reference = HyperlinkedRelatedField(view_name='api-notes-detail')
+    class Meta:
+        model = main_models.notes.NoteReferenceNS
+        fields = ('section_id', 'section_type', 'note_reference', 'content',)
+
+def _serializer_from_section_type(section_type):
+    if section_type == 'citation':
+        serializer = CitationNSSerializer
+    elif section_type == 'text':
+        serializer = TextNSSerializer
+    elif section_type == 'notereference':
+        serializer = NoteReferenceNSSerializer
+    else:
+        raise NotImplementedError(
+            'No such note section type: {}'.format(section_type))
+    return serializer
+
 class NoteSectionField(serializers.RelatedField):
     def to_native(self, value):
-        if getattr(value, 'citationns'):
-            serializer = CitationNSSerializer(value.citationns)
-        elif getattr(value, 'textns'):
-            serializer = TextNSSerializer(value.textns)
-        elif getattr(value, 'notereferencens'):
-            serializer = NoteReferenceNSSerializer(value.notereferencens)
-        else:
-            raise NotImplementedError('No such note section type')
+        section_type = getattr(value, '_section_type')
+        section = getattr(value, section_type)
+        serializer_class = _serializer_from_section_type(
+            section.section_type_label)
+        serializer = serializer_class(section)
         return serializer.data
 
-class MinimalNoteSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
-    class Meta:
-        model = main_models.Note
-        fields = ('id', 'title', 'topics', 'content', 'status',)
-
 class SectionOrderingField(serializers.WritableField):
-    def section_ids(note):
-        return [ns.note_section_id for ns in note.sections.all()]
+    def section_ids(self, note):
+        if not hasattr(self, '_section_ids'):
+            self._section_ids = [
+                ns.note_section_id for ns in note.sections.all()
+            ]
+        return self._section_ids
     def field_to_native(self, obj, field_name):
-        return section_ids(note)
+        return self.section_ids(obj)
     def field_from_native(self, data, files, field_name, into):
         note = self.root.object
-        ids = data[field_name]
+
+        if not data.has_key(field_name):
+            data[field_name] = self.section_ids(note)
+
+        ids = data.get(field_name, None)
 
         if not isinstance(ids, list):
             raise serializers.ValidationError('Must be a list')
 
         different_ids = set.symmetric_difference(
-            set(ids), set(section_ids(note)))
+            set(ids), set(self.section_ids(note)))
 
         if len(different_ids):
             raise serializers.ValidationError(
@@ -63,27 +98,8 @@ class SectionOrderingField(serializers.WritableField):
 
         # we don't need to update the "into" dict, because nothing changed.
         # The section_ordering list doesn't map to a native object.
-        return
 
-class TextNSSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = main_models.notes.TextNS
-        fields = ('id', 'content',)
-
-class CitationNSSerializer(serializers.ModelSerializer):
-    document = DocumentSerializer()
-    document_id = serializers.WritableField(source='document_id')
-    section_type = serializers.Field(source='section_type')
-    class Meta:
-        model = main_models.notes.CitationNS
-        fields = ('id', 'section_type', 'document', 'content',)
-
-class NoteReferenceNSSerializer(serializers.ModelSerializer):
-    note_reference = MinimalNoteSerializer()
-    note_reference_id = serializers.WritableField(source='note_reference_id')
-    class Meta:
-        model = main_models.notes.NoteReferenceNS
-        fields = ('id', 'note_reference')
+        return 
 
 
 class NoteSerializer(serializers.ModelSerializer):
@@ -94,3 +110,9 @@ class NoteSerializer(serializers.ModelSerializer):
         model = main_models.Note
         fields = ('id', 'title', 'topics', 'content', 'status', 
                   'section_ordering', 'sections',)
+
+class MinimalNoteSerializer(serializers.ModelSerializer):
+    topics = RelatedField('topics', many=True)
+    class Meta:
+        model = main_models.Note
+        fields = ('id', 'title', 'topics', 'content', 'status',)
