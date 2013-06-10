@@ -1,30 +1,13 @@
 from rest_framework import serializers
 from rest_framework.relations import RelatedField, HyperlinkedRelatedField
-from editorsnotes.main import models as main_models
-
-class TopicSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
-    creator = serializers.Field(source='creator.username')
-    last_updater = serializers.Field(source='last_updater.username')
-    class Meta:
-        model = main_models.Topic
-        fields = ('id', 'preferred_name', 'type', 'topics', 'summary',
-                  'creator', 'last_updater')
-
-class DocumentSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
-    class Meta:
-        model = main_models.Document
-        fields = ('id', 'description',)
-
-
-######
+from editorsnotes.main.models.notes import (
+    Note, TextNS, CitationNS, NoteReferenceNS)
 
 class TextNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
     class Meta:
-        model = main_models.notes.TextNS
+        model = TextNS
         fields = ('section_id', 'section_type', 'content',)
 
 class CitationNSSerializer(serializers.ModelSerializer):
@@ -33,7 +16,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
     section_type = serializers.Field(source='section_type_label')
     document = HyperlinkedRelatedField(view_name='api-documents-detail')
     class Meta:
-        model = main_models.notes.CitationNS
+        model = CitationNS
         fields = ('note_id', 'section_id', 'section_type', 'document', 'content',)
 
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
@@ -41,7 +24,7 @@ class NoteReferenceNSSerializer(serializers.ModelSerializer):
     section_type = serializers.Field(source='section_type_label')
     note_reference = HyperlinkedRelatedField(view_name='api-notes-detail')
     class Meta:
-        model = main_models.notes.NoteReferenceNS
+        model = NoteReferenceNS
         fields = ('section_id', 'section_type', 'note_reference', 'content',)
 
 def _serializer_from_section_type(section_type):
@@ -107,12 +90,12 @@ class NoteSerializer(serializers.ModelSerializer):
     section_ordering = SectionOrderingField()
     sections = NoteSectionField(many=True)
     class Meta:
-        model = main_models.Note
+        model = Note
         fields = ('id', 'title', 'topics', 'content', 'status', 
                   'section_ordering', 'sections',)
 
 class MinimalNoteSerializer(serializers.ModelSerializer):
     topics = RelatedField('topics', many=True)
     class Meta:
-        model = main_models.Note
+        model = Note
         fields = ('id', 'title', 'topics', 'content', 'status',)
