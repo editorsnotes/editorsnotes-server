@@ -10,4 +10,3 @@ class TopicList(BaseListAPIView):
 class TopicDetail(BaseDetailView):
     model = Topic
     serializer_class = TopicSerializer
-

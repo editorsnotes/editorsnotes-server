@@ -42,8 +42,9 @@ urlpatterns += patterns('',
 
 # API
 urlpatterns += patterns('',
-    url(r'^api/', include('editorsnotes.api.urls')),
+    url(r'^api/', include('editorsnotes.api.urls', namespace='api', app_name='api')),
 )
+
 
 urlpatterns += patterns('editorsnotes.djotero.views',
 #    url(r'^document/upload/$', 'import_zotero', name='import_zotero_view'),

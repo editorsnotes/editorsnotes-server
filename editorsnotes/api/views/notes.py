@@ -12,6 +12,9 @@ from ..serializers.notes import (
 class NoteList(BaseListAPIView):
     model = Note
     serializer_class = MinimalNoteSerializer
+    def pre_save(self, obj):
+        super(NoteList, self).save(obj)
+        obj.project = self.request.project
 
 class NoteDetail(BaseDetailView):
     model = Note
