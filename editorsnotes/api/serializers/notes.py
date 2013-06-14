@@ -1,7 +1,24 @@
+from django.core.urlresolvers import NoReverseMatch
+
 from rest_framework import serializers
 from rest_framework.relations import RelatedField, HyperlinkedRelatedField
+from rest_framework.reverse import reverse
+
 from editorsnotes.main.models.notes import (
     Note, TextNS, CitationNS, NoteReferenceNS)
+
+class HyperLinkedDocumentField(HyperlinkedRelatedField):
+    def to_native(self, obj):
+        """
+        Return URL from document
+        """
+        try:
+            return reverse(
+                self.view_name, args=[obj.project.slug, obj.id],
+                request=self.context.get('request', None),
+                format=self.format or self.context.get('format', None))
+        except NoReverseMatch:
+            raise Exception('Could not resolve URL for document.')
 
 class TextNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
@@ -14,7 +31,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     note_id = serializers.Field(source='note_id')
     section_type = serializers.Field(source='section_type_label')
-    document = HyperlinkedRelatedField(view_name='api-documents-detail')
+    document = HyperLinkedDocumentField(view_name = 'api:api-documents-detail')
     class Meta:
         model = CitationNS
         fields = ('note_id', 'section_id', 'section_type', 'document', 'content',)
@@ -22,7 +39,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
-    note_reference = HyperlinkedRelatedField(view_name='api-notes-detail')
+    note_reference = HyperlinkedRelatedField(view_name='api:api-notes-detail')
     class Meta:
         model = NoteReferenceNS
         fields = ('section_id', 'section_type', 'note_reference', 'content',)

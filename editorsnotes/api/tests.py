@@ -4,69 +4,75 @@ import json
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from lxml import etree
-from editorsnotes.main.tests import create_test_user
 from editorsnotes.main import models
 
 class TopicAPITestCase(TestCase):
+    fixtures = ['projects.json']
     def setUp(self):
-        self.user = create_test_user()
-        self.client.login(username='testuser', password='testuser')
-
+        self.user = models.auth.User.objects.get(username='barry')
+        self.project = models.auth.Project.objects.get(slug='emma')
+        self.client.login(username='barry', password='barry')
     def test_simple_topic_CRUD(self):
         """Simple topic create, read, update, delete."""
         data = {
             'preferred_name': u'Patrick Golden',
+            'type': u'PER',
             'summary': u'<p>A writer of tests</p>'
         }
 
         # Create the topic
         response = self.client.post(
-            reverse('api-topics-list'),
+            reverse('api:api-topics-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 201)
 
-        new_topic_id = response.data.get('id')
-        new_topic = models.Topic.objects.get(id=new_topic_id)
+        new_topic_id = response.data.get('topic_node_id')
+        new_topic = models.topics.ProjectTopicContainer.objects.get(
+            topic_id=new_topic_id, project=self.project)
         self.assertEqual(etree.tostring(new_topic.summary),
                          response.data.get('summary'))
 
         # Posting the same data should raise a 400 error
         response = self.client.post(
-            reverse('api-topics-list'),
+            reverse('api:api-topics-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data.get('preferred_name'),
-                         [u'Topic with this Preferred name already exists.'])
+                         [u'Topic with this preferred name already exists.'])
 
         # Update the topic with new data.
         data['summary'] = u'<p>A writer of great tests.</p>'
 
         response = self.client.put(
-            reverse('api-topics-detail', args=[new_topic_id]),
+            reverse('api:api-topics-detail', args=[self.project.slug, new_topic_id]),
             json.dumps(data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
-        new_topic = models.Topic.objects.get(id=new_topic_id)
+
+        new_topic = models.topics.ProjectTopicContainer.objects.get(
+            topic_id=new_topic_id, project=self.project)
         self.assertEqual(data['summary'], etree.tostring(new_topic.summary))
 
         # Delete the topic
-        self.assertEqual(models.Topic.objects.count(), 1)
+        self.assertEqual(models.topics.ProjectTopicContainer.objects.count(), 1)
         response = self.client.delete(
-            reverse('api-topics-detail', args=[new_topic_id]),
+            reverse('api:api-topics-detail', args=[self.project.slug, new_topic_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(models.Topic.objects.filter(id=new_topic_id).count(), 0)
+        self.assertEqual(models.topics.ProjectTopicContainer.objects.count(), 0)
 
 class DocumentAPITestCase(TestCase):
+    fixtures = ['projects.json']
     def setUp(self):
-        self.user = create_test_user()
-        self.client.login(username='testuser', password='testuser')
+        self.user = models.auth.User.objects.get(username='barry')
+        self.project = models.auth.Project.objects.get(slug='emma')
+        self.client.login(username='barry', password='barry')
     def test_simple_document_CRUD(self):
         """Simple document create, read, update, delete."""
         data = {
@@ -74,7 +80,7 @@ class DocumentAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            reverse('api-documents-list'),
+            reverse('api:api-documents-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -88,7 +94,7 @@ class DocumentAPITestCase(TestCase):
         new_data['description'] = \
             u'<div>Draper, Theodore. <em>Roots of American Communism</em>. New York: Viking Press, 1957.</div>'
         response = self.client.put(
-            reverse('api-documents-detail', args=[new_document_id]),
+            reverse('api:api-documents-detail', args=[self.project.slug, new_document_id]),
             json.dumps(new_data),
             content_type='application/json'
         )
@@ -100,7 +106,7 @@ class DocumentAPITestCase(TestCase):
                          new_data['description'])
 
         response = self.client.delete(
-            reverse('api-documents-detail',args=[new_document_id]),
+            reverse('api:api-documents-detail',args=[self.project.slug, new_document_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
@@ -108,9 +114,11 @@ class DocumentAPITestCase(TestCase):
 
 
 class NoteAPITestCase(TestCase):
+    fixtures = ['projects.json']
     def setUp(self):
-        self.user = create_test_user()
-        self.client.login(username='testuser', password='testuser')
+        self.user = models.auth.User.objects.get(username='barry')
+        self.project = models.auth.Project.objects.get(slug='emma')
+        self.client.login(username='barry', password='barry')
     def test_simple_note_CRUD(self):
         """Simple note create, read, update, delete."""
         data = {
@@ -120,7 +128,7 @@ class NoteAPITestCase(TestCase):
         }
 
         response = self.client.post(
-            reverse('api-notes-list'),
+            reverse('api:api-notes-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -140,7 +148,7 @@ class NoteAPITestCase(TestCase):
 
         # Attempting to make a note with the same title should return a 400 err
         response = self.client.post(
-            reverse('api-notes-list'),
+            reverse('api:api-notes-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -150,7 +158,7 @@ class NoteAPITestCase(TestCase):
         new_data = data.copy()
         new_data['status'] = '1'
         response = self.client.put(
-            reverse('api-notes-detail', args=[new_note_id]),
+            reverse('api:api-notes-detail', args=[self.project.slug, new_note_id]),
             json.dumps(new_data),
             content_type='application/json'
         )
@@ -161,7 +169,7 @@ class NoteAPITestCase(TestCase):
 
         # Add a citation
         doc_response = self.client.post(
-            reverse('api-documents-list'),
+            reverse('api:api-documents-list', args=[self.project.slug]),
             json.dumps({
                 'description': \
                     u'“Testing in Django.” Django documentation,'
@@ -174,10 +182,10 @@ class NoteAPITestCase(TestCase):
         cited_doc_id = doc_response.data.get('id')
 
         note_section_response = self.client.post(
-            reverse('api-notes-detail', args=[new_note_id]),
+            reverse('api:api-notes-detail', args=[self.project.slug, new_note_id]),
             json.dumps({
                 'section_type': 'citation',
-                'document': reverse('api-documents-detail', args=[cited_doc_id]),
+                'document': reverse('api:api-documents-detail', args=[self.project.slug, cited_doc_id]),
                 'content': u'<div>A great introduction to testing, including its benefits.</div>'
             }),
             content_type='application/json'
@@ -188,7 +196,7 @@ class NoteAPITestCase(TestCase):
 
         # Add a text section
         text_section_response = self.client.post(
-            reverse('api-notes-detail', args=[new_note_id]),
+            reverse('api:api-notes-detail', args=[self.project.slug, new_note_id]),
             json.dumps({
                 'section_type': 'text',
                 'content': u'<strong>I\'m still conflicted. What\'s the point of anything, really.</strong>'
@@ -201,7 +209,7 @@ class NoteAPITestCase(TestCase):
         # Edit that text section
         text_section_id = text_section_response.data.get('section_id')
         text_section_response_update = self.client.put(
-            reverse('api-notes-section-detail', args=[new_note_id, text_section_id]),
+            reverse('api:api-notes-section-detail', args=[self.project.slug, new_note_id, text_section_id]),
             json.dumps({
                 'section_type': 'text',
                 'content': u'<div style="color: red;">I\'m beginning to see the Light.</div>'
@@ -212,7 +220,7 @@ class NoteAPITestCase(TestCase):
 
         # Make sure this is all in order
         response = self.client.get(
-            reverse('api-notes-detail', args=[new_note_id]),
+            reverse('api:api-notes-detail', args=[self.project.slug, new_note_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
@@ -221,7 +229,7 @@ class NoteAPITestCase(TestCase):
 
         # Delete the note
         response = self.client.delete(
-            reverse('api-notes-detail', args=[new_note_id]),
+            reverse('api:api-notes-detail', args=[self.project.slug, new_note_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)

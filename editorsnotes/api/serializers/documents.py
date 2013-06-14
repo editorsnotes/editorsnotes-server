@@ -6,6 +6,5 @@ from editorsnotes.main.models.documents import Document
 class DocumentSerializer(serializers.ModelSerializer):
     topics = RelatedField('topics', many=True)
     class Meta:
-        model = main_models.Document
+        model = Document
         fields = ('id', 'description',)
-

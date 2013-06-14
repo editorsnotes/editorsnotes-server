@@ -33,6 +33,7 @@ class ProjectSpecificPermissions(DjangoModelPermissions):
         return self.get_required_permissions(request.method, model_cls)
 
     def has_permission(self, request, view):
+
         perms = self.get_view_permissions(request, view)
 
         if request.method in SAFE_METHODS and not perms:

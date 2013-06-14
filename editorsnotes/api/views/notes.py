@@ -2,10 +2,9 @@ from django.http import Http404
 from rest_framework import permissions, status
 from rest_framework.response import Response
 
-from editorsnotes.main.models.notes import Note
+from editorsnotes.main.models.notes import Note, NoteSection
 
 from .base import BaseListAPIView, BaseDetailView
-from ..permissions import ProjectSpecificPermission
 from ..serializers.notes import (
     MinimalNoteSerializer, NoteSerializer, _serializer_from_section_type)
 
@@ -13,14 +12,12 @@ class NoteList(BaseListAPIView):
     model = Note
     serializer_class = MinimalNoteSerializer
     def pre_save(self, obj):
-        super(NoteList, self).save(obj)
+        super(NoteList, self).pre_save(obj)
         obj.project = self.request.project
 
 class NoteDetail(BaseDetailView):
     model = Note
     serializer_class = NoteSerializer
-    permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly, ProjectSpecificPermission)
     def post(self, request, *args, **kwargs):
         """Add a new note section"""
         section_type = request.DATA.get('section_type', None)
@@ -40,9 +37,9 @@ class NoteDetail(BaseDetailView):
 
 
 class NoteSectionDetail(BaseDetailView):
+    model = NoteSection
     def get_object(self, queryset=None):
-        if queryset is None:
-            queryset = self.get_queryset()
+        queryset = self.get_queryset()
         obj = queryset.get()
         self.check_object_permissions(self.request, obj)
         return obj
