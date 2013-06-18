@@ -75,8 +75,18 @@ class DocumentAPITestCase(TestCase):
         self.client.login(username='barry', password='barry')
     def test_simple_document_CRUD(self):
         """Simple document create, read, update, delete."""
+        zotero_data = {
+            'itemType': 'book',
+            'title': 'Roots of American Communism',
+            'creators': [
+                {'creatorType': 'author',
+                 'firstName': 'Theodore',
+                 'lastName': 'Draper'}
+            ]
+        }
         data = {
-            'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>'
+            'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>',
+            'zotero_data': json.dumps(zotero_data)
         }
 
         response = self.client.post(
