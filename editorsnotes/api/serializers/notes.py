@@ -1,4 +1,5 @@
 from django.core.urlresolvers import NoReverseMatch
+from lxml import etree
 
 from rest_framework import serializers
 from rest_framework.relations import RelatedField, HyperlinkedRelatedField
@@ -32,17 +33,26 @@ class CitationNSSerializer(serializers.ModelSerializer):
     note_id = serializers.Field(source='note_id')
     section_type = serializers.Field(source='section_type_label')
     document = HyperLinkedDocumentField(view_name = 'api:api-documents-detail')
+    document_description = serializers.SerializerMethodField('get_document_description')
     class Meta:
         model = CitationNS
-        fields = ('note_id', 'section_id', 'section_type', 'document', 'content',)
+        fields = ('note_id', 'section_id', 'section_type',
+                  'document', 'document_description', 'content',)
+    def get_document_description(self, obj):
+        return etree.tostring(obj.document.description)
 
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
     note_reference = HyperlinkedRelatedField(view_name='api:api-notes-detail')
+    note_reference_title = serializers.SerializerMethodField(
+        'get_referenced_note_title')
     class Meta:
         model = NoteReferenceNS
-        fields = ('section_id', 'section_type', 'note_reference', 'content',)
+        fields = ('section_id', 'section_type', 'note_reference',
+                  'note_reference_title', 'content',)
+    def get_referenced_note_title(self, obj):
+        return obj.note_reference.title
 
 def _serializer_from_section_type(section_type):
     if section_type == 'citation':
@@ -57,9 +67,13 @@ def _serializer_from_section_type(section_type):
     return serializer
 
 class NoteSectionField(serializers.RelatedField):
-    def to_native(self, value):
-        section_type = getattr(value, '_section_type')
-        section = getattr(value, section_type)
+    def field_to_native(self, note, field_name):
+        qs = note.sections.select_subclasses()\
+                .select_related('citationns__document__project',
+                                'notereferencens__note__project')
+        return [self.to_native(section) for section in qs.all()]
+    def to_native(self, section):
+        section_type = getattr(section, '_section_type')
         serializer_class = _serializer_from_section_type(
             section.section_type_label)
         serializer = serializer_class(section)
