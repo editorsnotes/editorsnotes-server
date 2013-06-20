@@ -13,11 +13,9 @@
 {% endblock %}
 
 {% block js_nocompress %}
-  {% comment %}
-  This guy doesn't work on all browsers (or maybe any browsers?), so we're
-  keeping it separate to prevent any errors from stopping everything else.
-  {% endcomment %}
-  <script src="{% static "function/citeproc-js/xmle4x.js" %}"></script>
+  {% include "includes/citation_ns_template.html" %}
+  {% include "includes/note_reference_ns_template.html" %}
+  {% include "includes/text_ns_template.html" %}
 {% endblock %}
 
 {% block css %}
@@ -33,16 +31,24 @@
 
   <div>{{ note.content|as_html }}</div>
 
-  <form method="post"> {% csrf_token %}
+  <div id="note-sections-edit-blah">
 
-    <div style="margin: 1.75em 0 1em 0; padding: .75em; border: 1px solid #999;">
+  {% csrf_token %}
+
+    <div id="citation-edit-bar" style="margin: 1.75em 0 1em 0; padding: .75em; border: 1px solid #999;">
       <h4 style="display: inline-block; margin: 0px 3px 0 0;">Add section:</h4>
-      <a class="btn" id="add-citation" href="#">Document citation</a>
+      <a style="margin-left: 10px;" class="btn add-section" data-section-type="citation" href="#">Citation</a>
+      <a style="margin-left: 10px;" class="btn add-section" data-section-type="text" href="#">Text</a>
+      <a style="margin-left: 10px;" class="btn add-section" data-section-type="note_reference" href="#">Reference to a note</a>
       <button class="btn btn-primary pull-right" type="submit">Save changes</button>
     </div>
 
+    {% comment %}
     {% include "includes/sections_formset.html" %}
+    {% endcomment %}
 
-  </form>
+    <div id="note-sections-container"></div>
+
+  </div>
 
 {% endblock %}

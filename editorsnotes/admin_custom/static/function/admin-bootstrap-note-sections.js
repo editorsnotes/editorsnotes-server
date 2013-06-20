@@ -1,4 +1,120 @@
+
+/*
+ * Returns the view for the interface.
+ */
+function initBackbone() {
+  var noteURL
+    , templates
+    , sectionViews = {}
+    , noteSections
+    , appView
+
+  noteURL = document.location.pathname.replace(
+    /\/(.*)sections\/$/, '/api/$1');
+
+  templates = {
+    citation: _.template($('#citation-ns-template').html()),
+    text: _.template($('#text-ns-template').html()),
+    note_reference: _.template($('#note-reference-ns-template').html())
+  }
+
+  /*
+   * Models & collections
+   */
+  var NoteSection = Backbone.Model.extend({
+    urlRoot: noteURL,
+    idAttribute: 'section_id',
+  });
+
+  var NoteSectionList = Backbone.Collection.extend({
+    model: NoteSection,
+    url: noteURL,
+    parse: function (response) {
+      return response.sections;
+    }
+  });
+
+  /*
+   * Views
+   */
+  var NoteSectionView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'note-section-edit',
+    initialize: function () {
+      this.$el.on('click', this.editSection);
+      this.render()
+    },
+    render: function() {
+      var section_type = this.model.get('section_type')
+        , template = templates[section_type];
+      this.$el.html( template( {ns: this.model.toJSON()} ));
+    }
+  });
+
+  sectionViews.citation = NoteSectionView.extend({
+    events: {
+      'click .add-new-document': 'openAddDocumentModal',
+      'autocompleteselect .citation-document': 'setCitationDocument'
+    },
+
+    openAddDocumentModal: function () {
+    },
+
+    setCitationDocument: function (doc) {
+    }
+
+  });
+
+  var NoteSectionListView = Backbone.View.extend({
+    initialize: function () {
+      this._sectionViews = [];
+
+      this.collection = new NoteSectionList();
+
+      this.collection.on('add', this.addSection, this);
+      this.collection.on('remove', this.removeSection, this);
+      this.collection.on('set', this.render, this);
+
+      this.collection.fetch();
+      this.render();
+
+    },
+
+    addSection: function (section) {
+      var SectionView = sectionViews[section.get('section_type')];
+      var view = new SectionView({model: section});
+      this._sectionViews.push(view);
+      if (this._rendered) this.$el.append(view.el);
+    },
+
+    removeSection: function (section) {
+      var viewToRemove = _(this._sectionViews).find(function (view) {
+        return view === section;
+      });
+      this._sectionViews = _(this._sectionViews).without(viewToRemove);
+
+      if (this._rendered) viewToRemove.$el.remove();
+    },
+
+    render: function () {
+      var $container = this.$el.empty();
+      this._rendered = true;
+      this._sectionViews.forEach(function (sectionView) {
+        $container.append(sectionView.el);
+      });
+    }
+
+  });
+
+  return NoteSectionListView;
+}
+
 $(document).ready(function () {
+
+  var NoteSectionListView = initBackbone()
+    , view = new NoteSectionListView({el: '#note-sections-container'});
+
+  asdf = view;
 
   $('#citation-items').sortable({
     placeholder: 'citation-placeholder',
