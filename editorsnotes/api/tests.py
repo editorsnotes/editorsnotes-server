@@ -17,6 +17,7 @@ class TopicAPITestCase(TestCase):
         data = {
             'preferred_name': u'Patrick Golden',
             'type': u'PER',
+            'topics': [],
             'summary': u'<p>A writer of tests</p>'
         }
 
@@ -86,6 +87,7 @@ class DocumentAPITestCase(TestCase):
         }
         data = {
             'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>',
+            'topics': [],
             'zotero_data': json.dumps(zotero_data)
         }
 
@@ -133,6 +135,7 @@ class NoteAPITestCase(TestCase):
         """Simple note create, read, update, delete."""
         data = {
             'title': u'Is testing good?',
+            'topics': [u'Testing', u'Django'],
             'content': u'<p>We need to figure out if it\'s worth it to write tests.</p>',
             'status': '2'
         }
@@ -155,6 +158,8 @@ class NoteAPITestCase(TestCase):
 
         self.assertEqual(new_note.status, response.data.get('status'))
         self.assertEqual(new_note.status, data['status'])
+
+        self.assertEqual(new_note.topics.count(), 2)
 
         # Attempting to make a note with the same title should return a 400 err
         response = self.client.post(

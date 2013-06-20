@@ -5,12 +5,13 @@ from rest_framework.relations import RelatedField
 
 from editorsnotes.main.models.documents import Document
 
-class DocumentSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
+from .base import RelatedTopicModelSerializer
+
+class DocumentSerializer(RelatedTopicModelSerializer):
     zotero_data = serializers.CharField(required=False)
     class Meta:
         model = Document
-        fields = ('id', 'description', 'zotero_data',)
+        fields = ('id', 'topics', 'description', 'zotero_data',)
     def validate_zotero_data(self, attrs, source):
         value = attrs.get(source, None)
         if value is not None:

@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.models import ContentType
+
 from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.relations import RelatedField
@@ -5,7 +7,9 @@ from rest_framework.relations import RelatedField
 from editorsnotes.main.models.topics import (
     Topic, TopicNode, ProjectTopicContainer)
 
-class TopicSerializer(serializers.ModelSerializer):
+from .base import RelatedTopicModelSerializer
+
+class TopicSerializer(RelatedTopicModelSerializer):
     topic_node_id = Field(source='topic.id')
     topics = RelatedField('related_topics', many=True)
     type = Field(source='topic.type')

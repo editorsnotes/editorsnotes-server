@@ -2,11 +2,14 @@ from django.core.urlresolvers import NoReverseMatch
 from lxml import etree
 
 from rest_framework import serializers
-from rest_framework.relations import RelatedField, HyperlinkedRelatedField
+from rest_framework.relations import (
+    RelatedField, SlugRelatedField, HyperlinkedRelatedField)
 from rest_framework.reverse import reverse
 
 from editorsnotes.main.models.notes import (
     Note, TextNS, CitationNS, NoteReferenceNS)
+
+from .base import RelatedTopicModelSerializer
 
 class HyperLinkedDocumentField(HyperlinkedRelatedField):
     def to_native(self, obj):
@@ -116,8 +119,7 @@ class SectionOrderingField(serializers.WritableField):
         return 
 
 
-class NoteSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
+class NoteSerializer(RelatedTopicModelSerializer):
     section_ordering = SectionOrderingField()
     sections = NoteSectionField(many=True)
     class Meta:
@@ -125,8 +127,7 @@ class NoteSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'topics', 'content', 'status', 
                   'section_ordering', 'sections',)
 
-class MinimalNoteSerializer(serializers.ModelSerializer):
-    topics = RelatedField('topics', many=True)
+class MinimalNoteSerializer(RelatedTopicModelSerializer):
     class Meta:
         model = Note
         fields = ('id', 'title', 'topics', 'content', 'status',)
