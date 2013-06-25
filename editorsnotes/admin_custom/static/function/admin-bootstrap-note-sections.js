@@ -18,12 +18,28 @@ function initBackbone() {
     note_reference: _.template($('#note-reference-ns-template').html())
   }
 
+  var oldSync = Backbone.sync;
+  Backbone.sync = function (method, model, options) {
+    options.beforeSend = function (xhr) {
+      var token = $('input[name="csrfmiddlewaretoken"]').val();
+      xhr.setRequestHeader('X-CSRFToken', token);
+    }
+    return oldSync(method, model, options);
+  };
+
+
+
   /*
    * Models & collections
+   *
    */
   var NoteSection = Backbone.Model.extend({
-    urlRoot: noteURL,
     idAttribute: 'section_id',
+    url: function () {
+      return this.isNew() ?
+        this.collection.url :
+        this.collection.url + 's' + this.get('section_id') + '/';
+    }
   });
 
   var NoteSectionList = Backbone.Collection.extend({
@@ -34,6 +50,28 @@ function initBackbone() {
     }
   });
 
+  var Note = Backbone.Model.extend({
+    urlRoot: noteURL,
+    defaults: {
+      'title': '',
+      'content': '',
+      'status': '1',
+      'section_ordering': [],
+      'topics': []
+    },
+    initialize: function () {
+      this.sections = new NoteSectionList();
+      this.topics = [];
+    },
+    parse: function (response) {
+      this.sections.set(response.sections);
+      delete response.sections;
+      return response
+    }
+  });
+
+
+
   /*
    * Views
    */
@@ -41,17 +79,92 @@ function initBackbone() {
     tagName: 'div',
     className: 'note-section-edit',
     initialize: function () {
-      this.$el.on('click', this.editSection);
       this.render()
     },
-    render: function() {
+    render: function () {
       var section_type = this.model.get('section_type')
         , template = templates[section_type];
       this.$el.html( template( {ns: this.model.toJSON()} ));
+    },
+
+    deactivateTextSection: function () {
+      var toRemove
+        , contentValue = this.editor.getValue().replace('<br>', '<br/>')
+
+      this.isActive = false;
+
+      toRemove = [
+        'iframe.wysihtml5-sandbox',
+        'input[name="_wysihtml5_mode"]',
+        '.btn-toolbar',
+        '.edit-row',
+        'textarea'
+      ]
+
+      this.model.set('content', contentValue)
+
+      this.$el.find('.note-section-content')
+        .html(contentValue)
+        .show()
+
+      this.$el
+        .removeClass('note-section-edit-active')
+        .find(toRemove.join(', '))
+          .remove()
+
+      this.model.save();
+
+    },
+
+    editContentText: function () {
+
+      if (this.isActive) return;
+
+      var content = this.model.get('content')
+        , textareaID = 'edit-section-' + this.model.get('section_id')
+        , $content = this.$el.find('.note-section-content')
+        , that = this
+
+      this.isActive = true;
+      this.$el.addClass('note-section-edit-active');
+
+      $('<textarea>')
+        .attr('id', textareaID)
+        .css({
+          'margin-bottom': '8px',
+          'width': '99%',
+          'height': (function (h) {
+            return (h < 380 ? h : 380) + 120 + 'px'
+          })($content.innerHeight())
+        })
+        .val(content)
+        .appendTo(this.$el);
+
+      $content.hide()
+
+      this.editor = new wysihtml5.Editor(textareaID, {
+        parserRules: wysihtml5ParserRules,
+        stylesheets: ['/static/function/wysihtml5/stylesheet.css'],
+        useLineBreaks: false
+      });
+
+    $('<div class="row edit-row"><a class="btn pull-right">OK</a></div>')
+      .appendTo(this.$el)
+      .on('click', function() {
+        that.trigger('section:deactivate');
+      });
+
+      this.once('section:deactivate', this.deactivateTextSection, this);
+    },
+    
+    contentToTextArea: function () {
     }
   });
 
   sectionViews.citation = NoteSectionView.extend({
+    editSection: function (section) {
+      console.log('I\'m being edited now');
+    },
     events: {
       'click .add-new-document': 'openAddDocumentModal',
       'autocompleteselect .citation-document': 'setCitationDocument'
@@ -67,22 +180,49 @@ function initBackbone() {
 
   var NoteSectionListView = Backbone.View.extend({
     initialize: function () {
+      var sections;
+
       this._sectionViews = [];
+      this.note = new Note();
 
-      this.collection = new NoteSectionList();
+      this.listenTo(this.note.sections, 'add', this.addSection);
+      this.listenTo(this.note.sections, 'remove', this.removeSection);
+      this.listenTo(this.note.sections, 'set', this.render);
 
-      this.collection.on('add', this.addSection, this);
-      this.collection.on('remove', this.removeSection, this);
-      this.collection.on('set', this.render, this);
-
-      this.collection.fetch();
+      this.note.fetch();
       this.render();
+
+    },
+
+    events: {
+      'click .note-section-edit': 'editSection'
+    },
+
+    editSection: function (e) {
+      var $section
+        , sectionView
+
+      if (e.currentTarget.classList.contains('note-section-edit-active')) {
+        return
+      }
+
+      $section = $(e.currentTarget);
+      this._sectionViews.forEach(function (view) {
+        view.trigger('section:deactivate');
+      });
+
+      sectionView = _(this._sectionViews).find(function (view) {
+        return view.model.id == $section.data('sectionID');
+      });
+
+      sectionView.editContentText();
 
     },
 
     addSection: function (section) {
       var SectionView = sectionViews[section.get('section_type')];
       var view = new SectionView({model: section});
+      view.$el.data('sectionID', view.model.id);
       this._sectionViews.push(view);
       if (this._rendered) this.$el.append(view.el);
     },
