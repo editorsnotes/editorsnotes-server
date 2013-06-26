@@ -60,7 +60,12 @@ function initBackbone() {
       'topics': []
     },
     initialize: function () {
+      var that = this;
       this.sections = new NoteSectionList();
+      this.sections.comparator = function (section) {
+        var ordering = that.get('section_ordering');
+        return ordering.indexOf(section.id);
+      }
       this.topics = [];
     },
     parse: function (response) {
@@ -69,7 +74,6 @@ function initBackbone() {
       return response
     }
   });
-
 
 
   /*
@@ -113,7 +117,6 @@ function initBackbone() {
           .remove()
 
       this.model.save();
-
     },
 
     editContentText: function () {
@@ -180,18 +183,27 @@ function initBackbone() {
 
   var NoteSectionListView = Backbone.View.extend({
     initialize: function () {
-      var sections;
+      var that = this;
 
       this._sectionViews = [];
+
       this.note = new Note();
 
       this.listenTo(this.note.sections, 'add', this.addSection);
       this.listenTo(this.note.sections, 'remove', this.removeSection);
       this.listenTo(this.note.sections, 'set', this.render);
 
+      $('#citation-edit-bar').on('click', '.add-section', function (e) {
+        var sectionType = $(e.currentTarget).data('section-type')
+          , idx = 0
+
+        that.note.sections.add({'section_type': sectionType}, {'at': idx, 'sort': false});
+        that._sectionViews[idx].$el.trigger('click');
+
+      });
+
       this.note.fetch();
       this.render();
-
     },
 
     events: {
@@ -216,15 +228,25 @@ function initBackbone() {
       });
 
       sectionView.editContentText();
-
     },
 
     addSection: function (section) {
-      var SectionView = sectionViews[section.get('section_type')];
-      var view = new SectionView({model: section});
+      var idx = section.collection.indexOf(section)
+        , ViewConstructor = sectionViews[section.get('section_type')]
+        , view = new ViewConstructor({model: section})
+        , target
+
       view.$el.data('sectionID', view.model.id);
-      this._sectionViews.push(view);
-      if (this._rendered) this.$el.append(view.el);
+      this._sectionViews.splice(idx, 0, view);
+
+      if (!this._rendered) return;
+
+      if (idx == 0) {
+        this.$el.prepend(view.el);
+      } else {
+        target = this.$el.children()[idx - 1];
+        view.$el.insertAfter(target);
+      }
     },
 
     removeSection: function (section) {
