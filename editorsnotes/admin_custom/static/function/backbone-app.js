@@ -19,13 +19,6 @@ Backbone.sync = function (method, model, options) {
   return oldSync(method, model, options);
 };
 
-function addTrailingSlash() {
-}
-
-/*
- * EditorsNotes.currentProject must be set first
- */
-
 
 /**************************************
  *
@@ -260,6 +253,14 @@ EN.Views['AddSectionToolbar'] = Backbone.View.extend({
   initialize: function (opts) {
     this.note = opts.note;
     this.render();
+    this.$btn = this.$('button');
+    this.$btnText = this.$btn.find('span');
+    this.$loader = this.$btn.find('img');
+
+    this.listenTo(this.note.sections, 'change', this.enableButton);
+    this.listenTo(this.note.sections, 'sync removeEmpty', this.disableButton);
+    this.listenTo(this.note.sections, 'request', this.showLoading);
+
   },
   events: {
     'click .add-section': 'addSection'
@@ -272,7 +273,29 @@ EN.Views['AddSectionToolbar'] = Backbone.View.extend({
       + '<a class="add-section" data-section-type="citation">Citation</a>'
       + '<a class="add-section" data-section-type="text">Text</a>'
       + '<a class="add-section" data-section-type="note_reference">Reference to a note</a>'
-      + '<button class="btn btn-primary pull-right">Save changes</button>')
+      + '<button disabled="disabled" class="btn pull-right">'
+        + '<span>No changes to save</span>&nbsp;'
+        + '<img style="display: none" src="/static/style/icons/ajax-loader.gif">'
+      + '</button>')
+  },
+
+  enableButton: function (sec) {
+    sec.isDirty = true;
+    this.$btn.prop('disabled', false).addClass('btn-primary');
+    this.$btnText.text('Save changes');
+  },
+
+  disableButton: function (model) {
+    if (model) model.isDirty = false;
+    this.$btn.prop('disabled', 'disabled').removeClass('btn-primary');
+    this.$loader.hide();
+    this.$btnText.text('All changes saved');
+  },
+
+  showLoading: function () {
+    this.$btn.prop('disabled', 'disabled').removeClass('btn-primary');
+    this.$loader.show();
+    this.$btnText.text('Saving...');
   },
 
   addSection: function (e) {
@@ -302,7 +325,7 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
     this.listenTo(this.note.sections, 'set', this.render);
     this.listenTo(this.note.sections, 'deactivate', this.deactivateSections);
 
-    this.listenTo(this.note.sections, 'sync resort', this.saveOrder)
+    this.listenTo(this.note.sections, 'sync', this.saveOrder)
 
     this.note.fetch();
     this.render();
@@ -342,6 +365,7 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
 
   removeSection: function (section) {
     var that = this
+      , sectionOrdering = this.note.get('section_ordering')
       , sectionViews = _(that._sectionViews)
       , viewToRemove
 
@@ -350,6 +374,9 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
     });
 
     this._sectionViews = sectionViews.without(viewToRemove);
+
+    sectionOrdering.pop(section.id);
+    this.note.set('section_ordering', sectionOrdering);
   },
 
   deactivateSections: function (e) {
@@ -362,7 +389,11 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
   saveOrder: function () {
     var that = this
       , noteOrdering = this.note.get('section_ordering')
-      , viewOrdering = this._sectionViews.map(function (v) { return v.model.id; });
+      , viewOrdering = []
+
+    this._sectionViews.forEach(function (view) {
+      if (view.model.id) viewOrdering.push(view.model.id);
+    });
 
     if (noteOrdering.join('') !== viewOrdering.join('')) {
       this.note.set('section_ordering', viewOrdering);
@@ -403,7 +434,8 @@ EN.Views['NoteSection'] = Backbone.View.extend({
   },
 
   edit: function () {
-    var that = this;
+    var that = this
+      , html
 
     if (this.isActive) return;
 
@@ -413,16 +445,23 @@ EN.Views['NoteSection'] = Backbone.View.extend({
     this.$el.addClass('note-section-edit-active');
     this.editTextContent();
 
-    $('<div class="edit-row"><a class="btn btn-primary">OK</a></div>')
+    html = ''
+      + '<div class="edit-row">'
+        + '<a class="btn btn-primary save-section">OK</a>'
+        + '<a class="btn btn-danger delete-section">Delete section</a>'
+      + '</div>'
+
+    $(html)
       .appendTo(this.$el)
-      .on('click', function () {
-        setTimeout(function () { that.deactivate.call(that); }, 10);
+      .on('click .btn', function (e) {
+        var deleteSection = $(e.target).hasClass('delete-section');
+        setTimeout(function () { that.deactivate.call(that, deleteSection); }, 10);
       });
 
     return;
   },
 
-  deactivate: function () {
+  deactivate: function (deleteModel) {
     var collection;
 
     if (!this.isActive) return;
@@ -431,16 +470,16 @@ EN.Views['NoteSection'] = Backbone.View.extend({
     this.$el.removeClass('note-section-edit-active');
     this.deactivateTextContent();
 
-    if (this.isEmpty()) {
+    if (this.isEmpty() || deleteModel) {
       collection = this.model.collection
       this.remove();
       this.model.destroy({
         success: function (model) {
           collection.remove(model);
-          collection.trigger('resort');
+          collection.trigger('removeEmpty');
         }
       });
-    } else if (this.model.hasChanged()) {
+    } else if (this.model.isDirty) {
       this.model.save();
     }
 
@@ -469,6 +508,9 @@ EN.Views['NoteSection'] = Backbone.View.extend({
 
     // TODO: button edit row
     that.contentEditor = new wysihtml5.Editor(textareaID, wysihtml5BaseOpts);
+    that.contentEditor.on('input', function() {
+      that.model.set('content', that.contentEditor.getValue().replace('<br>', '<br/>'));
+    });
   },
 
   deactivateTextContent: function (saveModelChanges) {
