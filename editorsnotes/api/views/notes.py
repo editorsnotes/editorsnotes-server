@@ -25,7 +25,8 @@ class NoteDetail(BaseDetailView):
             raise Exception('need a section type')
 
         sec_serializer = _serializer_from_section_type(section_type)
-        serializer = sec_serializer(data=request.DATA)
+        serializer = sec_serializer(data=request.DATA,
+                                    context={'request': request})
         if serializer.is_valid():
             serializer.object.note = self.get_object()
             serializer.object.creator = request.user

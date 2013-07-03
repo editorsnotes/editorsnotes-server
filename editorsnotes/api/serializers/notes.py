@@ -79,7 +79,7 @@ class NoteSectionField(serializers.RelatedField):
         section_type = getattr(section, '_section_type')
         serializer_class = _serializer_from_section_type(
             section.section_type_label)
-        serializer = serializer_class(section)
+        serializer = serializer_class(section, context=self.context)
         return serializer.data
 
 class SectionOrderingField(serializers.WritableField):
