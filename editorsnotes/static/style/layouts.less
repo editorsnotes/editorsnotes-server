@@ -192,49 +192,47 @@ td.zotero-key {
   padding-top: 6px;
 }
 
-// For editing & viewing citations (and editing footnotes)
-.citation,
-.note-section-edit,
-.footnote-edit {
+.thing-icon {
+  margin: 2px 2px 0;
+  color: #444;
+  font-size: 20px;
+  position: relative;
+  top: 1px;
+}
+
+.citation-document {
+  * { display: inline; }
+  a { color: @textColor; }
+  .icon-file { .thing-icon; }
+}
+
+.note-reference-note {
+  * { display: inline; }
+  .icon-pencil { .thing-icon; }
+}
+
+.citation, .note-section, .footnote-edit {
   margin-bottom: 4px;
   border-radius: 2px;
+  .btn-toolbar { .content-separation-border; }
+}
 
-  .citation-document {
-    * {
-      display: inline;
-    }
-    a {
-      color: @textColor;
-    }
-    .icon-file {
-      margin: 0 2px;
-      color: #444;
-      font-size: 20px;
-      position: relative;
-      top: 1px;
-    }
+// For editing & viewing citations (and editing footnotes)
+.citation .citation-notes,
+.note-section .note-section-content,
+.footnote-edit .footnote-content {
+  border: 1px solid darken(@grayLighter, 7%);
+  padding : 3px 10px 6px;
+  margin-top: 2px;
+
+  &:empty {
+    border: none;
+    padding-bottom: 0px;
+    margin-bottom: -5px;
   }
-
-  .citation-notes,
-  .note-section-content,
-  .footnote-content {
-    border: 1px solid darken(@grayLighter, 7%);
-    padding : 3px 10px 6px;
-    margin-top: 2px;
-
-    &:empty {
-      border: none;
-      padding-bottom: 0px;
-      margin-bottom: -5px;
-    }
-    > last-child,
-    > div > :last-child {
-      margin-bottom: 0px;
-    }
-  }
-
-  .btn-toolbar {
-    .content-separation-border;
+  > last-child,
+  > div > :last-child {
+    margin-bottom: 0px;
   }
 }
 
@@ -248,8 +246,11 @@ td.zotero-key {
 // For editing citations and editing footnotes
 .citation-edit,
 .note-section-edit,
-.footnote-edit {
+.footnote-edit,
+#note-sections-container > .note-section
+{
   padding: 10px;
+  margin-bottom: 0;
 
   // Space at the bottom of editing citations & footnotes
   &:last-child {
@@ -257,13 +258,13 @@ td.zotero-key {
   }
 
   &:not([class*="active"]):hover {
+    padding: 9px;
     cursor: pointer;
   }
 
   &:hover, &-active {
     border-width: 2px;
     border: 1px solid #999;
-    padding: 9px;
   }
 
   [class$="-fields"] {
@@ -279,7 +280,7 @@ td.zotero-key {
 }
 
 // Specific to editing citations
-#citation-items {
+#citation-items, #note-sections-container {
   .citation div, .citation p {
     display: block;
   }
@@ -314,5 +315,19 @@ td.zotero-key {
       left: 2px;
     }
   }
+}
 
+#citation-edit-bar {
+  margin: 1.75em 0 1em 0;
+  padding: .75em;
+  border: 1px solid #999;
+
+  h4 {
+    display: inline-block;
+    margin: 0 3px 0 0;
+  }
+  a.add-section {
+    .btn;
+    margin-left: 10px;
+  }
 }

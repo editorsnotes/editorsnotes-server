@@ -7,31 +7,24 @@ class HaystackFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         query = []
 
-        view_model = getattr(view, 'model')
-        filter_fields = ('q', 'project_id',)
+        if 'q' in request.QUERY_PARAMS:
+            terms = [term for term in 
+                     re.split(r'[+\s]', request.QUERY_PARAMS.get('q'))
+                     if term]
+            query += ['text:{}*'.format(q) for q in terms]
 
-        for field in filter_fields:
-            query += self.make_field_query(field, request.QUERY_PARAMS)
+        if hasattr(request, 'project'):
+            query += ['project_slug:{}'.format(request.project.slug)]
+
+        view_model = getattr(view, 'model')
 
         if not query:
             return queryset or view_model.objects.all()
 
-        qs = SearchQuerySet()\
+        model_ids = SearchQuerySet()\
                 .models(view_model)\
                 .narrow(' AND '.join(query))\
-                .load_all()
-        return view_model.objects.filter(pk__in=[r.pk for r in qs])
+                .load_all()\
+                .values_list('pk', flat=True)
 
-    def make_field_query(self, field, params):
-        if not params.get(field, None):
-            return []
-
-        elif field == 'q':
-            return ['text:{}'.format(q) for q in re.split(r'[+\s]', params.get('q'))]
-
-        elif field == 'project_id':
-            return ['project_id:{}'.format(p) for p in params.get(field).split(',')]
-
-        else:
-            return []
-
+        return view_model.objects.filter(pk__in=model_ids)

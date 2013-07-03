@@ -11,10 +11,10 @@ from editorsnotes.main.models.notes import (
 
 from .base import RelatedTopicModelSerializer
 
-class HyperLinkedDocumentField(HyperlinkedRelatedField):
+class HyperlinkedProjectItemField(HyperlinkedRelatedField):
     def to_native(self, obj):
         """
-        Return URL from document
+        Return URL from item requiring project slug kwarg
         """
         try:
             return reverse(
@@ -35,7 +35,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     note_id = serializers.Field(source='note_id')
     section_type = serializers.Field(source='section_type_label')
-    document = HyperLinkedDocumentField(view_name = 'api:api-documents-detail')
+    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail')
     document_description = serializers.SerializerMethodField('get_document_description')
     class Meta:
         model = CitationNS
@@ -47,7 +47,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
-    note_reference = HyperlinkedRelatedField(view_name='api:api-notes-detail')
+    note_reference = HyperlinkedProjectItemField(view_name='api:api-notes-detail')
     note_reference_title = serializers.SerializerMethodField(
         'get_referenced_note_title')
     class Meta:
@@ -62,7 +62,7 @@ def _serializer_from_section_type(section_type):
         serializer = CitationNSSerializer
     elif section_type == 'text':
         serializer = TextNSSerializer
-    elif section_type == 'notereference':
+    elif section_type == 'note_reference':
         serializer = NoteReferenceNSSerializer
     else:
         raise NotImplementedError(
