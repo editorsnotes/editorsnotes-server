@@ -53,7 +53,7 @@ EN.Models['Project'] = Backbone.Model.extend({
     // Instantiate the collections for documents, notes, and topics.
     this.documents = new EN.Models.DocumentCollection([], { project: this });
     this.notes = new EN.Models.NoteCollection([], { project: this });
-    //TODO this.topics = new EN.Models.TopicCollection([], { project: this });
+    this.topics = new EN.Models.TopicCollection([], { project: this });
   },
 
   url: function () { return '/api/projects/' + this.get('slug') + '/'; }
@@ -82,7 +82,7 @@ EN.Models['Document'] = Backbone.Model.extend({
   defaults: {
     description: null,
     zotero_data: null,
-    topics: [],
+    topics: []
   }
 });
 
@@ -182,6 +182,41 @@ EN.Models['NoteCollection'] = Backbone.Collection.extend({
     this.project = options.project;
   }
 });
+
+
+EN.Models['Topic'] = Backbone.Model.extend({
+  initialize: function () {
+    this.project = this.collection && this.collection.project;
+    if (!this.project) {
+      throw new Error('Add notes through a project instance');
+    }
+  },
+
+  defaults: {
+    preferred_name: null,
+    topic_node_id: null,
+    type: null,
+    summary: null
+  },
+
+  url: function () {
+    return this.isNew() ?
+      this.collection.url :
+      this.colection.url + this.get('topic_node_id') + '/';
+  }
+
+});
+
+EN.Models['TopicCollection'] = Backbone.Collection.extend({
+  model: EN.Models.Topic,
+
+  initialize: function (models, options) {
+    this.project = this.project || options.project
+  },
+
+  url: function () { return this.project.url() + 'topics/'; }
+});
+
 
 
 
