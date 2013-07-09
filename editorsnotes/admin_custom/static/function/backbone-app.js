@@ -4,12 +4,16 @@ EN.Views = {}
 EN.Models = {}
 EN.Templates = {}
 
+// The basic options for wysihtml5 instances.
 var wysihtml5BaseOpts = {
   parserRules: wysihtml5ParserRules,
   stylesheets: ['/static/function/wysihtml5/stylesheet.css'],
   useLineBreaks: false
 }
 
+// Change backbone sync so that we include the CSRF token before each request.
+//
+// TODO: only include it with write operations
 var oldSync = Backbone.sync;
 Backbone.sync = function (method, model, options) {
   options.beforeSend = function (xhr) {
@@ -25,73 +29,81 @@ Backbone.sync = function (method, model, options) {
  * Models
  *
  **************************************/
+
+// As things stand now, items (documents, notes, topics) should be added
+// within a project instance. This eases things in terms of dealing with
+// URLs, although that could be changed in the future.
 EN.Models['Project'] = Backbone.Model.extend({
   initialize: function (attributes, options) {
+
+    // If a slug was not explictly passed to the project instance, try to
+    // derive it from the current URL
     var slug = (attributes && attributes.slug) || (function (pathname) {
       var match = pathname.match(/^\/(?:api\/)?projects\/([^\/]+)/)
       return match && match[1];
     })(document.location.pathname);
 
+    // Throw an error if a slug could not be determined. Without that, we
+    // can't determine the URL for documents/notes/topics.
     if (!slug) {
       throw new Error('Could not get project without url or argument');
     }
-
     this.set('slug', slug);
 
+    // Instantiate the collections for documents, notes, and topics.
     this.documents = new EN.Models.DocumentCollection([], { project: this });
     this.notes = new EN.Models.NoteCollection([], { project: this });
-    //this.topics = new EN.Models.TopicCollection([], { project: this });
+    //TODO this.topics = new EN.Models.TopicCollection([], { project: this });
   },
-  url: function () {
-    return '/api/projects/' + this.get('slug') + '/';
-  }
+
+  url: function () { return '/api/projects/' + this.get('slug') + '/'; }
 });
+
 
 EN.Models['Document'] = Backbone.Model.extend({
   initialize: function () {
+    // As stated above, for now, we only work with documents inside an instance
+    // of DocumentCollection inside a Project. This stuff should be part of a
+    // base model, but I didn't do that because method inheritence in javascript
+    // is icky. (so, TODO)
     this.project = (this.collection && this.collection.project);
     if (!this.project) {
       throw new Error('Add notes through a project instance');
     }
   },
+
   url: function () {
+    // Make sure URLs end with slashes. This should also be part of a base
+    // model. (TODO)
     var origURL = Backbone.Model.prototype.url.call(this);
     return origURL.slice(-1) === '/' ? origURL : origURL + '/';
   },
+
   defaults: {
     description: null,
     zotero_data: null,
     topics: [],
-  },
-  toCSLJSON: function () {
-    if (!this.get(zotero_data)) return {};
-    return EditorsNotes.zotero.zoteroToCSL(this.get(zotero_data));
-  },
-  toFormattedCitation: function () {
-    var citation = makeCitation(this.toCSLJSON());
-    if (citation.match(/reference with no printed form/)) {
-      citation = '';
-    }
-    return citation;
   }
 });
 
 EN.Models['DocumentCollection'] = Backbone.Collection.extend({
   model: EN.Models.Document,
+
   initialize: function (models, options) {
     this.project = this.project || options.project;
   },
-  url: function () {
-    return this.project.url() + 'documents/';
-  }
+
+  url: function () { return this.project.url() + 'documents/'; }
 });
 
 
 var NoteSection = Backbone.Model.extend({
   idAttribute: 'section_id',
+
   initialize: function () {
     this.project = this.collection.project;
   },
+
   url: function () {
     return this.isNew() ?
       this.collection.url :
@@ -101,44 +113,53 @@ var NoteSection = Backbone.Model.extend({
 
 var NoteSectionList = Backbone.Collection.extend({
   model: NoteSection,
+
   initialize: function (models, options) {
     this.project = options.project;
   },
-  parse: function (response) {
-    return response.sections;
-  }
+
+  parse: function (response) { return response.sections; }
 });
 
 EN.Models['Note'] = Backbone.Model.extend({
   url: function() {
+    // Same as EN.Models.Document.url (ergo, same TODO as there)
     var origURL = Backbone.Model.prototype.url.call(this);
     return origURL.slice(-1) === '/' ? origURL : origURL + '/';
   },
+
   defaults: {
-    'title': '',
-    'content': '',
+    'title': null,
+    'content': null,
     'status': '1',
     'section_ordering': [],
     'topics': []
   },
+
   initialize: function (options) {
     var that = this;
 
+    // Same as in EN.Models.Document.initialize (TODO)
     this.project = (this.collection && this.collection.project);
     if (!this.project) {
       throw new Error('Add notes through a project instance');
     }
 
+    // Add a collection of NoteSection items to this note
     this.sections = new NoteSectionList([], {
       url: that.url(),
       project: this.project
     });
+
+    // Section ordering is a property of the Note, not the the individual
+    // sections. So make them aware of that.
     this.sections.comparator = function (section) {
       var ordering = that.get('section_ordering');
       return ordering.indexOf(section.id);
     }
     this.topics = [];
   },
+
   parse: function (response) {
     var topicNames = response.topics.map(function (t) { return t.name });
 
@@ -154,9 +175,9 @@ EN.Models['Note'] = Backbone.Model.extend({
 
 EN.Models['NoteCollection'] = Backbone.Collection.extend({
   model: EN.Models.Note,
-  url: function () {
-    return this.project.url() + 'notes/';
-  },
+
+  url: function () { return this.project.url() + 'notes/'; },
+
   initialize: function (models, options) {
     this.project = options.project;
   }
@@ -249,14 +270,17 @@ EN.Templates['note_sections/text'] = _.template(''
  *
  **************************************/
 
+// The toolbar controlling adding new note sections & saving the collection
+// of sections.
 EN.Views['AddSectionToolbar'] = Backbone.View.extend({
   initialize: function (opts) {
     this.note = opts.note;
     this.render();
+
+    // Handle the state of the save button for the note section collection.
     this.$btn = this.$('button');
     this.$btnText = this.$btn.find('span');
     this.$loader = this.$btn.find('img');
-
     this.listenTo(this.note.sections, 'change', this.enableButton);
     this.listenTo(this.note.sections, 'sync removeEmpty', this.disableButton);
     this.listenTo(this.note.sections, 'request', this.showLoading);
@@ -268,6 +292,9 @@ EN.Views['AddSectionToolbar'] = Backbone.View.extend({
 
   render: function () {
     this.$el.attr('id', 'citation-edit-bar');
+
+    // Coulda been a template but there's no variables so...
+    // (TODO get this outta here)
     this.$el.append(''
       + '<h4>Add section: </h4>'
       + '<a class="add-section" data-section-type="citation">Citation</a>'
@@ -303,6 +330,9 @@ EN.Views['AddSectionToolbar'] = Backbone.View.extend({
       , idx = 0
 
     e.preventDefault();
+
+    // TODO: idx is always 0 right now, so sections are added at the top of
+    // the list, but that can be changed.
     this.note.sections.add({'section_type': sectionType}, {'at': idx, 'sort': false});
 
   }
@@ -315,17 +345,19 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
     this.note = this.model;
     this.project = this.project;
 
+    // Keep track of all the note sections views internally
     this._sectionViews = [];
+
+    // Instantiate the toolbar to add/save sections
     this.addView = new EN.Views.AddSectionToolbar({ note: this.note });
     this.addView.$el.insertBefore(this.$el);
 
-
+    // Listen to all appropriate section events.
     this.listenTo(this.note.sections, 'add', this.addSection);
     this.listenTo(this.note.sections, 'remove', this.removeSection);
     this.listenTo(this.note.sections, 'set', this.render);
     this.listenTo(this.note.sections, 'deactivate', this.deactivateSections);
-
-    this.listenTo(this.note.sections, 'sync', this.saveOrder)
+    this.listenTo(this.note.sections, 'sync', this.saveOrder);
 
     this.note.fetch();
     this.render();
@@ -513,7 +545,6 @@ EN.Views['NoteSection'] = Backbone.View.extend({
       .insertBefore($textarea)
       .show();
 
-    // TODO: button edit row
     that.contentEditor = new wysihtml5.Editor(textareaID, _.extend({
       toolbar: textareaID + '-toolbar'
     }, wysihtml5BaseOpts));
