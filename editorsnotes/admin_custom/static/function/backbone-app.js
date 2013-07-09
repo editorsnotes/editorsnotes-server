@@ -231,7 +231,11 @@ EN.Templates['add_item_modal'] = _.template(''
     + '<h3>Add <%= type %></h3>'
   + '</div>'
   + '<div class="modal-body">'
+    + '<% if (textarea) { %>'
     + '<textarea class="item-text-main" style="width: 98%; height: 40px;"></textarea>'
+    + '<% } else { %>'
+    + '<input type="text" class="item-text-main" style="width: 98%;" />'
+    + '<% } %>'
   + '</div>'
   + '<div class="modal-footer">'
     + '<img src="/static/style/icons/ajax-loader.gif" class="hide loader-icon pull-left">'
@@ -721,18 +725,20 @@ EN.Views['SelectDocument'] =  EN.Views.SelectItem.extend({
   type: 'document',
   labelAttr: 'description',
   autocompleteURL: function () { return this.project.url() + 'documents/' },
+
   selectItem: function (event, ui) {
     this.trigger('documentSelected', this.project.documents.add(ui.item).get(ui.item.id));
   },
+
   addItem: function (e) {
     var that = this
       , addView = new EN.Views.AddDocument({ project: this.project });
 
+    e.preventDefault();
+
     this.listenTo(addView.model, 'sync', function (item) {
       that.trigger('documentSelected', item);
     });
-
-    e.preventDefault();
     addView.$el.appendTo('body').modal();
   }
 });
@@ -741,13 +747,20 @@ EN.Views['SelectNote'] = EN.Views.SelectItem.extend({
   type: 'note',
   labelAttr: 'title',
   autocompleteURL: function () { return this.project.url() + 'notes/'; },
+
   selectItem: function (event, ui) {
     this.trigger('noteSelected', this.project.notes.add(ui.item).get(ui.item.id));
   },
+
   addItem: function (e) {
-    var addView = new AddNoteView({ project: this.opts.project });
+    var that = this
+      , addView = new EN.Views.AddNote({ project: this.project });
 
     e.preventDefault();
+
+    this.listenTo(addView.model, 'sync', function (item) {
+      that.trigger('noteSelected', item);
+    });
     addView.$el.appendTo('body').modal();
   }
 });
@@ -766,8 +779,13 @@ EN.Views['SelectNote'] = EN.Views.SelectItem.extend({
 EN.Views['AddItem'] = Backbone.View.extend({
   renderModal: function () {
     var that = this
-      , widget = EN.Templates.add_item_modal({ type: 'document' })
+      , widget
       , $loader
+
+    widget = EN.Templates.add_item_modal({
+      type: that.itemType,
+      textarea: !!that.textarea
+    });
 
     this.$el.html(widget).addClass('modal');
     $loader = this.$('.loader-icon');
@@ -825,6 +843,8 @@ EN.Views['AddItem'] = Backbone.View.extend({
 });
 
 EN.Views['AddDocument'] = EN.Views.AddItem.extend({
+  itemType: 'document',
+  textarea: true,
   initialize: function (options) {
     this.model = options.project.documents.add({}, {at: 0}).at(0);
     this.render();
@@ -834,7 +854,14 @@ EN.Views['AddDocument'] = EN.Views.AddItem.extend({
     });
   },
 
-  render: function () { this.renderModal(); },
+  render: function () {
+    var that = this;
+
+    this.renderModal();
+    this.$el.on('hidden', function () {
+      if (that.model.isNew()) that.model.destroy();
+    });
+  },
 
   saveItem: function () {
     var that = this
@@ -850,6 +877,44 @@ EN.Views['AddDocument'] = EN.Views.AddItem.extend({
       success: function () { that.$el.modal('hide') }
     });
 
+  }
+});
+
+EN.Views['AddNote'] = EN.Views.AddItem.extend({
+  itemType: 'note',
+  initialize: function (options) {
+    this.model = options.project.notes.add({}, {at: 0}).at(0);
+    this.render();
+
+    // TODO: assigned users & licensing
+  },
+
+  render: function () {
+    var that = this;
+
+    this.renderModal();
+
+    this.$('.modal-body')
+      .prepend('<h5>Title</h5>')
+      .append(''
+        + '<h5>Description</h5>'
+        + '<textarea class="add-note-description" style="width: 98%; height: 80px;"></textarea>');
+    this.$el.on('hidden', function () {
+      if (that.model.isNew()) that.model.destroy();
+    });
+  },
+
+  saveItem: function () {
+    var that = this
+      , data = {
+        title: this.$('.item-text-main').val(),
+        content: this.$('.add-note-description').val()
+      }
+
+    this.model.set(data);
+    this.model.save(data, {
+      success: function () { that.$el.modal('hide') }
+    });
   }
 });
 

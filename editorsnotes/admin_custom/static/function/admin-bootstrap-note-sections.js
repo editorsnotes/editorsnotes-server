@@ -9,6 +9,7 @@ $(document).ready(function () {
     model: note
   });
 
+  pproject = project;
   asdf = view;
     
   $('#citation-items').sortable({
