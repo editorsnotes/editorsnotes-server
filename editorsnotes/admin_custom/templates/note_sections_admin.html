@@ -8,6 +8,7 @@
   <script src="{% static "function/citeproc-js/xmldom.js" %}"></script>
   <script src="{% static "function/citeproc-js/citeproc.js" %}"></script>
   <script src="{% static "function/zotero.jquery.js" %}"></script>
+  <script src="{% static "function/zotero-jquery/zotero-functions.js" %}"></script>
   <script src="{% static "function/admin-bootstrap-base.js" %}"></script>
   <script src="{% static "function/admin-bootstrap-note-sections.js" %}"></script>
   <script src="{% static "function/backbone-app.js" %}"></script>
@@ -15,6 +16,9 @@
 
 {% block css %}
   <link rel="stylesheet" href="{% static "style/bootstrap-admin.css" %}" type="text/css" />
+  <style type="text/css">
+    #note-sections-container { padding: inherit 25px; }
+  </style>
 {% endblock %}
 
 
@@ -27,5 +31,7 @@
     {% csrf_token %}
     <div id="note-sections-container"></div>
   </div>
+
+  {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="note-section-toolbar"%}
 
 {% endblock %}

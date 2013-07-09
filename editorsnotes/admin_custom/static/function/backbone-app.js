@@ -60,8 +60,8 @@ EN.Models['Document'] = Backbone.Model.extend({
   },
   defaults: {
     description: null,
+    zotero_data: null,
     topics: [],
-    zotero_data: ''
   },
   toCSLJSON: function () {
     if (!this.get(zotero_data)) return {};
@@ -175,7 +175,7 @@ EN.Templates['add_item_modal'] = _.template(''
     + '<h3>Add <%= type %></h3>'
   + '</div>'
   + '<div class="modal-body">'
-    + '<textarea style="width: 98%; height: 40px;"></textarea>'
+    + '<textarea class="item-text-main" style="width: 98%; height: 40px;"></textarea>'
   + '</div>'
   + '<div class="modal-footer">'
     + '<img src="/static/style/icons/ajax-loader.gif" class="hide loader-icon pull-left">'
@@ -190,6 +190,7 @@ EN.Templates['add_or_select_item'] = _.template(''
   + '<a class="add-new-object" href="#"><i class="icon-plus-sign"></i></a>')
 
 EN.Templates['zotero/item_type_select'] = _.template(''
+  + '<h5>Select an item type: </h5>'
   + '<select class="item-type-select">'
     + ''
     + '<% if (common) { %>'
@@ -241,7 +242,6 @@ EN.Templates['note_sections/text'] = _.template(''
   + '<div class="note-section-content">'
     + '<%= ns.content %>'
   + '</div>')
-
 
 /**************************************
  *
@@ -447,7 +447,7 @@ EN.Views['NoteSection'] = Backbone.View.extend({
 
     html = ''
       + '<div class="edit-row">'
-        + '<a class="btn btn-primary save-section">OK</a>'
+        + '<a class="btn btn-primary save-section pull-right">OK</a>'
         + '<a class="btn btn-danger delete-section">Delete section</a>'
       + '</div>'
 
@@ -489,10 +489,12 @@ EN.Views['NoteSection'] = Backbone.View.extend({
   editTextContent: function () {
     var that = this
       , content = this.model.get('content')
-      , textareaID = 'edit-section-' + this.model.id
+      , textareaID = 'edit-section-' + this.model.cid
       , $content = this.$('.note-section-content')
+      , $textarea
+      , toolbar
     
-    $('<textarea>')
+    $textarea = $('<textarea>')
       .attr('id', textareaID)
       .css({
         'margin-bottom': '8px',
@@ -506,9 +508,16 @@ EN.Views['NoteSection'] = Backbone.View.extend({
 
     $content.hide();
 
+    toolbar = $('#note-section-toolbar').clone()
+      .attr('id', textareaID + '-toolbar')
+      .insertBefore($textarea)
+      .show();
+
     // TODO: button edit row
-    that.contentEditor = new wysihtml5.Editor(textareaID, wysihtml5BaseOpts);
-    that.contentEditor.on('input', function() {
+    that.contentEditor = new wysihtml5.Editor(textareaID, _.extend({
+      toolbar: textareaID + '-toolbar'
+    }, wysihtml5BaseOpts));
+    that.contentEditor.on('input', function () {
       that.model.set('content', that.contentEditor.getValue().replace('<br>', '<br/>'));
     });
   },
@@ -611,6 +620,7 @@ EN.Views['SelectItem'] = Backbone.View.extend({
 
     this._autocompleteopts = _.extend({
       select: that.selectItem.bind(that),
+      appendTo: '#note-sections-edit-blah',
       minLength: 2,
       source: function (request, response) {
         $.getJSON(url, {'q': request.term}, function (data) {
@@ -649,7 +659,12 @@ EN.Views['SelectDocument'] =  EN.Views.SelectItem.extend({
     this.trigger('documentSelected', this.project.documents.add(ui.item).get(ui.item.id));
   },
   addItem: function (e) {
-    var addView = new EN.Views.AddDocument({ project: this.project });
+    var that = this
+      , addView = new EN.Views.AddDocument({ project: this.project });
+
+    this.listenTo(addView.model, 'sync', function (item) {
+      that.trigger('documentSelected', item);
+    });
 
     e.preventDefault();
     addView.$el.appendTo('body').modal();
@@ -675,6 +690,8 @@ EN.Views['SelectNote'] = EN.Views.SelectItem.extend({
 /*
  * Base view for all views adding items in a modal
  *
+ * Must create saveItem method
+ *
  * options:
  *    height
  *    minHeight
@@ -694,6 +711,7 @@ EN.Views['AddItem'] = Backbone.View.extend({
       .on('ajaxStop', function () { $loader.hide(); })
       .on('hidden', that.remove.bind(that))
       .on('shown', that.setModalSize.bind(that))
+      .on('click', '.btn-save-item', that.saveItem.bind(that));
   },
 
   setModalSize: function () {
@@ -749,8 +767,23 @@ EN.Views['AddDocument'] = EN.Views.AddItem.extend({
       el: this.$('.add-document-zotero-data')
     });
   },
-  render: function () {
-    this.renderModal();
+
+  render: function () { this.renderModal(); },
+
+  saveItem: function () {
+    var that = this
+      , data = { description: this.$('.item-text-main').val() }
+      , zotero_data = this.zotero_view.getZoteroData();
+
+    if (!_.isEmpty(zotero_data)) {
+      data.zotero_data = JSON.stringify(zotero_data);
+    }
+
+    this.model.set(data);
+    this.model.save(data, {
+      success: function () { that.$el.modal('hide') }
+    });
+
   }
 });
 
@@ -761,21 +794,30 @@ EN.Views['EditZoteroInformation'] = Backbone.View.extend({
     },
     'click add-creator': 'addCreator',
     'click remove-creator': 'removeCreator',
+    'input .zotero-entry': 'sendZoteroData',
   },
 
   initialize: function () {
-    var that = this;
+    var that = this
+
+    this.citeprocWorker = new Worker('/static/function/citeproc-worker.js');
+    this.citeprocWorker.addEventListener('message', function (e) {
+      that.trigger('updateCitation', e.data.citation);
+    });
+    this.on('updateCitation', this.updateCitation);
 
     this.render();
+
     $.getJSON('/api/document/itemtypes/')
       .done(function (itemTypes) {
         var select = EN.Templates['zotero/item_type_select'](itemTypes);
-        that.$el.html(select);
+        that.$el.html('<hr />' + select);
         that.$('select').prop('selectedIndex', -1);
       })
       .error(function () {
         console.error('Could not fetch item types from server.');
       });
+
   },
 
   renderZoteroForm: function (itemType) {
@@ -785,12 +827,30 @@ EN.Views['EditZoteroInformation'] = Backbone.View.extend({
     $.get('/api/document/template/?itemType=' + itemType)
       .done(function (template) {
         var $template = $(template).filter('#zotero-information-edit');
-        that.$el.html($template.html());
+        that.$el
+          .html('<hr />' + $template.html())
+          .find('.zotero-entry-delete').remove();
       })
       .fail(function () {
         alert('Could not retrieve template');
         $input.show()
       });
+  },
+
+  getZoteroData: function () {
+    var that = this;
+    return EditorsNotes.zotero.zoteroFormToObject(that.$el);
+  },
+
+  sendZoteroData: function () {
+    var zoteroData = this.getZoteroData();
+    this.citeprocWorker.postMessage({zotero_data: zoteroData});
+  },
+
+  updateCitation: function (citation) {
+    var textarea = $('.item-text-main');
+
+    textarea.val(citation);
   }
 
 });
