@@ -217,6 +217,12 @@ td.zotero-key {
   .btn-toolbar { .content-separation-border; }
 }
 
+.note-section-text .btn-toolbar {
+  border: none;
+  margin-top: 0;
+  padding-top: 0 !important;
+}
+
 // For editing & viewing citations (and editing footnotes)
 .citation .citation-notes,
 .note-section .note-section-content,
@@ -230,7 +236,7 @@ td.zotero-key {
     padding-bottom: 0px;
     margin-bottom: -5px;
   }
-  > last-child,
+  > :last-child,
   > div > :last-child {
     margin-bottom: 0px;
   }
@@ -303,16 +309,16 @@ td.zotero-key {
     }
   }
 
-  .citation-document a.add-new-document {
+  .citation-document a.add-new-document,
+  .citation-document a.add-new-object,
+  .note-reference-note a.add-new-object {
     color: black;
-    &:hover {
-      text-decoration: none;
-    }
+    &:hover { text-decoration: none; }
     i.icon-plus-sign {
       font-size: 18px;
       position: relative;
-      top: 2px;
-      left: 2px;
+      top: 3px;
+      left: 6px;
     }
   }
 }
@@ -330,4 +336,27 @@ td.zotero-key {
     .btn;
     margin-left: 10px;
   }
+}
+
+.add-document-zotero-data {
+  .zotero-entry {
+    margin-bottom: 0 !important;
+
+    label, div { display: inline-block; }
+    label { width: 150px; }
+
+  }
+}
+
+#note-sections-edit-blah {
+  .ui-autocomplete-input { margin-bottom: 0; }
+  .ui-autocomplete {
+    max-width: 750px;
+    max-height: 300px;
+    border-radius: none;
+    left: 0;
+  }
+  .ui-menu-item p { margin-bottom: 0; }
+  .ui-menu-item { padding: 4px 0; }
+  .ui-menu-item:not(:last-of-type) { border-bottom: 1px solid #f0f0f0; }
 }
