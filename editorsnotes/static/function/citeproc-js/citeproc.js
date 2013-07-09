@@ -57,7 +57,7 @@ if (!Array.indexOf) {
     };
 }
 var CSL = {
-    PROCESSOR_VERSION: "1.0.466",
+    PROCESSOR_VERSION: "1.0.469",
     CONDITION_LEVEL_TOP: 1,
     CONDITION_LEVEL_BOTTOM: 2,
     PLAIN_HYPHEN_REGEX: /(?:[^\\]-|\u2013)/,
@@ -289,6 +289,7 @@ var CSL = {
         "recipient"
     ],
     NUMERIC_VARIABLES: [
+        "call-number",
         "chapter-number",
         "collection-number",
         "edition",
@@ -3064,6 +3065,7 @@ CSL.Engine.Opt = function () {
     this.development_extensions.main_title_from_short_title = false;
     this.development_extensions.normalize_lang_keys_to_lowercase = false;
     this.development_extensions.strict_text_case_locales = false;
+    this.development_extensions.rtl_support = true;
     this.nodenames = [];
     this.gender = {};
     this['cite-lang-prefs'] = {
@@ -5705,17 +5707,21 @@ CSL.Node.layout = {
             this.execs.push(func);
             func = function (state, Item) {
                 var tok = "empty";
-                if (["ar", "he", "fa", "ur", "yi", "ps", "syr"].indexOf(Item.language) > -1) {
-                    tok = new CSL.Token();
-                    tok.strings.prefix = "\u202b";
-                    tok.strings.suffix = "\u202c";
-                    state.citation.opt.layout_prefix = state.citation.opt.layout_prefix.replace(/\(([^\u200e]|$)/g,"(\u200e$1");
-                    state.citation.opt.layout_suffix = state.citation.opt.layout_suffix.replace(/\)([^\u200e]|$)/g,")\u200e$1");
+                if (state.opt.development_extensions.rtl_support) {
+                    if (["ar", "he", "fa", "ur", "yi", "ps", "syr"].indexOf(Item.language) > -1) {
+                        tok = new CSL.Token();
+                        tok.strings.prefix = "\u202b";
+                        tok.strings.suffix = "\u202c";
+                    }
                 }
                 state.output.openLevel(tok);
-            };
+            }
             this.execs.push(func);
             target.push(this);
+            if (state.opt.development_extensions.rtl_support && false) {
+                this.strings.prefix = this.strings.prefix.replace(/\((.|$)/g,"(\u200e$1");
+                this.strings.suffix = this.strings.suffix.replace(/\)(.|$)/g,")\u200e$1");
+            }
             if (state.build.area === "citation") {
                 prefix_token = new CSL.Token("text", CSL.SINGLETON);
                 func = function (state, Item, item) {
