@@ -27,4 +27,9 @@ class HaystackFilterBackend(BaseFilterBackend):
                 .load_all()\
                 .values_list('pk', flat=True)
 
-        return view_model.objects.filter(pk__in=model_ids)
+        qs = view_model.objects.filter(pk__in=model_ids)
+
+        if hasattr(view_model, 'topics'):
+            qs = qs.prefetch_related('topics__container__project')
+
+        return qs

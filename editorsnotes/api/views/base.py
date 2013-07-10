@@ -21,7 +21,8 @@ class ProjectSpecificAPIView(APIView):
     def initialize_request(self, request, *args, **kwargs):
         request = super(ProjectSpecificAPIView, self)\
                 .initialize_request(request, *args, **kwargs)
-        request.project = Project.objects.get(slug=kwargs.pop('project_slug'))
+        request._request.project = Project.objects.get(
+            slug=kwargs.pop('project_slug'))
         return request
 
 class BaseListAPIView(ListCreateAPIView, ProjectSpecificAPIView):

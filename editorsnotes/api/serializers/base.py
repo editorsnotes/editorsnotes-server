@@ -11,13 +11,9 @@ class TopicAssignmentField(RelatedField):
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
         self.many = True
     def field_to_native(self, obj, field_name):
-        ct = ContentType.objects.get_for_model(obj)
-        qs = ProjectTopicContainer.objects\
-                .select_related('project')\
-                .filter(related_topics__content_type_id=ct.id,
-                        related_topics__object_id=obj.id)
-        return [{'name': t.preferred_name, 'url': t.get_absolute_url()}
-                for t in qs]
+        return [{'name': ta.container.preferred_name,
+                 'url': ta.container.get_absolute_url()}
+                for ta in obj.topics.all()]
     def field_from_native(self, data, files, field_name, into):
         if self.read_only:
             return
