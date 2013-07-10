@@ -1,7 +1,9 @@
 from rest_framework.decorators import api_view
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateDestroyAPIView)
+from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
@@ -18,6 +20,8 @@ class ProjectSpecificAPIView(APIView):
     ProjectSpecificPermissions class by default.
     """
     permission_classes = (ProjectSpecificPermissions,)
+    parser_classes = (JSONParser,)
+    renderer_classes = (JSONRenderer,)
     def initialize_request(self, request, *args, **kwargs):
         request = super(ProjectSpecificAPIView, self)\
                 .initialize_request(request, *args, **kwargs)
