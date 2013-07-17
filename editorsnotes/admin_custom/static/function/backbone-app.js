@@ -320,14 +320,18 @@ EN.Views['AddSectionToolbar'] = Backbone.View.extend({
     this.$btn = this.$('button');
     this.$btnText = this.$btn.find('span');
     this.$loader = this.$btn.find('img');
+
     this.listenTo(this.note.sections, 'change', this.enableButton);
     this.listenTo(this.note.sections, 'sync removeEmpty', this.disableButton);
     this.listenTo(this.note.sections, 'request', this.showLoading);
 
+    this.listenTo(this.note, 'change', this.enableButton);
+    this.listenTo(this.note, 'sync', this.disableButton);
+    this.listenTo(this.note, 'request', this.showLoading);
+
   },
-  events: {
-    'click .add-section': 'addSection'
-  },
+
+  events: { 'click .add-section': 'addSection' },
 
   render: function () {
     this.$el.attr('id', 'citation-edit-bar');
@@ -410,6 +414,36 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
       $el.append(sectionView.el);
     });
 
+    this.initSort();
+  },
+
+  initSort: function () {
+    var that = this;
+    this.$el.sortable({
+      placeholder: 'citation-placeholder',
+      cursor: 'pointer',
+      cursorAt: { 'left': 200, 'top': 20 },
+      helper: function (event, item) {
+        var $item = $(item)
+          , $children = $item.children()
+          , $helper = $children.length ? $children.first() : $item
+
+        return $helper.clone();
+      },
+      start: function (event, ui) {
+        that.deactivateSections();
+        $(this).addClass('sort-active');
+        ui.item.hide();
+        that.$el.sortable('refreshPositions');
+      },
+      stop: function () {
+        $(this).removeClass('sort-active');
+      },
+      update: function (event, ui) {
+        ui.item.show();
+        that.saveOrder.call(that);
+      }
+    });
   },
 
   addSection: function (section) {
@@ -460,7 +494,20 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
   saveOrder: function () {
     var that = this
       , noteOrdering = this.note.get('section_ordering')
+      , renderedOrder = []
       , viewOrdering = []
+      , renderedOrder
+
+    renderedOrder = this.$el.children('.note-section').map(function (idx, el) {
+      return $(el).data('sectionCID');
+    }).toArray();
+
+    this._sectionViews.sort(function (a, b) {
+      var idxa = renderedOrder.indexOf(a.model.cid)
+        , idxb = renderedOrder.indexOf(b.model.cid)
+
+      return idxa > idxb;
+    });
 
     this._sectionViews.forEach(function (view) {
       if (view.model.id) viewOrdering.push(view.model.id);
