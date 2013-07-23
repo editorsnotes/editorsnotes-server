@@ -407,7 +407,7 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
   },
 
   render: function () {
-    var $el = this.$el.empty();
+    var $el = this.$el.addClass('editing').empty();
 
     this._rendered = true;
     this._sectionViews.forEach(function (sectionView) {
@@ -970,8 +970,8 @@ EN.Views['EditZoteroInformation'] = Backbone.View.extend({
     'change .item-type-select': function (e) {
       this.renderZoteroForm(e.currentTarget.value);
     },
-    'click add-creator': 'addCreator',
-    'click remove-creator': 'removeCreator',
+    'click .add-creator': 'addCreator',
+    'click .remove-creator': 'removeCreator',
     'input .zotero-entry': 'sendZoteroData',
   },
 
@@ -1013,6 +1013,29 @@ EN.Views['EditZoteroInformation'] = Backbone.View.extend({
         alert('Could not retrieve template');
         $input.show()
       });
+  },
+
+  addCreator: function (e) {
+    var $creator = $(e.currentTarget).closest('.zotero-creator')
+      , $newCreator = $creator.clone()
+
+    e.preventDefault();
+
+    $newCreator.find('textarea').val('');
+    $newCreator.insertAfter($creator);
+
+  },
+
+  removeCreator: function (e) {
+    var $creator = $(e.currentTarget).closest('.zotero-creator')
+
+    e.preventDefault();
+
+    if ($creator.siblings('.zotero-creator').length) {
+      $creator.remove();
+    } else {
+      $creator.find('textarea').val('');
+    }
   },
 
   getZoteroData: function () {
