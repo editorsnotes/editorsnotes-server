@@ -9,46 +9,11 @@
 
   <script src="{{ STATIC_URL }}function/wysihtml5/wysihtml5-0.3.0.js"></script>
   <script src="{{ STATIC_URL }}function/wysihtml5/parser_rules.js"></script>
-  <script src="{{ STATIC_URL }}function/backbone-app.js"></script>
-  <script type="text/javascript">
-    $(document).ready(function () {
-      $('.edit-note-sections').on('click', function (e) {
-        var project = new EditorsNotes.Models.Project()
-          , noteID = document.location.pathname.match(/notes\/(\d+)\//)[1]
-          , note = project.notes.add({ id: noteID }).get(noteID)
-          , view
 
-        e.preventDefault();
-
-        function flash() {
-          var $container = $('#note-sections-container');
-
-          $('<div>&nbsp;</div>')
-            .css({
-              'opacity': .90,
-              'height': $container.height(),
-              'width': $container.width(),
-              'background-color': 'green',
-              'position': 'absolute'
-            })
-            .appendTo('body')
-            .position({ 'my': 'top', 'at': 'top', 'of': $container })
-            .animate({ opacity: 0 }, 250, function () { $(this).remove() });
-        }
-
-        view = new EditorsNotes.Views.NoteSectionList({
-          el: '#note-sections-container',
-          model: note
-        });
-
-        view.model.once('sync', function () {
-          console.log('hi');
-          $('#tabs [href="#note-tab"]').one('shown', flash).trigger('click');
-        });
-
-      });
-    });
-  </script>
+  <script type="text/javascript" src="{{ STATIC_URL }}function/backbone/app.js" %}"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}function/backbone/models.js" %}"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}function/backbone/templates.js" %}"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}function/backbone/views.js" %}"></script>
 
 {% endblock %}
 

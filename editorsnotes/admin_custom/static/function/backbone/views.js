@@ -1,317 +1,6 @@
-EN = EditorsNotes
-
-EN.Views = {}
-EN.Models = {}
-EN.Templates = {}
-
-// The basic options for wysihtml5 instances.
-var wysihtml5BaseOpts = {
-  parserRules: wysihtml5ParserRules,
-  stylesheets: ['/static/function/wysihtml5/stylesheet.css'],
-  useLineBreaks: false
-}
-
-// Change backbone sync so that we include the CSRF token before each request.
-//
-// TODO: only include it with write operations
-var oldSync = Backbone.sync;
-Backbone.sync = function (method, model, options) {
-  options.beforeSend = function (xhr) {
-    var token = $('input[name="csrfmiddlewaretoken"]').val();
-    xhr.setRequestHeader('X-CSRFToken', token);
-  }
-  return oldSync(method, model, options);
-};
-
-
-/**************************************
- *
- * Models
- *
- **************************************/
-
-// As things stand now, items (documents, notes, topics) should be added
-// within a project instance. This eases things in terms of dealing with
-// URLs, although that could be changed in the future.
-EN.Models['Project'] = Backbone.Model.extend({
-  initialize: function (attributes, options) {
-
-    // If a slug was not explictly passed to the project instance, try to
-    // derive it from the current URL
-    var slug = (attributes && attributes.slug) || (function (pathname) {
-      var match = pathname.match(/^\/(?:api\/)?projects\/([^\/]+)/)
-      return match && match[1];
-    })(document.location.pathname);
-
-    // Throw an error if a slug could not be determined. Without that, we
-    // can't determine the URL for documents/notes/topics.
-    if (!slug) {
-      throw new Error('Could not get project without url or argument');
-    }
-    this.set('slug', slug);
-
-    // Instantiate the collections for documents, notes, and topics.
-    this.documents = new EN.Models.DocumentCollection([], { project: this });
-    this.notes = new EN.Models.NoteCollection([], { project: this });
-    this.topics = new EN.Models.TopicCollection([], { project: this });
-  },
-
-  url: function () { return '/api/projects/' + this.get('slug') + '/'; }
-});
-
-
-EN.Models['Document'] = Backbone.Model.extend({
-  initialize: function () {
-    // As stated above, for now, we only work with documents inside an instance
-    // of DocumentCollection inside a Project. This stuff should be part of a
-    // base model, but I didn't do that because method inheritence in javascript
-    // is icky. (so, TODO)
-    this.project = (this.collection && this.collection.project);
-    if (!this.project) {
-      throw new Error('Add notes through a project instance');
-    }
-  },
-
-  url: function () {
-    // Make sure URLs end with slashes. This should also be part of a base
-    // model. (TODO)
-    var origURL = Backbone.Model.prototype.url.call(this);
-    return origURL.slice(-1) === '/' ? origURL : origURL + '/';
-  },
-
-  defaults: {
-    description: null,
-    zotero_data: null,
-    topics: []
-  }
-});
-
-EN.Models['DocumentCollection'] = Backbone.Collection.extend({
-  model: EN.Models.Document,
-
-  initialize: function (models, options) {
-    this.project = this.project || options.project;
-  },
-
-  url: function () { return this.project.url() + 'documents/'; }
-});
-
-
-var NoteSection = Backbone.Model.extend({
-  idAttribute: 'section_id',
-
-  initialize: function () {
-    this.project = this.collection.project;
-  },
-
-  url: function () {
-    return this.isNew() ?
-      this.collection.url :
-      this.collection.url + 's' + this.get('section_id') + '/';
-  }
-});
-
-var NoteSectionList = Backbone.Collection.extend({
-  model: NoteSection,
-
-  initialize: function (models, options) {
-    this.project = options.project;
-  },
-
-  parse: function (response) { return response.sections; }
-});
-
-EN.Models['Note'] = Backbone.Model.extend({
-  url: function() {
-    // Same as EN.Models.Document.url (ergo, same TODO as there)
-    var origURL = Backbone.Model.prototype.url.call(this);
-    return origURL.slice(-1) === '/' ? origURL : origURL + '/';
-  },
-
-  defaults: {
-    'title': null,
-    'content': null,
-    'status': '1',
-    'section_ordering': [],
-    'topics': []
-  },
-
-  initialize: function (options) {
-    var that = this;
-
-    // Same as in EN.Models.Document.initialize (TODO)
-    this.project = (this.collection && this.collection.project);
-    if (!this.project) {
-      throw new Error('Add notes through a project instance');
-    }
-
-    // Add a collection of NoteSection items to this note
-    this.sections = new NoteSectionList([], {
-      url: that.url(),
-      project: this.project
-    });
-
-    // Section ordering is a property of the Note, not the the individual
-    // sections. So make them aware of that.
-    this.sections.comparator = function (section) {
-      var ordering = that.get('section_ordering');
-      return ordering.indexOf(section.id);
-    }
-    this.topics = [];
-  },
-
-  parse: function (response) {
-    var topicNames = response.topics.map(function (t) { return t.name });
-
-    this.sections.set(response.sections);
-    this.set('topics', topicNames);
-
-    delete response.sections;
-    delete response.topics;
-
-    return response
-  }
-});
-
-EN.Models['NoteCollection'] = Backbone.Collection.extend({
-  model: EN.Models.Note,
-
-  url: function () { return this.project.url() + 'notes/'; },
-
-  initialize: function (models, options) {
-    this.project = options.project;
-  }
-});
-
-
-EN.Models['Topic'] = Backbone.Model.extend({
-  initialize: function () {
-    this.project = this.collection && this.collection.project;
-    if (!this.project) {
-      throw new Error('Add notes through a project instance');
-    }
-  },
-
-  defaults: {
-    preferred_name: null,
-    topic_node_id: null,
-    type: null,
-    summary: null
-  },
-
-  url: function () {
-    return this.isNew() ?
-      this.collection.url :
-      this.colection.url + this.get('topic_node_id') + '/';
-  }
-
-});
-
-EN.Models['TopicCollection'] = Backbone.Collection.extend({
-  model: EN.Models.Topic,
-
-  initialize: function (models, options) {
-    this.project = this.project || options.project
-  },
-
-  url: function () { return this.project.url() + 'topics/'; }
-});
-
-
-
-
-/**************************************
- *
- * Templates
- *
- **************************************/
-EN.Templates['add_item_modal'] = _.template(''
-  + '<div class="modal-header">'
-    + '<button type="button" class="close" data-dismiss="modal">&times;</button>'
-    + '<h3>Add <%= type %></h3>'
-  + '</div>'
-  + '<div class="modal-body">'
-    + '<% if (textarea) { %>'
-    + '<textarea class="item-text-main" style="width: 98%; height: 40px;"></textarea>'
-    + '<% } else { %>'
-    + '<input type="text" class="item-text-main" style="width: 98%;" />'
-    + '<% } %>'
-  + '</div>'
-  + '<div class="modal-footer">'
-    + '<img src="/static/style/icons/ajax-loader.gif" class="hide loader-icon pull-left">'
-    + '<a href="#" class="btn" data-dismiss="modal">Cancel</a>'
-    + '<a href="#" class="btn btn-primary btn-save-item">Save</a>'
-  + '</div>')
-
-EN.Templates['add_or_select_item'] = _.template(''
-  + '<input style="width: 550px" type="text" class="<%= type %>-autocomplete" '
-  + 'placeholder="Type to search for a <%= type %>, or add one using the icon to the right."'
-  + ' />'
-  + '<a class="add-new-object" href="#"><i class="icon-plus-sign"></i></a>')
-
-EN.Templates['zotero/item_type_select'] = _.template(''
-  + '<h5>Select an item type: </h5>'
-  + '<select class="item-type-select">'
-    + ''
-    + '<% if (common) { %>'
-      + '<optgroup label="Common types">'
-        + '<% common.forEach(function (commonType) { %>'
-        + '<% var type = _.findWhere(itemTypes, {itemType: commonType}) %>'
-        + '<option value="<%= type.itemType %>"><%= type.localized %></option>'
-        + '<% }); %>'
-      + '</optgroup>'
-    + '<% } %>'
-    + '<optgroup label="All types">'
-      + '<% itemTypes.forEach(function (type) { %>'
-      + '<option value="<%= type.itemType %>"><%= type.localized %></option>'
-      + '<% }) %>'
-    + '</optgroup>'
-    + ''
-  + '</select>')
-
-EN.Templates['note_sections/citation'] = _.template(''
-  + '<div class="citation-document">'
-    + '<i class="icon-file"></i> '
-    + '<div class="citation-document-item"'
-        + '<% if (ns.document) { %>data-url="<%= ns.document %>"<% } %>>'
-      + '<% if (ns.document) { print(ns.document_description) } %>'
-    + '</div>'
-  + '</div>'
-  + ''
-  + '<div class="note-section-content">'
-    + '<%= ns.content %>'
-  + '</div>')
-
-EN.Templates['note_sections/note_reference'] = _.template(''
-  + '<div class="note-reference-note">'
-    + '<i class="icon-pencil"></i> '
-    + '<div class="note-reference-note-container">'
-      + '<% if (ns.note_reference) { %>'
-        + '<span data-url="<%= ns.note_reference %>" class="note-reference-note">'
-          + '<%= ns.note_reference_title %>'
-        + '</span>'
-      + '<% } %>'
-    + '</div>'
-  + '</div>'
-  + ''
-  + '<div class="note-section-content">'
-    + '<%= ns.content %>'
-  + '</div>')
-
-EN.Templates['note_sections/text'] = _.template(''
-  + '<div class="note-section-content">'
-    + '<%= ns.content %>'
-  + '</div>')
-
-/**************************************
- *
- * Views
- *
- **************************************/
-
 // The toolbar controlling adding new note sections & saving the collection
 // of sections.
-EN.Views['AddSectionToolbar'] = Backbone.View.extend({
+EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
   initialize: function (opts) {
     this.note = opts.note;
     this.render();
@@ -381,7 +70,7 @@ EN.Views['AddSectionToolbar'] = Backbone.View.extend({
   }
 });
 
-EN.Views['NoteSectionList'] = Backbone.View.extend({
+EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
   initialize: function (options) {
     var that = this;
 
@@ -392,7 +81,7 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
     this._sectionViews = [];
 
     // Instantiate the toolbar to add/save sections
-    this.addView = new EN.Views.AddSectionToolbar({ note: this.note });
+    this.addView = new EditorsNotes.Views.AddSectionToolbar({ note: this.note });
     this.addView.$el.insertBefore(this.$el);
 
     // Listen to all appropriate section events.
@@ -449,7 +138,7 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
   addSection: function (section) {
 
     var idx = section.collection.indexOf(section)
-      , SectionView = EN.Views['sections/' + section.get('section_type')]
+      , SectionView = EditorsNotes.Views['sections/' + section.get('section_type')]
       , view = new SectionView({ model: section })
       , target
 
@@ -528,7 +217,7 @@ EN.Views['NoteSectionList'] = Backbone.View.extend({
  * `isEmpty`
  */
 
-EN.Views['NoteSection'] = Backbone.View.extend({
+EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
   tagName: 'div',
   className: 'note-section',
   isActive: false,
@@ -545,7 +234,7 @@ EN.Views['NoteSection'] = Backbone.View.extend({
   render: function () {
     var that = this
       , sectionType = this.model.get('section_type')
-      , template = EN.Templates['note_sections/' + sectionType]
+      , template = EditorsNotes.Templates['note_sections/' + sectionType]
 
     this.$el.html( template({ns: that.model.toJSON()}) );
     this.afterRender && this.afterRender.call(this);
@@ -633,7 +322,7 @@ EN.Views['NoteSection'] = Backbone.View.extend({
 
     that.contentEditor = new wysihtml5.Editor(textareaID, _.extend({
       toolbar: textareaID + '-toolbar'
-    }, wysihtml5BaseOpts));
+    }, EditorsNotes.wysihtml5BaseOpts));
     that.contentEditor.on('input', function () {
       that.model.set('content', that.contentEditor.getValue().replace('<br>', '<br/>'));
     });
@@ -661,7 +350,7 @@ EN.Views['NoteSection'] = Backbone.View.extend({
   
 });
 
-EN.Views['sections/citation'] = EN.Views.NoteSection.extend({
+EditorsNotes.Views['sections/citation'] = EditorsNotes.Views.NoteSection.extend({
   afterRender: function () {
     var that = this
       , addDocumentView
@@ -669,7 +358,7 @@ EN.Views['sections/citation'] = EN.Views.NoteSection.extend({
 
     if (!this.model.isNew()) return;
 
-    selectDocumentView = new EN.Views.SelectDocument({ project: this.model.project });
+    selectDocumentView = new EditorsNotes.Views.SelectDocument({ project: this.model.project });
     $documentContainer = this.$('.citation-document-item')
       .html(selectDocumentView.el);
 
@@ -685,7 +374,7 @@ EN.Views['sections/citation'] = EN.Views.NoteSection.extend({
   }
 });
 
-EN.Views['sections/note_reference'] = EN.Views.NoteSection.extend({
+EditorsNotes.Views['sections/note_reference'] = EditorsNotes.Views.NoteSection.extend({
   afterRender: function () {
     var that = this
       , addNoteView
@@ -693,7 +382,7 @@ EN.Views['sections/note_reference'] = EN.Views.NoteSection.extend({
 
     if (!this.model.isNew()) return;
 
-    addNoteView = new EN.Views.SelectNote({ project: this.model.project });
+    addNoteView = new EditorsNotes.Views.SelectNote({ project: this.model.project });
     $noteContainer = this.$('.note-reference-note-container')
       .html(addNoteView.el);
 
@@ -709,7 +398,7 @@ EN.Views['sections/note_reference'] = EN.Views.NoteSection.extend({
   }
 });
 
-EN.Views['sections/text'] = EN.Views.NoteSection.extend({
+EditorsNotes.Views['sections/text'] = EditorsNotes.Views.NoteSection.extend({
   isEmpty: function () {
     return !this.model.get('content');
   }
@@ -724,7 +413,7 @@ EN.Views['sections/text'] = EN.Views.NoteSection.extend({
  *    project (required): slug of the project currently being worked on
  *    autocompleteopts: object defining settings for the autocomplete input
  */
-EN.Views['SelectItem'] = Backbone.View.extend({
+EditorsNotes.Views['SelectItem'] = Backbone.View.extend({
   events: {
     'click .add-new-object': 'addItem'
   },
@@ -755,7 +444,7 @@ EN.Views['SelectItem'] = Backbone.View.extend({
     var that = this
       , $input
 
-    this.$el.html(EN.Templates.add_or_select_item({type: that.type}));
+    this.$el.html(EditorsNotes.Templates.add_or_select_item({type: that.type}));
 
     $input = this.$('input');
     $input.autocomplete(that._autocompleteopts)
@@ -768,7 +457,7 @@ EN.Views['SelectItem'] = Backbone.View.extend({
   }
 });
 
-EN.Views['SelectDocument'] =  EN.Views.SelectItem.extend({
+EditorsNotes.Views['SelectDocument'] =  EditorsNotes.Views.SelectItem.extend({
   type: 'document',
   labelAttr: 'description',
   autocompleteURL: function () { return this.project.url() + 'documents/' },
@@ -779,7 +468,7 @@ EN.Views['SelectDocument'] =  EN.Views.SelectItem.extend({
 
   addItem: function (e) {
     var that = this
-      , addView = new EN.Views.AddDocument({ project: this.project });
+      , addView = new EditorsNotes.Views.AddDocument({ project: this.project });
 
     e.preventDefault();
 
@@ -790,7 +479,7 @@ EN.Views['SelectDocument'] =  EN.Views.SelectItem.extend({
   }
 });
 
-EN.Views['SelectNote'] = EN.Views.SelectItem.extend({
+EditorsNotes.Views['SelectNote'] = EditorsNotes.Views.SelectItem.extend({
   type: 'note',
   labelAttr: 'title',
   autocompleteURL: function () { return this.project.url() + 'notes/'; },
@@ -801,7 +490,7 @@ EN.Views['SelectNote'] = EN.Views.SelectItem.extend({
 
   addItem: function (e) {
     var that = this
-      , addView = new EN.Views.AddNote({ project: this.project });
+      , addView = new EditorsNotes.Views.AddNote({ project: this.project });
 
     e.preventDefault();
 
@@ -823,13 +512,13 @@ EN.Views['SelectNote'] = EN.Views.SelectItem.extend({
  *    minHeight
  *    width
  */
-EN.Views['AddItem'] = Backbone.View.extend({
+EditorsNotes.Views['AddItem'] = Backbone.View.extend({
   renderModal: function () {
     var that = this
       , widget
       , $loader
 
-    widget = EN.Templates.add_item_modal({
+    widget = EditorsNotes.Templates.add_item_modal({
       type: that.itemType,
       textarea: !!that.textarea
     });
@@ -889,14 +578,14 @@ EN.Views['AddItem'] = Backbone.View.extend({
   }
 });
 
-EN.Views['AddDocument'] = EN.Views.AddItem.extend({
+EditorsNotes.Views['AddDocument'] = EditorsNotes.Views.AddItem.extend({
   itemType: 'document',
   textarea: true,
   initialize: function (options) {
     this.model = options.project.documents.add({}, {at: 0}).at(0);
     this.render();
     this.$('.modal-body').append('<div class="add-document-zotero-data">');
-    this.zotero_view = new EN.Views.EditZoteroInformation({
+    this.zotero_view = new EditorsNotes.Views.EditZoteroInformation({
       el: this.$('.add-document-zotero-data')
     });
   },
@@ -927,7 +616,7 @@ EN.Views['AddDocument'] = EN.Views.AddItem.extend({
   }
 });
 
-EN.Views['AddNote'] = EN.Views.AddItem.extend({
+EditorsNotes.Views['AddNote'] = EditorsNotes.Views.AddItem.extend({
   itemType: 'note',
   initialize: function (options) {
     this.model = options.project.notes.add({}, {at: 0}).at(0);
@@ -965,7 +654,7 @@ EN.Views['AddNote'] = EN.Views.AddItem.extend({
   }
 });
 
-EN.Views['EditZoteroInformation'] = Backbone.View.extend({
+EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
   events: {
     'change .item-type-select': function (e) {
       this.renderZoteroForm(e.currentTarget.value);
@@ -988,7 +677,7 @@ EN.Views['EditZoteroInformation'] = Backbone.View.extend({
 
     $.getJSON('/api/document/itemtypes/')
       .done(function (itemTypes) {
-        var select = EN.Templates['zotero/item_type_select'](itemTypes);
+        var select = EditorsNotes.Templates['zotero/item_type_select'](itemTypes);
         that.$el.html('<hr />' + select);
         that.$('select').prop('selectedIndex', -1);
       })
