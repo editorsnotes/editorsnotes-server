@@ -4,39 +4,52 @@
 {% block title %}: {{ note.title }}{% endblock %}
 
 {% block js %}
-<script type="text/javascript" src="{{ STATIC_URL }}function/jquery/jquery.ba-bbq.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}function/note.js"></script>
-{% endblock %}
+  <script type="text/javascript" src="{{ STATIC_URL }}function/jquery/jquery.ba-bbq.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}function/note.js"></script>
 
-{% block css %}
-<style type="text/css">
-  .zotero-information-edit .control-group {
-    margin-bottom: 0px !important;
-  }
-  #id_description {
-    width: 90%;
-    height: 50px;
-  }
-  .note-status {
-    font-weight: bold;
-    padding-bottom: 1em;
-    margin-bottom: 1em;
-  }
-  .note-status-hibernating {
-    color: black;
-  }
-  .note-status-open {
-    color: green;
-  }
-  .note-status-closed {
-    color: red;
-  }
-  .zotero-container {
-    height: 355px;
-    overflow-y: scroll;
-  }
-  
-</style>
+  <script src="{{ STATIC_URL }}function/wysihtml5/wysihtml5-0.3.0.js"></script>
+  <script src="{{ STATIC_URL }}function/wysihtml5/parser_rules.js"></script>
+  <script src="{{ STATIC_URL }}function/backbone-app.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $('.edit-note-sections').on('click', function (e) {
+        var project = new EditorsNotes.Models.Project()
+          , noteID = document.location.pathname.match(/notes\/(\d+)\//)[1]
+          , note = project.notes.add({ id: noteID }).get(noteID)
+          , view
+
+        e.preventDefault();
+
+        function flash() {
+          var $container = $('#note-sections-container');
+
+          $('<div>&nbsp;</div>')
+            .css({
+              'opacity': .90,
+              'height': $container.height(),
+              'width': $container.width(),
+              'background-color': 'green',
+              'position': 'absolute'
+            })
+            .appendTo('body')
+            .position({ 'my': 'top', 'at': 'top', 'of': $container })
+            .animate({ opacity: 0 }, 250, function () { $(this).remove() });
+        }
+
+        view = new EditorsNotes.Views.NoteSectionList({
+          el: '#note-sections-container',
+          model: note
+        });
+
+        view.model.once('sync', function () {
+          console.log('hi');
+          $('#tabs [href="#note-tab"]').one('shown', flash).trigger('click');
+        });
+
+      });
+    });
+  </script>
+
 {% endblock %}
 
 {% block content %}
@@ -80,9 +93,9 @@
 
           <div class="row edit-row">
             <div class="span6 edit-button">
-              {% if request.user.is_authenticated %}
-              <a class="btn" href="{{ note.get_admin_url }}">Edit note details</a>
-              <a class="btn" href="{% url "admin:main_note_sections_change" note.project.slug note.id %}">Edit note content</a>
+              {% if can_edit %}
+                <a class="btn edit-note-details" href="#">Edit note details</a>
+                <a class="btn edit-note-sections" href="#">Edit note sections</a>
               {% endif %}
             </div>
             <div class="span6 edit-history">
@@ -93,12 +106,14 @@
       </section>
 
       <section id="note-tab" class="tab-pane active">
-        <div id="note-sections">
-          {% for section in sections %}
-          {% include section|ns_template_name %}
-          {% empty %}
-          <span class="quiet">This note is empty</span>
-          {% endfor %}
+        <div id="note-sections-blah">
+          <div id="note-sections-container">
+            {% for section in sections %}
+            {% include section|ns_template_name %}
+            {% empty %}
+            <span class="quiet">This note is empty</span>
+            {% endfor %}
+          </div>
         </div>
       </section>
 
@@ -115,6 +130,13 @@
         {% endfor %}
         </ol>
       </section>
+
+      {% if can_edit %}
+      <div style="display: none;">
+        {% csrf_token %}
+        {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="note-section-toolbar"%}
+      </div>
+      {% endif %}
     </div>
 
 {% endblock %}

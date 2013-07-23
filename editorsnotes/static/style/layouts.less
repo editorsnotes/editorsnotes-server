@@ -91,6 +91,17 @@ td.zotero-key {
   line-height: 22px;
 }
 
+// Note page
+// ----------
+.note-status {
+  font-weight: bold;
+  padding-bottom: 1em;
+  margin-bottom: 1em;
+}
+.note-status-hibernating { color: black; }
+.note-status-open { color: green; }
+.note-status-closed { color: red; }
+
 
 // Facets
 //--------
@@ -200,6 +211,10 @@ td.zotero-key {
   top: 1px;
 }
 
+
+//
+// Types of sections
+//
 .citation-document {
   * { display: inline; }
   a { color: @textColor; }
@@ -211,16 +226,18 @@ td.zotero-key {
   .icon-pencil { .thing-icon; }
 }
 
-.citation, .note-section, .footnote-edit {
-  margin-bottom: 4px;
-  border-radius: 2px;
-  .btn-toolbar { .content-separation-border; }
-}
-
 .note-section-text .btn-toolbar {
   border: none;
   margin-top: 0;
   padding-top: 0 !important;
+}
+
+// General layout
+
+.citation, .note-section, .footnote-edit {
+  margin-bottom: 16px;
+  border-radius: 2px;
+  .btn-toolbar { .content-separation-border; }
 }
 
 // For editing & viewing citations (and editing footnotes)
@@ -253,15 +270,13 @@ td.zotero-key {
 .citation-edit,
 .note-section-edit,
 .footnote-edit,
-#note-sections-container > .note-section
+#note-sections-container.editing > .note-section
 {
   padding: 10px;
   margin-bottom: 0;
 
   // Space at the bottom of editing citations & footnotes
-  &:last-child {
-    margin-bottom: 50px;
-  }
+  &:last-child { margin-bottom: 50px; }
 
   &:not([class*="active"]):hover {
     padding: 9px;
@@ -324,7 +339,7 @@ td.zotero-key {
 }
 
 #citation-edit-bar {
-  margin: 1.75em 0 1em 0;
+  margin-bottom: 1em;
   padding: .75em;
   border: 1px solid #999;
 
@@ -348,7 +363,7 @@ td.zotero-key {
   }
 }
 
-#note-sections-edit-blah {
+#note-sections-container .note-section {
   .ui-autocomplete-input { margin-bottom: 0; }
   .ui-autocomplete {
     max-width: 750px;
