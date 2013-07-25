@@ -63,6 +63,7 @@
             </form> 
             </ul>
 
+            {% with user=request.user %}
             {% if user.is_authenticated %}
             {% if user.email %}
             <input type="hidden" id="logged-in-user-email" value="{{ user.email }}" />
@@ -98,6 +99,7 @@
               <li><a href="/accounts/login/">Log in</a></li>
             </ul>
             {% endif %}
+            {% endwith %}
           </div>
         </div>
       </div>
