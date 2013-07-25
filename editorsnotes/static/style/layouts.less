@@ -93,14 +93,105 @@ td.zotero-key {
 
 // Note page
 // ----------
-.note-status {
-  font-weight: bold;
-  padding-bottom: 1em;
-  margin-bottom: 1em;
-}
+span[class*="note-status-"] { font-weight: bold; }
 .note-status-hibernating { color: black; }
 .note-status-open { color: green; }
 .note-status-closed { color: red; }
+
+a.license-link {
+  color: black;
+  &:hover { color: black; }
+}
+
+.license-symbol {
+  display: inline-block;
+
+  font-style: normal;
+  font-weight: normal;
+  font-family: "OpenWeb Icons";
+  font-size: 28px;
+
+  position: relative;
+  left: -2px;
+  top: 6px;
+  margin-top: -5px;
+}
+
+#note-details {
+  .makeRow();
+  .well;
+  margin-left: 0 !important;
+
+  .about-license { 
+    border-bottom: 1px dashed @linkColor;
+    &:hover { text-decoration: none; color: @linkColor; }
+  }
+
+  #note-about {
+    .makeColumn(6);
+    width: 420px;
+    > div { padding: 6px 0; }
+    ul { margin-bottom: 0; }
+  }
+
+  #note-about, #note-authorship {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  #note-related-topics {
+    > span {
+      font-weight: bold;
+      border-bottom: 1px solid #999;
+      padding-bottom: 1px;
+      margin-bottom: 1px;
+      display: inline-block;
+      width: 240px;
+    }
+
+    li {
+      margin-bottom: 2px;
+      margin-left: 2em;
+      text-indent: -2em;
+    }
+  }
+
+  #note-authorship {
+    .makeColumn(5);
+    width: 420px;
+    .dl-horizontal;
+    ul { margin: 0; }
+    dt { width: 88px; }
+    dd { margin-left: 97px; }
+    dd, dt { padding: 6px 0; }
+  }
+}
+
+#note-description {
+  border: 1px solid #999;
+  border-radius: 2px;
+  padding: 0px 19px 14px;
+  p:last-of-type { margin-bottom: 0; }
+  margin: 2em 0;
+
+  &:before { 
+    content: "Description";
+
+    font-variant: small-caps;
+    font-weight: bold;
+    letter-spacing: 1px;
+
+    background-color: #fff;
+    border: 1px solid #999;
+    border-radius: 2px;
+    padding: 2px 4px;
+
+    position: relative;
+    top: -8px;
+    left: -5px;
+  }
+
+}
 
 
 // Facets

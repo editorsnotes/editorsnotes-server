@@ -18,90 +18,94 @@
 {% endblock %}
 
 {% block content %}
-    <header>
-      <h2>{{ note.title|typogrify }}</h2>
-      {% include "includes/related_topics_header.html" with related_topics=topics %}
-    </header>
+    <header><h2>{{ note.title|typogrify }}</h2></header>
 
-    <ul id="tabs" class="nav nav-tabs">
-      <li><a href="#about-tab">About</a></li>
-      <li><a href="#note-tab">Note</a></li>
-      <li><a href="#history-tab">History</a></li>
-    </ul>
+    <section id="note-details">
 
-    <div class="tab-content">
-      <section id="about-tab" class="tab-pane">
-        <div class="note-status">
-          Note status:
-          {% if note.status == '0' %}<span class="note-status-closed">Closed</span>
-          {% elif note.status == '1' %}<span class="note-status-open">Open</span>
-          {% else %}<span class="note-status-hibernating">Hibernating</span>{% endif %}
-        </div>
-
-        {{ note.content|as_html }}
-
-        {% if note.assigned_users.all %}
-        <hr/>
-        <strong>Assigned users:</strong>
+      <div id="note-about">
 
         <div>
+          <strong>This note is </strong>
+          {% if note.status == '0' %}<span class="note-status-closed">closed</span>
+          {% elif note.status == '1' %}<span class="note-status-open">open</span>
+          {% else %}<span class="note-status-hibernating">hibernating</span>{% endif %}
+        </div>
+
+        <div id="note-related-topics">
+          <span>Related topics</span>
           <ul class="unstyled">
-            {% for u in note.assigned_users.all %}
-            <li>{{ u|as_link }}</li>
+            {% for topic in topics %}
+            <li>{{ topic|as_link }}</li>
+            {% empty %}
+            <span class="quiet">none</span>
             {% endfor %}
           </ul>
         </div>
-        {% else %}
-        {% endif %}
 
-          <br/>
-
-          <div class="row edit-row">
-            <div class="span6 edit-button">
-              {% if can_edit %}
-                <a class="btn edit-note-details" href="#">Edit note details</a>
-                <a class="btn edit-note-sections" href="#">Edit note sections</a>
-              {% endif %}
-            </div>
-            <div class="span6 edit-history">
-              {{ note|display_edit_history }}
-            </div>
-          </div>
-
-      </section>
-
-      <section id="note-tab" class="tab-pane active">
-        <div id="note-sections-blah">
-          <div id="note-sections-container">
-            {% for section in sections %}
-            {% include section|ns_template_name %}
-            {% empty %}
-            <span class="quiet">This note is empty</span>
-            {% endfor %}
-          </div>
-        </div>
-      </section>
-
-      <section id="history-tab" class="tab-pane">
-        <p>{{ history|length }} revision{% if history|length == 1 %}{% else %}s{% endif %}; most recent listed first.</p>
-        <ol>
-        {% for version in history %}
-          {% with fields=version.field_dict %}
-          <li>
-            {{ fields.last_updated|date }} by {{ fields.last_updater }}
-            {% comment %}(<a href="history/?compare={{ version.revision_id }}">compare</a>){% endcomment %}
-          </li>
+        {% comment %}
+        {% if can_edit %}
+        <div id="note-assigned-users">
+          {% with assigned_users=note.assigned_users.all %}
+          {% if assigned_users|length %}
+            <strong>Assigned users:</strong>
+            <ul class="unstyled">
+            {% for u in assigned_users %}<li>{{ u|as_link }}</li>{% endfor %}
+            </ul>
+          {% else %}
+            NO ASSIGNED USERS
+          {% endif %}
           {% endwith %}
-        {% endfor %}
-        </ol>
-      </section>
+        </div>
 
-      {% if can_edit %}
-      <div style="display: none;">
-        {% csrf_token %}
-        {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="note-section-toolbar"%}
+        <div id="note-edit-row">
+          EDIT
+        </div>
+        {% endif %}
+        {% endcomment %}
+
       </div>
-      {% endif %}
+
+      <dl id="note-authorship" class="dl-horizontal">
+        <dt>Project</dt>
+        <dd>{{ note.project|as_link }}</dd>
+
+        {% with authors=note.get_all_updaters %}
+        <dt>Author{% if authors|length > 1 %}s{% endif %}</dt>
+        <dd>
+          <ul class="unstyled">
+          {% for author in authors %}<li>{{ author|as_link }}</li>{% endfor %}
+          </ul>
+        </dd>
+        {% endwith %}
+
+        <dt>License</dt>
+        <dd>
+        <a class="license-link" href="{{ license.url }}" title="{{ license }}">
+          {% for symbol in license.symbols %}<i class="license-symbol">{{ symbol }}</i>{% endfor %}
+        </a>
+        </dd>
+
+        <dt>Last updated</dt>
+        <dd>{{ note.last_updated }} (<a href="#">view history</a>)</dd>
+      </dl>
+
+    </section>
+
+    <section id="note-description">
+      {{ note.content|as_html }}
+    </section>
+
+    <section id="note-sections">
+      {% for section in sections %}{% include section|ns_template_name %}{% endfor %}
+    </section>
+
+    {% if can_edit %}
+    <div style="display: none;">
+      {% csrf_token %}
+      {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="note-section-toolbar"%}
+    </div>
+    {% endif %}
+
     </div>
 
 {% endblock %}
