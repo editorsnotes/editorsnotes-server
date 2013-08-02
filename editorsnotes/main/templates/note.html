@@ -4,13 +4,19 @@
 {% block title %}: {{ note.title }}{% endblock %}
 
 {% block js %}
-  <script src="{% static "function/wysihtml5/wysihtml5-0.3.0.js" %}"></script>
-  <script src="{% static "function/wysihtml5/parser_rules.js" %}"></script>
+
+  {% if can_edit %}
+  <script type="text/javascript" src="{% static "function/wysihtml5/wysihtml5-0.3.0.js" %}"></script>
+  <script type="text/javascript" src="{% static "function/wysihtml5/parser_rules.js" %}"></script>
+  <script type="text/javascript" src="{% static "function/zotero-jquery/zotero-functions.js" %}"></script>
 
   <script type="text/javascript" src="{% static "function/backbone/app.js" %}"></script>
   <script type="text/javascript" src="{% static "function/backbone/models.js" %}"></script>
   <script type="text/javascript" src="{% static "function/backbone/templates.js" %}"></script>
   <script type="text/javascript" src="{% static "function/backbone/views.js" %}"></script>
+  <script type="text/javascript" src="{% static "function/note.js" %}"></script>
+  {% endif %}
+
 {% endblock %}
 
 {% block content %}
@@ -38,27 +44,6 @@
           </ul>
         </div>
 
-        {% comment %}
-        {% if can_edit %}
-        <div id="note-assigned-users">
-          {% with assigned_users=note.assigned_users.all %}
-          {% if assigned_users|length %}
-            <strong>Assigned users:</strong>
-            <ul class="unstyled">
-            {% for u in assigned_users %}<li>{{ u|as_link }}</li>{% endfor %}
-            </ul>
-          {% else %}
-            NO ASSIGNED USERS
-          {% endif %}
-          {% endwith %}
-        </div>
-
-        <div id="note-edit-row">
-          EDIT
-        </div>
-        {% endif %}
-        {% endcomment %}
-
       </div>
 
       <dl id="note-authorship" class="dl-horizontal">
@@ -84,7 +69,6 @@
         <dt>Last updated</dt>
         <dd>{{ note.last_updated }} (<a href="#">view history</a>)</dd>
       </dl>
-
     </section>
 
     <section id="note-description">

@@ -1,26 +1,62 @@
+function editTextBlock($contentElement, opts) {
+  var that = this
+    , options = opts || {}
+    , content = opts.content || $contentElement.html()
+    , id = opts.id || Math.floor(Math.random() * 100000)
+    , $container = opts.container || $contentElement.parent()
+    , $textarea
+    , taHeight
+    , toolbar
+    , editor
+
+  taHeight = (function (h) {
+    return (h < 380 ? h : 380) + 100;
+  })($contentElement.innerHeight());
+
+  $textarea = $('<textarea>')
+    .attr('id', id)
+    .css({ 'margin-bottom': '8px', 'width': '99%', 'height': taHeight })
+    .val(content)
+    .insertAfter($contentElement);
+
+  $container.css({ 'min-height': taHeight + 8 });
+
+  $contentElement.hide();
+
+  toolbar = $('#note-section-toolbar').clone()
+    .attr('id', id + '-toolbar')
+    .insertBefore($textarea)
+    .show();
+
+  editor = new wysihtml5.Editor(id, _.extend({
+    toolbar: id + '-toolbar'
+  }, EditorsNotes.wysihtml5BaseOpts));
+
+  editor.on('load', function () { $container.css({ 'min-height': ''}) });
+
+  return editor;
+}
+
 // The toolbar controlling adding new note sections & saving the collection
 // of sections.
 EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
   initialize: function (opts) {
     this.note = opts.note;
+
     this.render();
 
-    // Handle the state of the save button for the note section collection.
+    this.listenTo(this.note, 'dirtied', this.enableButton);
+    this.listenTo(this.note.sections, 'dirtied', this.enableButton);
+
     this.$btn = this.$('button');
     this.$btnText = this.$btn.find('span');
     this.$loader = this.$btn.find('img');
-
-    this.listenTo(this.note.sections, 'change', this.enableButton);
-    this.listenTo(this.note.sections, 'sync removeEmpty', this.disableButton);
-    this.listenTo(this.note.sections, 'request', this.showLoading);
-
-    this.listenTo(this.note, 'change', this.enableButton);
-    this.listenTo(this.note, 'sync', this.disableButton);
-    this.listenTo(this.note, 'request', this.showLoading);
-
   },
 
-  events: { 'click .add-section': 'addSection' },
+  events: {
+    'click .add-section': 'addSection',
+    'click .save-changes': 'saveSections'
+  },
 
   render: function () {
     this.$el.attr('id', 'citation-edit-bar');
@@ -32,10 +68,28 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
       + '<a class="add-section" data-section-type="citation">Citation</a>'
       + '<a class="add-section" data-section-type="text">Text</a>'
       + '<a class="add-section" data-section-type="note_reference">Reference to a note</a>'
-      + '<button disabled="disabled" class="btn pull-right">'
-        + '<span>No changes to save</span>&nbsp;'
+      + '<button disabled="disabled" class="btn pull-right save-changes">'
+        + '<span>All changes saved</span>&nbsp;'
         + '<img style="display: none" src="/static/style/icons/ajax-loader.gif">'
       + '</button>')
+  },
+
+  saveSections: function () {
+    var that = this
+      , sections
+      , promises
+
+    this.showLoading();
+
+    sections = this.note.sections.filter(function (s) { return s.isDirty });
+    promises = sections.map(function (s) { return s.save() });
+
+    $.when.apply($, promises).done(function () {
+      sections.forEach(function (s) { s.isDirty = false });
+      that.note.sections.trigger('reorder');
+      that.disableButton.call(that);
+    });
+
   },
 
   enableButton: function (sec) {
@@ -45,7 +99,6 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
   },
 
   disableButton: function (model) {
-    if (model) model.isDirty = false;
     this.$btn.prop('disabled', 'disabled').removeClass('btn-primary');
     this.$loader.hide();
     this.$btnText.text('All changes saved');
@@ -65,8 +118,12 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
 
     // TODO: idx is always 0 right now, so sections are added at the top of
     // the list, but that can be changed.
-    this.note.sections.add({'section_type': sectionType}, {'at': idx, 'sort': false});
-
+    //
+    // Sort is false because sections are ordered by the index of their ID in
+    // the note's section_ordering field. Since this new section does not yet
+    // have an ID, it can't be sorted.
+    //
+    this.note.sections.add({ 'section_type': sectionType }, { at: idx, sort: false });
   }
 });
 
@@ -88,20 +145,19 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
     this.listenTo(this.note.sections, 'add', this.addSection);
     this.listenTo(this.note.sections, 'remove', this.removeSection);
     this.listenTo(this.note.sections, 'set', this.render);
+
     this.listenTo(this.note.sections, 'deactivate', this.deactivateSections);
     this.listenTo(this.note.sections, 'sync', this.saveOrder);
-
-    this.note.fetch();
-    this.render();
+    this.listenTo(this.note.sections, 'reorder', this.saveOrder);
   },
 
   render: function () {
-    var $el = this.$el.addClass('editing').empty();
-
+    $('body').addClass('editing');
+    this.$el.empty();
     this._rendered = true;
     this._sectionViews.forEach(function (sectionView) {
-      $el.append(sectionView.el);
-    });
+      this.$el.append(sectionView.el);
+    }, this);
 
     this.initSort();
   },
@@ -206,7 +262,6 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
       this.note.set('section_ordering', viewOrdering);
       this.note.save();
     }
-
   }
 
 });
@@ -222,9 +277,7 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
   className: 'note-section',
   isActive: false,
 
-  events: {
-    'click': 'edit',
-  },
+  events: { 'click': 'edit' },
 
   initialize: function () {
     this.render();
@@ -253,7 +306,7 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
     this.editTextContent();
 
     html = ''
-      + '<div class="edit-row">'
+      + '<div class="edit-row row">'
         + '<a class="btn btn-primary save-section pull-right">OK</a>'
         + '<a class="btn btn-danger delete-section">Delete section</a>'
       + '</div>'
@@ -286,8 +339,6 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
           collection.trigger('removeEmpty');
         }
       });
-    } else if (this.model.isDirty) {
-      this.model.save();
     }
 
     return;
@@ -296,34 +347,16 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
   editTextContent: function () {
     var that = this
       , content = this.model.get('content')
-      , textareaID = 'edit-section-' + this.model.cid
-      , $content = this.$('.note-section-content')
-      , $textarea
-      , toolbar
-    
-    $textarea = $('<textarea>')
-      .attr('id', textareaID)
-      .css({
-        'margin-bottom': '8px',
-        'width': '99%',
-        'height': (function (h) {
-          return (h < 380 ? h : 380) + 120 + 'px';
-        })($content.innerHeight())
-      })
-      .val(content)
-      .appendTo(this.$el);
+      , $content = this.$('.note-section-text-content')
 
-    $content.hide();
+    this.contentEditor = editTextBlock($content, {
+      id: 'edit-section-' + this.model.cid,
+      content: this.model.get('content'),
+      container: this.$el
+    });
 
-    toolbar = $('#note-section-toolbar').clone()
-      .attr('id', textareaID + '-toolbar')
-      .insertBefore($textarea)
-      .show();
-
-    that.contentEditor = new wysihtml5.Editor(textareaID, _.extend({
-      toolbar: textareaID + '-toolbar'
-    }, EditorsNotes.wysihtml5BaseOpts));
-    that.contentEditor.on('input', function () {
+    this.contentEditor.on('input', function () {
+      that.model.trigger('dirtied', that.model);
       that.model.set('content', that.contentEditor.getValue().replace('<br>', '<br/>'));
     });
   },
@@ -341,9 +374,9 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
 
     if (saveChanges) {
       this.model.set('content', contentValue || null);
-      this.$('.note-section-content').html(contentValue);
+      this.$('.note-section-text-content').html(contentValue);
     }
-    this.$('.note-section-content').show();
+    this.$('.note-section-text-content').show();
 
     this.$(toRemove.join(',')).remove();
   }
@@ -359,19 +392,18 @@ EditorsNotes.Views['sections/citation'] = EditorsNotes.Views.NoteSection.extend(
     if (!this.model.isNew()) return;
 
     selectDocumentView = new EditorsNotes.Views.SelectDocument({ project: this.model.project });
-    $documentContainer = this.$('.citation-document-item')
-      .html(selectDocumentView.el);
+    $documentContainer = this.$('.citation-document').html(selectDocumentView.el);
 
     this.listenToOnce(selectDocumentView, 'documentSelected', function (doc) {
       $documentContainer.html(doc.get('description'));
       that.model.set('document_description', doc.get('description'));
       that.model.set('document', doc.url());
+      that.model.trigger('dirtied', that.model);
       selectDocumentView.remove();
     });
+
   },
-  isEmpty: function () {
-    return !this.model.has('document');
-  }
+  isEmpty: function () { return !this.model.has('document') }
 });
 
 EditorsNotes.Views['sections/note_reference'] = EditorsNotes.Views.NoteSection.extend({
@@ -390,18 +422,15 @@ EditorsNotes.Views['sections/note_reference'] = EditorsNotes.Views.NoteSection.e
       $noteContainer.html(note.get('title'));
       that.model.set('note_reference', note.url());
       that.model.set('note_reference_title', note.get('title'));
+      that.model.trigger('dirtied', that.model);
       addNoteView.remove();
     });
   },
-  isEmpty: function () {
-    return !this.model.has('note_reference');
-  }
+  isEmpty: function () { return !this.model.has('note_reference') }
 });
 
 EditorsNotes.Views['sections/text'] = EditorsNotes.Views.NoteSection.extend({
-  isEmpty: function () {
-    return !this.model.get('content');
-  }
+  isEmpty: function () { return !this.model.get('content') }
 })
 
 /*
@@ -426,7 +455,7 @@ EditorsNotes.Views['SelectItem'] = Backbone.View.extend({
 
     this._autocompleteopts = _.extend({
       select: that.selectItem.bind(that),
-      appendTo: '#note-sections-edit-blah',
+      appendTo: '#note-sections',
       minLength: 2,
       source: function (request, response) {
         $.getJSON(url, {'q': request.term}, function (data) {
