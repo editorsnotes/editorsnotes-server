@@ -1,8 +1,6 @@
 // Our layouts
 
-#main {
-  margin-bottom: 18px;
-}
+#main { margin-bottom: 18px; }
 
 // Navbars
 //---------
@@ -54,9 +52,7 @@
 
 // Tabs
 // -----
-.nav-tabs a {
-  color: @textColor;
-}
+.nav-tabs a { color: @textColor; }
 
 
 // Lists of models
@@ -283,198 +279,31 @@ a.license-link {
  * Citation formsets
  ********************************************************************/
 
-.content-separation-border {
-  border-top: 1px dotted #c0c0c0;
-  margin-top: 6px;
-  padding-top: 6px;
-}
-
-.thing-icon {
-  margin: 2px 2px 0;
-  color: #444;
-  font-size: 20px;
-  position: relative;
-  top: 1px;
-}
-
-
 //
 // Types of sections
 //
-.note-section-citation {
-  .makeRow();
 
-  height: 100%;
-
-  .citation-side {
-    .makeColumn();
-    width: 14px;
-    position: relative;
-    left: 2px;
-
-    i { font-size: 24px; color: #333; }
-  }
-
-  .citation-main {
-    .makeColumn(11);
-    width: 902px;
-
-    margin-left: 12px;
-    margin-bottom: 1.75em;
-    padding-left: 10px;
-    border-left: 1px solid #999;
-
-    .citation-document {
-      > * {
-        display: inline-block;
-        text-indent: -2.5em;
-        margin-left: 2.5em;
-      }
-    }
-
-  }
-
-  .citation-text-content {
-    margin-top: 4px;
-    padding-top: 4px;
-    border-top: 1px dotted #ccc;
-  }
-
-  .citation-text-content:empty {
-    margin: 0;
-    padding: 0;
-    border: none;
-  }
-
+.editing-affordance {
+  cursor: pointer;
+  background-color: #f0f0f0;
 }
 
-.citation-document {
-  * { display: inline; }
-  a { color: @textColor; }
-  .icon-file { .thing-icon; }
+.note-section-citation, .note-section-note_reference {
+  .object-reference;
 }
 
-.note-reference-note {
-  * { display: inline; }
-  .icon-pencil { .thing-icon; }
-}
-
-.note-section-text .btn-toolbar {
-  border: none;
-  margin-top: 0;
-  padding-top: 0 !important;
-}
-
-/*
-
-// General layout
-
-.citation, .note-section, .footnote-edit {
-  margin-bottom: 16px;
-  border-radius: 2px;
-  .btn-toolbar { .content-separation-border; }
-}
-
-// For editing & viewing citations (and editing footnotes)
-.citation .citation-notes,
-.note-section .note-section-content,
-.footnote-edit .footnote-content {
-  border: 1px solid darken(@grayLighter, 7%);
-  padding : 3px 10px 6px;
-  margin-top: 2px;
-
-  &:empty {
-    border: none;
-    padding-bottom: 0px;
-    margin-bottom: -5px;
+body.editing {
+  .note-section, #note-description {
+    &:not([class*="active"]):hover { .editing-affordance; }
   }
-  > :last-child,
-  > div > :last-child {
-    margin-bottom: 0px;
+
+  .edit-row {
+    .makeColumn(12);
+    width: 884px;
+    margin-left: 30px;
+    padding: 8px;
   }
 }
-
-.citation:not(.citation-edit):not(:last-of-type) {
-  margin-bottom: 1.25em;
-  &:after {
-    text-align: center;
-  }
-}
-
-// For editing citations and editing footnotes
-.citation-edit,
-.note-section-edit,
-.footnote-edit,
-#note-sections-container.editing > .note-section
-{
-  padding: 10px;
-  margin-bottom: 0;
-
-  // Space at the bottom of editing citations & footnotes
-  &:last-child { margin-bottom: 50px; }
-
-  &:not([class*="active"]):hover {
-    padding: 9px;
-    cursor: pointer;
-  }
-
-  &:hover, &-active {
-    border-width: 2px;
-    border: 1px solid #999;
-  }
-
-  [class$="-fields"] {
-    input, textarea {
-      display: none;
-    }
-  }
-
-  .btn-toolbar {
-    padding-top: 8px;
-  }
-
-}
-
-// Specific to editing citations
-#citation-items, #note-sections-container {
-  .citation div, .citation p {
-    display: block;
-  }
-  &.sort-active .citation-edit {
-    max-height: 100px;
-    overflow: hidden;
-  }
-  .citation-placeholder {
-    height: 50px;
-    border-radius: 2px;
-    border: 1px dashed black;
-    margin: 8px 0;
-    text-align: center;
-    opacity: .5;
-
-    &:after {
-      position: relative;
-      top: 16px;
-      content: '(reposition here)';
-    }
-  }
-
-  .citation-document a.add-new-document,
-  .citation-document a.add-new-object,
-  .note-reference-note a.add-new-object {
-    color: black;
-    &:hover { text-decoration: none; }
-    i.icon-plus-sign {
-      font-size: 18px;
-      position: relative;
-      top: 3px;
-      left: 6px;
-    }
-  }
-}
-
-*/
-
 
 #citation-edit-bar {
   margin-bottom: 1em;
@@ -501,7 +330,7 @@ a.license-link {
   }
 }
 
-#note-sections-container .note-section {
+#note-sections {
   .ui-autocomplete-input { margin-bottom: 0; }
   .ui-autocomplete {
     max-width: 750px;
