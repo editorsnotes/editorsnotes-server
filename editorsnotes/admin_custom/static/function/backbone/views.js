@@ -15,7 +15,7 @@ function editTextBlock($contentElement, opts) {
 
   $textarea = $('<textarea>')
     .attr('id', id)
-    .css({ 'margin-bottom': '8px', 'width': '99%', 'height': taHeight })
+    .css({ 'margin-bottom': '0', 'width': '99%', 'height': taHeight })
     .val(content)
     .insertAfter($contentElement);
 
@@ -41,23 +41,32 @@ function editTextBlock($contentElement, opts) {
 // of sections.
 EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
   initialize: function (opts) {
-    this.note = opts.note;
+    var that = this;
 
+    this.note = opts.note;
     this.render();
 
-    this.listenTo(this.note, 'dirtied', this.enableButton);
-    this.listenTo(this.note.sections, 'dirtied', this.enableButton);
+    this.$loader = this.$('img').css({
+      'display': 'none',
+      'position': 'relative',
+      'float': 'right',
+      'top': '6px',
+      'left': '-10px'
+    });
+    this.$saveMsg = this.$('span').css({
+      'display': 'none',
+      'float': 'right',
+      'font-size': '15px',
+      'margin-top': '4px',
+      'margin-right': '5px'
+    });
 
-    this.$btn = this.$('button');
-    this.$btnText = this.$btn.find('span');
-    this.$loader = this.$btn.find('img');
+    this.note.once('sync', function () {
+      that.listenTo(that.note, 'request', that.showLoader);
+      that.listenTo(that.note.sections, 'request', that.showLoader);
+    });
   },
-
-  events: {
-    'click .add-section': 'addSection',
-    'click .save-changes': 'saveSections'
-  },
-
+  events: { 'click .add-section': 'addSection' },
   render: function () {
     this.$el.attr('id', 'citation-edit-bar');
 
@@ -68,10 +77,22 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
       + '<a class="add-section" data-section-type="citation">Citation</a>'
       + '<a class="add-section" data-section-type="text">Text</a>'
       + '<a class="add-section" data-section-type="note_reference">Reference to a note</a>'
-      + '<button disabled="disabled" class="btn pull-right save-changes">'
-        + '<span>All changes saved</span>&nbsp;'
-        + '<img style="display: none" src="/static/style/icons/ajax-loader.gif">'
-      + '</button>')
+      + '<span>All changes saved.</span>'
+      + '<img style="display: none; float: right;" src="/static/style/icons/ajax-loader.gif">')
+  },
+
+  showLoader: function (model, xhr) {
+    var $msg = this.$saveMsg.hide()
+      , $loader = this.$loader.show()
+
+    xhr.always(function () {
+      $loader.hide();
+      $msg.show()
+        .css('opacity', 1)
+        .animate({ 'opacity': 1 })
+        .animate({ 'opacity': 0})
+    });
+
   },
 
   saveSections: function () {
@@ -89,25 +110,6 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
       that.note.sections.trigger('reorder');
       that.disableButton.call(that);
     });
-
-  },
-
-  enableButton: function (sec) {
-    sec.isDirty = true;
-    this.$btn.prop('disabled', false).addClass('btn-primary');
-    this.$btnText.text('Save changes');
-  },
-
-  disableButton: function (model) {
-    this.$btn.prop('disabled', 'disabled').removeClass('btn-primary');
-    this.$loader.hide();
-    this.$btnText.text('All changes saved');
-  },
-
-  showLoading: function () {
-    this.$btn.prop('disabled', 'disabled').removeClass('btn-primary');
-    this.$loader.show();
-    this.$btnText.text('Saving...');
   },
 
   addSection: function (e) {
@@ -165,15 +167,16 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
   initSort: function () {
     var that = this;
     this.$el.sortable({
-      placeholder: 'citation-placeholder',
+      placeholder: 'section-placeholder',
+      cancel: 'input,textarea,button,select,option,.note-section-edit-active',
       cursor: 'pointer',
       cursorAt: { 'left': 200, 'top': 20 },
       helper: function (event, item) {
-        var $item = $(item)
-          , $children = $item.children()
-          , $helper = $children.length ? $children.first() : $item
-
-        return $helper.clone();
+        return $(item).clone().addClass('active').css({
+          'max-height': '120px',
+          'border': 'none',
+          'opacity': .75
+        });
       },
       start: function (event, ui) {
         that.deactivateSections();
@@ -307,7 +310,7 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
 
     html = ''
       + '<div class="edit-row row">'
-        + '<a class="btn btn-primary save-section pull-right">OK</a>'
+        + '<a class="btn btn-primary save-section pull-right">Save</a>'
         + '<a class="btn btn-danger delete-section">Delete section</a>'
       + '</div>'
 
@@ -341,6 +344,7 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
       });
     }
 
+    this.model.save();
     return;
   },
 
@@ -356,7 +360,6 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
     });
 
     this.contentEditor.on('input', function () {
-      that.model.trigger('dirtied', that.model);
       that.model.set('content', that.contentEditor.getValue().replace('<br>', '<br/>'));
     });
   },
@@ -398,7 +401,6 @@ EditorsNotes.Views['sections/citation'] = EditorsNotes.Views.NoteSection.extend(
       $documentContainer.html(doc.get('description'));
       that.model.set('document_description', doc.get('description'));
       that.model.set('document', doc.url());
-      that.model.trigger('dirtied', that.model);
       selectDocumentView.remove();
     });
 
@@ -422,7 +424,6 @@ EditorsNotes.Views['sections/note_reference'] = EditorsNotes.Views.NoteSection.e
       $noteContainer.html(note.get('title'));
       that.model.set('note_reference', note.url());
       that.model.set('note_reference_title', note.get('title'));
-      that.model.trigger('dirtied', that.model);
       addNoteView.remove();
     });
   },

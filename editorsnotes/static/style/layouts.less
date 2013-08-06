@@ -283,13 +283,40 @@ a.license-link {
 // Types of sections
 //
 
+.section-placeholder {
+  height: 50px;
+  border-radius: 2px;
+  border: 2px dashed #999;
+  margin: 8px 0;
+  text-align: center;
+
+  &:after {
+    position: relative;
+    top: 16px;
+    content: '(reposition here)';
+  }
+}
+
 .editing-affordance {
   cursor: pointer;
   background-color: #f0f0f0;
 }
 
-.note-section-citation, .note-section-note_reference {
+.add-new-object {
+  text-indent: 0;
+  font-size: 18px;
+  padding: 5px;
+  position: relative;
+  top: 2px;
+  &:hover { color: @linkColor !important; text-decoration: none; }
+}
+
+.note-section {
   .object-reference;
+}
+
+.note-section-text-content > :last-child {
+  margin-bottom: 0px;
 }
 
 body.editing {
@@ -297,12 +324,21 @@ body.editing {
     &:not([class*="active"]):hover { .editing-affordance; }
   }
 
-  .edit-row {
-    .makeColumn(12);
-    width: 884px;
-    margin-left: 30px;
-    padding: 8px;
+  .note-section[class*="active"] {
+    padding: 12px;
+    margin: 1.2em 0;
+    border: 1px solid black;
+    .edit-row {
+      .makeColumn(12);
+      width: 100%;
+      margin-left: 0;
+      margin-top: 12px;
+    }
   }
+
+  .note-section-text .btn-toolbar { margin-top: 0px; }
+
+  #note-sections { margin-bottom: 200px; }
 }
 
 #citation-edit-bar {

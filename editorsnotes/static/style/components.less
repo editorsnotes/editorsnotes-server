@@ -6,8 +6,9 @@
 
   > div[class*='-side'] {
     .makeColumn();
-    margin-left: 2px;
-    width: 12px;
+    width: 16px;
+    margin-left: 0;
+    line-height: 19px;
     i { font-size: 24px; color: #333; }
   }
 
@@ -15,8 +16,8 @@
 
     .makeColumn(11);
     width: 880px;
-    margin-left: 12px;
-    padding-left: 10px;
+    margin-left: 6px;
+    padding-left: 6px;
     border-left: 1px solid #999;
 
     > :first-child {
@@ -33,7 +34,7 @@
       border-top: 1px dotted #ccc;
     }
 
-    > .btn-toolbar { margin-bottom: 4px; }
+    > .btn-toolbar { padding-top: 7px; margin-bottom: 7px; }
 
     > [class*='-text-content']:empty {
       margin: 0;
