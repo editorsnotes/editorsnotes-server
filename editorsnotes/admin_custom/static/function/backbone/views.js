@@ -44,6 +44,7 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
     var that = this;
 
     this.note = opts.note;
+    this.activeRequests = [];
     this.render();
 
     this.$loader = this.$('img').css({
@@ -65,6 +66,7 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
       that.listenTo(that.note, 'request', that.showLoader);
       that.listenTo(that.note.sections, 'request', that.showLoader);
     });
+
   },
   events: { 'click .add-section': 'addSection' },
   render: function () {
@@ -82,15 +84,21 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
   },
 
   showLoader: function (model, xhr) {
-    var $msg = this.$saveMsg.hide()
+    var that = this
+      , $msg = this.$saveMsg.hide()
       , $loader = this.$loader.show()
 
+    this.activeRequests.push(xhr);
+
     xhr.always(function () {
-      $loader.hide();
-      $msg.show()
-        .css('opacity', 1)
-        .animate({ 'opacity': 1 })
-        .animate({ 'opacity': 0})
+      that.activeRequests.pop(xhr);
+      if (!that.activeRequests.length) {
+        $loader.hide();
+        $msg.show()
+          .css('opacity', 1)
+          .animate({ 'opacity': 1 }, 700)
+          .animate({ 'opacity': 0})
+      }
     });
 
   },
@@ -342,9 +350,10 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
           collection.trigger('removeEmpty');
         }
       });
+    } else {
+      this.model.save();
     }
 
-    this.model.save();
     return;
   },
 
