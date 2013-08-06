@@ -54,8 +54,8 @@ def get_item_types():
 
     return {
         'itemTypes': data,
-        'common': sorted(
-            [typ[0] for typ in Counter(used_item_types).most_common()[:10]])
+        'common': [item_type for item_type, count in
+                   Counter(used_item_types).most_common()[:10]]
     }
 
 def get_collections(zotero_key, loc, top):

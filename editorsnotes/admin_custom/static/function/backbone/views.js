@@ -629,10 +629,12 @@ EditorsNotes.Views['AddDocument'] = EditorsNotes.Views.AddItem.extend({
     });
   },
 
-  saveItem: function () {
+  saveItem: function (e) {
     var that = this
       , data = { description: this.$('.item-text-main').val() }
       , zotero_data = this.zotero_view.getZoteroData();
+
+    e.preventDefault();
 
     if (!_.isEmpty(zotero_data)) {
       data.zotero_data = JSON.stringify(zotero_data);
@@ -688,6 +690,10 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
   events: {
     'change .item-type-select': function (e) {
       this.renderZoteroForm(e.currentTarget.value);
+    },
+    'click .common-item-types li': function (e) {
+      e.preventDefault();
+      this.renderZoteroForm($('a', e.currentTarget).data('item-type'));
     },
     'click .add-creator': 'addCreator',
     'click .remove-creator': 'removeCreator',
@@ -767,10 +773,6 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
     this.citeprocWorker.postMessage({zotero_data: zoteroData});
   },
 
-  updateCitation: function (citation) {
-    var textarea = $('.item-text-main');
-
-    textarea.val(citation);
-  }
+  updateCitation: function (citation) { $('.item-text-main').val(citation) }
 
 });
