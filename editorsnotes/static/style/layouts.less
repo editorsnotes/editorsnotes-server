@@ -299,17 +299,13 @@ a.license-link {
 }
 
 .section-placeholder {
-  height: 50px;
-  border-radius: 2px;
-  border: 2px dashed #999;
+  display: block;
+
+  height: 64px;
   margin: 8px 0;
   text-align: center;
+  background: #f0f0f0;
 
-  &:after {
-    position: relative;
-    top: 16px;
-    content: '(reposition here)';
-  }
 }
 
 .editing-affordance {
@@ -353,7 +349,10 @@ body.editing {
 
   .note-section-text .btn-toolbar { margin-top: 0px; }
 
-  #note-sections { margin-bottom: 200px; }
+  #note-sections {
+    min-height: 200px;
+    margin-bottom: 200px;
+  }
 }
 
 #citation-edit-bar {

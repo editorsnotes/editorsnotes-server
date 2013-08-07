@@ -170,6 +170,7 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
     }, this);
 
     this.initSort();
+    this.initDrag();
   },
 
   initSort: function () {
@@ -179,6 +180,8 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
       cancel: 'input,textarea,button,select,option,.note-section-edit-active',
       cursor: 'pointer',
       cursorAt: { 'left': 200, 'top': 20 },
+      axis: 'y',
+      tolerance: 'pointer',
       helper: function (event, item) {
         return $(item).clone().addClass('active').css({
           'max-height': '120px',
@@ -192,8 +195,15 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
         ui.item.hide();
         that.$el.sortable('refreshPositions');
       },
-      stop: function () {
+      stop: function (event, ui) {
         $(this).removeClass('sort-active');
+        if (ui.item.hasClass('add-section')) {
+          that.note.sections.add(
+            { 'section_type': ui.item.data('section-type') },
+            { at: ui.item.index(), sort: false }
+          );
+          ui.item.remove();
+        }
       },
       update: function (event, ui) {
         ui.item.show();
@@ -202,8 +212,39 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
     });
   },
 
-  addSection: function (section) {
+  initDrag: function () {
+    var that = this
+      , st
 
+    this.addView.$el.css('overflow', 'auto');
+    this.addView.$('.add-section').draggable({
+      axis: 'y',
+      distance: 10,
+      appendTo: that.addView.$el,
+      connectToSortable: that.$el,
+      helper: function (e, ui) {
+        return $('<div>')
+          .html($(this).text())
+          .css({ 
+            'position': 'absolute',
+            'width': that.$el.innerWidth() - 38,
+            'height': '1em',
+            'padding': '1em',
+            'border': '1px solid #999',
+            'background': '#fff',
+            'text-align': 'center'
+          })
+      },
+      start: function (e, ui) {
+        st = $(this).offsetParent().scrollTop();
+      },
+      drag: function (e, ui) {
+        ui.position.top -= st;
+      }
+    });
+  },
+
+  addSection: function (section) {
     var idx = section.collection.indexOf(section)
       , SectionView = EditorsNotes.Views['sections/' + section.get('section_type')]
       , view = new SectionView({ model: section })
