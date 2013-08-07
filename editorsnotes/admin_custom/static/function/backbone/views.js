@@ -467,6 +467,10 @@ EditorsNotes.Views['SelectItem'] = Backbone.View.extend({
       select: that.selectItem.bind(that),
       appendTo: '#note-sections',
       minLength: 2,
+      messages: {
+        noResults: '',
+        results: function () { return; }
+      },
       source: function (request, response) {
         $.getJSON(url, {'q': request.term}, function (data) {
           response(data.results.map(function (item) {
@@ -487,9 +491,9 @@ EditorsNotes.Views['SelectItem'] = Backbone.View.extend({
 
     $input = this.$('input');
     $input.autocomplete(that._autocompleteopts)
-      .data('autocomplete')._renderItem = function (ul, item) {
+      .data('ui-autocomplete')._renderItem = function (ul, item) {
         return $('<li>')
-          .data('item.autocomplete', item)
+          .data('ui-autocomplete-item', item)
           .append('<a>' + item.label + '</a>')
           .appendTo(ul)
       }
@@ -579,11 +583,10 @@ EditorsNotes.Views['AddItem'] = Backbone.View.extend({
       , modalHeight
       , bodyHeight
       , modalPosition = {
-        'my': 'top',
+        'my': 'top+20',
         'at': 'top',
         'of': $w,
         'collision': 'none',
-        'offset': '0 20'
       }
 
     modalHeight = this.options.height || (function () {

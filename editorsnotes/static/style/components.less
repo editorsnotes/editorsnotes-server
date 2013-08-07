@@ -44,3 +44,27 @@
 
   }
 }
+
+.ui-autocomplete {
+  border: 1px solid #aaa;
+  background: #fff;
+  max-width: 750px;
+  max-height: 300px;
+  border-radius: 2px;
+  left: 0;
+
+  .ui-menu-item {
+    padding: 8px;
+    cursor: pointer;
+    &:hover { background: #f0f0f0; }
+    &:not(:last-of-type) { border-bottom: 1px solid #f0f0f0; }
+
+    a {
+      display: block;
+      color: #333;
+      text-decoration: none;
+    }
+    a * { margin: 0; display: inline; }
+  }
+
+}

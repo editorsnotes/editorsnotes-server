@@ -20,5 +20,5 @@ $(document).ready(function() {
     .appendTo('body')
     .css('position', 'fixed')
     .on('click', function(e) { backboneInit(e); $(this).remove(); })
-    .position({ my: 'right', at: 'right', of: window, offset: '-64 0' })
+    .position({ my: 'right-64', at: 'right', of: window })
 });
