@@ -1,38 +1,54 @@
+/*
+ * Initialize a new wysihtml5 editor & edit a given element. Returns the
+ * wysihtml5 instance.
+ *
+ * Options:
+ *    id: string to use to derive the id for the textarea & toolbar
+ *
+ *    content: content to include in the textarea
+ *
+ *    $container: jquery element representing the container that will hold
+ *      all craeted elements
+ *
+ *    minHeight: minimum height of the textarea
+ */
 function editTextBlock($contentElement, opts) {
-  var that = this
-    , options = opts || {}
-    , content = opts.content || $contentElement.html()
-    , id = opts.id || Math.floor(Math.random() * 100000)
-    , $container = opts.container || $contentElement.parent()
+  var options
     , $textarea
-    , taHeight
     , toolbar
     , editor
+    , h
 
-  taHeight = (function (h) {
-    return (h < 380 ? h : 380) + 100;
+  options = _.extend({
+    id: _.uniqueId('section_auto_'),
+    content: $contentElement.html(),
+    $container: $contentElement.parent(),
+    minHeight: 380
+  }, opts);
+
+  h = (function (x) {
+    return (x < options.minHeight ? x : options.minHeight) + 100;
   })($contentElement.innerHeight());
 
   $textarea = $('<textarea>')
-    .attr('id', id)
-    .css({ 'margin-bottom': '0', 'width': '99%', 'height': taHeight })
-    .val(content)
+    .attr('id', options.id)
+    .css({ 'margin-bottom': '0', 'width': '99%', 'height': h })
+    .val(options.content)
     .insertAfter($contentElement);
 
-  $container.css({ 'min-height': taHeight + 8 });
-
+  options.$container.css({ 'min-height': h + 8 });
   $contentElement.hide();
 
   toolbar = $('#note-section-toolbar').clone()
-    .attr('id', id + '-toolbar')
+    .attr('id', options.id + '-toolbar')
     .insertBefore($textarea)
     .show();
 
-  editor = new wysihtml5.Editor(id, _.extend({
-    toolbar: id + '-toolbar'
+  editor = new wysihtml5.Editor(options.id, _.extend({
+    toolbar: options.id + '-toolbar'
   }, EditorsNotes.wysihtml5BaseOpts));
 
-  editor.on('load', function () { $container.css({ 'min-height': ''}) });
+  editor.on('load', function () { options.$container.css({ 'min-height': ''}) });
 
   return editor;
 }
