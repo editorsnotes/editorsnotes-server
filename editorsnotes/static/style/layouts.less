@@ -272,47 +272,29 @@ a.license-link {
 }
 
 
-// Admin
-//-------
+/*
+ * Note editing page
+ * ===================
+ */
 
-/******************************************************************** 
- * Citation formsets
- ********************************************************************/
-
-//
-// Types of sections
-//
-
-.common-item-types {
-  li {
-    .btn;
-    display: inline-block;
-    width: 175px;
-    margin: 8px 12px 12px;
-    padding: 8px 12px;
-  }
-
-  a {
-    color: black;
-    &:hover { text-decoration: none; }
-  }
-}
-
-.section-placeholder {
-  display: block;
-
-  height: 64px;
-  margin: 8px 0;
-  text-align: center;
-  background: #f0f0f0;
-
-}
-
+// Mixin for any item that can be edited when clicked
 .editing-affordance {
   cursor: pointer;
   background-color: #f0f0f0;
 }
 
+// The placeholder the appears note sections are being sorted, or when a new
+// section is being created via dragging
+.section-placeholder {
+  display: block;
+  height: 64px;
+  margin: 8px 0;
+  text-align: center;
+  background: #f0f0f0;
+}
+
+// Icon that, when clicked, triggers a modal to add a new object (i.e. a
+// note or document)
 .add-new-object {
   text-indent: 0;
   font-size: 18px;
@@ -322,62 +304,112 @@ a.license-link {
   &:hover { color: @linkColor !important; text-decoration: none; }
 }
 
-.note-section {
-  .object-reference;
+// OK / Cancel row under wysihtml5 instances
+.edit-row {
+  .makeColumn(12);
+  width: 100%;
+  margin-left: 0;
+  margin-top: 12px;
 }
 
-.note-section-text-content > :last-child {
-  margin-bottom: 0px;
-}
+/*---- NOTE SECTIONS ----*/
+  .note-section { .object-reference; }
 
-body.editing {
-  .note-section, #note-description {
-    &:not([class*="active"]):hover { .editing-affordance; }
+  // Don't let bottom margin of, say, <p> elements bleed out over the end of a
+  // note section. This might be a global rule somewhere.
+  .note-section-text-content > :last-child { margin-bottom: 0px; }
+
+  .add-section-icon {
   }
 
-  .note-section[class*="active"] {
-    padding: 12px;
-    margin: 1.2em 0;
-    border: 1px solid black;
-    .edit-row {
-      .makeColumn(12);
-      width: 100%;
-      margin-left: 0;
-      margin-top: 12px;
+  // "Add section" toolbar
+  #citation-edit-bar {
+    margin-bottom: 1em;
+    padding: .75em;
+    border: 1px solid #999;
+
+    i { vertical-align: middle; font-size: 22px; color: #333; }
+
+    .drag-placeholder {
+      position: absolute;
+      padding: 1.3em 0;
+      border: 1px solid #999;
+      background: #fff;
+      text-align: center;
     }
+
+    h4 { display: inline-block; margin: 0 12px 0 0; }
+    .add-section {
+      .btn;
+      margin-right: 18px;
+      line-height: 26px;
+      padding-left: 20px;
+      padding-right: 20px;
+      min-width: 100px;
+    }
+    img.loader {
+      display: none;
+      position: relative;
+      float: right;
+      top: 6px;
+      left: -10px;
+    }
+    span.status-message {
+      display: none;
+      float: right;
+      font-size: 15px;
+      margin-top: 4px;
+      margin-right: 5px;
+    }
+
   }
 
-  .note-section-text .btn-toolbar { margin-top: 0px; }
 
-  #note-sections {
-    min-height: 200px;
-    margin-bottom: 200px;
+  // Only applies to note sections when the page is being edited
+  body.editing {
+
+    // Editing affordance when hovering over non-active section
+    .note-section:not([class*="active"]):hover { .editing-affordance; }
+
+    // Adjust margin & padding to allow for a border
+    .note-section[class*="active"] {
+      padding: 12px;
+      margin: 1.2em 0;
+      border: 1px solid black;
+    }
+
+    // For text-only sections, don't need a margin above the editing toolbar,
+    // since there's nothing above it.
+    .note-section-text .btn-toolbar { margin-top: 0px; }
+
+    // Include some whitespace at the bottom of the note section container
+    .note-section-list { padding-bottom: 200px; }
+
   }
-}
 
-#citation-edit-bar {
-  margin-bottom: 1em;
-  padding: .75em;
-  border: 1px solid #999;
+  #note-sections .ui-autocomplete-input { margin-bottom: 0; }
 
-  h4 {
-    display: inline-block;
-    margin: 0 3px 0 0;
-  }
-  a.add-section {
+/*---- END NOTE SECTIONS ----*/
+
+// Common item types in the zotero modal
+.common-item-types {
+  li {
     .btn;
-    margin-left: 10px;
+    display: inline-block;
+    width: 175px;
+    margin: 8px 12px 12px;
+    padding: 8px 12px;
   }
+
+  a { color: black; }
+  a:hover { text-decoration: none; }
 }
 
 .add-document-zotero-data {
   .zotero-entry {
     margin-bottom: 0 !important;
-
     label, div { display: inline-block; }
     label { width: 150px; }
-
   }
 }
 
-#note-sections .ui-autocomplete-input { margin-bottom: 0; }

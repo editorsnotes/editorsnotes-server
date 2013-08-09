@@ -37,30 +37,28 @@ function editTextBlock($contentElement, opts) {
   return editor;
 }
 
-// The toolbar controlling adding new note sections & saving the collection
-// of sections.
-EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
-  initialize: function (opts) {
+
+EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
+  events: {
+    'click .add-section': function (e) { 
+      e.preventDefault();
+      this.createSection( $(e.currentTarget).data('section-type') ); 
+    }
+  },
+
+  initialize: function (options) {
     var that = this;
 
-    this.note = opts.note;
-    this.activeRequests = [];
-    this.render();
+    this.note = this.model; // alias to make things more sensible
 
-    this.$loader = this.$('img').css({
-      'display': 'none',
-      'position': 'relative',
-      'float': 'right',
-      'top': '6px',
-      'left': '-10px'
-    });
-    this.$saveMsg = this.$('span').css({
-      'display': 'none',
-      'float': 'right',
-      'font-size': '15px',
-      'margin-top': '4px',
-      'margin-right': '5px'
-    });
+    this._sectionViews = [];
+    this.activeRequests = [];
+
+    this.listenTo(this.note.sections, 'add', this.addSection);
+    this.listenTo(this.note.sections, 'remove', this.removeSection);
+    this.listenTo(this.note.sections, 'sync', this.saveOrder);
+
+    this.listenTo(this.note.sections, 'deactivate', this.deactivateSections);
 
     this.note.once('sync', function () {
       that.listenTo(that.note, 'request', that.showLoader);
@@ -68,24 +66,32 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
     });
 
   },
-  events: { 'click .add-section': 'addSection' },
-  render: function () {
-    this.$el.attr('id', 'citation-edit-bar');
 
-    // Coulda been a template but there's no variables so...
-    // (TODO get this outta here)
-    this.$el.append(''
-      + '<h4>Add section: </h4>'
-      + '<a class="add-section" data-section-type="citation">Citation</a>'
-      + '<a class="add-section" data-section-type="text">Text</a>'
-      + '<a class="add-section" data-section-type="note_reference">Reference to a note</a>'
-      + '<span>All changes saved.</span>'
-      + '<img style="display: none; float: right;" src="/static/style/icons/ajax-loader.gif">')
+  render: function () {
+    var template = EditorsNotes.Templates['note_section_list']
+
+    $('body').addClass('editing');
+
+    this._rendered = true;
+    this.$el.empty().html( template() );
+
+    // jQuery element lookups to save for later
+    this.$loader = this.$('img.loader');
+    this.$statusMessage = this.$('.status-message');
+    this.$sections = this.$('.note-section-list');
+
+    this._sectionViews.forEach(function (sectionView) {
+      this.$sections.append(sectionView.el);
+    }, this);
+
+
+    this.initSort();
+    this.initDrag();
   },
 
   showLoader: function (model, xhr) {
     var that = this
-      , $msg = this.$saveMsg.hide()
+      , $msg = this.$statusMessage.hide()
       , $loader = this.$loader.show()
 
     this.activeRequests.push(xhr);
@@ -100,82 +106,11 @@ EditorsNotes.Views['AddSectionToolbar'] = Backbone.View.extend({
           .animate({ 'opacity': 0})
       }
     });
-
-  },
-
-  saveSections: function () {
-    var that = this
-      , sections
-      , promises
-
-    this.showLoading();
-
-    sections = this.note.sections.filter(function (s) { return s.isDirty });
-    promises = sections.map(function (s) { return s.save() });
-
-    $.when.apply($, promises).done(function () {
-      sections.forEach(function (s) { s.isDirty = false });
-      that.note.sections.trigger('reorder');
-      that.disableButton.call(that);
-    });
-  },
-
-  addSection: function (e) {
-    var sectionType = $(e.currentTarget).data('sectionType')
-      , idx = 0
-
-    e.preventDefault();
-
-    // TODO: idx is always 0 right now, so sections are added at the top of
-    // the list, but that can be changed.
-    //
-    // Sort is false because sections are ordered by the index of their ID in
-    // the note's section_ordering field. Since this new section does not yet
-    // have an ID, it can't be sorted.
-    //
-    this.note.sections.add({ 'section_type': sectionType }, { at: idx, sort: false });
-  }
-});
-
-EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
-  initialize: function (options) {
-    var that = this;
-
-    this.note = this.model;
-    this.project = this.project;
-
-    // Keep track of all the note sections views internally
-    this._sectionViews = [];
-
-    // Instantiate the toolbar to add/save sections
-    this.addView = new EditorsNotes.Views.AddSectionToolbar({ note: this.note });
-    this.addView.$el.insertBefore(this.$el);
-
-    // Listen to all appropriate section events.
-    this.listenTo(this.note.sections, 'add', this.addSection);
-    this.listenTo(this.note.sections, 'remove', this.removeSection);
-    this.listenTo(this.note.sections, 'set', this.render);
-
-    this.listenTo(this.note.sections, 'deactivate', this.deactivateSections);
-    this.listenTo(this.note.sections, 'sync', this.saveOrder);
-    this.listenTo(this.note.sections, 'reorder', this.saveOrder);
-  },
-
-  render: function () {
-    $('body').addClass('editing');
-    this.$el.empty();
-    this._rendered = true;
-    this._sectionViews.forEach(function (sectionView) {
-      this.$el.append(sectionView.el);
-    }, this);
-
-    this.initSort();
-    this.initDrag();
   },
 
   initSort: function () {
     var that = this;
-    this.$el.sortable({
+    this.$sections.sortable({
       placeholder: 'section-placeholder',
       cancel: 'input,textarea,button,select,option,.note-section-edit-active',
       cursor: 'pointer',
@@ -193,19 +128,17 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
         that.deactivateSections();
         $(this).addClass('sort-active');
         ui.item.hide();
-        that.$el.sortable('refreshPositions');
+        that.$sections.sortable('refreshPositions');
       },
       stop: function (event, ui) {
         $(this).removeClass('sort-active');
         if (ui.item.hasClass('add-section')) {
-          that.note.sections.add(
-            { 'section_type': ui.item.data('section-type') },
-            { at: ui.item.index(), sort: false }
-          );
+          that.createSection(ui.item.data('section-type'), ui.item.index());
           ui.item.remove();
         }
       },
       update: function (event, ui) {
+        if (ui.item.hasClass('add-section')) return;
         ui.item.show();
         that.saveOrder.call(that);
       }
@@ -214,26 +147,18 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
 
   initDrag: function () {
     var that = this
+      , $addBar = this.$('#citation-edit-bar').css('overflow', 'auto')
       , st
 
-    this.addView.$el.css('overflow', 'auto');
-    this.addView.$('.add-section').draggable({
+    $('.add-section', $addBar).draggable({
       axis: 'y',
       distance: 10,
-      appendTo: that.addView.$el,
-      connectToSortable: that.$el,
+      appendTo: $addBar,
+      connectToSortable: that.$sections,
       helper: function (e, ui) {
-        return $('<div>')
-          .html($(this).text())
-          .css({ 
-            'position': 'absolute',
-            'width': that.$el.innerWidth() - 38,
-            'height': '1em',
-            'padding': '1em',
-            'border': '1px solid #999',
-            'background': '#fff',
-            'text-align': 'center'
-          })
+        return $('<div class="drag-placeholder">')
+          .html( $(this).html() )
+          .css('width', that.$sections.innerWidth() - 22)
       },
       start: function (e, ui) {
         st = $(this).offsetParent().scrollTop();
@@ -242,6 +167,18 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
         ui.position.top -= st;
       }
     });
+  },
+
+  createSection: function (sectionType, idx) {
+    var _idx = idx || 0;
+
+    // Sort is false because sections are ordered by the index of their ID in
+    // the note's section_ordering field. Since this new section does not yet
+    // have an ID, it can't be sorted.
+    return this.note.sections.add(
+      { 'section_type': sectionType }, 
+      { at: _idx || 0, sort: false }
+    ).at(_idx);
   },
 
   addSection: function (section) {
@@ -256,9 +193,9 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
     if (!this._rendered) return;
 
     if (idx === 0) {
-      this.$el.prepend(view.el);
+      this.$sections.prepend(view.el);
     } else {
-      target = this.$el.children()[idx - 1];
+      target = this.$sections.children()[idx - 1];
       view.$el.insertAfter(target);
     }
 
@@ -295,7 +232,7 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
       , viewOrdering = []
       , renderedOrder
 
-    renderedOrder = this.$el.children('.note-section').map(function (idx, el) {
+    renderedOrder = this.$sections.children('.note-section').map(function (idx, el) {
       return $(el).data('sectionCID');
     }).toArray();
 
@@ -758,22 +695,21 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
 
     this.citeprocWorker = new Worker('/static/function/citeproc-worker.js');
     this.citeprocWorker.addEventListener('message', function (e) {
-      that.trigger('updateCitation', e.data.citation);
+      that.$('.item-text-main').val(e.data.citation);
     });
-    this.on('updateCitation', this.updateCitation);
 
     this.render();
 
     $.getJSON('/api/document/itemtypes/')
       .done(function (itemTypes) {
-        var select = EditorsNotes.Templates['zotero/item_type_select'](itemTypes);
+        var select = EditorsNotes.Templates['zotero/item_type_select'](itemTypes)
+
         that.$el.html('<hr />' + select);
         that.$('select').prop('selectedIndex', -1);
       })
       .error(function () {
         console.error('Could not fetch item types from server.');
       });
-
   },
 
   renderZoteroForm: function (itemType) {
@@ -783,6 +719,7 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
     $.get('/api/document/template/?itemType=' + itemType)
       .done(function (template) {
         var $template = $(template).filter('#zotero-information-edit');
+
         that.$el
           .html('<hr />' + $template.html())
           .find('.zotero-entry-delete').remove();
@@ -794,38 +731,25 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
   },
 
   addCreator: function (e) {
-    var $creator = $(e.currentTarget).closest('.zotero-creator')
-      , $newCreator = $creator.clone()
-
     e.preventDefault();
-
-    $newCreator.find('textarea').val('');
-    $newCreator.insertAfter($creator);
-
+    $(e.currentTarget).closest('.zotero-creator')
+      .clone()
+      .insertAfter($creator)
+      .find('textarea').val('');
   },
 
   removeCreator: function (e) {
     var $creator = $(e.currentTarget).closest('.zotero-creator')
 
     e.preventDefault();
-
-    if ($creator.siblings('.zotero-creator').length) {
-      $creator.remove();
-    } else {
-      $creator.find('textarea').val('');
-    }
-  },
-
-  getZoteroData: function () {
-    var that = this;
-    return EditorsNotes.zotero.zoteroFormToObject(that.$el);
+    $creator.siblings('.zotero-creator').length ?
+      $creator.remove() :
+      $('textarea', $creator).val('')
   },
 
   sendZoteroData: function () {
-    var zoteroData = this.getZoteroData();
-    this.citeprocWorker.postMessage({zotero_data: zoteroData});
+    this.citeprocWorker.postMessage({
+      zotero_data: EditorsNotes.zotero.zoteroFormToObject(this.$el)
+    });
   },
-
-  updateCitation: function (citation) { $('.item-text-main').val(citation) }
-
 });
