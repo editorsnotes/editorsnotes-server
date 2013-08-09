@@ -79,12 +79,7 @@
       {% for section in sections %}{% include section|ns_template_name %}{% endfor %}
     </section>
 
-    {% if can_edit %}
-    <div style="display: none;">
-      {% csrf_token %}
-      {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="note-section-toolbar"%}
-    </div>
-    {% endif %}
+    {% if can_edit %}<div style="display: none;">{% csrf_token %}</div>{% endif %}
 
     </div>
 

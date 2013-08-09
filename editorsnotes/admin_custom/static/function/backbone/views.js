@@ -1,59 +1,3 @@
-/*
- * Initialize a new wysihtml5 editor & edit a given element. Returns the
- * wysihtml5 instance.
- *
- * Options:
- *    id: string to use to derive the id for the textarea & toolbar
- *
- *    content: content to include in the textarea
- *
- *    $container: jquery element representing the container that will hold
- *      all craeted elements
- *
- *    minHeight: minimum height of the textarea
- */
-function editTextBlock($contentElement, opts) {
-  var options
-    , $textarea
-    , toolbar
-    , editor
-    , h
-
-  options = _.extend({
-    id: _.uniqueId('section_auto_'),
-    content: $contentElement.html(),
-    $container: $contentElement.parent(),
-    minHeight: 380
-  }, opts);
-
-  h = (function (x) {
-    return (x < options.minHeight ? x : options.minHeight) + 100;
-  })($contentElement.innerHeight());
-
-  $textarea = $('<textarea>')
-    .attr('id', options.id)
-    .css({ 'margin-bottom': '0', 'width': '99%', 'height': h })
-    .val(options.content)
-    .insertAfter($contentElement);
-
-  options.$container.css({ 'min-height': h + 8 });
-  $contentElement.hide();
-
-  toolbar = $('#note-section-toolbar').clone()
-    .attr('id', options.id + '-toolbar')
-    .insertBefore($textarea)
-    .show();
-
-  editor = new wysihtml5.Editor(options.id, _.extend({
-    toolbar: options.id + '-toolbar'
-  }, EditorsNotes.wysihtml5BaseOpts));
-
-  editor.on('load', function () { options.$container.css({ 'min-height': ''}) });
-
-  return editor;
-}
-
-
 EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
   events: {
     'click .add-section': function (e) { 
@@ -308,7 +252,13 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
 
     this.isActive = true;
     this.$el.addClass('note-section-edit-active');
-    this.editTextContent();
+    this.$('.note-section-text-content').editTextContent({
+      initialValue: that.model.get('content'),
+      destroy: function (val) {
+        $(this).html(val);
+        that.model.set('content', val)
+      }
+    });
 
     html = ''
       + '<div class="edit-row row">'
@@ -333,7 +283,6 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
 
     this.isActive = false;
     this.$el.removeClass('note-section-edit-active');
-    this.deactivateTextContent();
 
     if (this.isEmpty() || deleteModel) {
       collection = this.model.collection
@@ -345,47 +294,12 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
         }
       });
     } else {
+      this.$('.note-section-text-content').editText('destroy');
       this.model.save();
     }
 
     return;
   },
-
-  editTextContent: function () {
-    var that = this
-      , content = this.model.get('content')
-      , $content = this.$('.note-section-text-content')
-
-    this.contentEditor = editTextBlock($content, {
-      id: 'edit-section-' + this.model.cid,
-      content: this.model.get('content'),
-      container: this.$el
-    });
-
-    this.contentEditor.on('input', function () {
-      that.model.set('content', that.contentEditor.getValue().replace('<br>', '<br/>'));
-    });
-  },
-
-  deactivateTextContent: function (saveModelChanges) {
-    var saveChanges = saveModelChanges === undefined ? true : !!saveChangesOpt
-      , contentValue = this.contentEditor.getValue().replace('<br>', '<br/>')
-      , toRemove = [
-        'iframe.wysihtml5-sandbox',
-        'input[name="_wysihtml5_mode"]',
-        '.btn-toolbar',
-        '.edit-row',
-        'textarea'
-      ]
-
-    if (saveChanges) {
-      this.model.set('content', contentValue || null);
-      this.$('.note-section-text-content').html(contentValue);
-    }
-    this.$('.note-section-text-content').show();
-
-    this.$(toRemove.join(',')).remove();
-  }
   
 });
 
