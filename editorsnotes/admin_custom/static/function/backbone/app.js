@@ -30,7 +30,7 @@ Backbone.sync = function (method, model, options) {
   var defaults = {
     toolbarType: 'full',
     className: '',
-    minHeight: 350,
+    minHeight: 200,
     idPrefix: 'texteditor_id_auto',
     container: '',
     initialValue: null,
@@ -58,7 +58,7 @@ Backbone.sync = function (method, model, options) {
     }));
 
     this.height = (function (h) {
-      return h < that.options.minHeight ? h : that.options.minHeight;
+      return h < that.options.minHeight ? that.options.minHeight : h;
     })(this.$el.innerHeight());
 
     this.init();
@@ -81,6 +81,7 @@ Backbone.sync = function (method, model, options) {
     this.$textarea
       .attr('id', that.id)
       .css({
+        opacity: 0,
         height: that.height,
         width: '99%'
       })
@@ -93,7 +94,9 @@ Backbone.sync = function (method, model, options) {
       toolbar: that.$toolbar.attr('id')
     }, EditorsNotes.wysihtml5BaseOpts));
 
-    this.editor.on('load', function () { that.$container.css('min-height', '') });
+    this.editor.on('load', function () {
+      that.$container.css('min-height', '')
+    });
 
     return this.$el;
   }
@@ -116,8 +119,8 @@ Backbone.sync = function (method, model, options) {
 
     this.$toolbar.remove();
 
-    if ( typeof(this.opts.destroy) === 'function' ) {
-      this.opts.destroy.call( that.$el, finalVal );
+    if ( typeof(this.options.destroy) === 'function' ) {
+      this.options.destroy.call( that.$el, finalVal );
     }
 
     this.$el

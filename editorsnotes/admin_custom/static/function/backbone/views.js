@@ -252,11 +252,12 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
 
     this.isActive = true;
     this.$el.addClass('note-section-edit-active');
-    this.$('.note-section-text-content').editTextContent({
+    this.$('.note-section-text-content').editText({
       initialValue: that.model.get('content'),
       destroy: function (val) {
         $(this).html(val);
-        that.model.set('content', val)
+        that.model.set('content', val);
+        that.$('.edit-row').remove();
       }
     });
 
