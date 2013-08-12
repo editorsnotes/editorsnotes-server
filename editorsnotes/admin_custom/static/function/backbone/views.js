@@ -25,6 +25,34 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
       that.listenTo(that.note.sections, 'request', that.showLoader);
     });
 
+    $('#note-description').on('click', function (e) {
+      var $this = $(this)
+        , $content = $('> div', $this)
+        , html 
+
+      if ($this.hasClass('active')) return;
+
+      $this.addClass('active'); 
+      $content.editText({
+        destroy: function (val) {
+          var promise = that.note.set('content', val).save();
+          promise.then(function (resp) {
+            $this.removeClass('active').html(resp.content)
+          });
+        }
+      });
+
+      html = ''
+        + '<div class="row">'
+          + '<a class="btn btn-primary save-changes pull-right">Save</a>'
+        + '</div>'
+
+      $(html).appendTo($this).on('click .btn', function (e) {
+        setTimeout(function () { $content.editText('destroy') }, 0);
+      });
+
+    });
+
   },
 
   render: function () {
