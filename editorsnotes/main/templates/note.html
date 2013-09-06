@@ -20,67 +20,68 @@
 {% endblock %}
 
 {% block content %}
-    <header><h2>{{ note.title|typogrify }}</h2></header>
+    <div id="note">
 
-    <section id="note-details">
+      <header><h2>{{ note.title|typogrify }}</h2></header>
 
-      <div id="note-about">
+      <section id="note-details">
 
-        <div>
-          <strong>This note is </strong>
-          {% if note.status == '0' %}<span class="note-status-closed">closed</span>
-          {% elif note.status == '1' %}<span class="note-status-open">open</span>
-          {% else %}<span class="note-status-hibernating">hibernating</span>{% endif %}
+        <div id="note-about">
+
+          <div>
+            <strong>This note is </strong>
+            {% if note.status == '0' %}<span class="note-status-closed">closed</span>
+            {% elif note.status == '1' %}<span class="note-status-open">open</span>
+            {% else %}<span class="note-status-hibernating">hibernating</span>{% endif %}
+          </div>
+
+          <div id="note-related-topics">
+            <span>Related topics</span>
+            <ul class="unstyled">
+              {% for topic in topics %}
+              <li>{{ topic|as_link }}</li>
+              {% empty %}
+              <span class="quiet">none</span>
+              {% endfor %}
+            </ul>
+          </div>
+
         </div>
 
-        <div id="note-related-topics">
-          <span>Related topics</span>
-          <ul class="unstyled">
-            {% for topic in topics %}
-            <li>{{ topic|as_link }}</li>
-            {% empty %}
-            <span class="quiet">none</span>
-            {% endfor %}
-          </ul>
-        </div>
+        <dl id="note-authorship" class="dl-horizontal">
+          <dt>Project</dt>
+          <dd>{{ note.project|as_link }}</dd>
 
-      </div>
+          {% with authors=note.get_all_updaters %}
+          <dt>Author{% if authors|length > 1 %}s{% endif %}</dt>
+          <dd>
+            <ul class="unstyled">
+            {% for author in authors %}<li>{{ author|as_link }}</li>{% endfor %}
+            </ul>
+          </dd>
+          {% endwith %}
 
-      <dl id="note-authorship" class="dl-horizontal">
-        <dt>Project</dt>
-        <dd>{{ note.project|as_link }}</dd>
+          <dt>License</dt>
+          <dd>
+          <a class="license-link" href="{{ license.url }}" title="{{ license }}">
+            {% for symbol in license.symbols %}<i class="license-symbol">{{ symbol }}</i>{% endfor %}
+          </a>
+          </dd>
 
-        {% with authors=note.get_all_updaters %}
-        <dt>Author{% if authors|length > 1 %}s{% endif %}</dt>
-        <dd>
-          <ul class="unstyled">
-          {% for author in authors %}<li>{{ author|as_link }}</li>{% endfor %}
-          </ul>
-        </dd>
-        {% endwith %}
+          <dt>Last updated</dt>
+          <dd>{{ note.last_updated }} (<a href="#">view history</a>)</dd>
+        </dl>
+      </section>
 
-        <dt>License</dt>
-        <dd>
-        <a class="license-link" href="{{ license.url }}" title="{{ license }}">
-          {% for symbol in license.symbols %}<i class="license-symbol">{{ symbol }}</i>{% endfor %}
-        </a>
-        </dd>
+      <section id="note-description">
+        {{ note.content|as_html }}
+      </section>
 
-        <dt>Last updated</dt>
-        <dd>{{ note.last_updated }} (<a href="#">view history</a>)</dd>
-      </dl>
-    </section>
-
-    <section id="note-description">
-      {{ note.content|as_html }}
-    </section>
-
-    <section id="note-sections">
-      {% for section in sections %}{% include section|ns_template_name %}{% endfor %}
-    </section>
+      <section id="note-sections">
+        {% for section in sections %}{% include section|ns_template_name %}{% endfor %}
+      </section>
+    </div>
 
     {% if can_edit %}<div style="display: none;">{% csrf_token %}</div>{% endif %}
-
-    </div>
 
 {% endblock %}

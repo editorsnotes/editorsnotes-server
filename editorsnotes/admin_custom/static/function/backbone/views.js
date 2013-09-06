@@ -1,29 +1,55 @@
-EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
+EditorsNotes.Views.Note = Backbone.View.extend({
   events: {
-    'click .add-section': function (e) { 
-      e.preventDefault();
-      this.createSection( $(e.currentTarget).data('section-type') ); 
-    }
+    'click .note-description': 'editDescription'
   },
 
   initialize: function (options) {
-    var that = this;
+    var that = this
+      , note = this.model
 
-    this.note = this.model; // alias to make things more sensible
-
-    this._sectionViews = [];
-    this.activeRequests = [];
-
-    this.listenTo(this.note.sections, 'add', this.addSection);
-    this.listenTo(this.note.sections, 'remove', this.removeSection);
-    this.listenTo(this.note.sections, 'sync', this.saveOrder);
-
-    this.listenTo(this.note.sections, 'deactivate', this.deactivateSections);
-
-    this.note.once('sync', function () {
-      that.listenTo(that.note, 'request', that.showLoader);
-      that.listenTo(that.note.sections, 'request', that.showLoader);
+    this.sectionListView = new EditorsNotes.Views.NoteSectionList({ model: note });
+    
+    /*
+    this.topicListView = new EditorsNotes.Views.RelatedTopicList({
+      model: note,
+      el: that.$('#note-related-topics');
     });
+    */
+
+    /*
+    this.licenseChooser = new EditorsNotes.Views.NoteLicense({
+      model: note,
+      el: that.$();
+    });
+    */
+
+  },
+
+  render: function () {
+    var that = this
+      , template = EditorsNotes.Templates['note']
+
+    this.$el.empty().html(template({ note: that.model.toJSON() }));
+    this.sectionListView.setElement( that.$('#note-sections') );
+    this.sectionListView.render()
+    // this.topicListView.render();
+  },
+
+  editDescription: function () {
+    var $description = this.$('#note-description')
+      , html
+
+    if ($description.hasClass('active')) return;
+
+    $description.addClass('active').find('> div').editText({
+      destroy: function (val) {
+        note.set('content', val).save().done(function (resp) {
+          $description.removeClass('active').html(resp.content);
+        });
+      }
+    });
+  },
+  /*
 
     $('#note-description').on('click', function (e) {
       var $this = $(this)
@@ -52,6 +78,38 @@ EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
       });
 
     });
+
+    */
+
+});
+
+EditorsNotes.Views['NoteSectionList'] = Backbone.View.extend({
+  events: {
+    'click .add-section': function (e) { 
+      e.preventDefault();
+      this.createSection( $(e.currentTarget).data('section-type') ); 
+    }
+  },
+
+  initialize: function (options) {
+    var that = this;
+
+    this.note = this.model; // alias to make things more sensible
+
+    this._sectionViews = [];
+    this.activeRequests = [];
+
+    this.listenTo(this.note.sections, 'add', this.addSection);
+    this.listenTo(this.note.sections, 'remove', this.removeSection);
+    this.listenTo(this.note.sections, 'sync', this.saveOrder);
+
+    this.listenTo(this.note.sections, 'deactivate', this.deactivateSections);
+
+    this.note.once('sync', function () {
+      that.listenTo(that.note, 'request', that.showLoader);
+      that.listenTo(that.note.sections, 'request', that.showLoader);
+    });
+
 
   },
 
@@ -283,6 +341,7 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
     this.$('.note-section-text-content').editText({
       initialValue: that.model.get('content'),
       destroy: function (val) {
+        console.log('destroying');
         $(this).html(val);
         that.model.set('content', val);
         that.$('.edit-row').remove();
@@ -378,7 +437,7 @@ EditorsNotes.Views['sections/note_reference'] = EditorsNotes.Views.NoteSection.e
 
 EditorsNotes.Views['sections/text'] = EditorsNotes.Views.NoteSection.extend({
   isEmpty: function () { return !this.model.get('content') }
-})
+});
 
 /*
  * Base view for selecting items. Includes an autocomplete input and a button
