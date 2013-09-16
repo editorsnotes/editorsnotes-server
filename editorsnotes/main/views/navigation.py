@@ -10,7 +10,6 @@ from django.http import (
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from haystack.query import SearchQuerySet, EmptySearchQuerySet
 from PIL import Image, ImageDraw, ImageFont
 
 from ..forms import FeedbackForm
