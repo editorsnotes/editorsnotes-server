@@ -11,6 +11,12 @@ class URLField(Field):
     def field_to_native(self, obj, field_name):
         return obj.get_absolute_url()
 
+class ProjectSlugField(Field):
+    read_only = True
+    def field_to_native(self, obj, field_name):
+        project = obj.get_affiliation()
+        return project.slug
+
 class TopicAssignmentField(RelatedField):
     def __init__(self, *args, **kwargs):
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
