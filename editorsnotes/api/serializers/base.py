@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from rest_framework.relations import RelatedField
 from rest_framework.serializers import Field, ModelSerializer
+import reversion
 
 from editorsnotes.main.models.topics import (
     ProjectTopicContainer, TopicNodeAssignment)
@@ -29,6 +30,16 @@ class TopicAssignmentField(RelatedField):
         if self.read_only:
             return
         into[field_name] = data.get(field_name, [])
+
+class ReversionSerializerMixin(object):
+    def save_object(self, *args, **kwargs):
+        _save_object = super(ReversionSerializerMixin, self).save_object
+        if self.context.get('create_revision', False):
+            with reversion.create_revision():
+                saved = _save_object(*args, **kwargs)
+        else:
+            saved = _save_object(*args, **kwargs)
+        return saved
 
 class RelatedTopicModelSerializer(ModelSerializer):
     topics = TopicAssignmentField(read_only=False)

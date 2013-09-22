@@ -9,7 +9,10 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models.notes import (
     Note, TextNS, CitationNS, NoteReferenceNS, NOTE_STATUS_CHOICES)
 
-from .base import RelatedTopicModelSerializer, URLField, ProjectSlugField
+from .base import (
+    RelatedTopicModelSerializer, URLField, ProjectSlugField,
+    ReversionSerializerMixin)
+
 
 class HyperlinkedProjectItemField(HyperlinkedRelatedField):
     def to_native(self, obj):
@@ -24,14 +27,16 @@ class HyperlinkedProjectItemField(HyperlinkedRelatedField):
         except NoReverseMatch:
             raise Exception('Could not resolve URL for document.')
 
-class TextNSSerializer(serializers.ModelSerializer):
+class TextNSSerializer(serializers.ModelSerializer,
+                       ReversionSerializerMixin):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
     class Meta:
         model = TextNS
         fields = ('section_id', 'section_type', 'content',)
 
-class CitationNSSerializer(serializers.ModelSerializer):
+class CitationNSSerializer(serializers.ModelSerializer,
+                           ReversionSerializerMixin):
     section_id = serializers.Field(source='note_section_id')
     note_id = serializers.Field(source='note_id')
     section_type = serializers.Field(source='section_type_label')
@@ -44,7 +49,8 @@ class CitationNSSerializer(serializers.ModelSerializer):
     def get_document_description(self, obj):
         return etree.tostring(obj.document.description)
 
-class NoteReferenceNSSerializer(serializers.ModelSerializer):
+class NoteReferenceNSSerializer(serializers.ModelSerializer,
+                                ReversionSerializerMixin):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
     note_reference = HyperlinkedProjectItemField(view_name='api:api-notes-detail')
@@ -126,7 +132,7 @@ class NoteStatusField(serializers.WritableField):
                            if label.lower() == data.lower() ]
         return status_choice
 
-class NoteSerializer(RelatedTopicModelSerializer):
+class NoteSerializer(RelatedTopicModelSerializer, ReversionSerializerMixin):
     section_ordering = SectionOrderingField()
     sections = NoteSectionField(many=True)
     status = NoteStatusField()

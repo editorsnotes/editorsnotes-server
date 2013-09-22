@@ -4,18 +4,18 @@ from rest_framework.response import Response
 
 from editorsnotes.main.models.notes import Note, NoteSection
 
-from .base import BaseListAPIView, BaseDetailView
+from .base import BaseListAPIView, BaseDetailView, CreateReversionMixin
 from ..serializers.notes import (
     MinimalNoteSerializer, NoteSerializer, _serializer_from_section_type)
 
-class NoteList(BaseListAPIView):
+class NoteList(BaseListAPIView, CreateReversionMixin):
     model = Note
     serializer_class = MinimalNoteSerializer
     def pre_save(self, obj):
         super(NoteList, self).pre_save(obj)
         obj.project = self.request.project
 
-class NoteDetail(BaseDetailView):
+class NoteDetail(BaseDetailView, CreateReversionMixin):
     model = Note
     serializer_class = NoteSerializer
     def post(self, request, *args, **kwargs):
@@ -25,8 +25,11 @@ class NoteDetail(BaseDetailView):
             raise Exception('need a section type')
 
         sec_serializer = _serializer_from_section_type(section_type)
-        serializer = sec_serializer(data=request.DATA,
-                                    context={'request': request})
+        serializer = sec_serializer(
+            data=request.DATA, context={
+                'request': request,
+                'create_revision': True
+            })
         if serializer.is_valid():
             serializer.object.note = self.get_object()
             serializer.object.creator = request.user
@@ -37,7 +40,7 @@ class NoteDetail(BaseDetailView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NoteSectionDetail(BaseDetailView):
+class NoteSectionDetail(BaseDetailView, CreateReversionMixin):
     model = NoteSection
     def get_object(self, queryset=None):
         queryset = self.get_queryset()

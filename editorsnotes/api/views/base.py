@@ -12,6 +12,12 @@ from editorsnotes.main.models.auth import Project
 
 from ..permissions import ProjectSpecificPermissions
 
+class CreateReversionMixin(object):
+    def get_serializer_context(self):
+        context = super(CreateReversionMixin, self).get_serializer_context()
+        context['create_revision'] = True
+        return context
+
 class ProjectSpecificAPIView(APIView):
     """
     Base API view for project-specific views.
