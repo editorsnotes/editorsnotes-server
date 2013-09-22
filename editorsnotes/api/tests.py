@@ -137,7 +137,7 @@ class NoteAPITestCase(TestCase):
             'title': u'Is testing good?',
             'topics': [u'Testing', u'Django'],
             'content': u'<p>We need to figure out if it\'s worth it to write tests.</p>',
-            'status': '2'
+            'status': 'open'
         }
 
         response = self.client.post(

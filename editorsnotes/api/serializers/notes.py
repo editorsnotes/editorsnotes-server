@@ -7,7 +7,7 @@ from rest_framework.relations import (
 from rest_framework.reverse import reverse
 
 from editorsnotes.main.models.notes import (
-    Note, TextNS, CitationNS, NoteReferenceNS)
+    Note, TextNS, CitationNS, NoteReferenceNS, NOTE_STATUS_CHOICES)
 
 from .base import RelatedTopicModelSerializer
 
@@ -118,16 +118,32 @@ class SectionOrderingField(serializers.WritableField):
 
         return 
 
+class NoteStatusField(serializers.WritableField):
+    def to_native(self, obj):
+        return self.parent.object.get_status_display().lower()
+    def from_native(self, data):
+        status_choice, = [ val for val, label in NOTE_STATUS_CHOICES
+                           if label.lower() == data.lower() ]
+        return status_choice
 
 class NoteSerializer(RelatedTopicModelSerializer):
     section_ordering = SectionOrderingField()
     sections = NoteSectionField(many=True)
+    status = NoteStatusField()
     class Meta:
         model = Note
         fields = ('id', 'title', 'topics', 'content', 'status', 
                   'section_ordering', 'sections',)
+    def validate_status(self, attrs, source):
+        value = attrs[source]
+        status_choices = [label.lower() for val, label in NOTE_STATUS_CHOICES]
+        if not isinstance(value, basestring) or value not in status_choices:
+            raise serializers.ValidationError('Invalid status. Choose between '
+                                              'open, closed, or hibernating')
+        return attrs
 
 class MinimalNoteSerializer(RelatedTopicModelSerializer):
+    status = NoteStatusField()
     class Meta:
         model = Note
         fields = ('id', 'title', 'topics', 'content', 'status',)
