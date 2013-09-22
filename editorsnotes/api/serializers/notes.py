@@ -9,7 +9,7 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models.notes import (
     Note, TextNS, CitationNS, NoteReferenceNS, NOTE_STATUS_CHOICES)
 
-from .base import RelatedTopicModelSerializer
+from .base import RelatedTopicModelSerializer, URLField
 
 class HyperlinkedProjectItemField(HyperlinkedRelatedField):
     def to_native(self, obj):
@@ -130,9 +130,10 @@ class NoteSerializer(RelatedTopicModelSerializer):
     section_ordering = SectionOrderingField()
     sections = NoteSectionField(many=True)
     status = NoteStatusField()
+    url = URLField()
     class Meta:
         model = Note
-        fields = ('id', 'title', 'topics', 'content', 'status', 
+        fields = ('id', 'title', 'url', 'topics', 'content', 'status', 
                   'section_ordering', 'sections',)
     def validate_status(self, attrs, source):
         value = attrs[source]

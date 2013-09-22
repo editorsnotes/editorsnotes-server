@@ -1,10 +1,15 @@
 from django.contrib.contenttypes.models import ContentType
 
 from rest_framework.relations import RelatedField
-from rest_framework.serializers import ModelSerializer 
+from rest_framework.serializers import Field, ModelSerializer
 
 from editorsnotes.main.models.topics import (
     ProjectTopicContainer, TopicNodeAssignment)
+
+class URLField(Field):
+    read_only = True
+    def field_to_native(self, obj, field_name):
+        return obj.get_absolute_url()
 
 class TopicAssignmentField(RelatedField):
     def __init__(self, *args, **kwargs):
