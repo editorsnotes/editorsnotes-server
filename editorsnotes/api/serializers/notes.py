@@ -11,7 +11,7 @@ from editorsnotes.main.models.notes import (
 
 from .base import (
     RelatedTopicModelSerializer, URLField, ProjectSlugField,
-    ReversionSerializerMixin)
+    ReversionSerializerMixin, UpdatersField)
 
 
 class HyperlinkedProjectItemField(HyperlinkedRelatedField):
@@ -133,15 +133,16 @@ class NoteStatusField(serializers.WritableField):
         return status_choice
 
 class NoteSerializer(RelatedTopicModelSerializer, ReversionSerializerMixin):
+    url = URLField()
+    project = ProjectSlugField()
+    updaters = UpdatersField()
+    status = NoteStatusField()
     section_ordering = SectionOrderingField()
     sections = NoteSectionField(many=True)
-    status = NoteStatusField()
-    project = ProjectSlugField()
-    url = URLField()
     class Meta:
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'topics', 'content',
-                  'status', 'section_ordering', 'sections',)
+        fields = ('id', 'title', 'url', 'project', 'updaters', 'topics',
+                  'content', 'status', 'section_ordering', 'sections',)
     def validate_status(self, attrs, source):
         value = attrs[source]
         status_choices = [label.lower() for val, label in NOTE_STATUS_CHOICES]

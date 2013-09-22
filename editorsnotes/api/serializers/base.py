@@ -18,6 +18,11 @@ class ProjectSlugField(Field):
         project = obj.get_affiliation()
         return project.slug
 
+class UpdatersField(Field):
+    read_only = True
+    def field_to_native(self, obj, field_name):
+        return [u.username for u in obj.get_all_updaters()]
+
 class TopicAssignmentField(RelatedField):
     def __init__(self, *args, **kwargs):
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
