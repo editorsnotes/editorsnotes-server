@@ -1,6 +1,10 @@
+from collections import OrderedDict
+import json
+
 from lxml import etree
 from pyelasticsearch import ElasticSearch
-from pyelasticsearch.exceptions import ElasticHttpNotFoundError
+from pyelasticsearch.exceptions import (
+    ElasticHttpNotFoundError, InvalidJsonResponseError)
 
 from django.conf import settings
 
@@ -9,7 +13,16 @@ from editorsnotes.main import models
 
 INDEX_NAME = 'editorsnotes'
 
-es = ElasticSearch(settings.ELASTICSEARCH_URLS)
+class OrderedResponseElasticSearch(ElasticSearch):
+    def _decode_response(self, response):
+        try:
+            json_response = json.loads(response.content,
+                                       object_pairs_hook=OrderedDict)
+        except ValueError:
+            raise InvalidJsonResponseError(response)
+        return json_response
+
+es = OrderedResponseElasticSearch(settings.ELASTICSEARCH_URLS)
 
 class DocumentType(object):
     def __init__(self, model=None):
