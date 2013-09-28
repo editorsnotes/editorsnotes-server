@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from ...index import en_index
+from ... import en_index
 
 class Command(BaseCommand):
     help = 'Rebuild elasticsearch index'

@@ -1,6 +1,6 @@
 from rest_framework.filters import BaseFilterBackend
 
-from editorsnotes.search.index import en_index
+from editorsnotes.search import en_index
 
 class ElasticSearchFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):

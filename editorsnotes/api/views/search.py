@@ -3,7 +3,7 @@ from collections import OrderedDict
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from editorsnotes.search.index import en_index
+from editorsnotes.search import en_index
 
 class SearchView(APIView):
     def get(self, request, format=None):

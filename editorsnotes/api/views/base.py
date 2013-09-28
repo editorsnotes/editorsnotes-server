@@ -14,7 +14,7 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
 from editorsnotes.main.models.auth import Project
-from editorsnotes.search.index import en_index
+from editorsnotes.search import en_index
 
 from ..filters import ElasticSearchFilterBackend
 from ..permissions import ProjectSpecificPermissions
