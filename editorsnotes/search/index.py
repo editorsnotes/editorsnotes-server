@@ -11,7 +11,7 @@ from django.conf import settings
 from editorsnotes.api import serializers
 from editorsnotes.main import models
 
-INDEX_NAME = 'editorsnotes'
+INDEX_NAME = settings.ELASTICSEARCH_INDEX_NAME
 
 class OrderedResponseElasticSearch(ElasticSearch):
     def _decode_response(self, response):
@@ -68,21 +68,40 @@ class DocumentType(object):
         except ElasticHttpNotFoundError:
             pass
 
+    def data_from_serializer(self, obj):
+        return self.serializer(obj).data
+
     def format_data(self, obj):
+        if not hasattr(obj, '_rest_serialized'):
+            obj._rest_serialized = self.serializer(obj).data
         data = { 
             'id': obj.id,
-            'serialized': self.serializer(obj).data,
-            'autocomplete': {
-                'input': obj.as_text()
-            }
+            'serialized': obj._rest_serialized,
+            'autocomplete': { 'input': obj.as_text() }
         }
         return data
 
-    def update(self, pk, data=None):
-        if data is None:
-            obj = self.model.objects.get(pk=pk)
-            data = self.format_data(obj)
-        es.index(INDEX_NAME, self.document_type, data)
+    def get_object(self, instance=None, pk=None):
+        if pk is None and instance is None:
+            raise ValueError('Provide either a pk or instance to update.')
+        obj = instance or self.model.objects.get(pk=pk)
+        if not isinstance(obj, self.model):
+            raise ValueError('Instance must be a {} object'.format(self.model))
+        return obj
+
+    def index(self, instance=None, pk=None):
+        obj = self.get_object(instance, pk)
+        doc = self.format_data(obj)
+        es.index(INDEX_NAME, self.document_type, doc, obj.pk, refresh=True)
+
+    def update(self, instance=None, pk=None):
+        obj = self.get_object(instance, pk)
+        doc = self.format_data(obj)
+        es.update(INDEX_NAME, self.document_type, obj.pk, doc=doc, refresh=True)
+
+    def remove(self, instance=None, pk=None):
+        obj = self.get_object(instance, pk)
+        es.delete(INDEX_NAME, self.document_type, obj.pk)
 
     def update_all(self, chunk_size=300):
         i = 0
@@ -104,7 +123,7 @@ class ENIndex(object):
         self.name = name
         self.es = es
         if not self.exists():
-            self.create_index()
+            self.create()
 
     def exists(self):
         server_url, _ = self.es.servers.get()
