@@ -11,15 +11,14 @@ POSTGRES_DB = {
     'PORT': ''
 }
 
-# From the documentation of pyelasticsearch --
-#    :arg urls: A URL or iterable of URLs of ES nodes. These are full URLs
-#                with port numbers, like
-#                ``http://elasticsearch.example.com:9200``.
-ELASTICSEARCH_URLS = ''
-
-
-ELASTICSEARCH_
-
+ELASTICSEARCH_ENABLED = True
+ELASTICSEARCH_INDEX_NAME = 'editorsnotes'
+ELASTICSEARCH_URLS = 'http://127.0.0.1:9200'
+# As defined in pyelasticsearch, ELASTICSEARCH_URLS should be:
+#
+# A URL or iterable of URLs of ES nodes. These are full URLs with port numbers,
+# like ``http://elasticsearch.example.com:9200``.
+#
 
 SITE_URL = '127.0.0.1'
 
