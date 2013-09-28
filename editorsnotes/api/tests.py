@@ -1,13 +1,44 @@
 # -*- coding: utf-8 -*-
 
 import json
+
+from lxml import etree
+
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from lxml import etree
 
 from reversion.models import Revision
 
 from editorsnotes.main import models
+
+TEST_TOPIC = {
+    'preferred_name': u'Patrick Golden',
+    'type': u'PER',
+    'topics': [],
+    'summary': u'<p>A writer of tests</p>'
+}
+
+TEST_DOCUMENT = {
+    'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>',
+    'topics': [],
+    'zotero_data': json.dumps({
+        'itemType': 'book',
+        'title': 'Roots of American Communism',
+        'creators': [
+            {'creatorType': 'author',
+             'firstName': 'Theodore',
+             'lastName': 'Draper'}
+        ]
+    })
+}
+
+TEST_NOTE = {
+    'title': u'Is testing good?',
+    'topics': [u'Testing', u'Django'],
+    'content': u'<p>We need to figure out if it\'s worth it to write tests.</p>',
+    'status': 'open'
+}
 
 class TopicAPITestCase(TestCase):
     fixtures = ['projects.json']
@@ -17,12 +48,7 @@ class TopicAPITestCase(TestCase):
         self.client.login(username='barry', password='barry')
     def test_simple_topic_CRUD(self):
         """Simple topic create, read, update, delete."""
-        data = {
-            'preferred_name': u'Patrick Golden',
-            'type': u'PER',
-            'topics': [],
-            'summary': u'<p>A writer of tests</p>'
-        }
+        data = TEST_TOPIC.copy()
 
         # Create the topic
         response = self.client.post(
@@ -79,20 +105,7 @@ class DocumentAPITestCase(TestCase):
         self.client.login(username='barry', password='barry')
     def test_simple_document_CRUD(self):
         """Simple document create, read, update, delete."""
-        zotero_data = {
-            'itemType': 'book',
-            'title': 'Roots of American Communism',
-            'creators': [
-                {'creatorType': 'author',
-                 'firstName': 'Theodore',
-                 'lastName': 'Draper'}
-            ]
-        }
-        data = {
-            'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>',
-            'topics': [],
-            'zotero_data': json.dumps(zotero_data)
-        }
+        data = TEST_DOCUMENT.copy()
 
         response = self.client.post(
             reverse('api:api-documents-list', args=[self.project.slug]),
@@ -136,12 +149,7 @@ class NoteAPITestCase(TestCase):
         self.client.login(username='barry', password='barry')
     def test_simple_note_CRUD(self):
         """Simple note create, read, update, delete."""
-        data = {
-            'title': u'Is testing good?',
-            'topics': [u'Testing', u'Django'],
-            'content': u'<p>We need to figure out if it\'s worth it to write tests.</p>',
-            'status': 'open'
-        }
+        data = TEST_NOTE.copy()
 
         response = self.client.post(
             reverse('api:api-notes-list', args=[self.project.slug]),
