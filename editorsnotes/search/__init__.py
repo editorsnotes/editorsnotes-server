@@ -6,8 +6,12 @@ from editorsnotes.main import models
 from .index import ENIndex
 
 en_index = ENIndex()
-en_index.register(models.Document)
-en_index.register(models.Note)
+en_index.register(models.Document,
+                  highlight_fields=('serialized.description',))
+en_index.register(models.Note,
+                  highlight_fields=('serialized.title',
+                                    'serialized.description',
+                                    'serialized.sections'))
 
 @receiver(post_save)
 def update_elastic_search_handler(sender, instance, created, **kwargs):

@@ -30,9 +30,10 @@ class ENIndex(object):
         resp = self.es.session.head(server_url + '/' + self.name)
         return resp.status_code == 200
 
-    def register(self, model, adapter=None):
+    def register(self, model, adapter=None, highlight_fields=None):
         if adapter is None:
-            doc_type = DocumentTypeAdapter(self.es, self.name, model)
+            doc_type = DocumentTypeAdapter(self.es, self.name, model,
+                                           highlight_fields)
         else:
             doc_type = adapter(model)
         self.document_types[model] = doc_type

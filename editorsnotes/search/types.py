@@ -7,6 +7,7 @@ class DocumentTypeAdapter(object):
         self.model = model or self.get_model()
         self.serializer = self.get_serializer()
         self.type_label = self.model._meta.module_name
+        self.highlight_fields = highlight_fields
         self.es = es
         self.index_name = index_name
 
