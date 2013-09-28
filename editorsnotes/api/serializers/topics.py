@@ -7,9 +7,9 @@ from rest_framework.relations import RelatedField
 from editorsnotes.main.models.topics import (
     Topic, TopicNode, ProjectTopicContainer)
 
-from .base import RelatedTopicModelSerializer
+from .base import RelatedTopicSerializerMixin
 
-class TopicSerializer(RelatedTopicModelSerializer):
+class TopicSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
     topic_node_id = Field(source='topic.id')
     topics = RelatedField('related_topics', many=True)
     type = Field(source='topic.type')

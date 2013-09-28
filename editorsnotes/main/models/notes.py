@@ -6,6 +6,7 @@ from django.db import models, transaction
 from licensing.models import License
 from lxml import etree
 from model_utils.managers import InheritanceManager
+import reversion
 
 from .. import fields
 from auth import ProjectPermissionsMixin, UpdatersMixin
@@ -121,3 +122,11 @@ class NoteReferenceNS(NoteSection):
         return u'Note section -- reference -- {}'.format(self.note_reference)
     def has_content(self):
         return self.content is not None
+
+reversion.register(Note)
+
+# to make this extendable to other note sections, should make this introspective
+# or some such eventually
+reversion.register(CitationNS, follow=['notesection_ptr'])
+reversion.register(TextNS, follow=['notesection_ptr'])
+reversion.register(NoteReferenceNS, follow=['notesection_ptr'])

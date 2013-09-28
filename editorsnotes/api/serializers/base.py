@@ -42,12 +42,30 @@ class ReversionSerializerMixin(object):
         if self.context.get('create_revision', False):
             with reversion.create_revision():
                 saved = _save_object(*args, **kwargs)
+                reversion.set_user(self.context['request'].user)
         else:
             saved = _save_object(*args, **kwargs)
         return saved
 
-class RelatedTopicModelSerializer(ModelSerializer):
-    topics = TopicAssignmentField(read_only=False)
+class RelatedTopicSerializerMixin(object):
+    def get_default_fields(self):
+        self.field_mapping
+        ret = super(RelatedTopicSerializerMixin, self).get_default_fields()
+        opts = self.opts.model._meta
+        topic_fields = [ f for f in opts.many_to_many
+                         if f.related.parent_model == TopicNodeAssignment ]
+
+        # There should only be one, probably, but iterate just in case?
+        if len(topic_fields):
+            for model_field in topic_fields:
+                self.field_mapping[model_field.__class__] = TopicAssignmentField
+                ret[model_field.name] = self.get_field(model_field)
+                if model_field.name in self.opts.read_only_fields:
+                    ret[model_field.name].read_only = True
+                else:
+                    ret[model_field.name].read_only = False
+        return ret
+
     def save_related_topics(self, obj, topics):
         """
         Given an array of names, make sure obj is related to those topics.
@@ -78,5 +96,5 @@ class RelatedTopicModelSerializer(ModelSerializer):
         topics = []
         if getattr(obj, '_m2m_data', None):
             topics = obj._m2m_data.pop('topics')
-        super(RelatedTopicModelSerializer, self).save_object(obj, **kwargs)
+        super(RelatedTopicSerializerMixin, self).save_object(obj, **kwargs)
         self.save_related_topics(obj, topics)

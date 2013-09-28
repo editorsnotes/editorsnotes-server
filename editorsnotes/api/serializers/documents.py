@@ -5,9 +5,10 @@ from rest_framework.relations import RelatedField
 
 from editorsnotes.main.models.documents import Document
 
-from .base import RelatedTopicModelSerializer, URLField
+from .base import RelatedTopicSerializerMixin, URLField
 
-class DocumentSerializer(RelatedTopicModelSerializer):
+class DocumentSerializer(RelatedTopicSerializerMixin,
+                         serializers.ModelSerializer):
     zotero_data = serializers.CharField(required=False)
     url = URLField()
     class Meta:

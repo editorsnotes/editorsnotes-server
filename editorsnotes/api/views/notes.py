@@ -8,14 +8,14 @@ from .base import BaseListAPIView, BaseDetailView, CreateReversionMixin
 from ..serializers.notes import (
     MinimalNoteSerializer, NoteSerializer, _serializer_from_section_type)
 
-class NoteList(BaseListAPIView, CreateReversionMixin):
+class NoteList(CreateReversionMixin, BaseListAPIView):
     model = Note
     serializer_class = MinimalNoteSerializer
     def pre_save(self, obj):
         super(NoteList, self).pre_save(obj)
         obj.project = self.request.project
 
-class NoteDetail(BaseDetailView, CreateReversionMixin):
+class NoteDetail(CreateReversionMixin, BaseDetailView):
     model = Note
     serializer_class = NoteSerializer
     def post(self, request, *args, **kwargs):

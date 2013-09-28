@@ -4,6 +4,9 @@ import json
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from lxml import etree
+
+from reversion.models import Revision
+
 from editorsnotes.main import models
 
 class TopicAPITestCase(TestCase):
@@ -146,6 +149,7 @@ class NoteAPITestCase(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(Revision.objects.count(), 1)
 
         new_note_id = response.data.get('id')
         new_note = models.Note.objects.get(id=new_note_id)
