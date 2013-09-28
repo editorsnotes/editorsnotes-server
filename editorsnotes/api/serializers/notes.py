@@ -128,9 +128,12 @@ class NoteStatusField(serializers.WritableField):
     def to_native(self, obj):
         return self.parent.object.get_status_display().lower()
     def from_native(self, data):
-        status_choice, = [ val for val, label in NOTE_STATUS_CHOICES
-                           if label.lower() == data.lower() ]
-        return status_choice
+        status_choice = [ val for val, label in NOTE_STATUS_CHOICES
+                          if label.lower() == data.lower() ]
+        if not len(status_choice):
+            raise serializers.ValidationError('Invalid status. Choose between '
+                                              'open, closed, or hibernating.')
+        return status_choice[0]
 
 class NoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
                      serializers.ModelSerializer):
@@ -144,13 +147,6 @@ class NoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
         model = Note
         fields = ('id', 'title', 'url', 'project', 'updaters', 'topics',
                   'content', 'status', 'section_ordering', 'sections',)
-    def validate_status(self, attrs, source):
-        value = attrs[source]
-        status_choices = [label.lower() for val, label in NOTE_STATUS_CHOICES]
-        if not isinstance(value, basestring) or value not in status_choices:
-            raise serializers.ValidationError('Invalid status. Choose between '
-                                              'open, closed, or hibernating')
-        return attrs
 
 class MinimalNoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
                             serializers.ModelSerializer):

@@ -13,9 +13,9 @@ from auth import ProjectPermissionsMixin, UpdatersMixin
 from base import Administered, LastUpdateMetadata, URLAccessible
 
 NOTE_STATUS_CHOICES = (
-    ('0', 'Closed'),
-    ('1', 'Open'),
-    ('2', 'Hibernating')
+    ('0', 'closed'),
+    ('1', 'open'),
+    ('2', 'hibernating')
 )
 
 class Note(LastUpdateMetadata, Administered, URLAccessible,

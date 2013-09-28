@@ -160,8 +160,8 @@ class NoteAPITestCase(TestCase):
         self.assertEqual(new_note.title, response.data.get('title'))
         self.assertEqual(new_note.title, data['title'])
 
-        self.assertEqual(new_note.status, response.data.get('status'))
-        self.assertEqual(new_note.status, data['status'])
+        self.assertEqual(new_note.get_status_display(), response.data.get('status'))
+        self.assertEqual(new_note.get_status_display(), data['status'])
 
         self.assertEqual(new_note.topics.count(), 2)
 
@@ -175,7 +175,7 @@ class NoteAPITestCase(TestCase):
 
         # Update the status of this note
         new_data = data.copy()
-        new_data['status'] = '1'
+        new_data['status'] = 'closed'
         response = self.client.put(
             reverse('api:api-notes-detail', args=[self.project.slug, new_note_id]),
             json.dumps(new_data),
@@ -184,7 +184,7 @@ class NoteAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         new_note = models.Note.objects.get(id=new_note_id)
-        self.assertEqual(new_note.status, new_data['status'])
+        self.assertEqual(new_note.get_status_display(), new_data['status'])
 
         # Add a citation
         doc_response = self.client.post(
