@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from itertools import chain
 import json
 
 from django.conf import settings
@@ -30,10 +31,11 @@ class ENIndex(object):
         resp = self.es.session.head(server_url + '/' + self.name)
         return resp.status_code == 200
 
-    def register(self, model, adapter=None, highlight_fields=None):
+    def register(self, model, adapter=None, highlight_fields=None,
+                 display_field=None):
         if adapter is None:
             doc_type = DocumentTypeAdapter(self.es, self.name, model,
-                                           highlight_fields)
+                                           highlight_fields, display_field)
         else:
             doc_type = adapter(model)
         self.document_types[model] = doc_type
@@ -51,6 +53,32 @@ class ENIndex(object):
         doc_type = self.document_types.get(model)
         return self.es.search(query, index=self.name,
                               doc_type=doc_type.type_label, **kwargs)
+
+    def search(self, query, highlight=False, **kwargs):
+
+        if isinstance(query, basestring):
+            prepared_query = {
+                'query': {
+                    'query_string': { 'query': query }
+                }
+            }
+
+        else:
+            prepared_query = query
+
+        if highlight:
+            prepared_query['highlight'] = {
+                'fields': {},
+                'pre_tags': ['<span class="highlighted">'],
+                'post_tags': ['</span>']
+            }
+            highlight_fields = chain(
+                *[doc_type.highlight_fields
+                for doc_type in self.document_types.values()])
+            for field_name in highlight_fields:
+                prepared_query['highlight']['fields'][field_name] = {}
+
+        return self.es.search(prepared_query, index=self.name, **kwargs)
 
     def create(self):
         created = self.es.create_index(self.name)

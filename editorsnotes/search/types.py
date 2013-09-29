@@ -3,11 +3,17 @@ from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 from editorsnotes.api import serializers
 
 class DocumentTypeAdapter(object):
-    def __init__(self, es, index_name, model=None, highlight_fields=None):
+    def __init__(self, es, index_name, model=None, highlight_fields=None,
+                 display_field=None):
+        if display_field is None:
+            raise ValueError('Define a display field for this document type')
+        self.display_field = display_field
+
         self.model = model or self.get_model()
         self.serializer = self.get_serializer()
         self.type_label = self.model._meta.module_name
         self.highlight_fields = highlight_fields
+        
         self.es = es
         self.index_name = index_name
 

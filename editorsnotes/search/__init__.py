@@ -7,10 +7,12 @@ from .index import ENIndex
 
 en_index = ENIndex()
 en_index.register(models.Document,
+                  display_field='serialized.description',
                   highlight_fields=('serialized.description',))
 en_index.register(models.Note,
+                  display_field='serialized.title',
                   highlight_fields=('serialized.title',
-                                    'serialized.description',
+                                    'serialized.content',
                                     'serialized.sections'))
 
 @receiver(post_save)
