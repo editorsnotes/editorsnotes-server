@@ -14,8 +14,8 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
     url = URLField()
     class Meta:
         model = Document
-        fields = ('id', 'description', 'url', 'project', 'topics',
-                  'zotero_data',)
+        fields = ('id', 'description', 'url', 'project', 'last_updated',
+                  'topics', 'zotero_data',)
     def validate_zotero_data(self, attrs, source):
         value = attrs.get(source, None)
         if value is not None:

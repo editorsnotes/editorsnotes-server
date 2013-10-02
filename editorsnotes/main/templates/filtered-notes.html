@@ -68,7 +68,7 @@
   <div class="span12 row">
     <ul class="unstyled span6" id="note-list-1">
     {% for note in notes %}
-      <li class="note" date-modified="{{ note.last_updated|date:"Ymd" }}">
+      <li class="note" date-modified="{{ note.last_updated }}">
         <a href="{{ note.url }}">{{ note.title }}</a>
       </li>
     {% endfor %}

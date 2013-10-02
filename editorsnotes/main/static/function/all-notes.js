@@ -9,7 +9,9 @@ $(function() {
       while (daystr.length < 2) daystr = '0' + daystr;
       var testDate = d.getFullYear() + monthstr + daystr;
       var dateMatch = _.find(noteArray, function(note) {
-        return note.getAttribute('date-modified') < testDate;
+        var noteDate = note.getAttribute('date-modified')
+          .slice(0,10).replace(/-/g, '')
+        return noteDate < testDate;
       });
       return dateMatch;
     }

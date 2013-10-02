@@ -17,7 +17,7 @@ class TopicSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = ProjectTopicContainer
         fields = ('topic_node_id', 'preferred_name', 'type', 'topics',
-                  'project', 'summary',)
+                  'project', 'last_updated', 'summary',)
     def save_object(self, obj, **kwargs):
         if not obj.id:
             topic_node_id = self.context.get('topic_node_id', None)
