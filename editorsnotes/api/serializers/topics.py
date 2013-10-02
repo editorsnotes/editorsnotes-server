@@ -7,15 +7,17 @@ from rest_framework.relations import RelatedField
 from editorsnotes.main.models.topics import (
     Topic, TopicNode, ProjectTopicContainer)
 
-from .base import RelatedTopicSerializerMixin
+from .base import RelatedTopicSerializerMixin, ProjectSlugField
 
 class TopicSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
     topic_node_id = Field(source='topic.id')
     topics = RelatedField('related_topics', many=True)
     type = Field(source='topic.type')
+    project = ProjectSlugField()
     class Meta:
         model = ProjectTopicContainer
-        fields = ('topic_node_id', 'preferred_name', 'type', 'topics', 'summary',)
+        fields = ('topic_node_id', 'preferred_name', 'type', 'topics',
+                  'project', 'summary',)
     def save_object(self, obj, **kwargs):
         if not obj.id:
             topic_node_id = self.context.get('topic_node_id', None)

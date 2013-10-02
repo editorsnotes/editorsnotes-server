@@ -5,15 +5,17 @@ from rest_framework.relations import RelatedField
 
 from editorsnotes.main.models.documents import Document
 
-from .base import RelatedTopicSerializerMixin, URLField
+from .base import RelatedTopicSerializerMixin, URLField, ProjectSlugField
 
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
+    project = ProjectSlugField()
     zotero_data = serializers.CharField(required=False)
     url = URLField()
     class Meta:
         model = Document
-        fields = ('id', 'description', 'url', 'topics', 'zotero_data',)
+        fields = ('id', 'description', 'url', 'project', 'topics',
+                  'zotero_data',)
     def validate_zotero_data(self, attrs, source):
         value = attrs.get(source, None)
         if value is not None:
