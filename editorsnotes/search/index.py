@@ -82,8 +82,6 @@ class ENIndex(object):
 
     def create(self):
         created = self.es.create_index(self.name)
-        for doc_type in self.document_types.values():
-            self.es.put_mapping(doc_type.get_mapping())
         return created
 
     def delete(self):

@@ -43,6 +43,20 @@ class DocumentTypeAdapter(object):
                     'autocomplete': {
                         'type': 'completion',
                         'payloads': True
+                    },
+                    'serialized': {
+                        'properties': {
+                            'project': {
+                                'properties': {
+                                    'name': {'type': 'string', 'index': 'not_analyzed'}
+                                }
+                            },
+                            'topics': {
+                                'properties': {
+                                    'name': {'type': 'string', 'index': 'not_analyzed'}
+                                }
+                            },
+                        }
                     }
                 }
             }
@@ -54,6 +68,10 @@ class DocumentTypeAdapter(object):
             self.es.delete_all(self.index_name, self.type_label)
         except ElasticHttpNotFoundError:
             pass
+
+    def put_mapping(self):
+        mapping = self.get_mapping()
+        self.es.put_mapping(self.index_name, self.type_label, mapping)
 
     def data_from_serializer(self, obj):
         return self.serializer(obj).data
@@ -94,6 +112,7 @@ class DocumentTypeAdapter(object):
         i = 0
         _qs = qs or self.model.objects.all()
         self.clear()
+        self.put_mapping()
 
         # Break up qs into chunks & bulk index each
         while True:
