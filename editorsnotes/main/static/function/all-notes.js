@@ -110,15 +110,16 @@ $(function() {
     var $checked = $('#note-facets input:checked');
     var $sortingOptions = $('.sort-option');
     var queryString = '?filter=1'
-    var filter = {project : [], topic: []}
+    var filter = {project : [], topic: [], note_status: []}
 
     $.each($checked, function(key, val) {
       filter[val.name].push(val.value);
     });
+
     $.each(filter, function(key, val) {
-      if (val.length > 0) {
-        queryString += ('&' + key + '=' + val.join(','))
-      }
+      val.forEach(function (v) {
+        queryString += ('&' + key + '=' + encodeURIComponent(v))
+      });
     });
     $.get(queryString, function(data) {
       $('#all-notes').html(data);
