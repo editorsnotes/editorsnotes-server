@@ -1,15 +1,15 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from editorsnotes.main import models
+from editorsnotes.main import models as main_models
 
 from .index import ENIndex
 
 en_index = ENIndex()
-en_index.register(models.Document,
+en_index.register(main_models.Document,
                   display_field='serialized.description',
                   highlight_fields=('serialized.description',))
-en_index.register(models.Note,
+en_index.register(main_models.Note,
                   display_field='serialized.title',
                   highlight_fields=('serialized.title',
                                     'serialized.content',
@@ -24,7 +24,7 @@ def update_elastic_search_handler(sender, instance, created, **kwargs):
             document_type.index(instance)
         else:
             document_type.update(instance)
-    elif isinstance(klass, models.notes.NoteSection):
+    elif isinstance(klass, main_models.notes.NoteSection):
         update_elastic_search_handler(sender, instance.note, False)
 
 @receiver(post_delete)
