@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import json
 
 from rest_framework import serializers
@@ -7,10 +8,17 @@ from editorsnotes.main.models.documents import Document
 
 from .base import RelatedTopicSerializerMixin, URLField, ProjectSlugField
 
+class ZoteroField(serializers.WritableField):
+    def to_native(self, zotero_data):
+        return zotero_data and json.loads(zotero_data,
+                                          object_pairs_hook=OrderedDict)
+    #def from_native(self, data):
+        #return data and json.dumps(data)
+
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
     project = ProjectSlugField()
-    zotero_data = serializers.CharField(required=False)
+    zotero_data = ZoteroField(required=False)
     url = URLField()
     class Meta:
         model = Document

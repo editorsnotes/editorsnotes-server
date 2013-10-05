@@ -56,6 +56,13 @@ class DocumentTypeAdapter(object):
                                     'name': {'type': 'string', 'index': 'not_analyzed'}
                                 }
                             },
+                            'zotero_data': {
+                                'properties': {
+                                    'itemType': {'type': 'string', 'index': 'not_analyzed'},
+                                    'publicationTitle': {'type': 'string', 'index': 'not_analyzed'},
+                                    'archive': {'type': 'string', 'index': 'not_analyzed'},
+                                }
+                            },
                         }
                     }
                 }
