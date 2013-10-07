@@ -17,7 +17,7 @@ def note(request, note_id, project_slug=None):
     o['note'] = note
     o['license'] = note.license or note.project.default_license
     o['history'] = reversion.get_unique_for_object(note)
-    o['topics'] = [ta.topic for ta in o['note'].topics.all()]
+    o['topics'] = [ta.container for ta in o['note'].topics.all()]
     o['sections'] = note.sections\
             .order_by('ordering', 'note_section_id')\
             .select_subclasses()\

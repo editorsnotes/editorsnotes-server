@@ -5,14 +5,16 @@ from editorsnotes.api import serializers
 class DocumentTypeAdapter(object):
     def __init__(self, es, index_name, model=None, highlight_fields=None,
                  display_field=None):
-        if display_field is None:
-            raise ValueError('Define a display field for this document type')
-        self.display_field = display_field
-
         self.model = model or self.get_model()
+        self.type_label = getattr(self, 'type_label', self.model._meta.module_name)
         self.serializer = self.get_serializer()
-        self.type_label = self.model._meta.module_name
-        self.highlight_fields = highlight_fields
+
+        self.display_field = getattr(self, 'display_field', display_field)
+        if self.display_field is None:
+            raise ValueError(u'Define a display field for this document type '
+                             '( {} )'.format(self))
+
+        self.highlight_fields = getattr(self, 'highlight_fields', highlight_fields)
         
         self.es = es
         self.index_name = index_name
@@ -53,14 +55,8 @@ class DocumentTypeAdapter(object):
                             },
                             'topics': {
                                 'properties': {
-                                    'name': {'type': 'string', 'index': 'not_analyzed'}
-                                }
-                            },
-                            'zotero_data': {
-                                'properties': {
-                                    'itemType': {'type': 'string', 'index': 'not_analyzed'},
-                                    'publicationTitle': {'type': 'string', 'index': 'not_analyzed'},
-                                    'archive': {'type': 'string', 'index': 'not_analyzed'},
+                                    'name': {'type': 'string', 'index': 'not_analyzed'},
+                                    'url': {'type': 'string', 'index': 'not_analyzed'}
                                 }
                             },
                         }
@@ -86,7 +82,7 @@ class DocumentTypeAdapter(object):
     def format_data(self, obj):
         if not hasattr(obj, '_rest_serialized'):
             obj._rest_serialized = self.serializer(obj).data
-        data = { 
+        data = {
             'id': obj.id,
             'serialized': obj._rest_serialized,
             'autocomplete': { 'input': obj.as_text() }
