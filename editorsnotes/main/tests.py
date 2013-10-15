@@ -10,7 +10,7 @@ from lxml import etree
 import models as main_models
 from models.topics import ProjectTopicContainer as PTC
 import utils
-from views import create_invited_user
+from views.auth import create_invited_user
 
 class UtilsTestCase(unittest.TestCase):
     def test_truncate(self):
@@ -83,11 +83,11 @@ class NoteTestCase(TestCase):
             u'Example', self.project, self.user)
 
         self.assertFalse(note.has_topic(topic))
-        container.assignments.create(content_object=note, creator=self.user)
+        container.topics.create(content_object=note, creator=self.user)
 
         self.assertTrue(note.has_topic(topic))
         self.assertEquals(1, len(note.topics.all()))
-        self.assertEquals(1, len(container.assignments.all()))
+        self.assertEquals(1, len(container.topics.all()))
         self.assertEquals(container, note.topics.all()[0].container)
 
 class NoteTransactionTestCase(TransactionTestCase):
@@ -101,9 +101,9 @@ class NoteTransactionTestCase(TransactionTestCase):
             creator=self.user, last_updater=self.user, project=self.project)
         topic, container = PTC.objects.create_along_with_node(
             u'Example', self.project, self.user)
-        container.assignments.create(content_object=note, creator=self.user)
+        container.topics.create(content_object=note, creator=self.user)
         self.assertRaises(IntegrityError,
-                          container.assignments.create,
+                          container.topics.create,
                           content_object=note, creator=self.user)
         transaction.rollback()
         note.delete()
