@@ -54,7 +54,7 @@ def update_elastic_search_handler(sender, instance, created, **kwargs):
             document_type.index(instance)
         else:
             document_type.update(instance)
-    elif isinstance(klass, main_models.notes.NoteSection):
+    elif isinstance(instance, main_models.notes.NoteSection):
         update_elastic_search_handler(sender, instance.note, False)
 
 @receiver(post_delete)
