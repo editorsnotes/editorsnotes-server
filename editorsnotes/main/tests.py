@@ -77,18 +77,20 @@ class NoteTestCase(TestCase):
         self.assertEquals(document, note.sections.select_subclasses()[0].document)
     def testAssignTopics(self):
         note = main_models.Note.objects.create(
+            title='test note',
             content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
             creator=self.user, last_updater=self.user, project=self.project)
-        topic, container = PTC.objects.create_along_with_node(
+        topic = PTC.objects.get_or_create_by_name(
             u'Example', self.project, self.user)
 
         self.assertFalse(note.has_topic(topic))
-        container.topics.create(content_object=note, creator=self.user)
+
+        note.related_topics.create(container=topic, creator=self.user)
 
         self.assertTrue(note.has_topic(topic))
-        self.assertEquals(1, len(note.topics.all()))
-        self.assertEquals(1, len(container.topics.all()))
-        self.assertEquals(container, note.topics.all()[0].container)
+        self.assertEquals(1, len(note.related_topics.all()))
+        self.assertEquals(1, len(topic.assignments.all()))
+        self.assertEquals(topic, note.related_topics.all()[0].container)
 
 class NoteTransactionTestCase(TransactionTestCase):
     fixtures = ['projects.json']
@@ -97,17 +99,19 @@ class NoteTransactionTestCase(TransactionTestCase):
         self.user = self.project.members.all()[0]
     def testAssignTopicTwice(self):
         note = main_models.Note.objects.create(
+            title='test note',
             content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
             creator=self.user, last_updater=self.user, project=self.project)
-        topic, container = PTC.objects.create_along_with_node(
+        topic = PTC.objects.get_or_create_by_name(
             u'Example', self.project, self.user)
-        container.topics.create(content_object=note, creator=self.user)
+        note.related_topics.create(container=topic, creator=self.user)
+
         self.assertRaises(IntegrityError,
-                          container.topics.create,
-                          content_object=note, creator=self.user)
+                          note.related_topics.create,
+                          container=topic, creator=self.user)
         transaction.rollback()
         note.delete()
-        container.delete()
+        topic.delete()
 
 class NewUserTestCase(TestCase):
     def setUp(self):
