@@ -7,6 +7,8 @@ from editorsnotes.main import models as main_models
 from .index import ENIndex
 from .types import DocumentTypeAdapter
 
+__all__ = ['en_index']
+
 class DocumentAdapter(DocumentTypeAdapter):
     display_field = 'serialized.description'
     highlight_fields = ('serialized.description',)
