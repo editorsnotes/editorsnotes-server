@@ -198,6 +198,9 @@ class ProjectSpecificPermissionsTestCase(TestCase):
                          len(get_all_project_permissions()))
 
         self.assertTrue(self.user.has_project_perm(self.project, 'main.add_note'))
+
+        # Even if this is a super-role, return False for a made up permission.
+        # Maybe not, though?
         self.assertFalse(self.user.has_project_perm(self.project, 'made up permission'))
 
     def test_other_project_perms(self):

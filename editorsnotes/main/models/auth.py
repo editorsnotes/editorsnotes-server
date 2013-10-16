@@ -78,9 +78,6 @@ class User(AbstractUser, URLAccessible):
         """
         if self.is_superuser:
             return True
-        role = self._get_project_role(project)
-        if role is not None and role.is_super_role:
-            return True
         return perm in self.get_project_permissions(project)
     def has_project_perms(self, project, perm_list):
         return all(self.has_project_perm(project, p) for p in perm_list)
