@@ -1,7 +1,7 @@
 from django import forms
 from django.forms.models import ModelForm, inlineformset_factory
 
-from editorsnotes.main.models.notes import Note, CitationNS
+from editorsnotes.main.models import Note, CitationNS
 
 class NoteForm(ModelForm):
     class Media:

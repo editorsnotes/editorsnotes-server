@@ -20,10 +20,10 @@
     </header>
 
     <section id="topic-projects">
-      {% with project_containers=topic_node.project_containers %}
-      <div>{{ project_containers.count }} projects refer to this topic.</div>
+      {% with project_topics=topic_node.project_topics %}
+      <div>{{ project_topics.count }} projects refer to this topic.</div>
       <ul>
-        {% for topic in project_containers.all %}
+        {% for topic in project_topics.all %}
         <li><strong>{{ topic.project }}: </strong>{{ topic|as_link }}</li>
         {% endfor %}
       </ul>

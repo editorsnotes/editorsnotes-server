@@ -7,9 +7,7 @@ from django.template import RequestContext
 from editorsnotes.djotero.utils import as_readable
 from editorsnotes.search import en_index
 
-from ..models.documents import Document, Footnote, Transcript
-from ..models.topics import Topic, ProjectTopicContainer
-from ..models.notes import CitationNS
+from ..models import Document, Footnote, Transcript, Topic, CitationNS
 
 def footnote(request, project_slug, document_id, footnote_id):
     o = {}
@@ -23,9 +21,9 @@ def document(request, project_slug, document_id):
     o = {}
     o['document'] = get_object_or_404(Document, id=document_id)
     o['topics'] = (
-        [ ta.container for ta in o['document'].related_topics.all() ] +
+        [ ta.topic for ta in o['document'].related_topics.all() ] +
         [ c.content_object for c in o['document'].citations.filter(
-                content_type=ContentType.objects.get_for_model(ProjectTopicContainer)) ])
+                content_type=ContentType.objects.get_for_model(Topic)) ])
     o['scans'] = o['document'].scans.all()
     o['domain'] = Site.objects.get_current().domain
 

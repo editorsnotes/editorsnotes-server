@@ -4,8 +4,7 @@ from rest_framework.relations import RelatedField
 from rest_framework.serializers import Field, ModelSerializer
 import reversion
 
-from editorsnotes.main.models.topics import (
-    ProjectTopicContainer, TopicNodeAssignment)
+from editorsnotes.main.models import Topic, TopicAssignment
 
 class URLField(Field):
     read_only = True
@@ -29,8 +28,8 @@ class TopicAssignmentField(RelatedField):
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
         self.many = True
     def field_to_native(self, obj, field_name):
-        return [{'name': ta.container.preferred_name,
-                 'url': ta.container.get_absolute_url()}
+        return [{'name': ta.topic.preferred_name,
+                 'url': ta.topic.get_absolute_url()}
                 for ta in obj.related_topics.all()]
     def field_from_native(self, data, files, field_name, into):
         if self.read_only:
@@ -54,7 +53,7 @@ class RelatedTopicSerializerMixin(object):
         ret = super(RelatedTopicSerializerMixin, self).get_default_fields()
         opts = self.opts.model._meta
         topic_fields = [ f for f in opts.many_to_many
-                         if f.related.parent_model == TopicNodeAssignment ]
+                         if f.related.parent_model == TopicAssignment ]
 
         # There should only be one, probably, but iterate just in case?
         if len(topic_fields):
@@ -74,8 +73,8 @@ class RelatedTopicSerializerMixin(object):
         to_create = topics[:]
         to_delete = []
 
-        for assignment in obj.related_topics.select_related('container').all():
-            topic_name = assignment.container.preferred_name
+        for assignment in obj.related_topics.select_related('topic').all():
+            topic_name = assignment.topic.preferred_name
             if topic_name in topics:
                 to_create.remove(topic_name)
             else:
@@ -88,9 +87,9 @@ class RelatedTopicSerializerMixin(object):
         project = self.context['request'].project
 
         for topic_name in to_create:
-            container = ProjectTopicContainer.objects.get_or_create_by_name(
+            topic = Topic.objects.get_or_create_by_name(
                 topic_name, project, user)
-            obj.related_topics.create(container=container, creator_id=user.id)
+            obj.related_topics.create(topic=topic, creator_id=user.id)
 
     def save_object(self, obj, **kwargs):
         # Need to change to allow partial updates, etc.

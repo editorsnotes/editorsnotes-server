@@ -18,6 +18,8 @@ NOTE_STATUS_CHOICES = (
     ('2', 'hibernating')
 )
 
+__all__ = ['Note', 'NoteSection', 'CitationNS', 'TextNS', 'NoteReferenceNS']
+
 class Note(LastUpdateMetadata, Administered, URLAccessible,
            ProjectPermissionsMixin, UpdatersMixin):
     u""" 
@@ -31,7 +33,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, null=True)
     status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1, default='1')
     license = models.ForeignKey(License, blank=True, null=True)
-    related_topics = generic.GenericRelation('TopicNodeAssignment')
+    related_topics = generic.GenericRelation('TopicAssignment')
     sections_counter = models.PositiveIntegerField(default=0)
     class Meta:
         app_label = 'main'
@@ -45,7 +47,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return self.project
     def has_topic(self, project_topic):
         return project_topic.id in \
-                self.related_topics.values_list('container_id', flat=True)
+                self.related_topics.values_list('topic_id', flat=True)
 
 class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     u"""
@@ -55,7 +57,7 @@ class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     note = models.ForeignKey(Note, related_name='sections')
     note_section_id = models.PositiveIntegerField(blank=True, null=True)
     ordering = models.PositiveIntegerField(blank=True, null=True)
-    related_topics = generic.GenericRelation('TopicNodeAssignment')
+    related_topics = generic.GenericRelation('TopicAssignment')
     objects = InheritanceManager()
     class Meta:
         app_label = 'main'

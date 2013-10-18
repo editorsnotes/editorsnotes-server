@@ -12,6 +12,8 @@ from auth import Project, ProjectPermissionsMixin
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
 
+__all__ = ['Topic', 'TopicNode', 'TopicAssignment', 'AlternateName',
+           'LegacyTopic']
 
 TYPE_CHOICES = (
     ('EVT', 'Event'),
@@ -22,7 +24,6 @@ TYPE_CHOICES = (
 
 class TopicMergeError(Exception):
     pass
-
 
 #########################
 # Main topic node model #
@@ -58,9 +59,9 @@ class TopicNode(LastUpdateMetadata, URLAccessible):
         return self._preferred_name
     def get_connected_projects(self):
         return Project.objects.filter(
-            id__in=self.project_containers.values_list('project_id', flat=True))
+            id__in=self.project_topics.values_list('project_id', flat=True))
     def related_objects(self, model=None):
-        qs = TopicNodeAssignment.objects.filter(container__topic_id=self.id)
+        qs = TopicAssignment.objects.filter(topic__topic_node_id=self.id)
         if model is not None:
             model_ct = ContentType.objects.get_for_model(model)
             model_assignments = qs.filter(content_type_id=model_ct.id)
@@ -76,7 +77,7 @@ reversion.register(TopicNode)
 # Project-specific topic models #
 #################################
 
-class ProjectTopicContainerManager(models.Manager):
+class TopicManager(models.Manager):
     def create_along_with_node(self, name, project, user, topic_type=None):
         """
         Create a new topic node and a container with the given name.
@@ -85,26 +86,26 @@ class ProjectTopicContainerManager(models.Manager):
         """
         topic_node = TopicNode.objects.create(_preferred_name=name, creator=user,
                                               last_updater=user, type=topic_type)
-        return topic_node, self.create(topic_id=topic_node.id,
+        return topic_node, self.create(topic_node_id=topic_node.id,
                                        project_id=project.id, preferred_name=name,
                                        creator_id=user.id, last_updater_id=user.id)
-    def create_from_node(self, topic, project, user, name=None):
+    def create_from_node(self, topic_node, project, user, name=None):
         """
         Given a topic node, create a new container for a project.
 
         If no name is passed, the (cached) preferred name of the topic node will
         be used as the container's preferred name.
         """
-        return self.create(topic=topic, project=project,
+        return self.create(topic_node=topic_node, project=project,
                            creator=user, last_updater=user,
-                           preferred_name=name or topic.preferred_name)
+                           preferred_name=name or topic_node.preferred_name)
     def get_or_create_by_name(self, name, project, user):
         qs = self.filter(preferred_name=name)
         if qs.exists():
             return qs.get()
-        node, container = self.create_along_with_node(name, project, user)
-        return container
-    def get_or_create_from_node(self, topic, project, user, name=None):
+        node, topic = self.create_along_with_node(name, project, user)
+        return topic
+    def get_or_create_from_node(self, topic_node, project, user, name=None):
         """
         Given a topic node, get or create a container for a project.
 
@@ -115,24 +116,21 @@ class ProjectTopicContainerManager(models.Manager):
         container's preferred name.
         """
         defaults = {'creator': user, 'last_updater': user,
-                    'preferred_name': name or topic.preferred_name}
-        return self.get_or_create(topic=topic, project=project, defaults=defaults)
+                    'preferred_name': name or topic_node.preferred_name}
+        return self.get_or_create(topic_node=topic_node, project=project,
+                                  defaults=defaults)
 
-class ProjectTopicContainer(LastUpdateMetadata, URLAccessible,
-                            ProjectPermissionsMixin, Administered):
-    project = models.ForeignKey('Project', related_name='topic_containers')
-    topic = models.ForeignKey(TopicNode, related_name='project_containers')
+class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
+            Administered):
+    project = models.ForeignKey('Project', related_name='topics')
+    topic_node = models.ForeignKey(TopicNode, related_name='project_topics')
     preferred_name = models.CharField(max_length=200)
-
-    related_topics = generic.GenericRelation('TopicNodeAssignment')
-
+    related_topics = generic.GenericRelation('TopicAssignment', related_name='assigned_to')
     summary = fields.XHTMLField(blank=True, null=True)
     summary_cites = generic.GenericRelation('Citation')
-
     deleted = models.BooleanField(default=False, editable=False)
     merged_into = models.ForeignKey('self', blank=True, null=True, editable=False)
-
-    objects = ProjectTopicContainerManager()
+    objects = TopicManager()
     class Meta:
         app_label = 'main'
         unique_together = ('project', 'preferred_name')
@@ -140,16 +138,16 @@ class ProjectTopicContainer(LastUpdateMetadata, URLAccessible,
         return self.preferred_name
     @models.permalink
     def get_absolute_url(self):
-        return ('topic_view', [self.project.slug, self.topic_id])
+        return ('topic_view', [self.project.slug, self.topic_node_id])
     def get_admin_url(self):
         return reverse(
-            'admin:main_topic_change', args=(self.project.slug, self.topic_id))
+            'admin:main_topic_change', args=(self.project.slug, self.topic_node_id))
     def get_affiliation(self):
         return self.project
     def has_summary(self):
         return self.summary is not None
     def validate_unique(self, exclude=None):
-        super(ProjectTopicContainer, self).validate_unique(exclude)
+        super(Topic, self).validate_unique(exclude)
         qs = self.__class__.objects.filter(preferred_name=self.preferred_name)
         if self.id:
             qs = qs.exclude(id=self.id)
@@ -166,8 +164,8 @@ class ProjectTopicContainer(LastUpdateMetadata, URLAccessible,
         if self.project_id != target.project_id:
             raise TopicMergeError(
                 'Can only merge topics within the same project.')
-        if not isinstance(target, ProjectTopicContainer):
-            raise ValueError('Target must be another ProjectTopicContainer')
+        if not isinstance(target, Topic):
+            raise ValueError('Target must be another Topic')
 
         # Move summary to new container if it exists
         if self.has_summary():
@@ -187,26 +185,23 @@ class ProjectTopicContainer(LastUpdateMetadata, URLAccessible,
             target.related_topics.values_list('content_type_id', 'object_id')
         )
         for assignment in assignments:
-            assignment.container_id = target.id
+            assignment.topic_id = target.id
             assignment.save()
         for stale_assignment in self.related_topics.all():
             stale_assignment.delete()
 
-        # Save the topic to check if it should be deleted as well (see below).
-        topic = self.topic
-
         # If no projects point to origin's topic node anymore, merge it into the
         # target's topic node.
-        other_containers_exist = self.topic.project_containers\
+        other_containers_exist = self.topic_node.project_topics\
                 .filter(deleted=False)\
                 .exclude(id=self.id)\
                 .exists()
         if not other_containers_exist:
-            self.topic.deleted = True
-            self.topic.merged_into = target.topic
-            self.topic.save()
+            self.topic_node.deleted = True
+            self.topic_node.merged_into = target.topic_node
+            self.topic_node.save()
 
-        # Point this node toward the new node.
+        # Point this topic toward the new one.
         self.deleted = True
         self.merged_into = target
         self.save()
@@ -214,78 +209,50 @@ class ProjectTopicContainer(LastUpdateMetadata, URLAccessible,
         return target
 
 class AlternateName(CreationMetadata, ProjectPermissionsMixin):
-    container = models.ForeignKey(ProjectTopicContainer, 
-                              related_name='alternate_names')
+    topic = models.ForeignKey(Topic, related_name='alternate_names')
     name = models.CharField(max_length=200)
     class Meta:
         app_label = 'main'
-        unique_together = ('container', 'name',)
+        unique_together = ('topic', 'name',)
     def __unicode__(self):
             return self.name
 
-class TopicSummaryManager(models.Manager):
-    use_for_related_fields = True
-    def get_query_set(self):
-        return super(TopicSummaryManager, self).get_query_set()\
-                .prefetch_related('citations__document')
-
-
-class TopicSummary(LastUpdateMetadata, ProjectPermissionsMixin):
-    """
-    A summary about a topic, specific to a project.
-
-    Projects may only create one summary for a topic.
-    """
-    container = models.OneToOneField(ProjectTopicContainer, related_name='old_summary',
-                                     blank=True, null=True)
-    citations = generic.GenericRelation('Citation')
-    content = fields.XHTMLField()
-    objects = TopicSummaryManager()
-    class Meta:
-        app_label = 'main'
-    def __unicode__(self):
-        return u'Summary by {} for {}'.format(self.container.project.slug,
-                                              self.container.topic.preferred_name)
-    def get_affiliation(self):
-        return self.container.project
-reversion.register(TopicSummary)
-
-class TopicNodeAssignment(CreationMetadata, ProjectPermissionsMixin):
+class TopicAssignment(CreationMetadata, ProjectPermissionsMixin):
     """
     An assignment of a topic to any other object, specific to a project.
 
     Optionally, a specific name can be used for an assignment, otherwise the
     projects' preferred name for that topic will be used.
     """
-    container = models.ForeignKey(ProjectTopicContainer, blank=True, null=True,
-                                  related_name='assignments')
+    topic = models.ForeignKey(Topic, blank=True, null=True,
+                              related_name='assignments')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
     class Meta:
         app_label = 'main'
-        unique_together = ('content_type', 'object_id', 'container')
+        unique_together = ('content_type', 'object_id', 'topic')
     @property
-    def topic(self):
-        return self.container.topic
+    def topic_node(self):
+        return self.topic.topic_node
     @property
-    def topic_id(self):
-        return self.container.topic.id
+    def topic_node_id(self):
+        return self.topic.topic_node_id
     def __unicode__(self):
         return u'{} --> {}: {}'.format(
-            self.container.preferred_name,
+            self.topic.preferred_name,
             self.content_object._meta.module_name,
             self.content_object)
     def get_affiliation(self):
         return self.project
-reversion.register(TopicNodeAssignment)
+reversion.register(TopicAssignment)
 
 
 ##############################################################
 # Legacy topic models (will be removed after data migration) #
 ##############################################################
 
-class Topic(models.Model, URLAccessible):
+class LegacyTopic(models.Model, URLAccessible):
     """ 
     A controlled topic such as a person name, an organization name, a
     place name, an event name, a publication name, or the name of a

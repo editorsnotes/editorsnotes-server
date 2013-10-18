@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from .. import get_all_builtin_project_permissions, _get_project_permission_group
-from editorsnotes.main.models.auth import ProjectRole
+from editorsnotes.main.models import ProjectRole
 
 class Command(BaseCommand):
     help = 'Delete project-specific permissions which aren\'t automatically generated.'

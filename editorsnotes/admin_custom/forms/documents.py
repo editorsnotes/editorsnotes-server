@@ -5,7 +5,7 @@ from django.forms.models import ModelForm, inlineformset_factory
 
 from editorsnotes.djotero.widgets import ZoteroWidget
 from editorsnotes.djotero.models import ZoteroLink
-from editorsnotes.main.models.documents import (
+from editorsnotes.main.models import (
     Document, DocumentLink, Scan, Transcript, Footnote)
 
 from ..fields import MultipleFileInput

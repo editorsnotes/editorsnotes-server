@@ -8,7 +8,6 @@ from django.test import TestCase, TransactionTestCase
 from lxml import etree
 
 import models as main_models
-from models.topics import ProjectTopicContainer as PTC
 import utils
 from views.auth import create_invited_user
 
@@ -46,7 +45,7 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEquals('Z', columns[2][7]['first_letter'])
 
 def create_test_user():
-    user = main_models.auth.User(username='testuser', is_staff=True, is_superuser=True)
+    user = main_models.User(username='testuser', is_staff=True, is_superuser=True)
     user.set_password('testuser')
     user.save()
     return user
@@ -70,7 +69,7 @@ class NoteTestCase(TestCase):
         document = main_models.Document.objects.create(
             description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
             creator=self.user, last_updater=self.user, project=self.project)
-        main_models.notes.CitationNS.objects.create(
+        main_models.CitationNS.objects.create(
             note=note, document=document, creator=self.user, last_updater=self.user)
         self.assertEquals(note.sections.count(), 1)
         self.assertEquals(note.sections_counter, 1)
@@ -80,17 +79,17 @@ class NoteTestCase(TestCase):
             title='test note',
             content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
             creator=self.user, last_updater=self.user, project=self.project)
-        topic = PTC.objects.get_or_create_by_name(
+        topic = main_models.Topic.objects.get_or_create_by_name(
             u'Example', self.project, self.user)
 
         self.assertFalse(note.has_topic(topic))
 
-        note.related_topics.create(container=topic, creator=self.user)
+        note.related_topics.create(topic=topic, creator=self.user)
 
         self.assertTrue(note.has_topic(topic))
         self.assertEquals(1, len(note.related_topics.all()))
         self.assertEquals(1, len(topic.assignments.all()))
-        self.assertEquals(topic, note.related_topics.all()[0].container)
+        self.assertEquals(topic, note.related_topics.all()[0].topic)
 
 class NoteTransactionTestCase(TransactionTestCase):
     fixtures = ['projects.json']
@@ -102,13 +101,13 @@ class NoteTransactionTestCase(TransactionTestCase):
             title='test note',
             content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
             creator=self.user, last_updater=self.user, project=self.project)
-        topic = PTC.objects.get_or_create_by_name(
+        topic = main_models.Topic.objects.get_or_create_by_name(
             u'Example', self.project, self.user)
-        note.related_topics.create(container=topic, creator=self.user)
+        note.related_topics.create(topic=topic, creator=self.user)
 
         self.assertRaises(IntegrityError,
                           note.related_topics.create,
-                          container=topic, creator=self.user)
+                          topic=topic, creator=self.user)
         transaction.rollback()
         note.delete()
         topic.delete()
@@ -128,7 +127,7 @@ class NewUserTestCase(TestCase):
         # We haven't invited this person yet, so this shouldn't make an account
         self.assertEqual(create_invited_user(new_user_email), None)
         
-        main_models.auth.ProjectInvitation.objects.create(
+        main_models.ProjectInvitation.objects.create(
             project=test_project,
             email=new_user_email,
             role=test_role.role,
@@ -136,8 +135,8 @@ class NewUserTestCase(TestCase):
         )
         new_user = create_invited_user(new_user_email)
 
-        self.assertTrue(isinstance(new_user, main_models.auth.User))
-        self.assertEqual(main_models.auth.ProjectInvitation.objects.count(), 0)
+        self.assertTrue(isinstance(new_user, main_models.User))
+        self.assertEqual(main_models.ProjectInvitation.objects.count(), 0)
         self.assertEqual(new_user.username, 'fakeperson')
 
 class ProjectTopicTestCase(TestCase):
@@ -149,32 +148,33 @@ class ProjectTopicTestCase(TestCase):
         self.user2 = self.project2.members.all()[0]
 
     def test_create_project_topic(self):
-        topic, container = PTC.objects.create_along_with_node(
+        topic_node, topic = main_models.Topic.objects.create_along_with_node(
             u'Emma Goldman', self.project, self.user)
 
-        self.assertTrue(isinstance(topic, main_models.topics.TopicNode))
+        self.assertTrue(isinstance(topic_node, main_models.TopicNode))
 
-        container2 = PTC.objects.create_from_node(
-            topic, self.project2, self.user2, name=u'Emma Goldman!!!')
+        topic2 = main_models.Topic.objects.create_from_node(
+            topic_node, self.project2, self.user2, name=u'Emma Goldman!!!')
 
-        self.assertEqual(topic, container2.topic)
-        self.assertEqual(topic.get_connected_projects().count(), 2)
+        self.assertEqual(topic_node, topic2.topic_node)
+        self.assertEqual(topic_node.get_connected_projects().count(), 2)
 
     def test_merge_topic_nodes(self):
-        good_topic, good_container = PTC.objects.create_along_with_node(
+        _, good_topic = main_models.Topic.objects.create_along_with_node(
             'Emma Goldman', self.project, self.user)
-        bad_topic, bad_container = PTC.objects.create_along_with_node(
+        _, bad_topic = main_models.Topic.objects.create_along_with_node(
             u'Емма Голдман', self.project, self.user)
 
-        bad_container.merge_into(good_container)
+        bad_topic.merge_into(good_topic)
 
-        bad_topic = bad_container.topic
+        bad_node = bad_topic.topic_node
+        good_node = good_topic.topic_node
 
         self.assertEqual(bad_topic.deleted, True)
-        self.assertEqual(bad_container.deleted, True)
+        self.assertEqual(bad_node.deleted, True)
         self.assertEqual(bad_topic.merged_into, good_topic)
-        self.assertEqual(bad_container.merged_into, good_container)
-        self.assertEqual(good_topic.get_connected_projects().count(), 1)
+        self.assertEqual(bad_node.merged_into, good_node)
+        self.assertEqual(good_node.get_connected_projects().count(), 1)
 
 class ProjectSpecificPermissionsTestCase(TestCase):
     fixtures = ['projects.json']
@@ -218,7 +218,7 @@ class ProjectSpecificPermissionsTestCase(TestCase):
     def test_limited_role(self):
         # Make a role with only one permission & make sure users of that role
         # can only do that.
-        researcher = main_models.auth.User.objects.create(username='a_researcher')
+        researcher = main_models.User.objects.create(username='a_researcher')
         new_role = self.project.roles.get_or_create_by_name('Researcher')
         note_perm = Permission.objects.get_by_natural_key('change_note', 'main', 'note')
 

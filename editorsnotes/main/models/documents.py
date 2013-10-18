@@ -18,6 +18,9 @@ from .. import fields, utils
 from auth import ProjectPermissionsMixin, UpdatersMixin
 from base import CreationMetadata, LastUpdateMetadata, URLAccessible, Administered
 
+__all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink',
+           'Citation']
+
 class DocumentManager(models.Manager):
     use_for_related_fields = True
     # Include whether or not documents have scans/transcripts in default query.
@@ -50,7 +53,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
     collection = models.ForeignKey('self', related_name='parts', blank=True, null=True)
     ordering = models.CharField(max_length=32, editable=False)
     language = models.CharField(max_length=32, default='English')
-    related_topics = generic.GenericRelation('TopicNodeAssignment')
+    related_topics = generic.GenericRelation('TopicAssignment')
     objects = DocumentManager()
     edtf_date = models.TextField(blank=True, null=True)
     class Meta:
@@ -102,12 +105,12 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         return r
     def get_all_related_topics(self):
         topic_ct = ContentType.objects.get_by_natural_key(
-            'main', 'projecttopiccontainer')
+            'main', 'topic')
         topic_citations = self.citations.filter(content_type_id=topic_ct.id)
         citation_note_sections = self.citationns_set.all()
         notes = {ns.note for ns in citation_note_sections}
 
-        return {ta.container for ta in set(chain(
+        return {ta.topic for ta in set(chain(
             # Explicitly related topics
             self.related_topics.all(),
 

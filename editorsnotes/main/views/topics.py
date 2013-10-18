@@ -8,10 +8,8 @@ from django.views.generic.base import RedirectView
 from editorsnotes.search import en_index
 
 from .. import utils
-from ..models.auth import Project
-from ..models.documents import Document, Citation
-from ..models.notes import Note
-from ..models.topics import Topic, TopicNode, ProjectTopicContainer
+from ..models import (
+    Project, Document, Citation, Note, Topic, LegacyTopic, TopicNode)
 
 def _sort_citations(instance):
     cites = { 'all': [] }
@@ -27,7 +25,7 @@ class LegacyTopicRedirectView(RedirectView):
     permanent = True
     query_string = True
     def get_redirect_url(self, topic_slug):
-        legacy_topic = get_object_or_404(Topic, slug=topic_slug)
+        legacy_topic = get_object_or_404(LegacyTopic, slug=topic_slug)
         return reverse('topicnode_view', args=(legacy_topic.merged_into_id,))
 
 def all_topics(request, project_slug=None):
@@ -56,10 +54,9 @@ def topic_node(request, topic_node_id):
 
 def topic(request, project_slug, topic_node_id):
     o = {}
-    topic_qs = ProjectTopicContainer.objects\
-            .select_related('creator', 'last_updater', 'project')
+    topic_qs = Topic.objects.select_related('creator', 'last_updater', 'project')
     o['topic'] = topic = get_object_or_404(topic_qs,
-                                           topic_id=topic_node_id,
+                                           topic_node_id=topic_node_id,
                                            project__slug=project_slug)
     o['projects'] = topic.project
 
@@ -67,7 +64,7 @@ def topic(request, project_slug, topic_node_id):
                                       topic.get_absolute_url() }}}
 
     model_searches = ( en_index.search_model(model, topic_query) for model in
-                       (Document, Note, ProjectTopicContainer) )
+                       (Document, Note, Topic) )
 
     o['documents'], o['notes'], o['related_topics'] = (
         [ result['_source']['serialized'] for result in search['hits']['hits'] ]
