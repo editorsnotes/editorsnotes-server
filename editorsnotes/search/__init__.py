@@ -42,10 +42,8 @@ en_index.register(main_models.Note,
                   highlight_fields=('serialized.title',
                                     'serialized.content',
                                     'serialized.sections'))
-en_index.register(main_models.Document,
-                  adapter=DocumentAdapter)
-en_index.register(main_models.topics.ProjectTopicContainer,
-                  adapter=TopicAdapter)
+en_index.register(main_models.Document, adapter=DocumentAdapter)
+en_index.register(main_models.Topic, adapter=TopicAdapter)
 
 @receiver(post_save)
 def update_elastic_search_handler(sender, instance, created, **kwargs):

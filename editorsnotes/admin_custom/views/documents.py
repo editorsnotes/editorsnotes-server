@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 import reversion
 
-from editorsnotes.main.models.documents import Document, Transcript
+from editorsnotes.main.models import Document, Transcript
 
 from common import BaseAdminView
 from .. import forms

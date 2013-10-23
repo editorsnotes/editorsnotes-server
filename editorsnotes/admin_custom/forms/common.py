@@ -6,8 +6,7 @@ from django.forms.models import ModelForm
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
-from editorsnotes.main.models.topics import (
-    TopicNodeAssignment, ProjectTopicContainer)
+from editorsnotes.main.models.topics import Topic, TopicAssignment
 
 #class TopicAssignmentWidget(forms.widgets.HiddenInput):
 #    def render(self, name, value, attrs=None):

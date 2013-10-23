@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from django.test import TestCase
+
 from editorsnotes.main.tests import create_test_user
-from editorsnotes.main import models
+from editorsnotes.main import models as main_models
 
 class TopicAdminTestCase(TestCase):
     def setUp(self):
         self.user = create_test_user()
         self.topics = []
-        self.topics.append(models.Topic.objects.create(
+        self.topics.append(main_models.Topic.objects.create(
             preferred_name=u'Ленинь, Владимир Ильич',
             summary=u'Мужчина; коммунисть.',
             creator=self.user, last_updater=self.user))
-        self.topics.append(models.Topic.objects.create(
+        self.topics.append(main_models.Topic.objects.create(
             preferred_name=u'Goldman, Emma',
             summary=u'Nowhere at home.',
             creator=self.user, last_updater=self.user))
-        self.topics.append(models.Topic.objects.create(
+        self.topics.append(main_models.Topic.objects.create(
             preferred_name=u'Doe, John', 
             summary='A simple man.',
             creator=self.user, last_updater=self.user))
@@ -59,7 +60,7 @@ class TopicAdminTestCase(TestCase):
             u'Topic with a very similar Preferred name already exists.')
 
     def test_related_topics(self):
-        topic = models.Topic.objects.create(
+        topic = main_models.Topic.objects.create(
             preferred_name=u'Троцкий, Лев Давидович',
             summary=u'Также мужчина; также коммунисть.',
             creator=self.user, last_updater=self.user)

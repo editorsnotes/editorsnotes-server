@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic.edit import View, ModelFormMixin, TemplateResponseMixin
 import reversion
 
-from editorsnotes.main.models.auth import Project
+from editorsnotes.main.models import Project
 
 VIEW_ERROR_MSG = 'You do not have permission to view {}.'
 CHANGE_ERROR_MSG = 'You do not have permission to change {}.'

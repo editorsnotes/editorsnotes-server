@@ -7,12 +7,12 @@
     {% for related_topic in related_topics %}
     <li>
       {% if project_specific %}
-        {{ related_topic.container|as_link }}
+        {{ related_topic.topic|as_link }}
       {% else %}
-        {% if related_topic.topic %}
-          {{ related_topic.topic|as_link }}
+        {% if related_topic.topic_node %}
+          {{ related_topic.topic_node|as_link }}
         {% else %}
-          {{ related_topic|as_link }}
+          {{ related_topic_node|as_link }}
         {% endif %}
       {% endif %}
       {% if not forloop.last %} | {% endif %}

@@ -1,14 +1,11 @@
 from collections import OrderedDict
 
-from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 
 from rest_framework import serializers
 from rest_framework.fields import Field
-from rest_framework.relations import RelatedField
 
-from editorsnotes.main.models.topics import (
-    Topic, TopicNode, ProjectTopicContainer)
+from editorsnotes.main.models.topics import Topic, TopicNode
 
 from .base import RelatedTopicSerializerMixin, ProjectSlugField, URLField
 
@@ -21,7 +18,7 @@ class TopicNodeSerializer(serializers.ModelSerializer):
         model = TopicNode
         fields = ('id', 'name', 'url', 'alternate_forms', 'type', 'projects',)
     def get_alternate_forms(self, obj):
-        topics = obj.project_containers.select_related('alternate_names')
+        topics = obj.project_topics.select_related('alternate_names')
         alternate_forms = set() 
         alternate_forms.update(topic.preferred_name for topic in topics)
         alternate_forms.update(
@@ -37,16 +34,16 @@ class TopicNodeSerializer(serializers.ModelSerializer):
             ('preferred_name', topic.preferred_name),
             ('topic_url', reverse('api:api-topics-detail',
                                   args=(topic.project.slug, obj.id)))))
-            for topic in obj.project_containers.select_related('project')]
+            for topic in obj.project_topics.select_related('project')]
 
 
 class TopicSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
-    id = Field(source='topic_id')
-    type = Field(source='topic.type')
+    id = Field(source='topic_node_id')
+    type = Field(source='topic_node.type')
     url = URLField()
     project = ProjectSlugField()
     class Meta:
-        model = ProjectTopicContainer
+        model = Topic
         fields = ('id', 'preferred_name', 'type', 'url', 'related_topics', 'project',
                   'last_updated', 'summary')
     def save_object(self, obj, **kwargs):
@@ -61,5 +58,5 @@ class TopicSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
                     creator_id=obj.creator_id,
                     last_updater_id=obj.creator_id)
                 topic_node_id = topic_node.id
-            obj.topic_id = topic_node_id
+            obj.topic_node_id = topic_node_id
         return super(TopicSerializer, self).save_object(obj, **kwargs)

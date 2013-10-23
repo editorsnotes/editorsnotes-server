@@ -2,7 +2,7 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 
-from editorsnotes.main.models.notes import Note, NoteSection
+from editorsnotes.main.models import Note, NoteSection
 
 from .base import (BaseListAPIView, BaseDetailView, CreateReversionMixin,
                    ElasticSearchRetrieveMixin, ElasticSearchListMixin)

@@ -8,7 +8,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 import reversion
 
-from editorsnotes.main.models.notes import Note
+from editorsnotes.main.models import Note
 
 from .. import forms
 from common import BaseAdminView

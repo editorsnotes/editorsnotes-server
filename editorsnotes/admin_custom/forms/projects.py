@@ -3,8 +3,7 @@ from django.contrib.auth.models import Group
 from django.forms.models import (
     BaseModelFormSet, ModelForm, modelformset_factory)
 
-from editorsnotes.main.models.auth import (
-    User, Project, ProjectInvitation)
+from editorsnotes.main.models import User, Project, ProjectInvitation
 
 def make_project_invitation_formset(project):
     if not isinstance(project, Project):

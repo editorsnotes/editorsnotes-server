@@ -14,6 +14,9 @@ from .. import fields
 from ..management import get_all_project_permissions
 from base import URLAccessible, CreationMetadata
 
+__all__ = ['User', 'Project', 'ProjectRole', 'ProjectInvitation',
+           'FeaturedItem']
+
 class User(AbstractUser, URLAccessible):
     zotero_key = models.CharField(max_length='24', blank=True, null=True)
     zotero_uid = models.CharField(max_length='6', blank=True, null=True)

@@ -15,10 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 from editorsnotes.search import en_index
 
 from ..forms import FeedbackForm
-from ..models.auth import Project
-from ..models.documents import Document
-from ..models.notes import Note
-from ..models.topics import TopicNode
+from ..models import Document, Note, Project, TopicNode
 
 def index(request):
     o = {}

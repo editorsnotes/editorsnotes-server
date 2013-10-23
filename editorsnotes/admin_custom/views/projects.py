@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 import reversion
 
-from editorsnotes.main.models.auth import Project, FeaturedItem
+from editorsnotes.main.models import Project, FeaturedItem
 
 from .. import forms
 from common import VIEW_ERROR_MSG, CHANGE_ERROR_MSG

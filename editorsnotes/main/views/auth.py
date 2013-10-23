@@ -7,7 +7,7 @@ from django.template import RequestContext
 from django_browserid.views import Verify
 import reversion
 
-from ..models.auth import User, Project, ProjectInvitation
+from ..models import User, Project, ProjectInvitation
 
 @reversion.create_revision()
 def create_invited_user(email):

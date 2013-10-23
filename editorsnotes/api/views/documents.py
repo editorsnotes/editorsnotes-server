@@ -1,4 +1,4 @@
-from editorsnotes.main.models.documents import Document
+from editorsnotes.main.models import Document
 
 from .base import (BaseListAPIView, BaseDetailView, CreateReversionMixin,
                    ElasticSearchRetrieveMixin, ElasticSearchListMixin)

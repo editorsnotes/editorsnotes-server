@@ -6,8 +6,8 @@ from rest_framework.relations import (
     RelatedField, SlugRelatedField, HyperlinkedRelatedField)
 from rest_framework.reverse import reverse
 
-from editorsnotes.main.models.notes import (
-    Note, TextNS, CitationNS, NoteReferenceNS, NOTE_STATUS_CHOICES)
+from editorsnotes.main.models import Note, TextNS, CitationNS, NoteReferenceNS
+from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (
     RelatedTopicSerializerMixin, URLField, ProjectSlugField,

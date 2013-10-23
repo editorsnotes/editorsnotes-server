@@ -4,7 +4,7 @@ import json
 from rest_framework import serializers
 from rest_framework.relations import RelatedField
 
-from editorsnotes.main.models.documents import Document
+from editorsnotes.main.models import Document
 
 from .base import RelatedTopicSerializerMixin, URLField, ProjectSlugField
 

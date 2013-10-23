@@ -9,7 +9,7 @@ from django.test import TestCase
 
 from reversion.models import Revision
 
-from editorsnotes.main import models
+from editorsnotes.main import models as main_models
 
 TEST_TOPIC = {
     'preferred_name': u'Patrick Golden',
@@ -42,8 +42,8 @@ TEST_NOTE = {
 class TopicAPITestCase(TestCase):
     fixtures = ['projects.json']
     def setUp(self):
-        self.user = models.auth.User.objects.get(username='barry')
-        self.project = models.auth.Project.objects.get(slug='emma')
+        self.user = main_models.User.objects.get(username='barry')
+        self.project = main_models.Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
     def test_simple_topic_CRUD(self):
         """Simple topic create, read, update, delete."""
@@ -57,9 +57,9 @@ class TopicAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-        new_topic_id = response.data.get('id')
-        new_topic = models.topics.ProjectTopicContainer.objects.get(
-            topic_id=new_topic_id, project=self.project)
+        new_topic_node_id = response.data.get('id')
+        new_topic = main_models.Topic.objects.get(
+            topic_node_id=new_topic_node_id, project=self.project)
         self.assertEqual(etree.tostring(new_topic.summary),
                          response.data.get('summary'))
 
@@ -77,30 +77,30 @@ class TopicAPITestCase(TestCase):
         data['summary'] = u'<p>A writer of great tests.</p>'
 
         response = self.client.put(
-            reverse('api:api-topics-detail', args=[self.project.slug, new_topic_id]),
+            reverse('api:api-topics-detail', args=[self.project.slug, new_topic_node_id]),
             json.dumps(data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
 
-        new_topic = models.topics.ProjectTopicContainer.objects.get(
-            topic_id=new_topic_id, project=self.project)
+        new_topic = main_models.Topic.objects.get(
+            topic_node_id=new_topic_node_id, project=self.project)
         self.assertEqual(data['summary'], etree.tostring(new_topic.summary))
 
         # Delete the topic
-        self.assertEqual(models.topics.ProjectTopicContainer.objects.count(), 1)
+        self.assertEqual(main_models.Topic.objects.count(), 1)
         response = self.client.delete(
-            reverse('api:api-topics-detail', args=[self.project.slug, new_topic_id]),
+            reverse('api:api-topics-detail', args=[self.project.slug, new_topic_node_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(models.topics.ProjectTopicContainer.objects.count(), 0)
+        self.assertEqual(main_models.Topic.objects.count(), 0)
 
 class DocumentAPITestCase(TestCase):
     fixtures = ['projects.json']
     def setUp(self):
-        self.user = models.auth.User.objects.get(username='barry')
-        self.project = models.auth.Project.objects.get(slug='emma')
+        self.user = main_models.User.objects.get(username='barry')
+        self.project = main_models.Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
     def test_simple_document_CRUD(self):
         """Simple document create, read, update, delete."""
@@ -113,7 +113,7 @@ class DocumentAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         new_document_id = response.data.get('id')
-        new_document = models.Document.objects.get(id=new_document_id)
+        new_document = main_models.Document.objects.get(id=new_document_id)
         self.assertEqual(etree.tostring(new_document.description),
                          data['description'])
 
@@ -126,7 +126,7 @@ class DocumentAPITestCase(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
-        new_document = models.Document.objects.get(id=new_document_id)
+        new_document = main_models.Document.objects.get(id=new_document_id)
         self.assertEqual(response.data.get('description'),
                          new_data['description'])
         self.assertEqual(etree.tostring(new_document.description),
@@ -137,14 +137,14 @@ class DocumentAPITestCase(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(models.Document.objects.filter(id=new_document_id).count(), 0)
+        self.assertEqual(main_models.Document.objects.filter(id=new_document_id).count(), 0)
 
 
 class NoteAPITestCase(TestCase):
     fixtures = ['projects.json']
     def setUp(self):
-        self.user = models.auth.User.objects.get(username='barry')
-        self.project = models.auth.Project.objects.get(slug='emma')
+        self.user = main_models.User.objects.get(username='barry')
+        self.project = main_models.Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
     def test_simple_note_CRUD(self):
         """Simple note create, read, update, delete."""
@@ -159,7 +159,7 @@ class NoteAPITestCase(TestCase):
         self.assertEqual(Revision.objects.count(), 1)
 
         new_note_id = response.data.get('id')
-        new_note = models.Note.objects.get(id=new_note_id)
+        new_note = main_models.Note.objects.get(id=new_note_id)
 
         self.assertEqual(etree.tostring(new_note.content), data['content'])
         self.assertEqual(etree.tostring(new_note.content), response.data.get('content'))
@@ -190,7 +190,7 @@ class NoteAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        new_note = models.Note.objects.get(id=new_note_id)
+        new_note = main_models.Note.objects.get(id=new_note_id)
         self.assertEqual(new_note.get_status_display(), new_data['status'])
 
         # Add a citation
@@ -261,5 +261,5 @@ class NoteAPITestCase(TestCase):
         self.assertEqual(response.status_code, 204)
         
         # Make sure everything was deleted
-        self.assertEqual(0, models.Note.objects.filter(id=new_note_id).count())
-        self.assertEqual(0, models.NoteSection.objects.filter(note_id=new_note_id).count())
+        self.assertEqual(0, main_models.Note.objects.filter(id=new_note_id).count())
+        self.assertEqual(0, main_models.NoteSection.objects.filter(note_id=new_note_id).count())
