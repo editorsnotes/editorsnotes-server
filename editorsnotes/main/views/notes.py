@@ -7,12 +7,12 @@ from editorsnotes.search import en_index
 
 from ..models.notes import Note
 
-def note(request, note_id, project_slug=None):
+def note(request, note_id, project_slug):
     o = {}
     qs = Note.objects\
             .select_related('license', 'project__default_license')\
-            .prefetch_related('topics')
-    note = get_object_or_404(qs, id=note_id)
+            .prefetch_related('related_topics')
+    note = get_object_or_404(qs, id=note_id, project__slug=project_slug)
 
     o['note'] = note
     o['license'] = note.license or note.project.default_license
