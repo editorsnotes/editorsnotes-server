@@ -47,10 +47,10 @@
             There is no article about <em>{{ topic.preferred_name }}</em> yet.
           </div>
           {% endif %}
-          {% if summary_cites.all %}
+          {% if topic.summary_cites.all %}
           <h4>Sources</h4>
           <div class="citation-list">
-            {% for cite in summary_cites.all %}
+            {% for cite in topic.summary_cites.all %}
               {% include "citation.include" %}
             {% endfor %}
           </div>
@@ -70,20 +70,20 @@
 
       <section id="notes-tab" class="tab-pane">
         {% if notes %}
-          {% for note, topics in notes %}
+          {% for note in notes %}
           <div id="note-{{ note.id }}" class="related-note">
             <div class="note-link">
-              <a href="{{ note.get_absolute_url }}">{{ note.title}}</a>
+              <a href="{{ note.url }}">{{ note.title}}</a>
             </div>
             <div class="note-last-modified">
-              <span class="quiet">Last modified: </span><span>{{ note.last_updated|date:"F j, Y" }}</span>
+              <span class="quiet">Last modified: </span><span>{{ note.last_updated }}</span>
             </div>
-            {% if topics %}
+            {% if note.related_topics and note.related_topics.count %}
             <div class="note-topics">
               <span class="quiet">Related topics: </span>
               <ul class="topic-list unstyled">
                 {% for topic in topics %}
-                  <li>{{ topic|as_link }}</a>{% if not forloop.last %} | {% endif %}</li>
+                  <li>{{ topic }}</a>{% if not forloop.last %} | {% endif %}</li>
                 {% endfor %}
               </ul>
             </div>

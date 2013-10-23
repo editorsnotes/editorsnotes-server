@@ -34,6 +34,7 @@ CACHES = {
     }
 }
 COMPRESS_CACHE_BACKEND = 'compress'
+SOUTH_TESTS_MIGRATE = False
 
 
 #################
@@ -45,14 +46,11 @@ MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 ROOT_URLCONF = 'editorsnotes.urls'
 
-AUTH_PROFILE_MODULE = 'main.UserProfile'
+AUTH_USER_MODEL = 'main.User'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'django_browserid.auth.BrowserIDBackend',
 )
-
-HAYSTACK_SITECONF = 'editorsnotes.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'xapian'
 
 
 #################
@@ -75,7 +73,6 @@ try:
 except ImportError:
     STORAGE_PATH = EN_PROJECT_PATH
 
-HAYSTACK_XAPIAN_PATH = os.path.abspath(os.path.join(STORAGE_PATH, 'searchindex'))
 MEDIA_ROOT = os.path.abspath(os.path.join(STORAGE_PATH, 'uploads'))
 STATIC_ROOT = os.path.abspath(os.path.join(STORAGE_PATH, 'static'))
 
@@ -83,6 +80,8 @@ STATIC_ROOT = os.path.abspath(os.path.join(STORAGE_PATH, 'static'))
 ###################
 # Everything else #
 ###################
+
+TEST_RUNNER = 'editorsnotes.testrunner.CustomTestSuiteRunner'
 
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -116,16 +115,18 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
-    'django.contrib.admindocs',
     'reversion',
     'south',
-    'haystack',
     'compressor',
+    'licensing',
+    'rest_framework',
+    'rest_framework.authtoken',
     'editorsnotes.main',
     'editorsnotes.djotero',
-    'editorsnotes.refine',
+    #'editorsnotes.refine',
     'editorsnotes.admin_custom',
+    'editorsnotes.api',
+    'editorsnotes.search',
 )
 
 STATICFILES_FINDERS = (
@@ -136,6 +137,14 @@ STATICFILES_FINDERS = (
 BROWSERID_CREATE_USER = 'editorsnotes.main.views.create_invited_user'
 
 LESSC_BINARY = 'lessc'
+
+REST_FRAMEWORK = {
+    #'FILTER_BACKEND': 'editorsnotes.api.filters.HaystackFilterBackend',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication'
+    )
+}
 
 # Add in local settings
 from settings_local import *
