@@ -42,15 +42,24 @@ class DocumentTypeAdapter(object):
         mapping = {
             self.type_label : {
                 'properties': {
-                    'autocomplete': {
-                        'type': 'completion',
-                        'payloads': True
+                    'display_title': {
+                        'fields': {
+                            'display_title': {
+                                'type': 'string'
+                            },
+                            'autocomplete': {
+                                'type': 'completion',
+                                'payloads': True
+                            }
+                        },
+                        'type': 'multi_field'
                     },
                     'serialized': {
                         'properties': {
                             'project': {
                                 'properties': {
-                                    'name': {'type': 'string', 'index': 'not_analyzed'}
+                                    'name': {'type': 'string', 'index': 'not_analyzed'},
+                                    'url': {'type': 'string', 'index': 'not_analyzed' }
                                 }
                             },
                             'related_topics': {
@@ -85,7 +94,7 @@ class DocumentTypeAdapter(object):
         data = {
             'id': obj.id,
             'serialized': obj._rest_serialized,
-            'autocomplete': { 'input': obj.as_text() }
+            'display_title': obj.as_text()
         }
         return data
 
