@@ -101,7 +101,7 @@ EditorsNotes.Models['Note'] = Backbone.Model.extend({
     'content': null,
     'status': '1',
     'section_ordering': [],
-    'topics': []
+    'related_topics': []
   },
 
   initialize: function (options) {
@@ -125,17 +125,17 @@ EditorsNotes.Models['Note'] = Backbone.Model.extend({
       var ordering = that.get('section_ordering');
       return ordering.indexOf(section.id);
     }
-    this.topics = [];
+    this.related_topics = [];
   },
 
   parse: function (response) {
     var topicNames = response.related_topics.map(function (t) { return t.name });
 
     this.sections.set(response.sections);
-    this.set('topics', topicNames);
+    this.set('related_topics', topicNames);
 
     delete response.sections;
-    delete response.topics;
+    delete response.related_topics;
 
     return response
   }
