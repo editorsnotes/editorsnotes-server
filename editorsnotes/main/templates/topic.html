@@ -70,7 +70,7 @@
 
       <section id="notes-tab" class="tab-pane">
         {% if notes %}
-          {% for note in notes %}
+          {% for note, note_topics in notes %}
           <div id="note-{{ note.id }}" class="related-note">
             <div class="note-link">
               <a href="{{ note.url }}">{{ note.title}}</a>
@@ -78,12 +78,12 @@
             <div class="note-last-modified">
               <span class="quiet">Last modified: </span><span>{{ note.last_updated }}</span>
             </div>
-            {% if note.related_topics and note.related_topics.count %}
+            {% if note_topics|length %}
             <div class="note-topics">
               <span class="quiet">Related topics: </span>
               <ul class="topic-list unstyled">
-                {% for topic in topics %}
-                  <li>{{ topic }}</a>{% if not forloop.last %} | {% endif %}</li>
+                {% for topic in note_topics %}
+                <li><a href="{{ topic.url }}">{{ topic.name }}</a> {% if not forloop.last %} | {% endif %}</li>
                 {% endfor %}
               </ul>
             </div>
