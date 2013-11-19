@@ -54,11 +54,12 @@ def topic_node(request, topic_node_id):
 
 def topic(request, project_slug, topic_node_id):
     o = {}
-    topic_qs = Topic.objects.select_related('creator', 'last_updater', 'project')
+    topic_qs = Topic.objects.select_related('topic_node', 'creator',
+                                            'last_updater', 'project')
     o['topic'] = topic = get_object_or_404(topic_qs,
                                            topic_node_id=topic_node_id,
                                            project__slug=project_slug)
-    o['projects'] = topic.project
+    o['project'] = topic.project
 
     topic_query = {'query': {'term': {'serialized.related_topics.url':
                                       topic.get_absolute_url() }}}

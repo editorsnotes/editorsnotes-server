@@ -20,7 +20,19 @@
 {% endblock %}
 
 {% block content %}
-    <div id="note">
+      <ul class="breadcrumb">
+        <li>
+          <a href="{% url "project_view" project_slug=note.project.slug %}">{{ note.project }}</a>
+          <span class="divider">&gt;</span>
+        </li>
+        <li>
+          <a href="{% url "all_notes_view" project_slug=note.project.slug %}">Notes</a>
+          <span class="divider">&gt;</span>
+        </li>
+        <li class="active">{{ note.title }}</li>
+      </ul>
+
+      <div id="note">
 
       <header><h2>{{ note.title|typogrify }}</h2></header>
 
