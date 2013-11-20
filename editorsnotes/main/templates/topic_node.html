@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load typogrify display %}
 
-{% block title %}: {{ topic.preferred_name }}{% endblock %}
+{% block title %}: {{ topic_node.preferred_name }}{% endblock %}
 
 {% block js %}
 <script type="text/javascript" src="{{ STATIC_URL }}function/topic.js"></script>
@@ -15,13 +15,13 @@
 
 {% block content %}
     <header>
-      <h2 id="topic-name">{{ topic.preferred_name }}</h2>
+      <h1 id="topic-name">{{ topic_node.preferred_name }}</h1>
       {% include "includes/related_topics_header.html" %}
     </header>
 
     <section id="topic-projects">
       {% with project_topics=topic_node.project_topics %}
-      <div>{{ project_topics.count }} projects refer to this topic.</div>
+      <p>{{ project_topics.count }} project{% if project_topics.count > 1%}s{% endif %} refer{% if project_topics.count = 1%}s{% endif %} to this topic.</p>
       <ul>
         {% for topic in project_topics.all %}
         <li><strong>{{ topic.project }}: </strong>{{ topic|as_link }}</li>
