@@ -126,7 +126,7 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     slug = models.SlugField(help_text='Used for project-specific URLs and groups')
     image = models.ImageField(upload_to='project_images', blank=True, null=True)
     description = fields.XHTMLField(blank=True, null=True)
-    default_license = models.ForeignKey(License, default=6)
+    default_license = models.ForeignKey(License, default=1)
     objects = ProjectManager()
     class Meta:
         app_label = 'main'
