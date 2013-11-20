@@ -46,16 +46,24 @@ def get_item_types():
     data = json.loads(cache.get('item_types'))
 
     from editorsnotes.main.models import Document
-    from haystack.query import SearchQuerySet
-    used_item_types = SearchQuerySet()\
-            .models(Document)\
-            .exclude(itemType='none')\
-            .values_list('itemType', flat=True)
+    from editorsnotes.search import en_index
+    facet_search = en_index.search_model(Document, {
+        'query': {'filtered': {'query': {'match_all': {}}}},
+        'facets': {
+            'itemTypes': {
+                'terms': {
+                    'field': 'serialized.zotero_data.itemType',
+                    'size': 10
+                }
+            }
+        }
+    })
+
+    used_item_types = facet_search['facets']['itemTypes']['terms']
 
     return {
         'itemTypes': data,
-        'common': [item_type for item_type, count in
-                   Counter(used_item_types).most_common()[:10]]
+        'common': [item_type['term'] for item_type in used_item_types[:10]]
     }
 
 def get_collections(zotero_key, loc, top):
