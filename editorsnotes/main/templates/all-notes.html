@@ -47,8 +47,17 @@
 {% endblock %}
 
 {% block content %}
+{% if project %}
+  <ul class="breadcrumb-top">
+    <li>
+      <a href="{% url "project_view" project_slug=project.slug %}">{{ project }}</a>
+      <span class="divider">&gt;</span>
+    </li>
+    <li class="active">Notes</li>
+  </ul>
+{% endif %}
 <header>
-  <h2>All Notes</h2>
+  <h2>{{ project.name }}: All Notes</h2>
 </header>
 
 <section id="all-notes">

@@ -8,17 +8,19 @@
     </h3>
   </div>
   <div class="facets {% if not filtered %}hide{% endif %}">
-    <div class="span12" id="note-facets-project">
-      <h6>Project</h6>
-      <ul class="unstyled">
-      {% for project in project_facets %}
-      <li>
-        <input type="checkbox" name="project" value="{{ project.term }}">&nbsp;
-        {{ project.term }} ({{ project.count }})
-      </li>
-      {% endfor %}
-      </ul>
-    </div>
+    {% if project_facets %}
+      <div class="span12" id="note-facets-project">
+        <h6>Project</h6>
+        <ul class="unstyled">
+        {% for project in project_facets %}
+        <li>
+          <input type="checkbox" name="project" value="{{ project.term }}">&nbsp;
+          {{ project.term }} ({{ project.count }})
+        </li>
+        {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
     <div class="span12" id="note-facets-project">
       <h6>Status</h6>
       <ul class="unstyled">
