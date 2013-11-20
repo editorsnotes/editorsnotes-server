@@ -57,7 +57,7 @@
   </ul>
 {% endif %}
 <header>
-  <h2>{{ project.name }}: All Notes</h2>
+<h2>{% if project %}{{ project.name }}: {% endif %}All Notes</h2>
 </header>
 
 <section id="all-notes">

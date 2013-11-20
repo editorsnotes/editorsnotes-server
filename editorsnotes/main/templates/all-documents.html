@@ -65,6 +65,7 @@
 
 {% block content %}
 
+{% if project %}
 <ul class="breadcrumb-top">
   <li>
     <a href="{% url "project_view" project_slug=project.slug %}">{{ project }}</a>
@@ -72,9 +73,10 @@
   </li>
   <li class="active">Documents</li>
 </ul>
+{% endif %}
 
 <header>
-<h2>{{ project.name }}: All Documents</h2>
+<h2>{% if project %}{{ project.name }}: {% endif %}All Documents</h2>
 </header>
 
 
