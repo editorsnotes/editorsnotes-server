@@ -98,10 +98,10 @@
             {% else %}
               {% if d.has_transcript %}
                 <label>A transcript for this document exists.</label>
-                <a class="btn" href="{% url "transcript_edit_view" d.id %}">Edit transcript</a>
+                <a class="btn" href="{% url "admin:main_transcript_add_or_change" d.project.slug d.id %}">Edit transcript</a>
               {% else %}
                 <label>No transcript for this document exists.</label>
-                <a class="btn" href="{% url "transcript_edit_view" d.id %}">Add transcript</a>
+                <a class="btn" href="{% url "admin:main_transcript_add_or_change" d.project.slug d.id %}">Add transcript</a>
               {% endif %}
             {% endif %}
           {% endwith %}

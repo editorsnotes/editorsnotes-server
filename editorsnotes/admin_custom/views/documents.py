@@ -62,6 +62,7 @@ class DocumentAdminView(BaseAdminView):
             return HttpResponse(json.dumps(form.errors), status=400)
 
 class TranscriptAdminView(BaseAdminView):
+    model = Transcript
     form_class = forms.TranscriptForm
     formset_classes = (
         forms.FootnoteFormset,
@@ -85,7 +86,7 @@ class TranscriptAdminView(BaseAdminView):
         return response
     def get_object(self, document_id):
         self.document = get_object_or_404(
-            Document, id=document_id, project_id=project.id)
+            Document, id=document_id, project_id=self.project.id)
         return self.document.transcript if self.document.has_transcript() else None
     def set_additional_object_properties(self, obj):
         obj.document = self.document
