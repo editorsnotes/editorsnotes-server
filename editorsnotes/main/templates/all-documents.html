@@ -47,17 +47,34 @@
 .timeago-label:last-child {
   display: none
 }
+
+#document-list .document * {
+  display: inline;
+  margin: 0;
+}
+
+#document-list .document {
+  margin-bottom: 4px;
+}
 </style>
 {% endblock %}
 
 {% block js %}
-<script type="text/javascript" src="{{ STATIC_URL }}function/all-documents.js">
-</script>
+<script type="text/javascript" src="{{ STATIC_URL }}function/all-documents.js"></script>
 {% endblock %}
 
 {% block content %}
+
+<ul class="breadcrumb-top">
+  <li>
+    <a href="{% url "project_view" project_slug=project.slug %}">{{ project }}</a>
+    <span class="divider">&gt;</span>
+  </li>
+  <li class="active">Documents</li>
+</ul>
+
 <header>
-<h2>All Documents</h2>
+<h2>{{ project.name }}: All Documents</h2>
 </header>
 
 

@@ -5,7 +5,7 @@ import reversion
 
 from editorsnotes.search import en_index
 
-from ..models import Note
+from ..models import Note, Project
 
 def note(request, note_id, project_slug):
     o = {}
@@ -32,6 +32,11 @@ def note(request, note_id, project_slug):
 def all_notes(request, project_slug=None):
     o = {}
     template = 'all-notes.html'
+
+    if project_slug is not None:
+        project = get_object_or_404(Project, slug=project_slug)
+        o['project'] = project
+
     o['filtered'] = False
 
     if request.GET.get('filter'):
@@ -42,9 +47,6 @@ def all_notes(request, project_slug=None):
     query = {
         'query': { 'filtered': { 'query': { 'match_all': {} } } },
         'facets': {
-            'project_facet': {
-                'terms': { 'field': 'serialized.project.name', 'size': 8 }
-            },
             'topic_facet': {
                 'terms': { 'field': 'serialized.related_topics.name', 'size': 16 }
             },
@@ -55,14 +57,21 @@ def all_notes(request, project_slug=None):
         'size': 500
     }
 
+    if project_slug is None:
+        query['facets']['project_facet'] = {
+            'terms': { 'field': 'serialized.project.name', 'size': 8 }
+        }
+
     # Filter query based on facets
     filters = []
     for topic in request.GET.getlist('topic'):
         filters.append({ 'term': { 'serialized.related_topics.name': topic } })
 
-    project = request.GET.get('project')
-    if project:
-        filters.append({ 'term': { 'serialized.project.name': project } })
+    project_filter = project.name if project_slug is not None \
+            else request.GET.get('project')
+
+    if project_filter:
+        filters.append({ 'term': { 'serialized.project.name': project_filter } })
 
     status = request.GET.get('note_status')
     if status:
@@ -80,8 +89,9 @@ def all_notes(request, project_slug=None):
     o['topic_facets_1'] = topic_facets[:8]
     o['topic_facets_2'] = topic_facets[8:] if len(topic_facets) > 8 else []
 
-    project_facets = executed_query['facets']['project_facet']['terms']
-    o['project_facets'] = project_facets
+    if project_slug is None:
+        project_facets = executed_query['facets']['project_facet']['terms']
+        o['project_facets'] = project_facets
 
     status_facets = executed_query['facets']['status_facet']['terms']
     o['status_facets'] = status_facets

@@ -7,7 +7,7 @@ from django.template import RequestContext
 from editorsnotes.djotero.utils import as_readable
 from editorsnotes.search import en_index
 
-from ..models import Document, Footnote, Transcript, Topic, CitationNS
+from ..models import Document, Footnote, Transcript, Topic, CitationNS, Project
 
 def footnote(request, project_slug, document_id, footnote_id):
     o = {}
@@ -50,19 +50,25 @@ def all_documents(request, project_slug=None):
     template = 'all-documents.html'
     o['filtered'] = False
 
+    if project_slug is not None:
+        project = get_object_or_404(Project, slug=project_slug)
+        o['project'] = project
+
     if request.GET.get('filter'):
         template = 'filtered-documents.html'
         o['filtered'] = True
 
-    facet_fields = (
-        ('project', 'serialized.project.name'),
+    facet_fields = [
         ('topic', 'serialized.related_topics.name'),
         ('archive', 'serialized.zotero_data.archive'),
         ('publicationTitle', 'serialized.zotero_data.publicationTitle'),
         ('itemType', 'serialized.zotero_data.itemType'),
         ('creators', 'serialized.zotero_data.creators'),
         ('representations', 'serialized.representations'),
-    )
+    ]
+    if project_slug is None:
+        facet_fields.insert(0, ('project', 'serialized.project.name'))
+
     facet_dict = dict(facet_fields)
 
     query = {
@@ -83,6 +89,9 @@ def all_documents(request, project_slug=None):
             continue
         for val in request.GET.getlist(field):
             filters.append({ 'term': { facet_field: val } })
+
+    if project_slug is not None:
+        filters.append({ 'term': {'serialized.project.name': project.name }})
 
     if filters:
         query['query']['filtered']['filter'] = { 'and': filters }

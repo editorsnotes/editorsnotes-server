@@ -54,22 +54,30 @@ def topic_node(request, topic_node_id):
 
 def topic(request, project_slug, topic_node_id):
     o = {}
-    topic_qs = Topic.objects.select_related('creator', 'last_updater', 'project')
+    topic_qs = Topic.objects.select_related('topic_node', 'creator',
+                                            'last_updater', 'project')
     o['topic'] = topic = get_object_or_404(topic_qs,
                                            topic_node_id=topic_node_id,
                                            project__slug=project_slug)
-    o['projects'] = topic.project
+    o['project'] = topic.project
 
     topic_query = {'query': {'term': {'serialized.related_topics.url':
                                       topic.get_absolute_url() }}}
 
     model_searches = ( en_index.search_model(model, topic_query) for model in
                        (Document, Note, Topic) )
-
-    o['documents'], o['notes'], o['related_topics'] = (
+    documents, notes, topics = (
         [ result['_source']['serialized'] for result in search['hits']['hits'] ]
-        for search in model_searches
-    )
+        for search in model_searches)
+
+    o['documents'] = Document.objects.filter(id__in=[d['id'] for d in documents])
+    o['related_topics'] = Topic.objects.filter(id__in=[t['id'] for t in topics])
+    note_objects = Note.objects.in_bulk([n['id'] for n in notes])
+    for note in notes:
+        related_topics = [ topic for topic in note['related_topics']
+                           if topic['url'] != request.path ]
+        note_objects[note['id']] = (note_objects[note['id']], related_topics,)
+    o['notes'] = note_objects.values()
 
     return render_to_response(
         'topic.html', o, context_instance=RequestContext(request))
