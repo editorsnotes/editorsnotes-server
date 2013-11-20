@@ -86,7 +86,7 @@
           {% for note, note_topics in notes %}
           <div id="note-{{ note.id }}" class="related-note">
             <div class="note-link">
-              <a href="{{ note.url }}">{{ note.title}}</a>
+              {{ note|as_link }}
             </div>
             <div class="note-last-modified">
               <span class="quiet">Last modified: </span><span>{{ note.last_updated }}</span>
