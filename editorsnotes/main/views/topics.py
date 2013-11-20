@@ -26,7 +26,7 @@ class LegacyTopicRedirectView(RedirectView):
     query_string = True
     def get_redirect_url(self, topic_slug):
         legacy_topic = get_object_or_404(LegacyTopic, slug=topic_slug)
-        return reverse('topicnode_view', args=(legacy_topic.merged_into_id,))
+        return reverse('topic_node_view', args=(legacy_topic.merged_into_id,))
 
 def all_topics(request, project_slug=None):
     o = {}
