@@ -341,7 +341,6 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
     this.$('.note-section-text-content').editText({
       initialValue: that.model.get('content'),
       destroy: function (val) {
-        console.log('destroying');
         $(this).html(val);
         that.model.set('content', val);
         that.$('.edit-row').remove();
@@ -623,8 +622,11 @@ EditorsNotes.Views['AddDocument'] = EditorsNotes.Views.AddItem.extend({
     this.model = options.project.documents.add({}, {at: 0}).at(0);
     this.render();
     this.$('.modal-body').append('<div class="add-document-zotero-data">');
-    this.zotero_view = new EditorsNotes.Views.EditZoteroInformation({
+    this.zoteroView = new EditorsNotes.Views.EditZoteroInformation({
       el: this.$('.add-document-zotero-data')
+    });
+    this.listenTo(this.zoteroView, 'citationUpdated', function (citation) {
+      this.$('.item-text-main').val(citation);
     });
   },
 
@@ -640,7 +642,7 @@ EditorsNotes.Views['AddDocument'] = EditorsNotes.Views.AddItem.extend({
   saveItem: function (e) {
     var that = this
       , data = { description: this.$('.item-text-main').val() }
-      , zotero_data = this.zotero_view.getZoteroData();
+      , zotero_data = this.zoteroView.getZoteroData();
 
     e.preventDefault();
 
@@ -713,7 +715,7 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
 
     this.citeprocWorker = new Worker('/static/function/citeproc-worker.js');
     this.citeprocWorker.addEventListener('message', function (e) {
-      that.$('.item-text-main').val(e.data.citation);
+      that.trigger('citationUpdated', e.data.citation);
     });
 
     this.render();
@@ -749,11 +751,10 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
   },
 
   addCreator: function (e) {
+    var $creator = $(e.currentTarget).closest('.zotero-creator');
+
     e.preventDefault();
-    $(e.currentTarget).closest('.zotero-creator')
-      .clone()
-      .insertAfter($creator)
-      .find('textarea').val('');
+    $creator.clone().insertAfter($creator).find('textarea').val('');
   },
 
   removeCreator: function (e) {
@@ -765,9 +766,15 @@ EditorsNotes.Views['EditZoteroInformation'] = Backbone.View.extend({
       $('textarea', $creator).val('')
   },
 
+  getZoteroData: function () {
+    return EditorsNotes.zotero.zoteroFormToObject(this.$el);
+  },
+
   sendZoteroData: function () {
+    var that = this;
+
     this.citeprocWorker.postMessage({
-      zotero_data: EditorsNotes.zotero.zoteroFormToObject(this.$el)
+      zotero_data: that.getZoteroData()
     });
   },
 });
