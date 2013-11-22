@@ -370,6 +370,7 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
 
     this.isActive = false;
     this.$el.removeClass('note-section-edit-active');
+    this.$('.note-section-text-content').editText('destroy');
 
     if (this.isEmpty() || deleteModel) {
       collection = this.model.collection
@@ -381,7 +382,6 @@ EditorsNotes.Views['NoteSection'] = Backbone.View.extend({
         }
       });
     } else {
-      this.$('.note-section-text-content').editText('destroy');
       this.model.save();
     }
 
