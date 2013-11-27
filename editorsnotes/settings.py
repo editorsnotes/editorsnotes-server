@@ -134,7 +134,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
-BROWSERID_CREATE_USER = 'editorsnotes.main.views.create_invited_user'
+BROWSERID_CREATE_USER = 'editorsnotes.main.views.auth.create_invited_user'
 
 LESSC_BINARY = 'lessc'
 
