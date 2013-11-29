@@ -16,7 +16,7 @@ class TopicNodeDetail(RetrieveAPIView):
     model = TopicNode
     serializer_class = TopicNodeSerializer
 
-class TopicList(BaseListAPIView):
+class TopicList(ElasticSearchListMixin, BaseListAPIView):
     model = Topic
     serializer_class = TopicSerializer
     def pre_save(self, obj):
