@@ -1,14 +1,36 @@
 from collections import OrderedDict
 
-from rest_framework.views import APIView
+#from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from editorsnotes.search import en_index
 
-class SearchView(APIView):
+from ..filters import ElasticSearchAutocompleteFilterBackend
+
+#class SearchView(APIView):
+class SearchView(GenericAPIView):
     def get(self, request, format=None):
         query = {'query': {}}
         params = request.QUERY_PARAMS
+
+        if 'autocomplete' in params:
+            self.filter_backend = ElasticSearchAutocompleteFilterBackend
+            result = self.filter_queryset(None)
+            data = {
+                'count': result['hits']['total'],
+                'results': [
+                    OrderedDict((
+                        ('type', doc['_type']),
+                        ('title', doc['highlight' if 'highlight' in doc else
+                                      'fields']['display_title'][0 if
+                                                                 'highlight' in
+                                                                 doc else 0:None]),
+                        ('url', doc['fields']['serialized.url'])
+                    )) for doc in result['hits']['hits']
+                ]
+            }
+            return Response(data)
 
         if 'q' in params:
             query['query']['query_string'] = {'query': params.get('q')}

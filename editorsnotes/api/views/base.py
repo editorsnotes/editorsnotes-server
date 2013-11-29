@@ -16,7 +16,8 @@ from rest_framework.views import APIView
 from editorsnotes.main.models import Project
 from editorsnotes.search import en_index
 
-from ..filters import ElasticSearchFilterBackend
+from ..filters import (ElasticSearchFilterBackend,
+                       ElasticSearchAutocompleteFilterBackend)
 from ..permissions import ProjectSpecificPermissions
 
 class CreateReversionMixin(object):
@@ -42,17 +43,32 @@ class ElasticSearchListMixin(ListModelMixin):
         if not settings.ELASTICSEARCH_ENABLED:
             return super(ElasticSearchListMixin, self).list(request, *args, **kwargs)
 
-        self.filter_backend = ElasticSearchFilterBackend
-        result = self.filter_queryset(None)
-
-        data = {
-            'count': result['hits']['total'],
-            'next': None,
-            'previous': None,
-            'results': [ doc['_source']['serialized'] for doc in
-                         result['hits']['hits'] ]
-        }
-
+        if 'autocomplete' in request.QUERY_PARAMS:
+            self.filter_backend = ElasticSearchAutocompleteFilterBackend
+            result = self.filter_queryset(None)
+            data = {
+                'count': result['hits']['total'],
+                'results': []
+            }
+            for doc in result['hits']['hits']:
+                r = OrderedDict()
+                r['type'] = doc['_type']
+                r['title'] = (
+                    doc['highlight']['display_title'][0]
+                    if 'highlight' in doc else
+                    doc['fields']['display_title'])
+                r['url'] = doc['fields']['serialized.url']
+                data['results'].append(r)
+        else:
+            self.filter_backend = ElasticSearchFilterBackend
+            result = self.filter_queryset(None)
+            data = {
+                'count': result['hits']['total'],
+                'next': None,
+                'previous': None,
+                'results': [ doc['_source']['serialized'] for doc in
+                             result['hits']['hits'] ]
+            }
         return Response(data)
 
 

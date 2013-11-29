@@ -80,8 +80,32 @@ class ENIndex(object):
 
         return self.es.search(prepared_query, index=self.name, **kwargs)
 
+    def get_settings(self):
+        return {
+            'settings': {
+                'index': {
+                    'analysis': {
+                        'analyzer': {
+                            'analyzer_shingle': {
+                                'tokenizer': 'standard',
+                                'filter': ['standard', 'lowercase', 'filter_shingle']
+                            }
+                        },
+                        'filter': {
+                            'filter_shingle': {
+                                'type': 'shingle',
+                                'max_shingle_size': 5,
+                                'min_shingle_size': 2,
+                                'output_unigrams': True
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     def create(self):
-        created = self.es.create_index(self.name)
+        created = self.es.create_index(self.name, self.get_settings())
         return created
 
     def delete(self):

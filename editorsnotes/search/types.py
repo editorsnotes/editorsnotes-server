@@ -43,16 +43,9 @@ class DocumentTypeAdapter(object):
             self.type_label : {
                 'properties': {
                     'display_title': {
-                        'fields': {
-                            'display_title': {
-                                'type': 'string'
-                            },
-                            'autocomplete': {
-                                'type': 'completion',
-                                'payloads': True
-                            }
-                        },
-                        'type': 'multi_field'
+                        'search_analyzer': 'analyzer_shingle',
+                        'index_analyzer': 'analyzer_shingle',
+                        'type': 'string'
                     },
                     'serialized': {
                         'properties': {
