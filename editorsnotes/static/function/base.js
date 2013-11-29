@@ -51,6 +51,16 @@ $(document).ready(function () {
             }));
           })
           break;
+
+        default:
+          $.getJSON('/api/search/', { 'autocomplete': request.term }, function (data) {
+            response($.map(data.results, function (item, index) {
+              var val = item.title
+                , type = item.type.slice(0,1).toUpperCase() + item.type.slice(1)
+
+              return { type: type, value: val, label: truncateChars(val), uri: item.url }
+            }));
+          });
       }
     },
     minLength: 2,
@@ -125,5 +135,11 @@ $(document).ready(function () {
       }
     }
   })
-  .autocomplete(baseAutocompleteOptions);
+  .autocomplete(baseAutocompleteOptions)
+  .data('ui-autocomplete')._renderItem = function (ul, item) {
+    var $li = $.ui.autocomplete.prototype._renderItem.call(this, ul, item);
+
+    $li.find('a').prepend('<strong>' + item.type + ': </strong>');
+    return $li;
+  }
 });
