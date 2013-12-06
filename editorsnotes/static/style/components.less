@@ -45,6 +45,7 @@
   }
 }
 
+.ui-helper-hidden-accessible { display: none; }
 .ui-autocomplete {
   border: 1px solid #aaa;
   background: #fff;
@@ -53,18 +54,15 @@
   border-radius: 2px;
   left: 0;
 
-  .ui-menu-item {
+  .ui-menu-item:not(:last-of-type) { border-bottom: 1px solid #f0f0f0; }
+  .ui-menu-item a {
     padding: 8px;
+    display: block;
+    color: #333;
+    text-decoration: none;
     cursor: pointer;
-    &:hover { background: #f0f0f0; }
-    &:not(:last-of-type) { border-bottom: 1px solid #f0f0f0; }
-
-    a {
-      display: block;
-      color: #333;
-      text-decoration: none;
-    }
-    a * { margin: 0; display: inline; }
+    &:hover, &.ui-state-focus { background: #f0f0f0; }
+    * { margin: 0; display: inline; }
   }
 
 }

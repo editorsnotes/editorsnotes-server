@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from editorsnotes.main.models import Topic, TopicNode
 
-from .base import BaseListAPIView, BaseDetailView
+from .base import BaseListAPIView, BaseDetailView, ElasticSearchListMixin
 from ..serializers.topics import TopicSerializer, TopicNodeSerializer
 
 class TopicNodeList(ListAPIView):
@@ -16,7 +16,7 @@ class TopicNodeDetail(RetrieveAPIView):
     model = TopicNode
     serializer_class = TopicNodeSerializer
 
-class TopicList(BaseListAPIView):
+class TopicList(ElasticSearchListMixin, BaseListAPIView):
     model = Topic
     serializer_class = TopicSerializer
     def pre_save(self, obj):
