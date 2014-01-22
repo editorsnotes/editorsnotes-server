@@ -17,7 +17,7 @@ def create_invited_user(email):
     invitation = invitation.get()
 
     project = invitation.project
-    role = project.roles.get(role=invitation.role)
+    role = invitation.project_role
 
     username = re.sub(r'[^\w\-.]', '', email[:email.rindex('@')])[:29]
     if User.objects.filter(username=username).exists():
