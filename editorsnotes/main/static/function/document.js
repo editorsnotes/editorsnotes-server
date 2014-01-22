@@ -21,7 +21,7 @@ $(document).ready(function() {
       this.stop_polling(this);
       this.viewer = viewer;
       this.url = url;
-      $('#progressbar').progressbar('option', 'value', 0);
+      $('#progressbar').progressbar({'value': 0});
     },
     start: function() {
       this.check(this);
