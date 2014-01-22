@@ -20,11 +20,11 @@ def project_roster(request, project_slug):
     user = request.user
     project = get_object_or_404(Project, slug=project_slug)
 
-    can_view = user.has_project_perm('main.view_project_roster', project)
+    can_view = user.has_project_perm(project, 'main.view_project_roster')
     if not can_view:
         return HttpResponseForbidden(VIEW_ERROR_MSG.format(project))
 
-    can_change = user.has_project_perm('main.change_project_roster', project)
+    can_change = user.has_project_perm(project, 'main.change_project_roster')
 
     ProjectRosterFormSet = forms.make_project_roster_formset(project)
     ProjectInvitationFormSet = forms.make_project_invitation_formset(project)
