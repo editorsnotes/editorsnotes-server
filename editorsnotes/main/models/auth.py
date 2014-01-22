@@ -147,6 +147,9 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     def members(self):
         role_groups = self.roles.values_list('group_id', flat=True)
         return User.objects.filter(groups__in=role_groups)
+    def members_by_role(self):
+        roles = ProjectRole.objects.for_project(self).select_related('user')
+        return
     def get_role_for(self, user):
         qs = self.roles.filter(group__user=user)
         return qs.get() if qs.exists() else None
@@ -265,7 +268,7 @@ class ProjectInvitation(CreationMetadata):
         app_label = 'main'
     project = models.ForeignKey(Project)
     email = models.EmailField()
-    role = models.CharField(max_length=10)
+    project_role = models.ForeignKey(ProjectRole)
     def __unicode__(self):
         return '{} ({})'.format(self.email, self.project.name)
 

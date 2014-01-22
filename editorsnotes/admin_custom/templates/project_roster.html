@@ -83,17 +83,15 @@
       </tr>
     </thead>
     <tbody>
-      {% for profile, role in roster %}
-      {% with user=profile.user %}
+      {% for user, role in roster %}
       <tr id="project-user-{{ user.id }}">
-        <td>{{ profile.as_text }}</td>
+        <td>{{ user.as_text }}</td>
         <td>{{ user.email }}</td>
         <td class="project-user-role">{{ role|title }}</td>
         <td>{{ user.date_joined|date:"M j, Y" }}</td>
         <td>{{ user.last_login|date:"M j, Y" }}</td>
         <td>{{ user.is_active }}</td>
       </tr>
-      {% endwith %}
       {% endfor %}
     </tbody>
   </table>
@@ -118,12 +116,14 @@
       {{ form.DELETE.as_hidden }}
       {% if form.instance.id %}
       Invited {{ form.instance.created|date:"F d, Y" }}: 
-      {{ form.email.value }} ({{ form.role.value }})
-      {{ form.email.as_hidden }} {{ form.role.as_hidden }}
+      {{ form.email.value }}
+      {{ form.email.as_hidden }} {{ form.project_role.as_hidden }}
       {% else %}
       <br />
+      <label for="{{ form.email.auto_id }}">Email</label>
       {{ form.email }}
-      {{ form.role }}
+      <label for="{{ form.project_role.auto_id }}">Project Role</label>
+      {{ form.project_role }}
       {% endif %}
       {% if form.instance.id %}
       <a href="#" class="remove-project-invitation">
