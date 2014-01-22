@@ -15,15 +15,19 @@ from common import VIEW_ERROR_MSG, CHANGE_ERROR_MSG
 
 @login_required
 @reversion.create_revision()
-def project_roster(request, project_id):
+def project_roster(request, project_slug):
     o = {}
     user = request.user
-    project = get_object_or_404(Project, id=project_id)
-    can_change = project.attempt('change', user)
+    project = get_object_or_404(Project, slug=project_slug)
+
+    can_view = user.has_project_perm('main.view_project_roster', project)
+    if not can_view:
+        return HttpResponseForbidden(VIEW_ERROR_MSG.format(project))
+
+    can_change = user.has_project_perm('main.change_project_roster', project)
+
     ProjectRosterFormSet = forms.make_project_roster_formset(project)
     ProjectInvitationFormSet = forms.make_project_invitation_formset(project)
-    if not project.attempt('view', user):
-        return HttpResponseForbidden(VIEW_ERROR_MSG.format(project))
 
     if request.method == 'POST':
         if not can_change:
@@ -54,17 +58,20 @@ def project_roster(request, project_id):
         o['invitation_formset'] = ProjectInvitationFormSet(prefix='invitation')
 
     o['project'] = project
-    o['roster'] = [(u, u.get_project_role(project))
-                   for u in project.members.order_by('-user__last_login')]
+    o['roster'] = [(u, project.get_role_for(u))
+                   for u in project.members\
+                       .order_by('-last_login')\
+                       .select_related('groups')\
+                       .prefetch_related('groups__projectrole')]
 
     return render_to_response(
         'project_roster.html', o, context_instance=RequestContext(request))
 
 @login_required
 @reversion.create_revision()
-def change_project(request, project_id):
+def change_project(request, project_slug):
     o = {}
-    project = get_object_or_404(Project, id=project_id)
+    project = get_object_or_404(Project, slug=project_slug)
     user = request. user
 
     if not project.attempt('change', user):
@@ -88,9 +95,9 @@ def change_project(request, project_id):
 
 @login_required
 @reversion.create_revision()
-def change_featured_items(request, project_id):
+def change_featured_items(request, project_slug):
     o = {}
-    project = get_object_or_404(Project, id=project_id)
+    project = get_object_or_404(Project, slug=project_slug)
     user = request.user
 
     try:
@@ -112,6 +119,7 @@ def change_featured_items(request, project_id):
         if added_model in ['notes', 'topics', 'documents'] and added_id:
             ct = ContentType.objects.get(model=added_model[:-1])
             obj = ct.model_class().objects.get(id=added_id)
+            # FIXME: userprofile reference
             user_affiliation = request.user.get_profile().affiliation
             if not (user_affiliation in obj.affiliated_projects.all()
                     or request.user.is_superuser):
