@@ -1,6 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.views.generic.base import RedirectView
@@ -29,9 +28,12 @@ class LegacyTopicRedirectView(RedirectView):
         return reverse('topic_node_view', args=(legacy_topic.merged_into_id,))
 
 def all_topics(request, project_slug=None):
+    "View all topics, either site-wide or within a project."
+
+    # TODO: Use ElasticSearch
+
     o = {}
-    if project_slug:
-        o['project'] = get_object_or_404(Project, slug=project_slug)
+
     if 'type' in request.GET:
         o['type'] = request.GET['type']
         o['fragment'] = ''
@@ -39,7 +41,15 @@ def all_topics(request, project_slug=None):
     else:
         o['type'] = 'PER'
         template = 'all-topics.html'
-    query_set = TopicNode.objects.filter(type=o['type'])
+
+    if project_slug:
+        o['project'] = get_object_or_404(Project, slug=project_slug)
+        query_set = Topic.objects\
+                .select_related('topic_node', 'project')\
+                .filter(project_id=o['project'].id, topic_node__type=o['type'])
+    else:
+        query_set = TopicNode.objects.filter(type=o['type'])
+
     [o['topics_1'], o['topics_2'], o['topics_3']] = utils.alpha_columns(
         query_set, 'preferred_name', itemkey='topic')
     return render_to_response(
