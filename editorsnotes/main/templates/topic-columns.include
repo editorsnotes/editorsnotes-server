@@ -37,11 +37,11 @@
   </div>
 
   <div class="span4">
-  <ul class="unstyled alpha-list">
+  <ul class="alpha-list">
     {% for letter in alpha_list_3 %}
     <li id="{{ letter.grouper }}">
       <span class="alpha-index">{{ letter.grouper }}</span>
-      <ul class="alpha-items">
+      <ul class="unstyled alpha-items">
         {% for item in letter.list %}
         <li>{{ item.topic|as_link:fragment|typogrify }}</li>
         {% endfor %}
