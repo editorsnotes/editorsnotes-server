@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 import reversion
 
-from .. import fields, utils
+from .. import fields
 from auth import Project, ProjectPermissionsMixin
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
@@ -29,6 +29,11 @@ class TopicMergeError(Exception):
 # Main topic node model #
 #########################
 
+class TopicNodeManager(models.Manager):
+    def for_project(self, project):
+        return self.select_related('project_topics')\
+                .filter(project_topics__project_id=project.id)
+
 class TopicNode(LastUpdateMetadata, URLAccessible):
     """
     The container for projects' connections to topics.
@@ -47,6 +52,7 @@ class TopicNode(LastUpdateMetadata, URLAccessible):
     type = models.CharField(max_length=3, choices=TYPE_CHOICES, blank=True, null=True)
     deleted = models.BooleanField(default=False, editable=False)
     merged_into = models.ForeignKey('self', blank=True, null=True, editable=False)
+    objects = TopicNodeManager()
     class Meta:
         app_label = 'main'
     def as_text(self):

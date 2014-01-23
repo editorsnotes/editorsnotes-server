@@ -32,7 +32,7 @@
           {% for topic in topicnode_list %}
           <li>{{ topic|as_link|typogrify }}</li>
           {% endfor %}
-          {% if topic_list %}
+          {% if topicnode_list %}
           <li class="show-all-link"><a class="more-link" href="{% if project %}{% url "all_topics_view" project.slug %}{% else %}{% url "all_topics_view" %}{% endif %}">All topics</a></li>
           {% endif %}      
         </ul>
