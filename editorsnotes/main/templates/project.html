@@ -64,24 +64,8 @@
 
     {% endwith %}
 
-    <h3>Recently edited items</h3>
-    <ul class="activity-log unstyled">
-      {% for entry in log_entries %}
-      <li class="activity-log-entry">
-        {% filter typogrify %}
-        <div>
-          <span class="model-label">{{ entry.what|object_name }}: </span>
-          {{ entry.what|as_link }}
-        </div>
-        <div>
-          <span class="quiet">{{ entry.when|date:"SHORT_DATETIME_FORMAT" }}</span>
-        </div>
-        {% endfilter %}          
-      </li>
-      {% empty %}
-      <li>{{ profile.display_name }} hasn't made any edits yet.</li>
-      {% endfor %}
-    </ul>
+    <h3>Recent edits</h3>
+    {% include "includes/activity.html" %}
   </div>
 </div>
 

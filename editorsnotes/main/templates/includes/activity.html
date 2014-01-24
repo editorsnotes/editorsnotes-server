@@ -1,0 +1,20 @@
+<ul class="activity-log unstyled">
+  {% for activity in activities %}
+  <li class="activity-log-entry">
+    <div>
+      <span class="model-label">{{ activity.action|title }} {{ activity.type }}: </span>
+      {% if activity.url %}
+        <a href="{{ activity.url }}">{{ activity.title }}</a>
+      {% else %}
+        {{ activity.title }}
+      {% endif %}
+    </div>
+    <div>
+      <span class="quiet">{{ activity.time }}</span>
+      {% comment %}
+      <span class="quiet">{{ entry.when|date:"SHORT_DATETIME_FORMAT" }}</span>
+      {% endcomment %}
+    </div>
+  </li>
+  {% endfor %}
+</ul>
