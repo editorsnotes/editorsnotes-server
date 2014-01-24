@@ -284,6 +284,14 @@ class FeaturedItem(CreationMetadata, ProjectPermissionsMixin):
     def get_affiliation(self):
         return self.project
 
+class RevisionProject(models.Model):
+    revision = models.OneToOneField(reversion.models.Revision,
+                                    related_name='project_metadata')
+    project = models.ForeignKey(Project)
+    # If a project is deleted, so is this. Should this be changed? Should we not
+    # allow projects to be deleted?
+    class Meta:
+        app_label = 'main'
 
 def activity_for(model, max_count=50):
     u'''

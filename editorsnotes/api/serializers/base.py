@@ -5,6 +5,7 @@ from rest_framework.serializers import Field, ModelSerializer
 import reversion
 
 from editorsnotes.main.models import Topic, TopicAssignment
+from editorsnotes.main.models.auth import RevisionProject
 
 class URLField(Field):
     read_only = True
@@ -43,6 +44,7 @@ class ReversionSerializerMixin(object):
             with reversion.create_revision():
                 saved = _save_object(*args, **kwargs)
                 reversion.set_user(self.context['request'].user)
+                reversion.add_meta(RevisionProject, project=self.context['request'].project)
         else:
             saved = _save_object(*args, **kwargs)
         return saved
