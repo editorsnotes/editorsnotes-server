@@ -4,6 +4,7 @@ from django.conf.urls import patterns, url, include
 import views
 
 project_specific_patterns = patterns('',
+    url(r'^activity/$', views.ActivityView.as_view(), name='api-project-activity'),
     url(r'^topics/$', views.TopicList.as_view(), name='api-topics-list'),
     url(r'^topics/(?P<topic_node_id>\d+)/$', views.TopicDetail.as_view(), name='api-topics-detail'),
     url(r'^notes/$', views.NoteList.as_view(), name='api-notes-list'),
