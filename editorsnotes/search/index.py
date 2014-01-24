@@ -6,6 +6,9 @@ from django.conf import settings
 
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch.exceptions import InvalidJsonResponseError
+from reversion.models import VERSION_ADD, VERSION_CHANGE, VERSION_DELETE
+
+from editorsnotes.main.models import Project, User
 
 from .types import DocumentTypeAdapter
 
@@ -18,18 +21,61 @@ class OrderedResponseElasticSearch(ElasticSearch):
             raise InvalidJsonResponseError(response)
         return json_response
 
-class ENIndex(object):
-    def __init__(self, name=settings.ELASTICSEARCH_INDEX_NAME):
-        self.document_types = {}
-        self.name = name
+class ElasticSearchIndex(object):
+    def __init__(self, name=None):
+        if not self.name:
+            if name is None:
+                raise NotImplementedError('Must provide name for index.')
+            self.name = name
         self.es = OrderedResponseElasticSearch(settings.ELASTICSEARCH_URLS)
         if not self.exists():
             self.create()
+
+    def get_settings(self):
+        return {}
 
     def exists(self):
         server_url, _ = self.es.servers.get()
         resp = self.es.session.head(server_url + '/' + self.name)
         return resp.status_code == 200
+
+    def create(self):
+        created = self.es.create_index(self.name, self.get_settings())
+        return created
+
+    def delete(self):
+        return self.es.delete_index(self.name)
+
+
+class ENIndex(ElasticSearchIndex):
+    name = settings.ELASTICSEARCH_INDEX_NAME
+    def __init__(self):
+        super(ENIndex, self).__init__()
+        self.document_types = {}
+
+    def get_settings(self):
+        return {
+            'settings': {
+                'index': {
+                    'analysis': {
+                        'analyzer': {
+                            'analyzer_shingle': {
+                                'tokenizer': 'standard',
+                                'filter': ['standard', 'lowercase', 'filter_shingle']
+                            }
+                        },
+                        'filter': {
+                            'filter_shingle': {
+                                'type': 'shingle',
+                                'max_shingle_size': 5,
+                                'min_shingle_size': 2,
+                                'output_unigrams': True
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
     def register(self, model, adapter=None, highlight_fields=None,
                  display_field=None):
@@ -80,33 +126,42 @@ class ENIndex(object):
 
         return self.es.search(prepared_query, index=self.name, **kwargs)
 
-    def get_settings(self):
+VERSION_ACTIONS = {
+    VERSION_ADD: 'added',
+    VERSION_CHANGE: 'changed',
+    VERSION_DELETE: 'deleted'
+}
+
+class ActivityIndex(ElasticSearchIndex):
+    name = 'editorsnotes-activitylog'
+    def get_activity_for(self, entity, size=25, **kwargs):
+        query = { 'query': {}, 'sort': { 'data.time': { 'order': 'desc' } } }
+        if isinstance(entity, User):
+            query['query']['match'] = { 'data.user': entity.username }
+        elif isinstance(entity, Project):
+            query['query']['match'] = { 'data.project': entity.slug }
+        else:
+            raise ValueError('Must pass either project or user')
+        query.update(kwargs)
+        search = self.es.search(query, index=self.name, size=size)
+        return [ hit['_source']['data'] for hit in search['hits']['hits'] ]
+
+    def data_from_reversion_version(self, version):
+        url = version.object and version.object.get_absolute_url()
         return {
-            'settings': {
-                'index': {
-                    'analysis': {
-                        'analyzer': {
-                            'analyzer_shingle': {
-                                'tokenizer': 'standard',
-                                'filter': ['standard', 'lowercase', 'filter_shingle']
-                            }
-                        },
-                        'filter': {
-                            'filter_shingle': {
-                                'type': 'shingle',
-                                'max_shingle_size': 5,
-                                'min_shingle_size': 2,
-                                'output_unigrams': True
-                            }
-                        }
-                    }
-                }
-            }
+            'data': OrderedDict((
+                ('user', version.revision.user.username,),
+                ('project', version.revision.project_metadata.project.slug,),
+                ('time', version.revision.date_created,),
+                ('type', version.content_type.model,),
+                ('url', url),
+                ('title', version.object_repr,),
+                ('action', VERSION_ACTIONS[version.type],),
+            )),
+            'object_id': version.object_id_int,
+            'version_id': version.id
         }
 
-    def create(self):
-        created = self.es.create_index(self.name, self.get_settings())
-        return created
-
-    def delete(self):
-        return self.es.delete_index(self.name)
+    def handle_edit(self, instance, version):
+        self.es.index(self.name, 'activity',
+                      self.data_from_reversion_version(version))

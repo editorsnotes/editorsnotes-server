@@ -1,13 +1,15 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
+from reversion import post_revision_commit
+
 from editorsnotes.api.serializers import TopicSerializer
 from editorsnotes.main import models as main_models
 
-from .index import ENIndex
+from .index import ENIndex, ActivityIndex
 from .types import DocumentTypeAdapter
 
-__all__ = ['en_index']
+__all__ = ['en_index', 'activity_index']
 
 class DocumentAdapter(DocumentTypeAdapter):
     display_field = 'serialized.description'
@@ -44,6 +46,16 @@ en_index.register(main_models.Note,
                                     'serialized.sections'))
 en_index.register(main_models.Document, adapter=DocumentAdapter)
 en_index.register(main_models.Topic, adapter=TopicAdapter)
+
+activity_index = ActivityIndex()
+
+@receiver(post_revision_commit)
+def update_activity_index(instances, revision, versions, **kwargs):
+    handled = [(instance, version) for (instance, version)
+               in zip(instances, versions)
+               if issubclass(instance.__class__, main_models.base.Administered)]
+    for instance, version in handled:
+        activity_index.handle_edit(instance, version)
 
 @receiver(post_save)
 def update_elastic_search_handler(sender, instance, created, **kwargs):
