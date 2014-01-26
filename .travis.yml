@@ -13,7 +13,7 @@ before_script:
   - "sed -i -e \"s/'USER': '',/'USER': 'postgres',/\" editorsnotes/settings_local.py"
   - "sed -i -e \"s|# STORAGE_PATH: ''|STORAGE_PATH: '$TRAVIS_BUILD_DIR/editorsnotes/static'|\" editorsnotes/settings_local.py"
   - mkdir -p $TRAVIS_BUILD_DIR/editorsnotes/static
-  - fab collect_static
+  - python manage.py collectstatic --noinput -v0
   - psql -c "CREATE DATABASE testdb;" -U postgres
   - fab sync_database
 
