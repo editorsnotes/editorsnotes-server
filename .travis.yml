@@ -10,10 +10,10 @@ install:
 
 before_script:
   - fab make_settings
-  - sed -i "s/'NAME': '',/'NAME': 'testdb',/" editorsnotes/settings_local.py
-  - sed -i "s/'USER': '',/'USER': 'postgres',/" editorsnotes/settings_local.py
-  - sed -i "s/'USER': '',/'USER': 'postgres',/" editorsnotes/settings_local.py
-  - sed -i "s/'# STORAGE_PATH': ''/'STORAGE_PATH': '$HOME/editorsnotes/static',/" editorsnotes/settings_local.py
+  - "sed -i s/'NAME': '',/'NAME': 'testdb',/ editorsnotes/settings_local.py"
+  - "sed -i s/'USER': '',/'USER': 'postgres',/ editorsnotes/settings_local.py"
+  - "sed -i s/'USER': '',/'USER': 'postgres',/ editorsnotes/settings_local.py"
+  - "sed -i s/'# STORAGE_PATH': ''/'STORAGE_PATH': '$HOME/editorsnotes/static',/ editorsnotes/settings_local.py"
   - mkdir -p $HOME/editorsnotes/static
   - fab collect_static
   - psql -c "CREATE DATABASE testdb;" -U postgres
