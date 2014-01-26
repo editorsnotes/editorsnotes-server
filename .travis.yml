@@ -1,0 +1,23 @@
+language: python
+
+python:
+  - "2.7"
+
+install:
+  - pip install -r requirements.txt
+  - pip install -q fabric==1.5.1
+  - fab setup
+
+before_script:
+  - fab make_settings
+  - sed -i "s/'NAME': '',/'NAME': 'testdb',/" editorsnotes/settings_local.py
+  - sed -i "s/'USER': '',/'USER': 'postgres',/" editorsnotes/settings_local.py
+  - sed -i "s/'USER': '',/'USER': 'postgres',/" editorsnotes/settings_local.py
+  - sed -i "s/'# STORAGE_PATH': ''/'STORAGE_PATH': '$HOME/editorsnotes/static',/" editorsnotes/settings_local.py
+  - mkdir -p $HOME/editorsnotes/static
+  - fab collect_static
+  - psql -c "CREATE DATABASE testdb;" -U postgres
+  - fab sync_database
+
+script:
+  - python manage.py test main api admin_custom
