@@ -8,10 +8,19 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        topiccontainer_ct = orm['contenttypes.contenttype'].objects.get(
-            app_label='main', model='projecttopiccontainer').id
-        topicassignment_ct = orm['contenttypes.contenttype'].objects.get(
-            app_label='main', model='topicnodeassignment').id
+        topiccontainer_ct = orm['contenttypes.contenttype'].objects.filter(
+            app_label='main', model='projecttopiccontainer')
+        topicassignment_ct = orm['contenttypes.contenttype'].objects.filter(
+            app_label='main', model='topicnodeassignment')
+
+        if not (topicassignment_ct.exists() and topiccontainer_ct.exists()):
+            # Content types never created because this is a fresh db initialized
+            # after we no longer use these contenttypes
+            return
+
+        else:
+            topiccontainer_ct = topiccontainer_ct.get().id
+            topicassignment_ct = topicassignment_ct.get().id
 
         container_versions = db.execute(
             u'SELECT v.id, v.serialized_data, t.preferred_name '

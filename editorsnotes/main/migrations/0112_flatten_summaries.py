@@ -10,9 +10,15 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         container_ct = orm['contenttypes.contenttype'].objects\
-                .get(app_label='main', model='projecttopiccontainer')
+                .filter(app_label='main', model='projecttopiccontainer')
         summary_ct = orm['contenttypes.contenttype'].objects\
-                .get(app_label='main', model='topicsummary')
+                .filter(app_label='main', model='topicsummary')
+
+        if not (container_ct.exists() and summary_ct.exists()):
+            return
+        else:
+            container_ct = container_ct.get()
+            summary_ct = summary_ct.get()
 
         topics = orm['main.projecttopiccontainer'].objects\
                 .values_list('id', flat=True)

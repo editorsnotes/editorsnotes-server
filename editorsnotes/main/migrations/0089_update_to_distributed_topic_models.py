@@ -6,7 +6,7 @@ import re
 from lxml import etree
 from south.db import db
 from south.v2 import DataMigration
-from django.db import models
+from django.db import models, DatabaseError
 from django.contrib.contenttypes.management import update_contenttypes
 
 update_contenttypes(models.get_app('main'), models.get_models())
@@ -74,9 +74,16 @@ def fix_null_creator_revisions(orm):
     Update the user_id for revisions without one if we can detect what it should
     be.
     """
+    revision_table_exists = db.execute(
+        'SELECT EXISTS('
+        'SELECT * FROM information_schema.tables '
+        'WHERE table_name = \'reversion_revision\');')[0][0]
+    if not revision_table_exists:
+        return
     null_creator_revisions = orm['reversion.revision'].objects\
             .select_related('version')\
             .filter(user=None)
+    null_creator_revisions.count() # force execution of query here
     for revision in null_creator_revisions:
         found_user_id = None
         last_updater_versions = revision.version_set\
