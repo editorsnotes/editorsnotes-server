@@ -18,7 +18,6 @@ before_script:
   - mkdir -p $TRAVIS_BUILD_DIR/editorsnotes/static
   - python manage.py collectstatic --noinput -v0
   - psql -c "CREATE DATABASE testdb;" -U postgres
-  - fab sync_database
 
 script:
   - python manage.py test main api admin_custom
