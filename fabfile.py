@@ -45,6 +45,7 @@ def sync_database():
     with lcd(PROJ_ROOT):
         local('{python} manage.py syncdb --noinput'.format(**env))
         create_cache_tables()
+        local('{python} manage.py migrate reversion --noinput'.format(**env))
         local('{python} manage.py migrate --noinput'.format(**env))
 
 @task
