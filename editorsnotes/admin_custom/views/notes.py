@@ -36,6 +36,7 @@ class NoteAdminView(BaseAdminView):
         obj.creator = self.request.user
         obj.save()
 
+# FIXME REMOVE (?)
 @reversion.create_revision()
 @login_required
 def note_sections(request, project_slug, note_id):

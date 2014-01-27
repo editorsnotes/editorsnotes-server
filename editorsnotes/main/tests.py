@@ -130,7 +130,7 @@ class NewUserTestCase(TestCase):
         main_models.ProjectInvitation.objects.create(
             project=test_project,
             email=new_user_email,
-            role=test_role.role,
+            project_role=test_role,
             creator=self.user
         )
         new_user = create_invited_user(new_user_email)
