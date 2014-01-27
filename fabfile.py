@@ -13,6 +13,7 @@ import time
 
 PROJ_ROOT = os.path.dirname(env.real_fabfile)
 env.project_name = 'editorsnotes'
+env.python = 'python' if 'VIRTUAL_ENV' in os.environ else './bin/python'
 
 @task
 def setup():
@@ -36,21 +37,21 @@ def setup():
 def test():
     "Run the test suite locally."
     with lcd(PROJ_ROOT):
-        local('./bin/python manage.py test main admin_custom' % env)
+        local('{python} manage.py test main admin_custom'.format(**env))
 
 @task
 def sync_database():
     "Sync db, make cache tables, and run South migrations"
     with lcd(PROJ_ROOT):
-        local('./bin/python manage.py syncdb --noinput')
+        local('{python} manage.py syncdb --noinput'.format(**env))
         create_cache_tables()
-        local('./bin/python manage.py migrate --noinput')
+        local('{python} manage.py migrate --noinput'.format(**env))
 
 @task
 def runserver():
     "Run the development server"
     with lcd(PROJ_ROOT):
-        local('./bin/python manage.py runserver')
+        local('{python} manage.py runserver'.format(**env))
 
 @task
 @runs_once
@@ -77,12 +78,13 @@ def make_settings():
 @task
 def create_cache_tables():
     caches = ['zotero_cache', 'compress_cache']
-    tables = local('./bin/python manage.py inspectdb | grep "db_table ="', capture=True)
+    tables = local('{python} manage.py inspectdb | '
+                   'grep "db_table ="'.format(**env), capture=True)
     for cache in caches:
         if "'{}'".format(cache) in tables:
             continue
         with lcd(PROJ_ROOT):
-            local('./bin/python manage.py createcachetable {}'.format(cache))
+            local('{python} manage.py createcachetable {cache}'.format(cache=cache, **env))
 
 @task
 def watch_static():
@@ -110,7 +112,7 @@ def watch_static():
                 now = datetime.datetime.now()
                 if (datetime.datetime.now() - self.last_collected).total_seconds() < 1:
                     return
-                local('./bin/python manage.py collectstatic --noinput')
+                local('{python} manage.py collectstatic --noinput'.format(**env))
                 sys.stdout.write('\n')
                 self.last_collected = datetime.datetime.now()
 
@@ -154,7 +156,7 @@ def symlink_packages():
 
 def collect_static():
     with lcd(PROJ_ROOT):
-        local('./bin/python manage.py collectstatic --noinput -v0')
+        local('{python} manage.py collectstatic --noinput -v0'.format(**env))
 
 def generate_secret_key():
     SECRET_CHARS = 'abcdefghijklmnopqrstuvwxyz1234567890-=!@#$$%^&&*()_+'
