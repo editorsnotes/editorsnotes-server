@@ -1,0 +1,23 @@
+language: python
+
+python:
+  - "2.7"
+
+services:
+  - elasticsearch
+
+install:
+  - "CFLAGS=\"-O0\" && pip install -r requirements.txt"
+  - "pip install -q fabric==1.5.1"
+
+before_script:
+  - fab make_settings
+  - "sed -i -e \"s/'NAME': '',/'NAME': 'testdb',/\" editorsnotes/settings_local.py"
+  - "sed -i -e \"s/'USER': '',/'USER': 'postgres',/\" editorsnotes/settings_local.py"
+  - "sed -i -e \"s|# STORAGE_PATH: ''|STORAGE_PATH: '$TRAVIS_BUILD_DIR/editorsnotes/static'|\" editorsnotes/settings_local.py"
+  - mkdir -p $TRAVIS_BUILD_DIR/editorsnotes/static
+  - python manage.py collectstatic --noinput -v0
+  - psql -c "CREATE DATABASE testdb;" -U postgres
+
+script:
+  - python manage.py test main api admin_custom

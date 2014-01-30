@@ -250,7 +250,7 @@ class TopicAssignment(CreationMetadata, ProjectPermissionsMixin):
             self.content_object._meta.module_name,
             self.content_object)
     def get_affiliation(self):
-        return self.project
+        return self.topic.project
 reversion.register(TopicAssignment)
 
 
@@ -272,6 +272,6 @@ class LegacyTopic(models.Model, URLAccessible):
         ordering = ['slug']
     @models.permalink
     def get_absolute_url(self):
-        return ('topic_view', [self.slug])
+        return ('legacy_topic_view', [self.slug])
     def as_text(self):
         return 'DEPRECATED: {}'.format(self.preferred_name)

@@ -7,6 +7,10 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (
+        ('djotero', '0007_auto__chg_field_zoterolink_modified'),
+    )
+
     def forwards(self, orm):
         # Adding field 'Document.zotero_data'
         db.add_column(u'main_document', 'zotero_data',
