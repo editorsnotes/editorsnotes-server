@@ -1,6 +1,6 @@
 EditorsNotes.Views.Note = Backbone.View.extend({
   events: {
-    'click .note-description': 'editDescription'
+    'click #note-description': 'editDescription'
   },
 
   initialize: function (options) {
@@ -37,49 +37,31 @@ EditorsNotes.Views.Note = Backbone.View.extend({
 
   editDescription: function () {
     var $description = this.$('#note-description')
+      , note = this.model
       , html
 
     if ($description.hasClass('active')) return;
 
-    $description.addClass('active').find('> div').editText({
+    $description.addClass('active').find('> :first-child').editText({
+      afterInit: function () {
+        var that = this;
+
+        html = ''
+          + '<div class="row">'
+            + '<a class="btn btn-primary save-changes pull-right">Save</a>'
+          + '</div>'
+
+        $(html).insertAfter(this.editor.composer.iframe).on('click .btn', function (e) {
+          setTimeout(function () { that.destroy() }, 0);
+        });
+      },
       destroy: function (val) {
         note.set('content', val).save().done(function (resp) {
           $description.removeClass('active').html(resp.content);
         });
       }
     });
-  },
-  /*
-
-    $('#note-description').on('click', function (e) {
-      var $this = $(this)
-        , $content = $('> div', $this)
-        , html 
-
-      if ($this.hasClass('active')) return;
-
-      $this.addClass('active'); 
-      $content.editText({
-        destroy: function (val) {
-          var promise = that.note.set('content', val).save();
-          promise.then(function (resp) {
-            $this.removeClass('active').html(resp.content)
-          });
-        }
-      });
-
-      html = ''
-        + '<div class="row">'
-          + '<a class="btn btn-primary save-changes pull-right">Save</a>'
-        + '</div>'
-
-      $(html).appendTo($this).on('click .btn', function (e) {
-        setTimeout(function () { $content.editText('destroy') }, 0);
-      });
-
-    });
-
-    */
+  }
 
 });
 
