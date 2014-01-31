@@ -64,23 +64,7 @@
 
     <section id="user_activity" class="span{% if own_profile %}6{% else %}12{% endif %}"> 
       <h3>Recent edits</h3>
-      <ul class="activity-log unstyled">
-        {% for entry in log_entries %}
-        <li class="activity-log-entry">
-          {% filter typogrify %}
-          <div>
-            <span class="model-label">{{ entry.what|object_name }}: </span>
-            {{ entry.what|as_link }}
-          </div>
-          <div>
-            <span class="quiet">{{ entry.when|date:"SHORT_DATETIME_FORMAT" }}</span>
-          </div>
-          {% endfilter %}          
-        </li>
-        {% empty %}
-        <li>{{ display_name }} hasn't made any edits yet.</li>
-        {% endfor %}
-      </ul>
+      {% include "includes/activity.html" %}
     </section>
 
   </div>

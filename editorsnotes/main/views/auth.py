@@ -7,6 +7,7 @@ from django.template import RequestContext
 from django_browserid.views import Verify
 import reversion
 
+from editorsnotes.search import activity_index
 from ..models import User, Project, ProjectInvitation
 
 @reversion.create_revision()
@@ -57,7 +58,7 @@ def user(request, username=None):
     o['user'] = user
 
 
-    o['log_entries'], ignored = User.get_activity_for(user, max_count=20)
+    o['activities'] = activity_index.get_activity_for(user)
 
     # FIX
     # o['profile'] = get_for(user)
@@ -73,7 +74,7 @@ def user(request, username=None):
 def project(request, project_slug):
     o = {}
     o['project'] = get_object_or_404(Project, slug=project_slug)
-    o['log_entries'], ignored = Project.get_activity_for(o['project'], max_count=10)
+    o['activities'] = activity_index.get_activity_for(o['project'])
 
     if request.user.is_authenticated():
         o['project_role'] = o['project'].get_role_for(request.user)

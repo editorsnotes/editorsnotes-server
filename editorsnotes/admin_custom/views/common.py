@@ -7,6 +7,7 @@ from django.views.generic.edit import View, ModelFormMixin, TemplateResponseMixi
 import reversion
 
 from editorsnotes.main.models import Project
+from editorsnotes.main.models.auth import RevisionProject
 
 VIEW_ERROR_MSG = 'You do not have permission to view {}.'
 CHANGE_ERROR_MSG = 'You do not have permission to change {}.'
@@ -126,6 +127,7 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
             # Set reversion metadata
             reversion.set_user(self.request.user)
             reversion.set_comment('%sed %s.' % (action, self.object._meta.module_name))
+            reversion.add_meta(RevisionProject, project=self.project)
 
             self.save_formsets(formsets)
             form.save_m2m()
