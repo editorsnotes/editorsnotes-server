@@ -137,7 +137,10 @@ class ActivityIndex(ElasticSearchIndex):
     def get_name(self):
         return settings.ELASTICSEARCH_PREFIX + '-activitylog'
     def get_activity_for(self, entity, size=25, **kwargs):
-        query = { 'query': {}, 'sort': { 'data.time': { 'order': 'desc' } } }
+        query = {
+            'query': {},
+            'sort': {'data.time': { 'order': 'desc', 'ignore_unmapped': True }}
+        }
         if isinstance(entity, User):
             query['query']['match'] = { 'data.user': entity.username }
         elif isinstance(entity, Project):
