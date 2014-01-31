@@ -98,6 +98,11 @@ Backbone.sync = function (method, model, options) {
       that.$container.css('min-height', '')
     });
 
+    if ( typeof(this.options.afterInit) === 'function' ) {
+      this.options.afterInit.call( that );
+    }
+
+
     return this.$el;
   }
 
