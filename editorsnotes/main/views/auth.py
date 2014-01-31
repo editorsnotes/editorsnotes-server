@@ -58,7 +58,7 @@ def user(request, username=None):
     o['user'] = user
 
 
-    o['log_entries'], ignored = User.get_activity_for(user, max_count=20)
+    o['activities'] = activity_index.get_activity_for(user)
 
     # FIX
     # o['profile'] = get_for(user)
