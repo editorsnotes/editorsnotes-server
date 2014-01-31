@@ -22,11 +22,10 @@ class OrderedResponseElasticSearch(ElasticSearch):
         return json_response
 
 class ElasticSearchIndex(object):
-    def __init__(self, name=None):
-        if not self.name:
-            if name is None:
-                raise NotImplementedError('Must provide name for index.')
-            self.name = name
+    def __init__(self):
+        if not hasattr(self, 'get_name'):
+            raise NotImplementedError('Must implement get_name method')
+        self.name = self.get_name()
         self.es = OrderedResponseElasticSearch(settings.ELASTICSEARCH_URLS)
         if not self.exists():
             self.create()
@@ -48,10 +47,12 @@ class ElasticSearchIndex(object):
 
 
 class ENIndex(ElasticSearchIndex):
-    name = settings.ELASTICSEARCH_INDEX_NAME
     def __init__(self):
         super(ENIndex, self).__init__()
         self.document_types = {}
+
+    def get_name(self):
+        return settings.ELASTICSEARCH_PREFIX + '-items'
 
     def get_settings(self):
         return {
@@ -133,7 +134,8 @@ VERSION_ACTIONS = {
 }
 
 class ActivityIndex(ElasticSearchIndex):
-    name = 'editorsnotes-activitylog'
+    def get_name(self):
+        return settings.ELASTICSEARCH_PREFIX + '-activitylog'
     def get_activity_for(self, entity, size=25, **kwargs):
         query = { 'query': {}, 'sort': { 'data.time': { 'order': 'desc' } } }
         if isinstance(entity, User):

@@ -8,22 +8,30 @@ class CustomTestSuiteRunner(DjangoTestSuiteRunner):
     def setup_test_environment(self, **kwargs):
         super(CustomTestSuiteRunner, self).setup_test_environment(**kwargs)
 
-        test_index_name = 'test-' + settings.ELASTICSEARCH_INDEX_NAME
+        test_index_prefix = settings.ELASTICSEARCH_PREFIX + '-test'
+        settings.ELASTICSEARCH_PREFIX = test_index_prefix
 
-        from editorsnotes.search import en_index
-        en_index.name = settings.ELASTICSEARCH_INDEX_NAME = test_index_name
+        from editorsnotes.search import en_index, activity_index
+
+        en_index.name = en_index.get_name()
+        activity_index.name = activity_index.get_name()
 
         for doctype in en_index.document_types.values():
-            doctype.index_name = test_index_name
+            doctype.index_name = en_index.name
 
         try:
             en_index.create()
+            activity_index.create()
         except IndexAlreadyExistsError:
             en_index.delete()
             en_index.create()
+            activity_index.delete()
+            activity_index.create()
 
     def teardown_test_environment(self, **kwargs):
         super(CustomTestSuiteRunner, self).teardown_test_environment(**kwargs)
 
-        from editorsnotes.search import en_index
-        z = en_index.delete()
+        from editorsnotes.search import en_index, activity_index
+        en_index.delete()
+        activity_index.delete()
+
