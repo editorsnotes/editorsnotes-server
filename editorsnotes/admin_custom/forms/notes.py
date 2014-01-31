@@ -10,7 +10,7 @@ class NoteForm(ModelForm):
         )
     class Meta:
         model = Note
-        exclude = ('affiliated_projects',)
+        exclude = ('project', 'sections_counter',)
         widgets = {
             'assigned_users': forms.CheckboxSelectMultiple()
         }

@@ -20,7 +20,7 @@ class NoteAdminView(BaseAdminView):
         # forms.TopicAssignmentFormset,
     )
     template_name = 'note_admin.html'
-    def set_additional_object_properties(self, obj):
+    def set_additional_object_properties(self, obj, form):
         obj.project = self.project
         return obj
     def get_form(self, form_class):

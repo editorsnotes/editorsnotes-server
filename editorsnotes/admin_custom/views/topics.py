@@ -30,6 +30,7 @@ class TopicAdminView(BaseAdminView):
                     _preferred_name=obj.preferred_name,
                     type=form.cleaned_data['topic_type'])
             obj.topic_node_id = topic_node.id
+            obj.project = self.project
         return obj
     def save_citation_formset_form(self, form):
         obj = form.save(commit=False)
