@@ -9,14 +9,23 @@ IGNORED_PERMISSIONS = {
     'main.project': ('add_project', 'delete_project', 'change_project',)
 }
 
-def _get_project_specific_permissions(model):
+def _get_project_specific_permissions(model, is_concretely_inherited=False):
     from ..models.auth import ProjectPermissionsMixin
+
+    # Only deal with models which subclass ProjectPermissionsMixin
     if not issubclass(model, ProjectPermissionsMixin):
         return []
+
     ct = ContentType.objects.get_for_model(model)
     auto_model_perms = _get_all_permissions(model._meta, ct)
+
     ignored_model_perms = IGNORED_PERMISSIONS.get(
         '{}.{}'.format(model._meta.app_label, model._meta.module_name), ())
+    if is_concretely_inherited:
+        ignored_model_perms += tuple(
+            '{}_{}'.format(action, model._meta.module_name)
+            for action in ('add', 'change', 'delete'))
+
     return [perm for perm in Permission.objects.filter(content_type=ct)
             if (perm.codename, perm.name) in auto_model_perms and
             perm.codename not in ignored_model_perms]
@@ -33,7 +42,12 @@ def get_all_builtin_project_permissions(models=None):
     perms = set()
     models_to_search = get_models() if models is None else models
     for model in models_to_search:
-        perms.update(set([p for p in _get_project_specific_permissions(model)]))
+        is_concretely_inherited = any(
+            m for m in models_to_search if m != model and issubclass(model, m)
+        )
+        perms.update(set(
+            [p for p in _get_project_specific_permissions(model, is_concretely_inherited)]
+        ))
     return perms
 
 
