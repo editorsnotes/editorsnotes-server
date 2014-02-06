@@ -99,7 +99,7 @@ def add_project(request):
 def change_project(request, project_slug):
     o = {}
     project = get_object_or_404(Project, slug=project_slug)
-    user = request. user
+    user = request.user
 
     if not project.attempt('change', user):
         return HttpResponseForbidden(
@@ -115,8 +115,11 @@ def change_project(request, project_slug):
             redirect = request.GET.get('return_to', request.path)
             return HttpResponseRedirect(redirect)
         else:
-            pass
-    o['form'] = forms.ProjectForm(instance=project)
+            o['form'] = form
+
+    else:
+        o['form'] = forms.ProjectForm(instance=project)
+
     return render_to_response(
         'project_change.html', o, context_instance=RequestContext(request))
 
