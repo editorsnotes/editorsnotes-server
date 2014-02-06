@@ -42,11 +42,16 @@ def test():
 @task
 def sync_database():
     "Sync db, make cache tables, and run South migrations"
+
     with lcd(PROJ_ROOT):
         local('{python} manage.py syncdb --noinput'.format(**env))
         create_cache_tables()
         local('{python} manage.py migrate reversion --noinput'.format(**env))
         local('{python} manage.py migrate --noinput'.format(**env))
+
+    print ('\nDatabase synced.\n' +
+           'Create a superuser by first activating the virtualenv (`source bin/activate`), ' +
+           'then running the command `./manage.py createsuperuser`.')
 
 @task
 def runserver():
