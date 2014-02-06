@@ -157,6 +157,12 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     def get_activity_for(project, max_count=50):
         return activity_for(project, max_count=max_count)
 
+@receiver(models.signals.post_save, sender=Project)
+def create_editor_role(sender, instance, created, **kwargs):
+    "Creates an editor role after a project has been created."
+    if created:
+        instance.roles.get_or_create_by_name('Editor', is_super_role=True)
+    return
 
 ##################################
 # Supporting models for projects #
