@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import Group
+from django.db import models
 from django.forms.models import (
-    BaseModelFormSet, ModelForm, modelformset_factory)
+    BaseModelFormSet, ModelForm, modelformset_factory, ValidationError)
 
 from editorsnotes.main.models import User, Project, ProjectInvitation
 
@@ -117,8 +118,37 @@ def make_project_roster_formset(project):
         extra=0
     )
 
+BANNED_PROJECT_SLUGS = (
+    'add',
+)
+
 class ProjectForm(ModelForm):
     class Meta:
         model = Project
         exclude = ('slug',)
+
+class ProjectCreationForm(ModelForm):
+    """
+    Form for creating a project. Must be passed a user.
+    """
+    join_project = forms.BooleanField(initial=True,
+                                      help_text='Join project after creation?')
+    class Meta:
+        model = Project
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super(ProjectCreationForm, self).__init__(*args, **kwargs)
+        self.user = user
+    def clean_slug(self):
+        data = self.cleaned_data['slug']
+        if data in BANNED_PROJECT_SLUGS:
+            raise ValidationError('This slug is a reserved word.')
+        return data
+    def save(self, *args, **kwargs):
+        obj = super(ProjectCreationForm, self).save()
+        if self.cleaned_data['join_project']:
+            role = obj.roles.get(role='Editor')
+            role.users.add(self.user)
+        return obj
+
 

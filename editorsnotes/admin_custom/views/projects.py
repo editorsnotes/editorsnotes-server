@@ -69,6 +69,33 @@ def project_roster(request, project_slug):
 
 @login_required
 @reversion.create_revision()
+def add_project(request):
+    o = {}
+    user = request.user
+
+    # Remove once anyone can create a project
+    if not user.is_superuser:
+        return HttpResponseForbidden(
+            content='You do not have permission to create a new project.')
+
+    if request.method == 'POST':
+        form = forms.ProjectCreationForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            project = form.save()
+            messages.add_message(
+                request, messages.SUCCESS,
+                'New project ({}) created.'.format(project.name))
+            return HttpResponseRedirect(project.get_absolute_url())
+        else:
+            o['form'] = form
+    else: 
+        o['form'] = forms.ProjectCreationForm(user=request.user)
+
+    return render_to_response(
+        'project_change.html', o, context_instance=RequestContext(request))
+
+@login_required
+@reversion.create_revision()
 def change_project(request, project_slug):
     o = {}
     project = get_object_or_404(Project, slug=project_slug)
