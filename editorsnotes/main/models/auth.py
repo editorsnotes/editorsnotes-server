@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, Group
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.dispatch import receiver
 
 import reversion
 from licensing.models import License
@@ -123,7 +124,7 @@ class ProjectManager(models.Manager):
 
 class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     name = models.CharField(max_length='80')
-    slug = models.SlugField(help_text='Used for project-specific URLs and groups')
+    slug = models.SlugField(help_text='Used for project-specific URLs and groups', unique=True)
     image = models.ImageField(upload_to='project_images', blank=True, null=True)
     description = fields.XHTMLField(blank=True, null=True)
     default_license = models.ForeignKey(License, default=1)
