@@ -89,8 +89,8 @@
                   {% for project in user.get_affiliated_projects %}
                   {% if not forloop.last %}<li class="divider"></li>{% endif %}
                   <li><a href="{% url "admin:main_note_add" project_slug=project.slug %}">Add note</a></li>
-                  <li><a href="{% url "admin:main_topic_add" project_slug=project.slug %}">Add document</a></li>
-                  <li><a href="{% url "admin:main_document_add" project_slug=project.slug %}">Add topic</a></li>
+                  <li><a href="{% url "admin:main_topic_add" project_slug=project.slug %}">Add topic</a></li>
+                  <li><a href="{% url "admin:main_document_add" project_slug=project.slug %}">Add document</a></li>
                   {% endfor %}
                 </ul>
               </div>
