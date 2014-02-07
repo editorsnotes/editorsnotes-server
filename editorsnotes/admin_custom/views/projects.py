@@ -3,7 +3,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import (
+    HttpResponseForbidden, HttpResponseRedirect, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 import reversion
@@ -35,29 +36,44 @@ def project_roster(request, project_slug):
     ProjectInvitationFormSet = forms.make_project_invitation_formset(project)
 
     if request.method == 'POST':
+
         if not can_change:
             return HttpResponseForbidden(CHANGE_ERROR_MSG.format(project))
-        o['roster_formset'] = ProjectRosterFormSet(
-            request.POST, prefix='roster')
-        o['invitation_formset'] = ProjectInvitationFormSet(
-            request.POST, prefix='invitation')
-        if o['roster_formset'].is_valid() and o['invitation_formset'].is_valid():
-            o['roster_formset'].save()
-            for form in o['invitation_formset']:
-                if form.cleaned_data.get('DELETE', False):
-                    if form.instance:
-                        form.instance.delete()
-                    continue
-                obj = form.save(commit=False)
-                if not obj.id:
-                    if not form.cleaned_data.has_key('email'):
+
+        if request.POST.get('roster-TOTAL_FORMS'):
+            o['roster_formset'] = ProjectRosterFormSet(request.POST, prefix='roster')
+            if o['roster_formset'].is_valid():
+                o['roster_formset'].save()
+                messages.add_message(request, messages.SUCCESS,
+                                     'Roster for {} saved.'.format(project.name))
+                return HttpResponseRedirect(request.path)
+            else:
+                o['invitation_formset'] = ProjectInvitationFormSet(prefix='invitation')
+
+        elif request.POST.get('invitation-TOTAL_FORMS'):
+            o['invitation_formset'] = ProjectInvitationFormSet(request.POST,
+                                                               prefix='invitation')
+            if o['invitation_formset'].is_valid():
+                for form in o['invitation_formset']:
+                    if form.cleaned_data.get('DELETE', False):
+                        if form.instance:
+                            form.instance.delete()
                         continue
-                    obj.creator = request.user
-                    obj.project = project
-                obj.save()
-            messages.add_message(request, messages.SUCCESS,
-                                 'Roster for {} saved.'.format(project.name))
-            return HttpResponseRedirect(request.path)
+                    obj = form.save(commit=False)
+                    if not obj.id:
+                        if not form.cleaned_data.has_key('email'):
+                            continue
+                        obj.creator = request.user
+                        obj.project = project
+                    obj.save()
+                messages.add_message(request, messages.SUCCESS,
+                                     'Roster for {} saved.'.format(project.name))
+                return HttpResponseRedirect(request.path)
+            else:
+                o['roster_formset'] = ProjectRosterFormSet(prefix='roster')
+        else:
+            return HttpResponseBadRequest()
+
 
     elif can_change:
         o['roster_formset'] = ProjectRosterFormSet(prefix='roster')
@@ -133,9 +149,8 @@ def change_featured_items(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     user = request.user
 
-    try:
-        project.attempt('change', user)
-    except main_models.PermissionError:
+    can_change = user.has_project_perm(project, 'main.change_featured_item')
+    if not can_change:
         msg = 'You do not have permission to access this page'
         return HttpResponseForbidden(content=msg)
 
