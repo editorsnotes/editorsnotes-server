@@ -18,12 +18,17 @@ from common import VIEW_ERROR_MSG, CHANGE_ERROR_MSG
 def project_roster(request, project_slug):
     o = {}
     user = request.user
-    project = get_object_or_404(Project, slug=project_slug)
+
+
+    project_qs = Project.objects\
+            .prefetch_related('roles__group__permissions')\
+            .select_related('roles__group__permissions',
+                            'roles__group__users')
+    project = get_object_or_404(project_qs, slug=project_slug)
 
     can_view = user.has_project_perm(project, 'main.view_project_roster')
     if not can_view:
         return HttpResponseForbidden(VIEW_ERROR_MSG.format(project))
-
     can_change = user.has_project_perm(project, 'main.change_project_roster')
 
     ProjectRosterFormSet = forms.make_project_roster_formset(project)
@@ -53,16 +58,14 @@ def project_roster(request, project_slug):
             messages.add_message(request, messages.SUCCESS,
                                  'Roster for {} saved.'.format(project.name))
             return HttpResponseRedirect(request.path)
+
     elif can_change:
         o['roster_formset'] = ProjectRosterFormSet(prefix='roster')
         o['invitation_formset'] = ProjectInvitationFormSet(prefix='invitation')
 
     o['project'] = project
     o['roster'] = [(u, project.get_role_for(u))
-                   for u in project.members\
-                       .order_by('-last_login')\
-                       .select_related('groups')\
-                       .prefetch_related('groups__projectrole')]
+                   for u in project.members.order_by('-last_login')]
 
     return render_to_response(
         'project_roster.html', o, context_instance=RequestContext(request))

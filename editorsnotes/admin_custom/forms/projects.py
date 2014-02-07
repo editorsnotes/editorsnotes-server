@@ -22,7 +22,9 @@ def make_project_invitation_formset(project):
     if not isinstance(project, Project):
         raise ValueError('{} is not a project.'.format(project))
 
-    project_invitations = ProjectInvitation.objects.filter(project_id=project.id)
+    project_invitations = ProjectInvitation.objects\
+            .select_related('user', 'role')\
+            .filter(project_id=project.id)
 
     class ProjectInvitationFormSet(BaseModelFormSet):
         def __init__(self, *args, **kwargs):
