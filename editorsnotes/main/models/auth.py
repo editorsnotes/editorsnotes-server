@@ -161,7 +161,10 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
 @receiver(models.signals.post_save, sender=Project)
 def create_editor_role(sender, instance, created, **kwargs):
     "Creates an editor role after a project has been created."
-    if created:
+
+    # Only create role if this is a newly created project, and it is not being
+    # loaded from a fixture (in that case, "raw" is true in kwargs)
+    if created and not kwargs.get('raw', False):
         instance.roles.get_or_create_by_name('Editor', is_super_role=True)
     return
 
