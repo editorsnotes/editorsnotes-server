@@ -104,7 +104,7 @@ def change_project(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     user = request.user
 
-    if not project.attempt('change', user):
+    if not user.has_project_perm(project, 'main.change_project'):
         return HttpResponseForbidden(
             content='You do not have permission to edit the details of %s' % project.name)
 

@@ -78,15 +78,19 @@ def project(request, project_slug):
 
     if request.user.is_authenticated():
         o['project_role'] = o['project'].get_role_for(request.user)
+
         o['can_view_roster'] = request.user.has_project_perm(
             o['project'], 'main.view_project_roster')
         o['can_change_roster'] = request.user.has_project_perm(
             o['project'], 'main.change_project_roster')
         o['can_change_featured_items'] = request.user.has_project_perm(
             o['project'], 'main.change_featureditem')
+        o['can_change_project'] = request.user.has_project_perm(
+            o['project'], 'main.change_project')
+
         o['show_edit_row'] = any((
             o['can_view_roster'], o['can_change_roster'],
-            o['can_change_featured_items']))
+            o['can_change_featured_items'], o['can_change_project']))
     return render_to_response(
         'project.html', o, context_instance=RequestContext(request))
 
