@@ -238,7 +238,7 @@ class ProjectRole(models.Model):
     """
     project = models.ForeignKey(Project, related_name='roles')
     is_super_role = models.BooleanField(default=False)
-    role = models.CharField(max_length=40)
+    role = models.CharField(max_length=40, unique=True)
     group = models.OneToOneField(Group)
     objects = ProjectRoleManager()
     class Meta:
@@ -250,6 +250,11 @@ class ProjectRole(models.Model):
         if not hasattr(self, '_valid_permissions_cache'):
             self._valid_permissions_cache = get_all_project_permissions()
         return self._valid_permissions_cache
+    def delete(self, *args, **kwargs):
+        group = self.group
+        ret = super(ProjectRole, self).delete(*args, **kwargs)
+        group.delete()
+        return ret
     def get_permissions(self):
         if self.is_super_role:
             return self._get_valid_permissions()
