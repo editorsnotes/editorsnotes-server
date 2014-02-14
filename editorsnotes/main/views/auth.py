@@ -40,7 +40,8 @@ def create_invited_user(email):
 class CustomBrowserIDVerify(Verify):
     failure_url = '/accounts/login/'
     def get_success_url(self):
-        return self.request.user.get_absolute_url()
+        return self.request.GET.get('return_to',
+                                    self.request.user.get_absolute_url())
 
 def user_logout(request):
     auth.logout(request)
