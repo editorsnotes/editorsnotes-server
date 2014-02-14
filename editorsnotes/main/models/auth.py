@@ -238,7 +238,7 @@ class ProjectRole(models.Model):
     """
     project = models.ForeignKey(Project, related_name='roles')
     is_super_role = models.BooleanField(default=False)
-    role = models.CharField(max_length=40, unique=True)
+    role = models.CharField(max_length=40)
     group = models.OneToOneField(Group)
     objects = ProjectRoleManager()
     class Meta:
