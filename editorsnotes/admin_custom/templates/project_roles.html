@@ -113,6 +113,19 @@
 {% endblock %}
 
 {% block content %}
+
+  <ul class="breadcrumb-top">
+    <li>
+      <a href="{% url "project_view" project_slug=project.slug %}">{{ project }}</a>
+      <span class="divider">&gt;</span>
+    </li>
+    <li>
+      <a href="{% url "admin:main_project_roster_change" project_slug=project.slug %}">Roster</a>
+      <span class="divider">&gt;</span>
+    </li>
+    <li class="active">Roles</li>
+  </ul>
+
 <h1>Change project roles</h1>
 {% include "includes/bootstrap_errors.html" with errors=formset.errors %}
 <form method="post">
