@@ -1,10 +1,11 @@
 from django import forms
 from django.contrib.auth.models import Group
-from django.db import models
 from django.forms.models import (
     BaseModelFormSet, ModelForm, modelformset_factory, ValidationError)
 
-from editorsnotes.main.models import User, Project, ProjectInvitation
+from editorsnotes.main.management import get_all_project_permissions
+from editorsnotes.main.models import (
+    User, Project, ProjectInvitation, ProjectRole)
 
 class ProjectRoleField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
@@ -78,7 +79,7 @@ def make_project_invitation_formset(project):
 
 def make_project_roster_formset(project):
     """
-    Returns a formset for editing project roles.
+    Returns a formset for editing project members' roles.
     """
     if not isinstance(project, Project):
         raise ValueError('{} is not a project.'.format(project))
@@ -119,6 +120,62 @@ def make_project_roster_formset(project):
         fields=(),
         extra=0
     )
+
+def make_project_permissions_formset(project):
+    roles = project.roles.all()
+    project_perms= get_all_project_permissions().order_by('content_type')
+
+    class ProjectRoleFormSet(BaseModelFormSet):
+        def __init__(self, *args, **kwargs):
+            kwargs['queryset'] = roles
+            super(ProjectRoleFormSet, self).__init__(*args, **kwargs)
+
+    class ProjectRoleForm(ModelForm):
+        permissions = forms.ModelMultipleChoiceField(
+            required=False,
+            queryset=project_perms,
+            widget=forms.CheckboxSelectMultiple)
+        class Meta:
+            model = ProjectRole
+            fields = ('role', 'permissions',)
+        def __init__(self, *args, **kwargs):
+            super(ProjectRoleForm, self).__init__(*args, **kwargs)
+            if self.instance and self.instance.is_super_role:
+                self.fields['permissions'].widget.attrs['readonly'] = True
+                self.fields['permissions'].widget.attrs['checked'] = True
+            elif self.instance and self.instance.id:
+                self.fields['permissions'].initial = self.instance.group.permissions.all()
+        def save(self, *args, **kwargs):
+            # We are NOT committing the change here, because we only save the
+            # form if the object already exists. This is because it was
+            # difficult to deal with the M2M relations (permissions => the new
+            # group which is created along with the project role) when doing
+            # that. We are calling save, however, to bound this form to an
+            # instance if it exists, so that we can proceed in the right way
+            # afterwards (create a ProjectRole manually if no existing instance;
+            # save form otherwise).
+            kwargs['commit'] = False
+            obj = super(ProjectRoleForm, self).save(*args, **kwargs)
+
+            perms = self.cleaned_data['permissions']
+            if not obj.id:
+                new_role = ProjectRole.objects.create_project_role(
+                    project, self.cleaned_data['role'])
+                new_role.group.permissions.add(*perms)
+            else:
+                obj.save()
+                obj.group.permissions.clear()
+                obj.group.permissions.add(*perms)
+            return obj
+
+    formset = modelformset_factory(ProjectRole,
+                                   formset=ProjectRoleFormSet,
+                                   form=ProjectRoleForm,
+                                   can_delete=True,
+                                   extra=1)
+    formset.all_perms = project_perms
+    return formset
+
 
 BANNED_PROJECT_SLUGS = (
     'add',
