@@ -136,7 +136,7 @@ def make_virtual_env():
     "Make a virtual environment for local dev use"
     with lcd(PROJ_ROOT):
         local('virtualenv .')
-        local('./bin/pip install -r requirements.txt')
+        local('./bin/pip install -r requirements.txt --allow-external PIL')
 
 def symlink_packages():
     "Symlink python packages not installed with pip"
