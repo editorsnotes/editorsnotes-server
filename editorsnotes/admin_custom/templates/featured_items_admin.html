@@ -38,7 +38,7 @@
     <option value="documents">Document</option>
     <option value="topics">Topic</option>
   </select>
-  <input type="text" placeholder="Type to search" search-project-id={{ project.id }} class="span5 search-autocomplete autocomplete-no-redirect"></input>
+  <input type="text" placeholder="Type to search" data-project-slug={{ project.slug }} class="span5 search-autocomplete autocomplete-no-redirect"></input>
   {% else %}
     <p>You can only designate up to five featured items. Remove at least one item to add another.</p>
   {% endif %}

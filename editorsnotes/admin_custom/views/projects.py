@@ -195,10 +195,8 @@ def change_featured_items(request, project_slug):
         if added_model in ['notes', 'topics', 'documents'] and added_id:
             ct = ContentType.objects.get(model=added_model[:-1])
             obj = ct.model_class().objects.get(id=added_id)
-            # FIXME: userprofile reference
-            user_affiliation = request.user.get_profile().affiliation
-            if not (user_affiliation in obj.affiliated_projects.all()
-                    or request.user.is_superuser):
+
+            if obj.get_affiliation() != project:
                 messages.add_message(
                     request, messages.ERROR,
                     'Item %s is not affiliated with your project' % obj.as_text())
