@@ -88,11 +88,12 @@
   </table>
 
   {% if roster_formset %}
-    <div>
-      <input class="btn" type="submit" value="Save roster" />
-    </div>
+  <p> <a href="{% url "admin:main_project_roles_change" project.slug %}">View/change roles</a> </p>
+    <p> <input class="btn" type="submit" value="Save roster" /> </p>
   </form>
   {% endif %}
+
+  <br />
 
   {% if invitation_formset %}
   <form class="project-invitations form-inline" method="post">

@@ -143,6 +143,34 @@ def change_project(request, project_slug):
         'project_change.html', o, context_instance=RequestContext(request))
 
 @login_required
+def change_project_roles(request, project_slug):
+    o = {}
+
+    o['project'] = project = get_object_or_404(Project, slug=project_slug)
+
+    can_view = request.user.has_project_perm(project, 'main.change_project_roster')
+    if not can_view:
+        return HttpResponseForbidden(VIEW_ERROR_MSG.format(project))
+
+    role_formset = forms.make_project_permissions_formset(project)
+
+    if request.method == 'POST':
+        formset = role_formset(request.POST)
+        if formset.is_valid():
+            formset.save()
+            messages.add_message(
+                request, messages.SUCCESS,
+                'Saved roles for {}'.format(project))
+            return HttpResponseRedirect(request.path)
+        else:
+            o['formset'] = formset
+    else:
+        o['formset'] = role_formset()
+
+    return render_to_response(
+        'project_roles.html', o, context_instance=RequestContext(request))
+
+@login_required
 @reversion.create_revision()
 def change_featured_items(request, project_slug):
     o = {}
