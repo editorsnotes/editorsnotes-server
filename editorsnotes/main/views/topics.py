@@ -27,34 +27,6 @@ class LegacyTopicRedirectView(RedirectView):
         legacy_topic = get_object_or_404(LegacyTopic, slug=topic_slug)
         return reverse('topic_node_view', args=(legacy_topic.merged_into_id,))
 
-def all_topics(request, project_slug=None):
-    "View all topics, either site-wide or within a project."
-
-    # TODO: Use ElasticSearch
-
-    o = {}
-
-    if 'type' in request.GET:
-        o['type'] = request.GET['type']
-        o['fragment'] = ''
-        template = 'topic-columns.include'
-    else:
-        o['type'] = 'PER'
-        template = 'all-topics.html'
-
-    if project_slug:
-        o['project'] = get_object_or_404(Project, slug=project_slug)
-        query_set = Topic.objects\
-                .select_related('topic_node', 'project')\
-                .filter(project_id=o['project'].id, topic_node__type=o['type'])
-    else:
-        query_set = TopicNode.objects.filter(type=o['type'])
-
-    [o['topics_1'], o['topics_2'], o['topics_3']] = utils.alpha_columns(
-        query_set, 'preferred_name', itemkey='topic')
-    return render_to_response(
-        template, o, context_instance=RequestContext(request))
-
 def topic_node(request, topic_node_id):
     o = {}
     node_qs = TopicNode.objects.select_related()
@@ -70,6 +42,12 @@ def topic(request, project_slug, topic_node_id):
                                            topic_node_id=topic_node_id,
                                            project__slug=project_slug)
     o['project'] = topic.project
+    o['breadcrumb'] = (
+        (topic.project.name, topic.project.get_absolute_url()),
+        ('Topics', reverse('all_topics_view',
+                                kwargs={'project_slug': topic.project.slug})),
+        (topic.preferred_name, None)
+    )
 
     topic_query = {'query': {'term': {'serialized.related_topics.url':
                                       topic.get_absolute_url() }}}
@@ -91,3 +69,40 @@ def topic(request, project_slug, topic_node_id):
 
     return render_to_response(
         'topic.html', o, context_instance=RequestContext(request))
+
+def all_topics(request, project_slug=None):
+    "View all topics, either site-wide or within a project."
+
+    # TODO: Use ElasticSearch
+
+    o = {}
+
+    if 'type' in request.GET:
+        o['type'] = request.GET['type']
+        o['fragment'] = ''
+        template = 'topic-columns.include'
+    else:
+        o['type'] = 'PER'
+        template = 'all-topics.html'
+
+    if project_slug:
+        o['project'] = get_object_or_404(Project, slug=project_slug)
+        query_set = Topic.objects\
+                .select_related('topic_node', 'project')\
+                .filter(project_id=o['project'].id, topic_node__type=o['type'])
+        o['breadcrumb'] = (
+            (o['project'].name, o['project'].get_absolute_url()),
+            ('Topics', None),
+        )
+    else:
+        query_set = TopicNode.objects.filter(type=o['type'])
+        o['breadcrumb'] = (
+            ('Browse', reverse('browse_view')),
+            ('Topics', None)
+        )
+
+    [o['topics_1'], o['topics_2'], o['topics_3']] = utils.alpha_columns(
+        query_set, 'preferred_name', itemkey='topic')
+    return render_to_response(
+        template, o, context_instance=RequestContext(request))
+

@@ -117,6 +117,7 @@
       {% endif %}
 
       <div id="main" class="container">
+        {% if breadcrumb %}{% include "includes/breadcrumb.html" %}{% endif %}
         {% block content %}{% endblock %}
       </div>
 
