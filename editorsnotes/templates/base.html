@@ -98,7 +98,7 @@
             </ul>
             {% else %}
             <ul class="nav pull-right">
-              <li><a href="/accounts/login/">Log in</a></li>
+              <li><a href="/accounts/login/{% if request.path|length > 1 %}?return_to={{ request.path }}{% endif %}">Log in</a></li>
             </ul>
             {% endif %}
             {% endwith %}

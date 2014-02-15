@@ -15,7 +15,7 @@ urlpatterns = patterns('',
 
 # Auth patterns
 urlpatterns += patterns('',
-    url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
+    url(r'^accounts/login/$', 'django.contrib.auth.views.login', { 'redirect_field_name': 'return_to' }),
     url(r'^accounts/logout/$', 'editorsnotes.main.views.auth.user_logout', name='user_logout_view'),
     url(r'^accounts/profile/$', 'editorsnotes.main.views.auth.user'),
     url(r'^accounts/browserid/$', CustomBrowserIDVerify.as_view(), name='browserid_verify'),
@@ -33,6 +33,7 @@ urlpatterns += patterns('editorsnotes.main.views.navigation',
 # Admin patterns
 urlpatterns += patterns('',
     url(r'^projects/(?P<project_slug>\w+)/', include('editorsnotes.admin_custom.urls', namespace='admin', app_name='admin')),
+    url(r'^projects/add/', 'editorsnotes.admin_custom.views.projects.add_project', name='add_project_view'),
 )
 
 # Main model patterns

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block js %}
+<script type="text/javascript">
+(function () {
+
+  function addFormToTable($el, $table) {
+    var $input = $el.find('input[type="text"]')
+      , $checkboxes = $el.find('input[type="checkbox"][name*="permissions"]')
+      , $deleteBox = $el.find('input[name*="DELETE"]')
+      , $rows = $table.find('tbody tr')
+      , $header
+      , $footer
+
+    $header = $('<th>')
+      .append($input.hide())
+      .append($input.val())
+      .appendTo( $table.find('thead tr') )
+
+    if ( $input.val() == 'Editor' ) {
+      $header.addClass('editor-role');
+    }
+
+    $footer = $header.clone().appendTo( $table.find('tfoot tr') );
+
+    $footer.find('input').remove();
+
+    $('tfoot th:last:not(.editor-role)')
+      .append('<button class="btn btn-danger" type="button">Delete</button>')
+      .find('button')
+      .css({
+        'display': 'block',
+        'position': 'relative',
+        'margin': '16px auto -44px'
+      })
+      .on('click', function () {
+        var $tds = $checkboxes.closest('td').add($footer).add($header);
+
+        if ($deleteBox.prop('checked')) {
+          $tds.removeClass('to-delete');
+          $deleteBox.prop('checked', false)
+          $(this).text('Delete');
+        } else {
+          $tds.addClass('to-delete');
+          $deleteBox.prop('checked', true)
+          $(this).text('Undo');
+        }
+      })
+
+
+    $checkboxes.each(function (idx, el) { 
+      $('<td>').append(el).appendTo( $rows.eq(idx) );
+    });
+
+  }
+
+  $(document).ready(function () {
+    var $table = $('table')
+
+    $('.permission-form').each(function (idx, el) {
+      addFormToTable($(el), $table);
+    });
+
+    $('<button class="btn btn-primary">Add role</button>')
+      .appendTo('body')
+      .css({ 'padding': '7px 16px', 'width': '100px' })
+      .position({
+        'my': 'left+12 top+12',
+        'at': 'right',
+        'of': $table.find('thead')
+      })
+      .on('click', function () {
+        $(this).remove();
+        $table.find('th:last-of-type, th:last-of-type input, td:last-of-type').show();
+      });
+
+  });
+  
+})()
+</script>
+{% endblock %}
+
+{% block css %}
+<style type="text/css">
+  #perms-table {
+    width: auto;
+  }
+  td:first-of-type {
+    width: 180px;
+  }
+  td:not(:first-of-type), th:not(:first-of-type) {
+    text-align: center;
+    min-width: 100px;
+  }
+  th input[type="text"] {
+    margin: 0;
+    text-align: center;
+  }
+  #perms-table tr:hover td {
+    background: #fffacd;
+  }
+  #perms-table th {
+    vertical-align: middle;
+  }
+  .hide-extra td:last-of-type, .hide-extra th:last-of-type {
+    display: none;
+  }
+
+  td.to-delete, th.to-delete {
+    background: #fa8072 !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <ul class="breadcrumb-top">
+    <li>
+      <a href="{% url "project_view" project_slug=project.slug %}">{{ project }}</a>
+      <span class="divider">&gt;</span>
+    </li>
+    <li>
+      <a href="{% url "admin:main_project_roster_change" project_slug=project.slug %}">Roster</a>
+      <span class="divider">&gt;</span>
+    </li>
+    <li class="active">Roles</li>
+  </ul>
+
+<h1>Change project roles</h1>
+{% include "includes/bootstrap_errors.html" with errors=formset.errors %}
+<form method="post">
+  {% csrf_token %}
+  <table id="perms-table" class="table table-condensed table-bordered table-striped hide-extra">
+    <thead>
+      <tr>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for perm in formset.all_perms %}
+      <tr>
+        <td>{{ perm.name }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
+  <div style="display: none;">
+    {{ formset.management_form }}
+    {% for form in formset.forms %}
+    <div class="permission-form">{{ form }}</div>
+    {% endfor %}
+  </div>
+  <button type="submit" class="btn">Save roles</button>
+</form>
+
+{% endblock %}

@@ -5,8 +5,9 @@ from django.conf.urls import patterns, url
 import views
 
 urlpatterns = patterns('',
-    url(r'edit/^$', views.projects.change_project, name='main_project_change'),
+    url(r'^edit/$', views.projects.change_project, name='main_project_change'),
     url(r'^roster/$', views.projects.project_roster, name='main_project_roster_change'),
+    url(r'^roles/$', views.projects.change_project_roles, name='main_project_roles_change'),
     url(r'^featured_items/$', views.projects.change_featured_items, name='main_featured_items_change'),
     url(r'^topics/add/$', views.topics.TopicAdminView.as_view(), name='main_topic_add'),
     url(r'^topics/(?P<topic_node_id>\d+)/edit/$', views.topics.TopicAdminView.as_view(), name='main_topic_change'),

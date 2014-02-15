@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, Group
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.dispatch import receiver
 
 import reversion
 from licensing.models import License
@@ -123,7 +124,7 @@ class ProjectManager(models.Manager):
 
 class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     name = models.CharField(max_length='80')
-    slug = models.SlugField(help_text='Used for project-specific URLs and groups')
+    slug = models.SlugField(help_text='Used for project-specific URLs and groups', unique=True)
     image = models.ImageField(upload_to='project_images', blank=True, null=True)
     description = fields.XHTMLField(blank=True, null=True)
     default_license = models.ForeignKey(License, default=1)
@@ -157,6 +158,15 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     def get_activity_for(project, max_count=50):
         return activity_for(project, max_count=max_count)
 
+@receiver(models.signals.post_save, sender=Project)
+def create_editor_role(sender, instance, created, **kwargs):
+    "Creates an editor role after a project has been created."
+
+    # Only create role if this is a newly created project, and it is not being
+    # loaded from a fixture (in that case, "raw" is true in kwargs)
+    if created and not kwargs.get('raw', False):
+        instance.roles.get_or_create_by_name('Editor', is_super_role=True)
+    return
 
 ##################################
 # Supporting models for projects #
@@ -240,6 +250,11 @@ class ProjectRole(models.Model):
         if not hasattr(self, '_valid_permissions_cache'):
             self._valid_permissions_cache = get_all_project_permissions()
         return self._valid_permissions_cache
+    def delete(self, *args, **kwargs):
+        group = self.group
+        ret = super(ProjectRole, self).delete(*args, **kwargs)
+        group.delete()
+        return ret
     def get_permissions(self):
         if self.is_super_role:
             return self._get_valid_permissions()

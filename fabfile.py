@@ -1,6 +1,7 @@
 from fabric.api import env, local, lcd
 from fabric.colors import red, green
 from fabric.decorators import task, runs_once
+from fabric.operations import prompt
 from fabric.utils import abort
 
 import datetime
@@ -42,11 +43,30 @@ def test():
 @task
 def sync_database():
     "Sync db, make cache tables, and run South migrations"
+
+    new_installation = len(get_db_tables()) == 0
+
     with lcd(PROJ_ROOT):
         local('{python} manage.py syncdb --noinput'.format(**env))
         create_cache_tables()
         local('{python} manage.py migrate reversion --noinput'.format(**env))
         local('{python} manage.py migrate --noinput'.format(**env))
+
+    if new_installation:
+        print('\nDatabase synced. Follow prompts to create an initial '
+              'super user and project.')
+        username = prompt('Username: ', validate=str)
+        local('{python} manage.py createsuperuser --username {username}'.format(
+            username=username, **env))
+
+        project_name = prompt('Project name (blank to skip): ')
+        if project_name:
+            project_slug = prompt('Project slug: ', validate=str)
+
+            local('{python} manage.py createproject '
+                  '"{name}" {slug} --users={username}'.format(
+                      name=project_name, slug=project_slug,
+                      username=username, **env))
 
 @task
 def runserver():
@@ -79,8 +99,7 @@ def make_settings():
 @task
 def create_cache_tables():
     caches = ['zotero_cache', 'compress_cache']
-    tables = local('{python} manage.py inspectdb | '
-                   'grep "db_table ="'.format(**env), capture=True)
+    tables = get_db_tables()
     for cache in caches:
         if "'{}'".format(cache) in tables:
             continue
@@ -131,6 +150,10 @@ def watch_static():
         observer.stop()
     observer.join()
 
+def get_db_tables():
+    tables = local('{python} manage.py inspectdb | '
+                   'grep "db_table =" || true'.format(**env), capture=True)
+    return tables or []
 
 def make_virtual_env():
     "Make a virtual environment for local dev use"

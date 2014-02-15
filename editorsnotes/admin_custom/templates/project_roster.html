@@ -33,19 +33,10 @@
       var $this = $(this)
         , thisId = $this.find('input[name$="id"]').val()
 
-      if (thisId == {{ request.user.id }}) {
-        return;
-      }
+      if (thisId == {{ request.user.id }}) { return; }
 
       $('.project-user-role', '#project-user-' + thisId)
         .html($this.find('select'))
-    });
-
-    $('.project-invitations').on('click', '.remove-project-invitation', function (e) {
-      e.preventDefault();
-      $thisInvitation = $(this).closest('.project-invitation');
-      $('input[name$="DELETE"]', $thisInvitation).attr('checked', true).val('on');
-      $thisInvitation.fadeOut();
     });
 
   });
@@ -54,6 +45,14 @@
 {% endblock %}
 
 {% block content %}
+
+  <ul class="breadcrumb-top">
+    <li>
+      <a href="{% url "project_view" project_slug=project.slug %}">{{ project }}</a>
+      <span class="divider">&gt;</span>
+    </li>
+    <li class="active">Roster</li>
+  </ul>
 
   {% if roster_formset %}
   <form method="post">
@@ -87,7 +86,7 @@
       <tr id="project-user-{{ user.id }}">
         <td>{{ user.as_text }}</td>
         <td>{{ user.email }}</td>
-        <td class="project-user-role">{{ role|title }}</td>
+        <td class="project-user-role">{{ role.role|title }}</td>
         <td>{{ user.date_joined|date:"M j, Y" }}</td>
         <td>{{ user.last_login|date:"M j, Y" }}</td>
         <td>{{ user.is_active }}</td>
@@ -96,12 +95,29 @@
     </tbody>
   </table>
 
+  {% if roster_formset %}
+  <p> <a href="{% url "admin:main_project_roles_change" project.slug %}">View/change roles</a> </p>
+    <p> <input class="btn" type="submit" value="Save roster" /> </p>
+  </form>
+  {% endif %}
+
+  <br />
+
   {% if invitation_formset %}
-  <div class="project-invitations">
-    <legend>Add project members</legend>
+  <form class="project-invitations form-inline" method="post">
+    {% csrf_token %}
+    <legend>Project invitations</legend>
     {{ invitation_formset.management_form }}
+
+    {% if invitation_formset|length > 1 %}
+      <h5>Existing invitations</h5>
+      <ol>
+    {% endif %}
+
     {% for form in invitation_formset %}
+    {% if forloop.last and invitation_formset|length > 1 %}</ol>{% endif %}
     <div class="project-invitation">
+
       {% if form.errors %}
       <div class="alert alert-error">
         {% for field in form %}
@@ -111,36 +127,38 @@
         {% endfor %}
       </div>
       {% endif %}
+
       {{ form.id }}
       {{ form.project.as_hidden }}
-      {{ form.DELETE.as_hidden }}
-      {% if form.instance.id %}
-      Invited {{ form.instance.created|date:"F d, Y" }}: 
-      {{ form.email.value }}
-      {{ form.email.as_hidden }} {{ form.project_role.as_hidden }}
+
+      {% if not forloop.last %}
+
+        <li>
+          Invited {{ form.instance.created|date:"F d, Y" }}: 
+          {{ form.email.value }}
+          {{ form.email.as_hidden }} {{ form.project_role.as_hidden }}
+          &nbsp;
+          <label for="{{ form.DELETE.auto_id }}"><strong>Delete?</strong> {{ form.DELETE }}</label>
+        </li>
+
       {% else %}
-      <br />
-      <label for="{{ form.email.auto_id }}">Email</label>
-      {{ form.email }}
-      <label for="{{ form.project_role.auto_id }}">Project Role</label>
-      {{ form.project_role }}
+        
+        <h5>New invitation</h5>
+
+        <p style="margin-left: 10px;">
+          <label for="{{ form.email.auto_id }}">Email: </label> {{ form.email }}
+          &nbsp;
+          <label for="{{ form.project_role.auto_id }}">Project Role: </label> {{ form.project_role }}
+          &nbsp;
+        </p>
+
       {% endif %}
-      {% if form.instance.id %}
-      <a href="#" class="remove-project-invitation">
-        <i class="icon-remove-sign"></i>
-      </a>
-      {% endif %}
+
     </div>
     {% endfor %}
-  </div>
-  {% endif %}
-
-
-  {% if roster_formset %}
-    <div>
-      <input class="btn pull-right" type="submit" value="Save" />
-    </div>
+    <button type="submit" class="btn">Save invitations</button>
   </form>
   {% endif %}
+
 
 {% endblock %}

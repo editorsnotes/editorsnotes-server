@@ -21,6 +21,13 @@
     </a>
     {% endif %}
 
+    {% if can_change_project %}
+    <a class="btn" href="{% url "admin:main_project_change" project.slug %}">
+      <i class="icon-edit"></i>
+      Edit project description
+    </a>
+    {% endif %}
+
     {% if can_change_featured_items %}
     <a class="btn" href="{% url "admin:main_featured_items_change" project.slug %}">
       <i class="icon-star"></i>
@@ -28,12 +35,6 @@
     </a>
     {% endif %}
 
-    {% if can_change_project %}
-    <a class="btn" href="{% url "project_edit_view" project_slug=project.slug %}?return_to={{ request.path }}">
-      <i class="icon-edit"></i>
-      Edit project description
-    </a>
-    {% endif %}
   </div>
 </div>
 {% endif %}

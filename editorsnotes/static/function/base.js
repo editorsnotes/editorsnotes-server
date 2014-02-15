@@ -17,51 +17,47 @@ $(document).ready(function () {
 
   var baseAutocompleteOptions = {
     source: function(request, response, x) {
-      var targetModel = this.element.attr('search-target') || this.element.data('search-target'),
-        query = {'q': request.term};
+      var targetModel = this.element.attr('search-target') || this.element.data('search-target')
+        , query = {'q': request.term}
+        , projectSlug = this.element.data('projectSlug')
+        , url = '/api/'
+        , modelMap
 
-      if (this.element.attr('search-project-id')) {
-        query['project_id'] = this.element.attr('search-project-id');
+      if (projectSlug) {
+        url += ('projects/' + projectSlug + '/');
+      }
+      url += (targetModel + '/');
+
+      modelMap = {
+        topics: function (item) {
+          var val = item.preferred_name;
+          return { id: item.id, value: val, label: truncateChars(val), uri: item.uri };
+        },
+        notes: function (item) {
+          var val = item.title;
+          return { id: item.id, value: val, label: truncateChars(val), uri: item.uri };
+        },
+        documents: function (item) {
+          var val = item.description;
+          return { id: item.id, value: val, label: truncateChars(val), uri: item.uri };
+        }
       }
 
-      switch (targetModel) {
-        case 'topics':
-          $.getJSON('/api/topics/', query, function(data) {
-            response($.map(data, function(item, index) {
-              var val = item.preferred_name;
-              return { id: item.id, value: val, label: truncateChars(val), uri: item.uri };
-            }));
-          });
-          break;
+      if (targetModel) {
+        $.getJSON(url, query, function (data) {
+          response($.map(data.results, modelMap[targetModel]));
+        });
+      } else {
+        $.getJSON('/api/search/', { 'autocomplete': request.term }, function (data) {
+          response($.map(data.results, function (item, index) {
+            var val = item.title
+              , type = item.type.slice(0,1).toUpperCase() + item.type.slice(1)
 
-        case 'notes':
-          $.getJSON('/api/notes/', query, function(data) {
-            response($.map(data, function(item, index) {
-              var val = item.title;
-              return { id: item.id, value: val, label: truncateChars(val), uri: item.uri };
-            }));
-          })
-          break;
-
-        case 'documents':
-          $.getJSON('/api/documents/', query, function(data) {
-            response($.map(data, function(item, index) {
-              var val = item.description;
-              return { id: item.id, value: val, label: truncateChars(val), uri: item.uri };
-            }));
-          })
-          break;
-
-        default:
-          $.getJSON('/api/search/', { 'autocomplete': request.term }, function (data) {
-            response($.map(data.results, function (item, index) {
-              var val = item.title
-                , type = item.type.slice(0,1).toUpperCase() + item.type.slice(1)
-
-              return { type: type, value: val, label: truncateChars(val), uri: item.url }
-            }));
-          });
+            return { type: type, value: val, label: truncateChars(val), uri: item.url }
+          }));
+        });
       }
+
     },
     minLength: 2,
     select: function(event, ui) {
