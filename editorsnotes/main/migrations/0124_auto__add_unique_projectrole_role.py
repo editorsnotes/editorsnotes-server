@@ -9,12 +9,14 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Adding unique constraint on 'ProjectRole', fields ['role']
-        db.create_unique(u'main_projectrole', ['role'])
+        #db.create_unique(u'main_projectrole', ['role'])
+        pass
 
 
     def backwards(self, orm):
         # Removing unique constraint on 'ProjectRole', fields ['role']
-        db.delete_unique(u'main_projectrole', ['role'])
+        #db.delete_unique(u'main_projectrole', ['role'])
+        pass
 
 
     models = {
