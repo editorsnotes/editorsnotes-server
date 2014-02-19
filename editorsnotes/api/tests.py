@@ -4,11 +4,11 @@ import json
 
 from lxml import etree
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.test import TransactionTestCase
 
 from editorsnotes.main import models as main_models
-from editorsnotes.main.management import update_project_permissions
 from editorsnotes.search import en_index, activity_index
 
 def flush_es_indexes():
@@ -58,13 +58,21 @@ TEST_NOTE = {
 BAD_PERMISSION_MESSAGE = u'You do not have permission to perform this action.'
 NO_AUTHENTICATION_MESSAGE = u'Authentication credentials were not provided.'
 
-class TopicAPITestCase(TransactionTestCase):
+class ClearContentTypesTransactionTestCase(TransactionTestCase):
+    """
+    See https://code.djangoproject.com/ticket/10827
+    """
+    def _pre_setup(self, *args, **kwargs):
+        ContentType.objects.clear_cache()
+        super(ClearContentTypesTransactionTestCase, self)._pre_setup(*args, **kwargs)
+
+
+class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
     def setUp(self):
         self.user = main_models.User.objects.get(username='barry')
         self.project = main_models.Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
-        update_project_permissions()
 
     def create_test_topic(self):
         data = TEST_TOPIC
@@ -247,13 +255,12 @@ class TopicAPITestCase(TransactionTestCase):
         self.assertEqual(response.data['detail'], NO_AUTHENTICATION_MESSAGE)
 
 
-class DocumentAPITestCase(TransactionTestCase):
+class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
     def setUp(self):
         self.user = main_models.User.objects.get(username='barry')
         self.project = main_models.Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
-        update_project_permissions()
 
     def create_test_document(self):
         data = TEST_DOCUMENT
@@ -425,13 +432,12 @@ class DocumentAPITestCase(TransactionTestCase):
         self.assertEqual(response.data['detail'], NO_AUTHENTICATION_MESSAGE)
 
 
-class NoteAPITestCase(TransactionTestCase):
+class NoteAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
     def setUp(self):
         self.user = main_models.User.objects.get(username='barry')
         self.project = main_models.Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
-        update_project_permissions()
 
     def create_test_note(self):
         data = TEST_NOTE
