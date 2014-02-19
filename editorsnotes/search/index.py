@@ -29,6 +29,9 @@ class ElasticSearchIndex(object):
         self.es = OrderedResponseElasticSearch(settings.ELASTICSEARCH_URLS)
         if not self.exists():
             self.create()
+            self.created = True
+        else:
+            self.created = False
 
     def get_settings(self):
         return {}
@@ -44,8 +47,6 @@ class ElasticSearchIndex(object):
 
     def create(self):
         created = self.es.create_index(self.name, self.get_settings())
-        if created:
-            self.put_mapping()
         return created
 
     def delete(self):
@@ -90,12 +91,22 @@ class ENIndex(ElasticSearchIndex):
 
     def register(self, model, adapter=None, highlight_fields=None,
                  display_field=None):
+
         if adapter is None:
             doc_type = DocumentTypeAdapter(self.es, self.name, model,
                                            highlight_fields, display_field)
         else:
             doc_type = adapter(self.es, self.name, model)
         self.document_types[model] = doc_type
+
+        if not self.created:
+            existing_types = self.es.get_mapping()[self.name]['mappings']['keys']
+            put_type_mapping = doc_type.type_label not in existing_types
+        else:
+            put_type_mapping = True
+
+        if put_type_mapping:
+            doc_type.put_mapping()
 
     def data_for_object(self, obj):
         doc_type = self.document_types.get(obj.__class__, None)
