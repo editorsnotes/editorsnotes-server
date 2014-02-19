@@ -33,6 +33,10 @@ class ElasticSearchIndex(object):
     def get_settings(self):
         return {}
 
+    def put_mapping(self):
+        "Override to put mappings for inherited indices."
+        pass
+
     def exists(self):
         server_url, _ = self.es.servers.get()
         resp = self.es.session.head(server_url + '/' + self.name)
@@ -40,6 +44,8 @@ class ElasticSearchIndex(object):
 
     def create(self):
         created = self.es.create_index(self.name, self.get_settings())
+        if created:
+            self.put_mapping()
         return created
 
     def delete(self):
@@ -50,6 +56,10 @@ class ENIndex(ElasticSearchIndex):
     def __init__(self):
         super(ENIndex, self).__init__()
         self.document_types = {}
+
+    def put_mapping(self):
+        for doc_type in self.document_types:
+            self.document_types[doc_type].put_mapping()
 
     def get_name(self):
         return settings.ELASTICSEARCH_PREFIX + '-items'
