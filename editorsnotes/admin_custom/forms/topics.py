@@ -16,7 +16,7 @@ class TopicForm(models.ModelForm):
         )
     class Meta:
         model = Topic
-        fields = ('preferred_name', 'topic_type', 'topic_node',)
+        fields = ('preferred_name', 'topic_type',)
         widgets = {
             'topic': forms.HiddenInput()
         }
@@ -25,19 +25,6 @@ class TopicForm(models.ModelForm):
         instance = kwargs.get('instance', None)
         if instance is not None:
             self.fields['topic_type'].initial = instance.topic.type
-            self.fields['topic'] = instance.topic_node_id
-    def clean_topic_node(self):
-        data = self.cleaned_data['topic_node']
-        if getattr(self, 'instance', None):
-            if self.instance.topic_node_id != int(data):
-                raise ValidationError(
-                    'Topic node input can not be changed from this form. '
-                    'To change the topic node, use the merge function.')
-        elif data:
-            if not TopicNode.objects.filter(id=data).exists():
-                msg = 'TopicNode with id {} does not exist.'.format(data)
-                raise ValidationError(msg)
-        return data
 
 AlternateNameFormset = models.inlineformset_factory(
     Topic, AlternateName, fields=('name',), extra=1)
