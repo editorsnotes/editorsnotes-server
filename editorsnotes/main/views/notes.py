@@ -1,3 +1,4 @@
+from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 
@@ -14,6 +15,13 @@ def note(request, note_id, project_slug):
             .prefetch_related('related_topics')
     note = get_object_or_404(qs, id=note_id, project__slug=project_slug)
 
+    o['breadcrumb'] = (
+        (note.project.name, note.project.get_absolute_url()),
+        ("Notes", reverse('all_notes_view',
+                          kwargs={'project_slug': note.project.slug})),
+        (note.title, None),
+    )
+
     o['note'] = note
     o['license'] = note.license or note.project.default_license
     o['history'] = reversion.get_unique_for_object(note)
@@ -26,16 +34,27 @@ def note(request, note_id, project_slug):
     o['can_edit'] = request.user.is_authenticated() and \
             request.user.has_project_perm(o['note'].project, 'main.change_note')
 
+
     return render_to_response(
         'note.html', o, context_instance=RequestContext(request))
 
 def all_notes(request, project_slug=None):
     o = {}
     template = 'all-notes.html'
-
     if project_slug is not None:
         project = get_object_or_404(Project, slug=project_slug)
         o['project'] = project
+        o['breadcrumb'] = (
+            (project.name, project.get_absolute_url()),
+            ('Notes', None),
+        )
+    else:
+        o['breadcrumb'] = (
+            ('Browse', reverse('browse_view')),
+            ('Notes', None),
+        )
+
+
 
     o['filtered'] = False
 

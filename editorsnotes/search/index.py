@@ -29,9 +29,16 @@ class ElasticSearchIndex(object):
         self.es = OrderedResponseElasticSearch(settings.ELASTICSEARCH_URLS)
         if not self.exists():
             self.create()
+            self.created = True
+        else:
+            self.created = False
 
     def get_settings(self):
         return {}
+
+    def put_mapping(self):
+        "Override to put mappings for inherited indices."
+        pass
 
     def exists(self):
         server_url, _ = self.es.servers.get()
@@ -40,6 +47,7 @@ class ElasticSearchIndex(object):
 
     def create(self):
         created = self.es.create_index(self.name, self.get_settings())
+        self.put_mapping()
         return created
 
     def delete(self):
@@ -48,8 +56,11 @@ class ElasticSearchIndex(object):
 
 class ENIndex(ElasticSearchIndex):
     def __init__(self):
-        super(ENIndex, self).__init__()
         self.document_types = {}
+        super(ENIndex, self).__init__()
+
+    def put_mapping(self):
+        self.put_type_mappings()
 
     def get_name(self):
         return settings.ELASTICSEARCH_PREFIX + '-items'
@@ -78,14 +89,30 @@ class ENIndex(ElasticSearchIndex):
             }
         }
 
+    def put_type_mappings(self):
+        existing_types = self.es.get_mapping()\
+                .get(self.name, {})\
+                .get('mappings', {})\
+                .keys()
+
+        unmapped_types = (document_type for document_type in self.document_types
+                          if document_type not in existing_types)
+
+        # TODO: Warn/log when a field's type mapping changes
+        for document_type in unmapped_types:
+            self.document_types[document_type].put_mapping()
+
     def register(self, model, adapter=None, highlight_fields=None,
                  display_field=None):
+
         if adapter is None:
             doc_type = DocumentTypeAdapter(self.es, self.name, model,
                                            highlight_fields, display_field)
         else:
             doc_type = adapter(self.es, self.name, model)
         self.document_types[model] = doc_type
+
+        self.put_type_mappings()
 
     def data_for_object(self, obj):
         doc_type = self.document_types.get(obj.__class__, None)

@@ -1,5 +1,6 @@
 import json
 
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 import reversion
@@ -26,6 +27,23 @@ class DocumentAdminView(BaseAdminView):
     def get_object(self, document_id=None):
         return document_id and get_object_or_404(
             Document, id=document_id, project_id=self.project.id)
+
+    def get_breadcrumb(self):
+        breadcrumbs = (
+            (self.project.name, self.project.get_absolute_url()),
+            ('Documents', reverse('all_documents_view',
+                               kwargs={'project_slug': self.project.slug})),
+        )
+        if self.object is None:
+            breadcrumbs += (
+                ('Add', None),
+            )
+        else:
+            breadcrumbs += (
+                (self.object.as_text(), self.object.get_absolute_url()),
+                ('Edit', None)
+            )
+        return breadcrumbs
 
     def save_object(self, form, formsets):
         obj, action = super(DocumentAdminView, self).save_object(form, formsets)

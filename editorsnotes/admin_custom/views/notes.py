@@ -2,6 +2,7 @@
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -20,6 +21,25 @@ class NoteAdminView(BaseAdminView):
         # forms.TopicAssignmentFormset,
     )
     template_name = 'note_admin.html'
+    def get_object(self, note_id=None):
+        return note_id and get_object_or_404(
+            Note, id=note_id, project_id=self.project.id)
+    def get_breadcrumb(self):
+        breadcrumbs = (
+            (self.project.name, self.project.get_absolute_url()),
+            ('Notes', reverse('all_notes_view',
+                               kwargs={'project_slug': self.project.slug})),
+        )
+        if self.object is None:
+            breadcrumbs += (
+                ('Add', None),
+            )
+        else:
+            breadcrumbs += (
+                (self.object.as_text(), self.object.get_absolute_url()),
+                ('Edit', None)
+            )
+        return breadcrumbs
     def set_additional_object_properties(self, obj, form):
         obj.project = self.project
         return obj
@@ -27,9 +47,6 @@ class NoteAdminView(BaseAdminView):
         form = form_class(**self.get_form_kwargs())
         form.fields['assigned_users'].queryset = self.project.members.all()
         return form
-    def get_object(self, note_id=None):
-        return note_id and get_object_or_404(
-            Note, id=note_id, project_id=self.project.id)
     def save_formset_form(self, form):
         obj = form.save(commit=False)
         obj.note = self.object

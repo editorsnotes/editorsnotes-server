@@ -3,6 +3,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.http import (
     HttpResponseForbidden, HttpResponseRedirect, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render_to_response
@@ -26,6 +27,11 @@ def project_roster(request, project_slug):
             .select_related('roles__group__permissions',
                             'roles__group__users')
     project = get_object_or_404(project_qs, slug=project_slug)
+
+    o['breadcrumb'] = (
+        (project.name, project.get_absolute_url()),
+        ('Roster', None)
+    )
 
     can_view = user.has_project_perm(project, 'main.view_project_roster')
     if not can_view:
@@ -147,6 +153,13 @@ def change_project_roles(request, project_slug):
     o = {}
 
     o['project'] = project = get_object_or_404(Project, slug=project_slug)
+
+    o['breadcrumb'] = (
+        (project.name, project.get_absolute_url()),
+        ('Roster', reverse('admin:main_project_roster_change',
+                           kwargs={'project_slug': project.slug})),
+        ('Roles', None),
+    )
 
     can_view = request.user.has_project_perm(project, 'main.change_project_roster')
     if not can_view:

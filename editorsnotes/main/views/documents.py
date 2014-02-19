@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -9,17 +10,20 @@ from editorsnotes.search import en_index
 
 from ..models import Document, Footnote, Transcript, Topic, CitationNS, Project
 
-def footnote(request, project_slug, document_id, footnote_id):
-    o = {}
-    o['footnote'] = get_object_or_404(Footnote, id=footnote_id)
-    o['thread'] = { 'id': 'footnote-%s' % o['footnote'].id, 
-                    'title': o['footnote'].footnoted_text() }
-    return render_to_response(
-        'footnote.html', o, context_instance=RequestContext(request))
-
 def document(request, project_slug, document_id):
     o = {}
-    o['document'] = get_object_or_404(Document, id=document_id)
+
+    qs = Document.objects.select_related('project')
+    o['document'] = get_object_or_404(Document, id=document_id,
+                                      project__slug=project_slug)
+
+    o['breadcrumb'] = (
+        (o['document'].project.name, o['document'].project.get_absolute_url()),
+        ('Documents', reverse('all_documents_view',
+                              kwargs={'project_slug': o['document'].project.slug})),
+        (o['document'].as_text(), None)
+    )
+
     o['topics'] = (
         [ ta.topic for ta in o['document'].related_topics.all() ] +
         [ c.content_object for c in o['document'].citations.filter(
@@ -45,6 +49,15 @@ def transcript(request, project_slug, document_id):
     transcript = get_object_or_404(Transcript, document_id=document_id)
     return HttpResponse(transcript)
 
+def footnote(request, project_slug, document_id, footnote_id):
+    o = {}
+    o['footnote'] = get_object_or_404(Footnote, id=footnote_id)
+    o['thread'] = { 'id': 'footnote-%s' % o['footnote'].id, 
+                    'title': o['footnote'].footnoted_text() }
+    return render_to_response(
+        'footnote.html', o, context_instance=RequestContext(request))
+
+
 def all_documents(request, project_slug=None):
     o = {}
     template = 'all-documents.html'
@@ -53,6 +66,15 @@ def all_documents(request, project_slug=None):
     if project_slug is not None:
         project = get_object_or_404(Project, slug=project_slug)
         o['project'] = project
+        o['breadcrumb'] = (
+            (project.name, project.get_absolute_url()),
+            ('Documents', None),
+        )
+    else:
+        o['breadcrumb'] = (
+            ('Browse', reverse('browse_view')),
+            ('Documents', None),
+        )
 
     if request.GET.get('filter'):
         template = 'filtered-documents.html'

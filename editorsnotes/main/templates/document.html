@@ -50,18 +50,6 @@
 
 {% block content %}
 
-    <ul class="breadcrumb-top">
-      <li>
-        <a href="{% url "project_view" project_slug=document.project.slug %}">{{ document.project }}</a>
-        <span class="divider">&gt;</span>
-      </li>
-      <li>
-        <a href="{% url "all_documents_view" project_slug=document.project.slug %}">Documents</a>
-        <span class="divider">&gt;</span>
-      </li>
-      <li class="active">{{ document.description|as_text|truncatechars:80 }}</li>
-    </ul>
-
     <header>
       <h2>{{ document.description|as_html|typogrify }}</h2>
       <div class="related-topics">

@@ -79,7 +79,11 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
     def get_context_data(self, **kwargs):
         context = super(BaseAdminView, self).get_context_data(**kwargs)
         context['project'] = self.project
+        context['breadcrumb'] = self.get_breadcrumb()
         return context
+    def get_breadcrumb(self):
+        "Override this method with (label, url) pairs to generate page breadcrumb."
+        return ()
     def get(self, request, *args, **kwargs):
         self.object = self.get_object(**kwargs)
         self.check_perms()

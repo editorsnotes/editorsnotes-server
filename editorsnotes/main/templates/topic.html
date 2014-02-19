@@ -16,18 +16,6 @@
 
 {% block content %}
 
-    <ul class="breadcrumb-top">
-      <li>
-        <a href="{% url "project_view" project_slug=project.slug %}">{{ project }}</a>
-        <span class="divider">&gt;</span>
-      </li>
-      <li>
-        <a href="{% url "all_topics_view" project_slug=project.slug %}">Topics</a>
-        <span class="divider">&gt;</span>
-      </li>
-      <li class="active">{{ topic.preferred_name }}</li>
-    </ul>
-
     <header>
       <h2 id="topic-name">{{ topic.preferred_name }}</h2>
       <div class="related-topics">

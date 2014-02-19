@@ -27,25 +27,18 @@ class DocumentAdapter(DocumentTypeAdapter):
         })
         return mapping
 
-class TopicAdapter(DocumentTypeAdapter):
-    type_label = 'topic'
-    display_field = 'serialized.preferred_name'
-    highlight_fields = ('serialized.preferred_name',
-                        'serialized.summary')
-    def get_mapping(self):
-        mapping = super(TopicAdapter, self).get_mapping()
-        return mapping
-    def get_serializer(self):
-        return TopicSerializer
-
 en_index = ENIndex()
 en_index.register(main_models.Note,
                   display_field='serialized.title',
                   highlight_fields=('serialized.title',
                                     'serialized.content',
                                     'serialized.sections'))
+en_index.register(main_models.Topic,
+                  display_field='serialized.preferred_name',
+                  highlight_fields=('serialized.preferred_name',
+                                    'serialized.summary'))
+
 en_index.register(main_models.Document, adapter=DocumentAdapter)
-en_index.register(main_models.Topic, adapter=TopicAdapter)
 
 activity_index = ActivityIndex()
 
