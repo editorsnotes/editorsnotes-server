@@ -55,7 +55,7 @@ class User(AbstractUser, URLAccessible):
 
         I thought about implementing this in an authentication backend, where a
         perm would be `{projectslug}-{app}.{perm}` instead of the typical
-        `{app}.{perm}`, but this is more explicit. If we ever decide to role
+        `{app}.{perm}`, but this is more explicit. If we ever decide to roll
         this UserProfile into a custom User model, it would make sense to move
         this method to a custom backend.
         """
