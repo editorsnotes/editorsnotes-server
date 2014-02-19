@@ -100,7 +100,7 @@ class ENIndex(ElasticSearchIndex):
         self.document_types[model] = doc_type
 
         if not self.created:
-            existing_types = self.es.get_mapping()[self.name]['mappings']['keys']
+            existing_types = self.es.get_mapping()[self.name]['mappings'].keys()
             put_type_mapping = doc_type.type_label not in existing_types
         else:
             put_type_mapping = True
