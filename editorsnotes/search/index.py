@@ -47,6 +47,7 @@ class ElasticSearchIndex(object):
 
     def create(self):
         created = self.es.create_index(self.name, self.get_settings())
+        self.put_mapping()
         return created
 
     def delete(self):
@@ -55,12 +56,11 @@ class ElasticSearchIndex(object):
 
 class ENIndex(ElasticSearchIndex):
     def __init__(self):
-        super(ENIndex, self).__init__()
         self.document_types = {}
+        super(ENIndex, self).__init__()
 
     def put_mapping(self):
-        for doc_type in self.document_types:
-            self.document_types[doc_type].put_mapping()
+        self.put_type_mappings()
 
     def get_name(self):
         return settings.ELASTICSEARCH_PREFIX + '-items'
@@ -89,6 +89,19 @@ class ENIndex(ElasticSearchIndex):
             }
         }
 
+    def put_type_mappings(self):
+        existing_types = self.es.get_mapping()\
+                .get(self.name, {})\
+                .get('mappings', {})\
+                .keys()
+
+        unmapped_types = (document_type for document_type in self.document_types
+                          if document_type not in existing_types)
+
+        # TODO: Warn/log when a field's type mapping changes
+        for document_type in unmapped_types:
+            self.document_types[document_type].put_mapping()
+
     def register(self, model, adapter=None, highlight_fields=None,
                  display_field=None):
 
@@ -99,14 +112,7 @@ class ENIndex(ElasticSearchIndex):
             doc_type = adapter(self.es, self.name, model)
         self.document_types[model] = doc_type
 
-        if not self.created:
-            existing_types = self.es.get_mapping()[self.name]['mappings'].keys()
-            put_type_mapping = doc_type.type_label not in existing_types
-        else:
-            put_type_mapping = True
-
-        if put_type_mapping:
-            doc_type.put_mapping()
+        self.put_type_mappings()
 
     def data_for_object(self, obj):
         doc_type = self.document_types.get(obj.__class__, None)
