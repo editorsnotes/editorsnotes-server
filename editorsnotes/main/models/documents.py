@@ -82,7 +82,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
     def validate_unique(self, exclude=None):
         super(Document, self).validate_unique(exclude)
         qs = self.__class__.objects.filter(
-            description_digest=self.description_digest,
+            description_digest=Document.hash_description(self.description),
             project_id=self.project.id)
         if self.id:
             qs = qs.exclude(id=self.id)
@@ -102,9 +102,6 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         description_stripped = Document.strip_description(self.description)
         if not len(description_stripped):
             raise ValidationError({'description': [u'Field required.']})
-    def clean(self):
-        super(Document, self).clean()
-        self.description_digest = Document.hash_description(self.description)
     @property
     def transcript(self):
         try:
