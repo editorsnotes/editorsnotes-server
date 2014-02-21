@@ -319,7 +319,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['description'],
-                         u'A document with this description already exists.')
+                         [u'Document with this description already exists.'])
 
     def test_document_api_list(self):
         """
