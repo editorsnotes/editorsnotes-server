@@ -148,6 +148,20 @@ class DocumentTestCase(TestCase):
         self.assertRaises(ValidationError,
                           main_models.Document(description='&emdash;').clean_fields)
 
+    def test_document_affiliation(self):
+        self.assertEqual(self.document.get_affiliation(), self.project)
+
+    def test_has_transcript(self):
+        self.assertFalse(self.document.has_transcript())
+
+        transcript = main_models.Transcript.objects.create(
+            document_id=self.document.id, creator_id=self.user.id,
+            last_updater_id=self.user.id, content='<div>nothing</div>')
+        updated_document = main_models.Document.objects.get(id=self.document.id)
+        self.assertTrue(updated_document.has_transcript())
+        self.assertEqual(updated_document.transcript, transcript)
+
+
 class NoteTransactionTestCase(TransactionTestCase):
     fixtures = ['projects.json']
     def setUp(self):
