@@ -136,6 +136,18 @@ class DocumentTestCase(TestCase):
     # TODO: Make sure hashed topic descriptions can be retrieved in
     # elasticsearch
 
+    def test_empty_description(self):
+        self.assertRaises(ValidationError,
+                          main_models.Document(description='').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description=' ').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description=' .').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description='<div> .</div>').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description='&emdash;').clean_fields)
+
 class NoteTransactionTestCase(TransactionTestCase):
     fixtures = ['projects.json']
     def setUp(self):

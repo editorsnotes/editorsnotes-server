@@ -68,13 +68,16 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
     def as_text(self):
         return utils.xhtml_to_text(self.description)
     @staticmethod
-    def hash_description(description):
+    def strip_description(description):
         description_str = etree.tostring(description) \
                 if isinstance(description, html.HtmlElement) \
                 else description
-        string_to_hash = ''.join(
+        return ''.join(
             char for char in strip_entities(strip_tags(description_str))
-            if unicodedata.category(char)[0] in 'LNZ').lower()
+            if unicodedata.category(char)[0] in 'LNZ')
+    @staticmethod
+    def hash_description(description):
+        string_to_hash = Document.strip_description(description).lower()
         return md5(string_to_hash).hexdigest()
     def validate_unique(self, exclude=None):
         super(Document, self).validate_unique(exclude)
@@ -92,6 +95,13 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         return ('document_view', [str(self.project.slug), str(self.id)])
     def get_affiliation(self):
         return self.project
+    def clean_fields(self, exclude=None):
+        super(Document, self).clean_fields(exclude)
+        if exclude and 'description' in exclude:
+            return
+        description_stripped = Document.strip_description(self.description)
+        if not len(description_stripped):
+            raise ValidationError({'description': [u'Field required.']})
     def clean(self):
         super(Document, self).clean()
         self.description_digest = Document.hash_description(self.description)
