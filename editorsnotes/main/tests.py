@@ -3,9 +3,10 @@
 import unittest
 
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.test import TestCase, TransactionTestCase
-from lxml import etree
+from lxml import etree, html
 
 import models as main_models
 import utils
@@ -43,6 +44,23 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEquals('J', columns[1][0]['first_letter'])
         self.assertEquals('S', columns[2][0]['first_letter'])
         self.assertEquals('Z', columns[2][7]['first_letter'])
+    def test_description_digest(self):
+        _hash = main_models.Document.hash_description
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'<div>Prison Memoirs of an Anarchist</div>'))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(html.fragment_fromstring(u'<div>Prison Memoirs of an Anarchist</div>')))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'Prison Memoirs of an Anarchist&nbsp;'))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'Prison Memoirs of an Anarchist.'))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'prison memoirs of an anarchist'))
 
 def create_test_user():
     user = main_models.User(username='testuser', is_staff=True, is_superuser=True)
@@ -90,6 +108,33 @@ class NoteTestCase(TestCase):
         self.assertEquals(1, len(note.related_topics.all()))
         self.assertEquals(1, len(topic.assignments.all()))
         self.assertEquals(topic, note.related_topics.all()[0].topic)
+
+class DocumentTestCase(TestCase):
+    fixtures = ['projects.json']
+    def setUp(self):
+        self.project = main_models.Project.objects.get(slug='emma')
+        self.user = self.project.members.all()[0]
+        self.document_kwargs = {
+            'description': u'<div>My Disillusionment in Russia</div>',
+            'project_id': self.project.id,
+            'creator_id': self.user.id,
+            'last_updater_id': self.user.id
+        }
+        self.document = main_models.Document.objects.create(**self.document_kwargs)
+
+    def test_hash_description(self):
+        self.assertEqual(self.document.description_digest,
+                         main_models.Document.hash_description(self.document.description))
+
+    def test_duplicate_descriptions(self):
+        data = self.document_kwargs.copy()
+        data['description'] = u'“My Disillusionment in Russia”'
+        test_document = main_models.Document(**data)
+        self.assertRaises(ValidationError, test_document.full_clean)
+        self.assertRaises(IntegrityError, test_document.save)
+
+    # TODO: Make sure hashed topic descriptions can be retrieved in
+    # elasticsearch
 
 class NoteTransactionTestCase(TransactionTestCase):
     fixtures = ['projects.json']
