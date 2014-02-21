@@ -7,7 +7,8 @@ from rest_framework.fields import Field
 
 from editorsnotes.main.models.topics import Topic, TopicNode
 
-from .base import RelatedTopicSerializerMixin, ProjectSlugField, URLField
+from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+                   ProjectSlugField, URLField)
 
 class TopicNodeSerializer(serializers.ModelSerializer):
     name = Field(source='_preferred_name')
@@ -37,7 +38,8 @@ class TopicNodeSerializer(serializers.ModelSerializer):
             for topic in obj.project_topics.select_related('project')]
 
 
-class TopicSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
+class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+                      serializers.ModelSerializer):
     id = Field(source='topic_node_id')
     type = Field(source='topic_node.type')
     url = URLField()

@@ -12,9 +12,6 @@ from ..serializers.notes import (
 class NoteList(CreateReversionMixin, ElasticSearchListMixin, BaseListAPIView):
     model = Note
     serializer_class = MinimalNoteSerializer
-    def pre_save(self, obj):
-        super(NoteList, self).pre_save(obj)
-        obj.project = self.request.project
 
 class NoteDetail(CreateReversionMixin, ElasticSearchRetrieveMixin,
                  BaseDetailView):

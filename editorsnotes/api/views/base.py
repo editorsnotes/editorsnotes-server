@@ -72,32 +72,35 @@ class ElasticSearchListMixin(ListModelMixin):
         return Response(data)
 
 
-class ProjectSpecificAPIView(APIView):
-    """
-    Base API view for project-specific views.
-
-    Sets request.project to the project being accessed, and includes the
-    ProjectSpecificPermissions class by default.
-    """
-    permission_classes = (ProjectSpecificPermissions,)
-    parser_classes = (JSONParser,)
-    renderer_classes = (JSONRenderer,)
+class ProjectSpecificMixin(object):
     def initialize_request(self, request, *args, **kwargs):
-        request = super(ProjectSpecificAPIView, self)\
+        request = super(ProjectSpecificMixin, self)\
                 .initialize_request(request, *args, **kwargs)
         request._request.project = Project.objects.get(
             slug=kwargs.pop('project_slug'))
         return request
+    def get_serializer_context(self):
+        context = super(ProjectSpecificMixin, self).get_serializer_context()
+        context['project'] = self.request.project
+        return context
 
-class BaseListAPIView(ListCreateAPIView, ProjectSpecificAPIView):
+class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
     paginate_by = 50
     paginate_by_param = 'page_size'
+    permission_classes = (ProjectSpecificPermissions,)
+    parser_classes = (JSONParser,)
+    renderer_classes = (JSONRenderer,)
     def pre_save(self, obj):
         obj.creator = obj.last_updater = self.request.user
+        super(BaseListAPIView, self).pre_save(obj)
 
-class BaseDetailView(RetrieveUpdateDestroyAPIView, ProjectSpecificAPIView):
+class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
+    permission_classes = (ProjectSpecificPermissions,)
+    parser_classes = (JSONParser,)
+    renderer_classes = (JSONRenderer,)
     def pre_save(self, obj):
         obj.last_updater = self.request.user
+        super(BaseDetailView, self).pre_save(obj)
 
 @api_view(('GET',))
 def root(request):

@@ -6,7 +6,9 @@ from rest_framework.relations import RelatedField
 
 from editorsnotes.main.models import Document
 
-from .base import RelatedTopicSerializerMixin, URLField, ProjectSlugField
+from .base import (
+    RelatedTopicSerializerMixin, ProjectSpecificItemMixin, URLField,
+    ProjectSlugField)
 
 class ZoteroField(serializers.WritableField):
     def to_native(self, zotero_data):
@@ -15,7 +17,7 @@ class ZoteroField(serializers.WritableField):
     #def from_native(self, data):
         #return data and json.dumps(data)
 
-class DocumentSerializer(RelatedTopicSerializerMixin,
+class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                          serializers.ModelSerializer):
     project = ProjectSlugField()
     zotero_data = ZoteroField(required=False)

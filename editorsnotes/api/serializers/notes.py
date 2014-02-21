@@ -10,8 +10,8 @@ from editorsnotes.main.models import Note, TextNS, CitationNS, NoteReferenceNS
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (
-    RelatedTopicSerializerMixin, URLField, ProjectSlugField,
-    ReversionSerializerMixin, UpdatersField)
+    ProjectSpecificItemMixin, RelatedTopicSerializerMixin, URLField,
+    ProjectSlugField, ReversionSerializerMixin, UpdatersField)
 
 
 class HyperlinkedProjectItemField(HyperlinkedRelatedField):
@@ -136,7 +136,7 @@ class NoteStatusField(serializers.WritableField):
         return status_choice[0]
 
 class NoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
-                     serializers.ModelSerializer):
+                     ProjectSpecificItemMixin, serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField()
     updaters = UpdatersField()
@@ -149,7 +149,7 @@ class NoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
                   'related_topics', 'content', 'status', 'section_ordering', 'sections',)
 
 class MinimalNoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
-                            serializers.ModelSerializer):
+                            ProjectSpecificItemMixin, serializers.ModelSerializer):
     status = NoteStatusField()
     class Meta:
         model = Note

@@ -19,17 +19,10 @@ class TopicNodeDetail(RetrieveAPIView):
 class TopicList(ElasticSearchListMixin, BaseListAPIView):
     model = Topic
     serializer_class = TopicSerializer
-    def pre_save(self, obj):
-        super(TopicList, self).pre_save(obj)
-        obj.project = self.request.project
 
 class TopicDetail(BaseDetailView, CreateModelMixin):
     model = Topic
     serializer_class = TopicSerializer
-    def pre_save(self, obj):
-        super(TopicDetail, self).pre_save(obj)
-        if not obj.id:
-            obj.project = self.request.project
     def get_object(self, queryset=None):
         filtered_queryset = self.filter_queryset(self.get_queryset())
         return get_object_or_404(filtered_queryset,

@@ -4,12 +4,9 @@ from .base import (BaseListAPIView, BaseDetailView, CreateReversionMixin,
                    ElasticSearchRetrieveMixin, ElasticSearchListMixin)
 from ..serializers import DocumentSerializer
 
-class DocumentList(BaseListAPIView, ElasticSearchListMixin, CreateReversionMixin):
+class DocumentList(CreateReversionMixin, ElasticSearchListMixin, BaseListAPIView):
     model = Document
     serializer_class = DocumentSerializer
-    def pre_save(self, obj):
-        super(DocumentList, self).pre_save(obj)
-        obj.project = self.request.project
 
 class DocumentDetail(BaseDetailView, CreateReversionMixin):
     model = Document
