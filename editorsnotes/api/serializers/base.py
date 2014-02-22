@@ -59,18 +59,6 @@ class TopicAssignmentField(RelatedField):
             return
         into[field_name] = data.get(field_name, [])
 
-class ReversionSerializerMixin(object):
-    def save_object(self, *args, **kwargs):
-        _save_object = super(ReversionSerializerMixin, self).save_object
-        if self.context.get('create_revision', False):
-            with reversion.create_revision():
-                saved = _save_object(*args, **kwargs)
-                reversion.set_user(self.context['request'].user)
-                reversion.add_meta(RevisionProject, project=self.context['request'].project)
-        else:
-            saved = _save_object(*args, **kwargs)
-        return saved
-
 class RelatedTopicSerializerMixin(object):
     def get_default_fields(self):
         self.field_mapping

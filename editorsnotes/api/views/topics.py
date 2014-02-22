@@ -5,7 +5,8 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from editorsnotes.main.models import Topic, TopicNode
 
-from .base import BaseListAPIView, BaseDetailView, ElasticSearchListMixin
+from .base import (BaseListAPIView, BaseDetailView, ElasticSearchListMixin,
+                   create_revision_on_methods)
 from ..serializers.topics import TopicSerializer, TopicNodeSerializer
 
 class TopicNodeList(ListAPIView):
@@ -20,6 +21,7 @@ class TopicList(ElasticSearchListMixin, BaseListAPIView):
     model = Topic
     serializer_class = TopicSerializer
 
+@create_revision_on_methods('create')
 class TopicDetail(BaseDetailView, CreateModelMixin):
     model = Topic
     serializer_class = TopicSerializer

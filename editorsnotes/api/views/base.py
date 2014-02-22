@@ -3,28 +3,39 @@ from collections import OrderedDict
 from django.conf import settings
 
 from rest_framework.decorators import api_view
-from rest_framework.generics import (
-    ListCreateAPIView, RetrieveUpdateDestroyAPIView, GenericAPIView)
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin
 from rest_framework.parsers import JSONParser
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.views import APIView
+import reversion
 
 from editorsnotes.main.models import Project
+from editorsnotes.main.models.auth import RevisionProject
 from editorsnotes.search import en_index
 
 from ..filters import (ElasticSearchFilterBackend,
                        ElasticSearchAutocompleteFilterBackend)
 from ..permissions import ProjectSpecificPermissions
 
-class CreateReversionMixin(object):
-    def get_serializer_context(self):
-        context = super(CreateReversionMixin, self).get_serializer_context()
-        context['create_revision'] = True
-        return context
+
+def create_revision_on_methods(*methods):
+    def make_revision_wrapper(fn):
+        def wrapped(self, request, *args, **kwargs):
+            with reversion.create_revision():
+                ret = fn(self, request, *args, **kwargs)
+                reversion.set_user(request.user)
+                reversion.add_meta(RevisionProject, project=request.project)
+            return ret
+        return wrapped
+    def klass_wrapper(klass):
+        for method_name in methods:
+            old_method = getattr(klass, method_name)
+            wrapped = make_revision_wrapper(old_method)
+            setattr(klass, method_name, wrapped)
+        return klass
+    return klass_wrapper
 
 class ElasticSearchRetrieveMixin(RetrieveModelMixin):
     def retrieve(self, request, *args, **kwargs):
@@ -84,6 +95,7 @@ class ProjectSpecificMixin(object):
         context['project'] = self.request.project
         return context
 
+@create_revision_on_methods('create')
 class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
     paginate_by = 50
     paginate_by_param = 'page_size'
@@ -94,6 +106,7 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
         obj.creator = obj.last_updater = self.request.user
         super(BaseListAPIView, self).pre_save(obj)
 
+@create_revision_on_methods('update', 'destroy')
 class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)

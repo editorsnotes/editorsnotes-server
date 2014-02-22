@@ -1,20 +1,21 @@
 from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
+import reversion
 
 from editorsnotes.main.models import Note, NoteSection
+from editorsnotes.main.models.auth import RevisionProject
 
-from .base import (BaseListAPIView, BaseDetailView, CreateReversionMixin,
-                   ElasticSearchRetrieveMixin, ElasticSearchListMixin)
+from .base import (BaseListAPIView, BaseDetailView, ElasticSearchRetrieveMixin,
+                   ElasticSearchListMixin)
 from ..serializers.notes import (
     MinimalNoteSerializer, NoteSerializer, _serializer_from_section_type)
 
-class NoteList(CreateReversionMixin, ElasticSearchListMixin, BaseListAPIView):
+class NoteList(ElasticSearchListMixin, BaseListAPIView):
     model = Note
     serializer_class = MinimalNoteSerializer
 
-class NoteDetail(CreateReversionMixin, ElasticSearchRetrieveMixin,
-                 BaseDetailView):
+class NoteDetail(ElasticSearchRetrieveMixin, BaseDetailView):
     model = Note
     serializer_class = NoteSerializer
     def post(self, request, *args, **kwargs):
@@ -33,13 +34,16 @@ class NoteDetail(CreateReversionMixin, ElasticSearchRetrieveMixin,
             serializer.object.note = self.get_object()
             serializer.object.creator = request.user
             serializer.object.last_updater = request.user
-            serializer.save()
+            with reversion.create_revision():
+                serializer.save()
+                reversion.set_user(request.user)
+                reversion.add_meta(RevisionProject, project=request.project)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NoteSectionDetail(BaseDetailView, CreateReversionMixin):
+class NoteSectionDetail(BaseDetailView):
     model = NoteSection
     def get_object(self, queryset=None):
         queryset = self.get_queryset()

@@ -9,9 +9,8 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Note, TextNS, CitationNS, NoteReferenceNS
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
-from .base import (
-    ProjectSpecificItemMixin, RelatedTopicSerializerMixin, URLField,
-    ProjectSlugField, ReversionSerializerMixin, UpdatersField)
+from .base import (ProjectSpecificItemMixin, RelatedTopicSerializerMixin,
+                   URLField, ProjectSlugField, UpdatersField)
 
 
 class HyperlinkedProjectItemField(HyperlinkedRelatedField):
@@ -27,16 +26,14 @@ class HyperlinkedProjectItemField(HyperlinkedRelatedField):
         except NoReverseMatch:
             raise Exception('Could not resolve URL for document.')
 
-class TextNSSerializer(ReversionSerializerMixin, 
-                       serializers.ModelSerializer):
+class TextNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
     class Meta:
         model = TextNS
         fields = ('section_id', 'section_type', 'content',)
 
-class CitationNSSerializer(ReversionSerializerMixin,
-                           serializers.ModelSerializer):
+class CitationNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     note_id = serializers.Field(source='note_id')
     section_type = serializers.Field(source='section_type_label')
@@ -49,8 +46,7 @@ class CitationNSSerializer(ReversionSerializerMixin,
     def get_document_description(self, obj):
         return etree.tostring(obj.document.description)
 
-class NoteReferenceNSSerializer(ReversionSerializerMixin,
-                                serializers.ModelSerializer):
+class NoteReferenceNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
     section_type = serializers.Field(source='section_type_label')
     note_reference = HyperlinkedProjectItemField(view_name='api:api-notes-detail')
@@ -135,8 +131,8 @@ class NoteStatusField(serializers.WritableField):
                                               'open, closed, or hibernating.')
         return status_choice[0]
 
-class NoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
-                     ProjectSpecificItemMixin, serializers.ModelSerializer):
+class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+                     serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField()
     updaters = UpdatersField()
@@ -148,8 +144,8 @@ class NoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
         fields = ('id', 'title', 'url', 'project', 'last_updated', 'updaters',
                   'related_topics', 'content', 'status', 'section_ordering', 'sections',)
 
-class MinimalNoteSerializer(ReversionSerializerMixin, RelatedTopicSerializerMixin,
-                            ProjectSpecificItemMixin, serializers.ModelSerializer):
+class MinimalNoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+                            serializers.ModelSerializer):
     status = NoteStatusField()
     class Meta:
         model = Note
