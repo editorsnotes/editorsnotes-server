@@ -14,6 +14,7 @@ from django.db import models
 from django.utils.html import escape, strip_tags, strip_entities
 from django.utils.safestring import mark_safe
 from lxml import etree, html
+import reversion
 
 from editorsnotes.djotero.models import ZoteroItem
 
@@ -204,6 +205,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
         self.description_digest = Document.hash_description(self.description)
         super(Document, self).save(*args, **kwargs)
+reversion.register(Document)
 
 class TranscriptManager(models.Manager):
     # Include related document in default query.
@@ -241,6 +243,7 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible, ProjectPermiss
         return sorted(self.footnotes.all(),
                       key=lambda fn: fn_ids.index(fn.id)
                       if fn.id in fn_ids else 9999)
+reversion.register(Transcript)
 
 class Footnote(LastUpdateMetadata, Administered, URLAccessible,
                ProjectPermissionsMixin):
@@ -281,6 +284,7 @@ class Footnote(LastUpdateMetadata, Administered, URLAccessible,
         self.remove_self_from(self.transcript)
         self.transcript.save()
         super(Footnote, self).delete(*args, **kwargs)
+reversion.register(Footnote)
 
 class Scan(CreationMetadata, ProjectPermissionsMixin):
     u"""
@@ -296,6 +300,7 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
         return u'Scan for %s (order: %s)' % (self.document, self.ordering)
     def get_affiliation(self):
         return self.document.project
+reversion.register(Scan)
 
 class DocumentLink(CreationMetadata):
     u"""
@@ -308,6 +313,7 @@ class DocumentLink(CreationMetadata):
         app_label = 'main'
     def __unicode__(self):
         return self.url
+reversion.register(DocumentLink)
 
 class DocumentMetadata(CreationMetadata):
     u"""

@@ -219,6 +219,7 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         self.save()
 
         return target
+reversion.register(Topic)
 
 class AlternateName(CreationMetadata, ProjectPermissionsMixin):
     topic = models.ForeignKey(Topic, related_name='alternate_names')
