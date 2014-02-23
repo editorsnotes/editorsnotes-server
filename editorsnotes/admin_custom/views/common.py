@@ -109,9 +109,27 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
         kwargs = super(ModelFormMixin, self).get_form_kwargs()
         if hasattr(self, 'object') and self.object:
             kwargs.update({'instance': self.object})
+        else:
+            has_project_field = all([
+                hasattr(self.model, 'project'),
+                hasattr(self.model.project, 'field'),
+                hasattr(self.model.project.field, 'related'),
+                self.model.project.field.related.parent_model == Project
+            ])
+            if has_project_field:
+                # Then create an instance with the project already set
+                instance = self.model(project=self.project)
+                kwargs.update({ 'instance': instance })
+
         return kwargs
 
-    def set_additional_object_properties(self, obj):
+    def set_additional_object_properties(self, obj, form):
+        """
+        This must be called for additional object properties which must be set
+        but are not edited by the user. A common example is an item's last
+        updater or creator. It is called *after* the object instance is already
+        cleaned.
+        """
         return obj
 
     def save_object(self, form, formsets):
@@ -135,7 +153,6 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
 
             self.save_formsets(formsets)
             form.save_m2m()
-
         return redirect(self.get_success_url())
     def form_invalid(self, form, formsets):
         return self.render_to_response(

@@ -37,19 +37,28 @@ class TopicAdminView(BaseAdminView):
                 ('Edit', None)
             )
         return breadcrumbs
+    def get_form_kwargs(self):
+        """
+        Set topic node if it's been included in the request. Needs to be set now
+        so that it can be validated unique within a project.
+        """
+        kwargs = super(TopicAdminView, self).get_form_kwargs()
+        instance = kwargs.get('instance', None)
+
+        if instance and not instance.id and 'topic_node' in self.request.GET:
+            topic_node_id = self.request.GET.get('topic_node')
+            topic_node = get_object_or_404(TopicNode, id=topic_node_id)
+            instance.topic_node = topic_node
+
+        return kwargs
     def set_additional_object_properties(self, obj, form):
-        if not obj.id:
-            existing_node_id = self.request.GET.get('topic_node')
-            if existing_node_id:
-                topic_node = get_object_or_404(TopicNode, id=existing_node_id)
-            else:
-                topic_node = TopicNode.objects.create(
-                    _preferred_name=obj.preferred_name,
-                    type=form.cleaned_data['topic_type'],
-                    creator=self.request.user,
-                    last_updater=self.request.user)
-            obj.topic_node_id = topic_node.id
-            obj.project_id = self.project.id
+        if not obj.id and not obj.topic_node_id:
+            topic_node = TopicNode.objects.create(
+                _preferred_name=obj.preferred_name,
+                type=form.cleaned_data['topic_type'],
+                creator=self.request.user,
+                last_updater=self.request.user)
+            obj.topic_node = topic_node
         return obj
     def save_citation_formset_form(self, form):
         obj = form.save(commit=False)

@@ -106,7 +106,7 @@ class TranscriptAdminView(BaseAdminView):
         self.document = get_object_or_404(
             Document, id=document_id, project_id=self.project.id)
         return self.document.transcript if self.document.has_transcript() else None
-    def set_additional_object_properties(self, obj):
+    def set_additional_object_properties(self, obj, form):
         obj.document = self.document
         return obj
     def save_object(self, form, formsets):
