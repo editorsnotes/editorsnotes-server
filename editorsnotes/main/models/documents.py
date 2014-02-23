@@ -103,6 +103,12 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         description_stripped = Document.strip_description(self.description)
         if not len(description_stripped):
             raise ValidationError({'description': [u'Field required.']})
+
+        # Remove <br/> tags which have nothing after them 
+        stray_brs = (el for el in self.description.iterdescendants(tag='br')
+                     if el.getnext() == None)
+        for br_tag in stray_brs:
+            br_tag.getparent().remove(br_tag)
     @property
     def transcript(self):
         try:

@@ -148,6 +148,15 @@ class DocumentTestCase(TestCase):
         self.assertRaises(ValidationError,
                           main_models.Document(description='&emdash;').clean_fields)
 
+    def test_stray_br_stripped(self):
+        "<br/> tags with nothing after them should be removed."
+        excluded_fields = [f.name for f in main_models.Document._meta.fields
+                           if f.name != u'description']
+
+        d = main_models.Document(description='<div>annoying browser<br/></div>')
+        d.clean_fields(exclude=excluded_fields)
+        self.assertEquals('<div>annoying browser</div>', etree.tostring(d.description))
+
     def test_document_affiliation(self):
         self.assertEqual(self.document.get_affiliation(), self.project)
 
