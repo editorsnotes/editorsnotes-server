@@ -118,8 +118,8 @@ class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
 @api_view(('GET',))
 def root(request):
     return Response({
-        'auth-token': reverse('obtain-auth-token'),
-        'notes': reverse('api-notes-list'),
-        'topics': reverse('api-topics-list'),
-        'documents': reverse('api-documents-list')
+        'auth-token': reverse('api:obtain-auth-token'),
+        'topics': reverse('api:api-topic-nodes-list'),
+        #'notes': reverse('api:api-notes-list'),
+        #'documents': reverse('api:api-documents-list')
     })
