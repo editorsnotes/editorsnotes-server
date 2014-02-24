@@ -94,8 +94,8 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
         return super(BaseAdminView, self).post(request, *args, **kwargs)
     def get_default_perms(self):
         opts = self.model._meta
-        perm = opts.get_add_permission if self.object is None \
-                else opts.get_change_permission()
+        add_action = self.object is None or not self.object.id
+        perm = opts.get_add_permission() if add_action else opts.get_change_permission()
         return ['{}.{}'.format(opts.app_label, perm)]
     def check_perms(self):
         perms = getattr(self, 'permissions', self.get_default_perms())
