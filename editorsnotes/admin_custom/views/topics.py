@@ -44,12 +44,14 @@ class TopicAdminView(BaseAdminView):
         """
         kwargs = super(TopicAdminView, self).get_form_kwargs()
         instance = kwargs.get('instance', None)
-
         if instance and not instance.id and 'topic_node' in self.request.GET:
             topic_node_id = self.request.GET.get('topic_node')
             topic_node = get_object_or_404(TopicNode, id=topic_node_id)
             instance.topic_node = topic_node
-
+            if 'initial' not in kwargs:
+                kwargs['initial'] = {}
+            kwargs['initial']['preferred_name'] = topic_node.preferred_name
+            kwargs['initial']['topic_type'] = topic_node.type
         return kwargs
     def set_additional_object_properties(self, obj, form):
         if not obj.id and not obj.topic_node_id:

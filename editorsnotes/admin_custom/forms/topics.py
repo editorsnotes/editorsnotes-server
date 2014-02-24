@@ -20,11 +20,6 @@ class TopicForm(models.ModelForm):
         widgets = {
             'topic': forms.HiddenInput()
         }
-    def __init__(self, *args, **kwargs):
-        super(TopicForm, self).__init__(*args, **kwargs)
-        instance = kwargs.get('instance', None)
-        if instance is not None and instance.topic_node_id is not None:
-            self.fields['topic_type'].initial = instance.topic_node.type
 
 AlternateNameFormset = models.inlineformset_factory(
     Topic, AlternateName, fields=('name',), extra=1)

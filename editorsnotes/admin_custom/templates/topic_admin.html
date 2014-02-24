@@ -1,5 +1,7 @@
 {% extends "admin_base.html" %}
 
+{% load display %}
+
 {% block page_title %}
 <h3>{% if form.instance.id %}Change {% else %}Add {% endif %}topic</h3>
 {% endblock %}
@@ -9,12 +11,11 @@
 
     {% include "includes/bootstrap_errors.html" with errors=form.non_field_errors %}
 
-    <fieldset>
-      <legend>Project</legend>
-      <div class="fieldset-content">
-        {{ project }}
-      </div>
-    </fieldset>
+    {% if not form.instance.pk and form.instance.topic_node_id %}
+    <div class="well">
+      Connecting to topic node {{ form.instance.topic_node|as_link }}
+    </div>
+    {% endif %}
 
     <fieldset name="preferred_name_fields">
       <legend>Name</legend>

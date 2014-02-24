@@ -145,7 +145,10 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
     objects = TopicManager()
     class Meta:
         app_label = 'main'
-        unique_together = ('project', 'preferred_name')
+        unique_together = (
+            ('project', 'preferred_name'),
+            ('project', 'topic_node')
+        )
     def as_text(self):
         return self.preferred_name
     @models.permalink
@@ -168,6 +171,17 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
                 'preferred_name': [u'Topic with this preferred name '
                                    'already exists.']
             })
+
+        qs = self.__class__.objects.filter(
+            topic_node_id=self.topic_node_id, project_id=self.project.id)
+        if self.id:
+            qs = qs.exclude(id=self.id)
+        if qs.exists():
+            raise ValidationError({
+                '__all__': [u'This project is already connected with topic '
+                            'node {}.'.format(self.topic_node)]
+            })
+            
     @transaction.commit_on_success
     def merge_into(self, target):
         """

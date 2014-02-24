@@ -44,3 +44,32 @@ class TopicAdminTestCase(WebTest):
         error_messages = resp.forms[1].html.select('.error-message li')
         self.assertEqual(1, len(error_messages))
         self.assertEqual(error_messages[0].text.strip(), u'This field is required.')
+
+    def test_connect_to_topic_node(self):
+        "A user should create a new topic connecting to an existing topic node."
+        node_name = u'Емма Голдман'
+        topic_node = main_models.TopicNode.objects.create(
+            _preferred_name=node_name, creator_id=2, last_updater_id=2)
+
+        add_url = reverse('admin:main_topic_add', kwargs={'project_slug': 'emma'})
+        add_url += '?topic_node={}'.format(topic_node.id)
+
+        resp = self.app.get(add_url, user='barry')
+        form = resp.forms[1]
+        self.assertEqual(form['preferred_name'].value, node_name)
+
+        form['preferred_name'] = 'Emma Goldman'
+        resp = form.submit().follow()
+        self.assertEqual(resp.context['topic'].topic_node_id, topic_node.id)
+
+        # doing this again should fail, since the project is already connected
+        # to the node
+        form = self.app.get(add_url, user='barry').forms[1]
+        form['preferred_name'] = u'shouldn\'t matter'
+        resp = form.submit()
+        self.assertEqual(resp.status_code, 200)
+        error_messages = resp.forms[1].html.select('.error-message li')
+        self.assertEqual(1, len(error_messages))
+        self.assertEqual(error_messages[0].text.strip(),
+                         u'This project is already connected with topic node '
+                         '{}.'.format(topic_node))
