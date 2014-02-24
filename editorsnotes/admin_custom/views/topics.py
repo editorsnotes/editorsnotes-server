@@ -28,9 +28,7 @@ class TopicAdminView(BaseAdminView):
                                kwargs={'project_slug': self.project.slug})),
         )
         if self.object is None:
-            breadcrumbs += (
-                ('Add', None),
-            )
+            breadcrumbs += ( ('Add', None),)
         else:
             breadcrumbs += (
                 (self.object.as_text(), self.object.get_absolute_url()),
