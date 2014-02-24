@@ -163,7 +163,8 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         return self.summary is not None
     def validate_unique(self, exclude=None):
         super(Topic, self).validate_unique(exclude)
-        qs = self.__class__.objects.filter(preferred_name=self.preferred_name)
+        qs = self.__class__.objects.filter(
+            preferred_name=self.preferred_name, project_id=self.project.id)
         if self.id:
             qs = qs.exclude(id=self.id)
         if qs.exists():
