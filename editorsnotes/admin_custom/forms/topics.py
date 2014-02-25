@@ -16,7 +16,7 @@ class TopicForm(models.ModelForm):
         )
     class Meta:
         model = Topic
-        fields = ('preferred_name', 'topic_type',)
+        fields = ('preferred_name', 'topic_type', 'summary',)
         widgets = {
             'topic': forms.HiddenInput()
         }

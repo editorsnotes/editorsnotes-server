@@ -13,7 +13,6 @@ class TopicAdminView(BaseAdminView):
     form_class = forms.TopicForm
     formset_classes = (
         forms.topics.AlternateNameFormset,
-        #forms.topics.TopicSummaryFormset,
         # forms.TopicAssignmentFormset,
         forms.topics.CitationFormset,
     )

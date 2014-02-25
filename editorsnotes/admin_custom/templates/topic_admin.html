@@ -52,7 +52,7 @@
       {% include "includes/bootstrap_errors.html" with errors=form.summary.errors %}
       <div class="fieldset-content article">
         {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="summary-toolbar" %}
-        {{ formsets.topicsummary.0.content }}
+        {{ form.summary }}
       </div>
 
       <div class="article-citations" style="margin: 1em .5em;">
