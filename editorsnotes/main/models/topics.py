@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 import reversion
 
-from .. import fields
+from .. import fields, utils
 from auth import Project, ProjectPermissionsMixin
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
@@ -161,6 +161,13 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         return self.project
     def has_summary(self):
         return self.summary is not None
+    def clean_fields(self, exclude=None):
+        super(Topic, self).clean_fields(exclude=exclude)
+        if 'summary' not in exclude and self.has_summary():
+            utils.remove_stray_brs(self.summary)
+            utils.remove_empty_els(self.summary)
+            if not self.summary.xpath('string()').strip():
+                self.summary = None
     def validate_unique(self, exclude=None):
         super(Topic, self).validate_unique(exclude)
         qs = self.__class__.objects.filter(

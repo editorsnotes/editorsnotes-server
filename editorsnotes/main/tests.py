@@ -61,6 +61,36 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(
             _hash(u'Prison Memoirs of an Anarchist'),
             _hash(u'prison memoirs of an anarchist'))
+    def test_stray_br_stripped(self):
+        "<br/> tags with nothing after them should be removed."
+        test1 = html.fragment_fromstring('<div>I am an annoying browser<br/></div>')
+        utils.remove_stray_brs(test1)
+        self.assertEqual('<div>I am an annoying browser</div>', etree.tostring(test1))
+
+        test2 = html.fragment_fromstring('<div>text<br/>text</div>')
+        utils.remove_stray_brs(test2)
+        self.assertEqual('<div>text<br/>text</div>', etree.tostring(test2))
+
+        test3 = html.fragment_fromstring('<div>I<br/><br/> am really annoying.<br/><br/><br/></div>')
+        utils.remove_stray_brs(test3)
+        self.assertEqual('<div>I<br/> am really annoying.</div>', etree.tostring(test3))
+    def test_remove_empty_els(self):
+        """
+        Elements which have no text (or children with text) should be removed,
+        with the exception of <br/> and <hr/> tags, or a list of tags provided.
+        """
+
+        test1 = html.fragment_fromstring('<div><p></p>just me<hr/></div>')
+        utils.remove_empty_els(test1)
+        self.assertEqual('<div>just me<hr/></div>', etree.tostring(test1))
+
+        test2 = html.fragment_fromstring('<div><div>a</div>bcd<div><b></b></div>e</div>')
+        utils.remove_empty_els(test2)
+        self.assertEqual('<div><div>a</div>bcde</div>', etree.tostring(test2))
+
+        test3 = html.fragment_fromstring('<div><p></p><hr/></div>')
+        utils.remove_empty_els(test3, ignore=('p',))
+        self.assertEqual('<div><p/></div>', etree.tostring(test3))
 
 def create_test_user():
     user = main_models.User(username='testuser', is_staff=True, is_superuser=True)
@@ -147,15 +177,6 @@ class DocumentTestCase(TestCase):
                           main_models.Document(description='<div> .</div>').clean_fields)
         self.assertRaises(ValidationError,
                           main_models.Document(description='&emdash;').clean_fields)
-
-    def test_stray_br_stripped(self):
-        "<br/> tags with nothing after them should be removed."
-        excluded_fields = [f.name for f in main_models.Document._meta.fields
-                           if f.name != u'description']
-
-        d = main_models.Document(description='<div>annoying browser<br/></div>')
-        d.clean_fields(exclude=excluded_fields)
-        self.assertEquals('<div>annoying browser</div>', etree.tostring(d.description))
 
     def test_document_affiliation(self):
         self.assertEqual(self.document.get_affiliation(), self.project)
