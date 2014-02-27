@@ -39,7 +39,7 @@ def remove_stray_brs(tree):
         return
 
     stray_brs = [el for el in tree.iterdescendants(tag='br')
-                 if (not el.getnext() or el.getnext().tag == 'br')
+                 if (el.getnext() is None or el.getnext().tag == 'br')
                  and not el.tail]
     for br_tag in stray_brs:
         br_tag.drop_tree()
