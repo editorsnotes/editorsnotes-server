@@ -15,6 +15,31 @@ class Migration(DataMigration):
             document.description_digest = digest
             document.save()
 
+        duplicates_query = """
+        SELECT project_id, description_digest, COUNT(description_digest) as occurences
+        FROM main_document
+        GROUP BY project_id, description_digest
+        HAVING COUNT(description_digest) > 1;
+        """
+
+        duplicates = db.execute(duplicates_query);
+        for project_id, description_digest, ct in duplicates:
+            qs = orm['main.Document'].objects.filter(project_id=project_id,
+                                                     description_digest=description_digest)
+            for i, document in enumerate(qs[1:], 2):
+                description = document.description
+                last_el = (list(description.iterdescendants()) or [description])[-1]
+                appended_text = u' ({})'.format(i)
+                if last_el.tail:
+                    last_el.tail += appended_text
+                else:
+                    last_el.text += appended_text
+                document.description = description
+                document.description_digest = Document.hash_description(description)
+                document.save()
+        remaining_duplicates = db.execute(duplicates_query)
+        assert not len(remaining_duplicates), "Still duplicates"
+
     def backwards(self, orm):
         "Write your backwards methods here."
 
