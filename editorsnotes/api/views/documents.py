@@ -4,6 +4,8 @@ from .base import (BaseListAPIView, BaseDetailView, ElasticSearchRetrieveMixin,
                    ElasticSearchListMixin)
 from ..serializers import DocumentSerializer
 
+__all__ = ['DocumentList', 'DocumentDetail']
+
 class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     model = Document
     serializer_class = DocumentSerializer

@@ -8,7 +8,8 @@ from editorsnotes.search import en_index
 
 from ..filters import ElasticSearchAutocompleteFilterBackend
 
-#class SearchView(APIView):
+__all__ = ['SearchView']
+
 class SearchView(GenericAPIView):
     def get(self, request, format=None):
         query = {'query': {}}

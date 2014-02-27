@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from editorsnotes.main.models import Project, User
 from editorsnotes.search import activity_index
 
+__all__ = ['ActivityView']
+
 class ActivityView(GenericAPIView):
     """
     Recent activity for a user or project.

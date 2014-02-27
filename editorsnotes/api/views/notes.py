@@ -11,6 +11,8 @@ from .base import (BaseListAPIView, BaseDetailView, ElasticSearchRetrieveMixin,
 from ..serializers.notes import (
     MinimalNoteSerializer, NoteSerializer, _serializer_from_section_type)
 
+__all__ = ['NoteList', 'NoteDetail', 'NoteSectionDetail']
+
 class NoteList(ElasticSearchListMixin, BaseListAPIView):
     model = Note
     serializer_class = MinimalNoteSerializer

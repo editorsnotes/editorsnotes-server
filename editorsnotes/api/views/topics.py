@@ -9,6 +9,8 @@ from .base import (BaseListAPIView, BaseDetailView, ElasticSearchListMixin,
                    create_revision_on_methods)
 from ..serializers.topics import TopicSerializer, TopicNodeSerializer
 
+__all__ = ['TopicNodeList', 'TopicDetailList', 'TopicList', 'TopicDetail']
+
 class TopicNodeList(ListAPIView):
     model = TopicNode
     serializer_class = TopicNodeSerializer

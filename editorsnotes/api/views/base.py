@@ -120,6 +120,8 @@ def root(request):
     return Response({
         'auth-token': reverse('api:obtain-auth-token'),
         'topics': reverse('api:api-topic-nodes-list'),
+        'projects': reverse('api:api-projects-list'),
+        'search': reverse('api:api-search') + '?q={query}'
         #'notes': reverse('api:api-notes-list'),
         #'documents': reverse('api:api-documents-list')
     })
