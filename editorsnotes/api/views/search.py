@@ -48,7 +48,7 @@ class SearchView(GenericAPIView):
         if not query['query']:
             query = {'query': {'match_all': {}}}
 
-        es_query = en_index.es.search(query)
+        es_query = en_index.es.search(query, index=en_index.name)
 
         hits = []
 
