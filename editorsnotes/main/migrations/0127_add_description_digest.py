@@ -3,6 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
+from lxml import etree
 from editorsnotes.main.models import Document
 
 class Migration(DataMigration):
@@ -10,10 +11,15 @@ class Migration(DataMigration):
     def forwards(self, orm):
         "Write your forwards methods here."
         # Note: Remember to use orm['appname.ModelName'] rather than "from appname.models..."
+        digest_update_query = """
+        UPDATE main_document
+        SET description_digest = %s
+        WHERE id = %s
+        """
         for document in orm['main.Document'].objects.all():
-            digest = Document.hash_description(document.description)
-            document.description_digest = digest
-            document.save()
+            db.execute(digest_update_query,
+                       params=[Document.hash_description(document.description),
+                               document.id])
 
         duplicates_query = """
         SELECT project_id, description_digest, COUNT(description_digest) as occurences
@@ -34,9 +40,14 @@ class Migration(DataMigration):
                     last_el.tail += appended_text
                 else:
                     last_el.text += appended_text
-                document.description = description
-                document.description_digest = Document.hash_description(description)
-                document.save()
+                update_query = """
+                UPDATE main_document
+                SET description = %s, description_digest = %s
+                WHERE id = %s
+                """
+                db.execute(update_query, params=[etree.tostring(description),
+                                                 Document.hash_description(description),
+                                                 document.id])
         remaining_duplicates = db.execute(duplicates_query)
         assert not len(remaining_duplicates), "Still duplicates"
 
