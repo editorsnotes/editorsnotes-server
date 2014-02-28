@@ -8,6 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.test import TransactionTestCase
 
+from reversion.models import Revision
+
 from editorsnotes.main import models as main_models
 from editorsnotes.search import en_index, activity_index
 
@@ -95,6 +97,10 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
             topic_node_id=new_topic_node_id, project=self.project)
         self.assertEqual(etree.tostring(topic_obj.summary),
                          response.data.get('summary'))
+
+        # Make sure a revision was created
+        self.assertEqual(Revision.objects.count(), 1)
+
 
     def test_topic_api_create_bad_permissions(self):
         "Creating a topic in an outside project is NOT OK"
@@ -184,6 +190,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(data['summary'], response.data['summary'])
         self.assertEqual(data['summary'], etree.tostring(updated_topic_obj.summary))
 
+        # Make sure a revision was created upon update
+        self.assertEqual(Revision.objects.count(), 1)
+
     def test_topic_api_update_bad_permissions(self):
         "Updating a topic in an outside project is NOT OK"
         data = TEST_TOPIC.copy()
@@ -230,6 +239,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(main_models.Topic.objects.count(), 0)
         self.assertEqual(main_models.TopicNode.objects.count(), 1)
+
+        # Make sure a revision was created before delete
+        self.assertEqual(Revision.objects.count(), 1)
 
     def test_topic_api_delete_bad_permissions(self):
         "Deleting a topic in an outside project is NOT OK"
@@ -283,6 +295,9 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(etree.tostring(new_document.description),
                          data['description'])
 
+        # Make sure a revision was created
+        self.assertEqual(Revision.objects.count(), 1)
+
     def test_document_api_create_bad_permissions(self):
         "Creating a document in another project is NOT OK"
         data = TEST_DOCUMENT.copy()
@@ -319,7 +334,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['description'],
-                         u'A document with this description already exists.')
+                         [u'Document with this description already exists.'])
 
     def test_document_api_list(self):
         """
@@ -368,6 +383,9 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data.get('description'), data['description'])
         self.assertEqual(etree.tostring(updated_document.description), data['description'])
 
+        # Make sure a revision was created upon update
+        self.assertEqual(Revision.objects.count(), 1)
+
     def test_document_api_update_bad_permissions(self):
         "Updating a document in another project is NOT OK"
         document_obj = self.create_test_document()
@@ -407,6 +425,9 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(main_models.Document.objects.filter(id=document_obj.id).count(), 0)
+
+        # Make sure a revision was created before delete
+        self.assertEqual(Revision.objects.count(), 1)
 
     def test_document_api_delete_bad_permissions(self):
         "Deleting a document in an outside project is NOT OK"
@@ -477,6 +498,9 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(response.data['title'], new_note_obj.title)
         self.assertEqual(response.data['content'], etree.tostring(new_note_obj.content))
+
+        # Make sure a revision was created upon create
+        self.assertEqual(Revision.objects.count(), 1)
 
     def test_note_api_create_bad_permissions(self):
         "Creating a note in an outside project is NOT OK"
@@ -561,6 +585,9 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         updated_note = main_models.Note.objects.get(id=note_obj.id)
         self.assertEqual(response.data['title'], updated_note.title)
 
+        # Make sure a revision was created upon update
+        self.assertEqual(Revision.objects.count(), 1)
+
     def test_note_api_update_bad_permissions(self):
         "Updating a note in an outside project is NOT OK"
         note_obj = self.create_test_note()
@@ -599,6 +626,9 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(main_models.Note.objects.filter(id=note_obj.id).count(), 0)
+
+        # Make sure a revision was created upon delete
+        self.assertEqual(Revision.objects.count(), 1)
 
     def test_note_api_delete_bad_permissions(self):
         "Deleting a note in an outside project is NOT OK"
@@ -661,6 +691,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(Revision.objects.count(), 1)
 
         response = self.client.post(
             reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
@@ -668,6 +699,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(Revision.objects.count(), 2)
 
         response = self.client.post(
             reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
@@ -675,6 +707,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(Revision.objects.count(), 3)
 
     def test_note_api_create_note_section_bad_permissions(self):
         "Adding a new note section in an outside project is NOT OK"
@@ -719,6 +752,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(Revision.objects.count(), 1)
 
     def test_note_api_update_note_section_bad_permissions(self):
         "Updating a note section in an outside project is NOT OK"
@@ -766,6 +800,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(note_obj.sections.count(), 0)
+        self.assertEqual(Revision.objects.count(), 1)
 
     def test_note_api_delete_note_section_bad_permissions(self):
         "Deleting a note section in an outside project is NOT OK"

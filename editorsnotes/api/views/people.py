@@ -1,10 +1,25 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from editorsnotes.main.models import Project, User
 from editorsnotes.search import activity_index
+
+from ..serializers.projects import ProjectSerializer
+
+__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail']
+
+class ProjectList(ListAPIView):
+    model = Project
+    serializer_class = ProjectSerializer
+
+class ProjectDetail(RetrieveAPIView):
+    model = Project
+    serializer_class = ProjectSerializer
+    def get_object(self, qs):
+        project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
+        return project
 
 class ActivityView(GenericAPIView):
     """

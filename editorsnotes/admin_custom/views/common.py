@@ -94,8 +94,8 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
         return super(BaseAdminView, self).post(request, *args, **kwargs)
     def get_default_perms(self):
         opts = self.model._meta
-        perm = opts.get_add_permission if self.object is None \
-                else opts.get_change_permission()
+        add_action = self.object is None or not self.object.id
+        perm = opts.get_add_permission() if add_action else opts.get_change_permission()
         return ['{}.{}'.format(opts.app_label, perm)]
     def check_perms(self):
         perms = getattr(self, 'permissions', self.get_default_perms())
@@ -109,9 +109,27 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
         kwargs = super(ModelFormMixin, self).get_form_kwargs()
         if hasattr(self, 'object') and self.object:
             kwargs.update({'instance': self.object})
+        else:
+            has_project_field = all([
+                hasattr(self.model, 'project'),
+                hasattr(self.model.project, 'field'),
+                hasattr(self.model.project.field, 'related'),
+                self.model.project.field.related.parent_model == Project
+            ])
+            if has_project_field:
+                # Then create an instance with the project already set
+                instance = self.model(project=self.project)
+                kwargs.update({ 'instance': instance })
+
         return kwargs
 
-    def set_additional_object_properties(self, obj):
+    def set_additional_object_properties(self, obj, form):
+        """
+        This must be called for additional object properties which must be set
+        but are not edited by the user. A common example is an item's last
+        updater or creator. It is called *after* the object instance is already
+        cleaned.
+        """
         return obj
 
     def save_object(self, form, formsets):
@@ -135,7 +153,6 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
 
             self.save_formsets(formsets)
             form.save_m2m()
-
         return redirect(self.get_success_url())
     def form_invalid(self, form, formsets):
         return self.render_to_response(

@@ -1,16 +1,15 @@
 from editorsnotes.main.models import Document
 
-from .base import (BaseListAPIView, BaseDetailView, CreateReversionMixin,
-                   ElasticSearchRetrieveMixin, ElasticSearchListMixin)
+from .base import (BaseListAPIView, BaseDetailView, ElasticSearchRetrieveMixin,
+                   ElasticSearchListMixin)
 from ..serializers import DocumentSerializer
 
-class DocumentList(BaseListAPIView, ElasticSearchListMixin, CreateReversionMixin):
+__all__ = ['DocumentList', 'DocumentDetail']
+
+class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     model = Document
     serializer_class = DocumentSerializer
-    def pre_save(self, obj):
-        super(DocumentList, self).pre_save(obj)
-        obj.project = self.request.project
 
-class DocumentDetail(BaseDetailView, CreateReversionMixin):
+class DocumentDetail(BaseDetailView):
     model = Document
     serializer_class = DocumentSerializer

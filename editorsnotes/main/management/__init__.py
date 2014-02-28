@@ -31,7 +31,9 @@ def _get_project_specific_permissions(model, is_concretely_inherited=False):
             perm.codename not in ignored_model_perms]
 
 def _get_project_permission_group():
-    group, _ = Group.objects.get_or_create(name=PROJECT_PERMISSIONS_GROUP)
+    group, created = Group.objects.get_or_create(name=PROJECT_PERMISSIONS_GROUP)
+    if created:
+        update_project_permissions()
     return group
 
 def get_all_project_permissions():

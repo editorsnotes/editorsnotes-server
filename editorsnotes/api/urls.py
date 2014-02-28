@@ -4,6 +4,7 @@ from django.conf.urls import patterns, url, include
 import views
 
 project_specific_patterns = patterns('',
+    url(r'^$', views.ProjectDetail.as_view(), name='api-project-detail'),
     url(r'^activity/$', views.ActivityView.as_view(), name='api-project-activity'),
     url(r'^topics/$', views.TopicList.as_view(), name='api-topics-list'),
     url(r'^topics/(?P<topic_node_id>\d+)/$', views.TopicDetail.as_view(), name='api-topics-detail'),
@@ -20,5 +21,6 @@ urlpatterns = patterns('',
     url(r'^search/$', views.SearchView.as_view(), name='api-search'),
     url(r'^topics/$', views.TopicNodeList.as_view(), name='api-topic-nodes-list'),
     url(r'^topics/(?P<pk>\d+)/$$', views.TopicNodeDetail.as_view(), name='api-topic-nodes-list'),
+    url(r'^projects/$', views.ProjectList.as_view(), name='api-projects-list'),
     url(r'^projects/(?P<project_slug>\w+)/', include(project_specific_patterns)),
 )

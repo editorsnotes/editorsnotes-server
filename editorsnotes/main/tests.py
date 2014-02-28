@@ -3,9 +3,10 @@
 import unittest
 
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.test import TestCase, TransactionTestCase
-from lxml import etree
+from lxml import etree, html
 
 import models as main_models
 import utils
@@ -43,6 +44,53 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEquals('J', columns[1][0]['first_letter'])
         self.assertEquals('S', columns[2][0]['first_letter'])
         self.assertEquals('Z', columns[2][7]['first_letter'])
+    def test_description_digest(self):
+        _hash = main_models.Document.hash_description
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'<div>Prison Memoirs of an Anarchist</div>'))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(html.fragment_fromstring(u'<div>Prison Memoirs of an Anarchist</div>')))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'Prison Memoirs of an Anarchist&nbsp;'))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'Prison Memoirs of an Anarchist.'))
+        self.assertEqual(
+            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash(u'prison memoirs of an anarchist'))
+    def test_stray_br_stripped(self):
+        "<br/> tags with nothing after them should be removed."
+        test1 = html.fragment_fromstring('<div>I am an annoying browser<br/></div>')
+        utils.remove_stray_brs(test1)
+        self.assertEqual('<div>I am an annoying browser</div>', etree.tostring(test1))
+
+        test2 = html.fragment_fromstring('<div>text<br/>text</div>')
+        utils.remove_stray_brs(test2)
+        self.assertEqual('<div>text<br/>text</div>', etree.tostring(test2))
+
+        test3 = html.fragment_fromstring('<div>I<br/><br/> am really annoying.<br/><br/><br/></div>')
+        utils.remove_stray_brs(test3)
+        self.assertEqual('<div>I<br/> am really annoying.</div>', etree.tostring(test3))
+    def test_remove_empty_els(self):
+        """
+        Elements which have no text (or children with text) should be removed,
+        with the exception of <br/> and <hr/> tags, or a list of tags provided.
+        """
+
+        test1 = html.fragment_fromstring('<div><p></p>just me<hr/></div>')
+        utils.remove_empty_els(test1)
+        self.assertEqual('<div>just me<hr/></div>', etree.tostring(test1))
+
+        test2 = html.fragment_fromstring('<div><div>a</div>bcd<div><b></b></div>e</div>')
+        utils.remove_empty_els(test2)
+        self.assertEqual('<div><div>a</div>bcde</div>', etree.tostring(test2))
+
+        test3 = html.fragment_fromstring('<div><p></p><hr/></div>')
+        utils.remove_empty_els(test3, ignore=('p',))
+        self.assertEqual('<div><p/></div>', etree.tostring(test3))
 
 def create_test_user():
     user = main_models.User(username='testuser', is_staff=True, is_superuser=True)
@@ -90,6 +138,59 @@ class NoteTestCase(TestCase):
         self.assertEquals(1, len(note.related_topics.all()))
         self.assertEquals(1, len(topic.assignments.all()))
         self.assertEquals(topic, note.related_topics.all()[0].topic)
+
+class DocumentTestCase(TestCase):
+    fixtures = ['projects.json']
+    def setUp(self):
+        self.project = main_models.Project.objects.get(slug='emma')
+        self.user = self.project.members.all()[0]
+        self.document_kwargs = {
+            'description': u'<div>My Disillusionment in Russia</div>',
+            'project_id': self.project.id,
+            'creator_id': self.user.id,
+            'last_updater_id': self.user.id
+        }
+        self.document = main_models.Document.objects.create(**self.document_kwargs)
+
+    def test_hash_description(self):
+        self.assertEqual(self.document.description_digest,
+                         main_models.Document.hash_description(self.document.description))
+
+    def test_duplicate_descriptions(self):
+        data = self.document_kwargs.copy()
+        data['description'] = u'“My Disillusionment in Russia”'
+        test_document = main_models.Document(**data)
+        self.assertRaises(ValidationError, test_document.full_clean)
+        self.assertRaises(IntegrityError, test_document.save)
+
+    # TODO: Make sure hashed topic descriptions can be retrieved in
+    # elasticsearch
+
+    def test_empty_description(self):
+        self.assertRaises(ValidationError,
+                          main_models.Document(description='').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description=' ').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description=' .').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description='<div> .</div>').clean_fields)
+        self.assertRaises(ValidationError,
+                          main_models.Document(description='&emdash;').clean_fields)
+
+    def test_document_affiliation(self):
+        self.assertEqual(self.document.get_affiliation(), self.project)
+
+    def test_has_transcript(self):
+        self.assertFalse(self.document.has_transcript())
+
+        transcript = main_models.Transcript.objects.create(
+            document_id=self.document.id, creator_id=self.user.id,
+            last_updater_id=self.user.id, content='<div>nothing</div>')
+        updated_document = main_models.Document.objects.get(id=self.document.id)
+        self.assertTrue(updated_document.has_transcript())
+        self.assertEqual(updated_document.transcript, transcript)
+
 
 class NoteTransactionTestCase(TransactionTestCase):
     fixtures = ['projects.json']

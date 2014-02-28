@@ -40,9 +40,6 @@ class NoteAdminView(BaseAdminView):
                 ('Edit', None)
             )
         return breadcrumbs
-    def set_additional_object_properties(self, obj, form):
-        obj.project = self.project
-        return obj
     def get_form(self, form_class):
         form = form_class(**self.get_form_kwargs())
         form.fields['assigned_users'].queryset = self.project.members.all()

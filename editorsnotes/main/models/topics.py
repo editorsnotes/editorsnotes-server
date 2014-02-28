@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 import reversion
 
-from .. import fields
+from .. import fields, utils
 from auth import Project, ProjectPermissionsMixin
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
@@ -145,7 +145,10 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
     objects = TopicManager()
     class Meta:
         app_label = 'main'
-        unique_together = ('project', 'preferred_name')
+        unique_together = (
+            ('project', 'preferred_name'),
+            ('project', 'topic_node')
+        )
     def as_text(self):
         return self.preferred_name
     @models.permalink
@@ -158,9 +161,17 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         return self.project
     def has_summary(self):
         return self.summary is not None
+    def clean_fields(self, exclude=None):
+        super(Topic, self).clean_fields(exclude=exclude)
+        if 'summary' not in exclude and self.has_summary():
+            utils.remove_stray_brs(self.summary)
+            utils.remove_empty_els(self.summary)
+            if not self.summary.xpath('string()').strip():
+                self.summary = None
     def validate_unique(self, exclude=None):
         super(Topic, self).validate_unique(exclude)
-        qs = self.__class__.objects.filter(preferred_name=self.preferred_name)
+        qs = self.__class__.objects.filter(
+            preferred_name=self.preferred_name, project_id=self.project.id)
         if self.id:
             qs = qs.exclude(id=self.id)
         if qs.exists():
@@ -168,6 +179,17 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
                 'preferred_name': [u'Topic with this preferred name '
                                    'already exists.']
             })
+
+        qs = self.__class__.objects.filter(
+            topic_node_id=self.topic_node_id, project_id=self.project.id)
+        if self.id:
+            qs = qs.exclude(id=self.id)
+        if qs.exists():
+            raise ValidationError({
+                '__all__': [u'This project is already connected with topic '
+                            'node {}.'.format(self.topic_node)]
+            })
+            
     @transaction.commit_on_success
     def merge_into(self, target):
         """
@@ -219,6 +241,7 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         self.save()
 
         return target
+reversion.register(Topic)
 
 class AlternateName(CreationMetadata, ProjectPermissionsMixin):
     topic = models.ForeignKey(Topic, related_name='alternate_names')

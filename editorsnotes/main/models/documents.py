@@ -2,15 +2,19 @@
 
 import json
 import re
+from hashlib import md5
 from itertools import chain
+import unicodedata
 
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models
-from django.utils.html import escape
+from django.utils.html import escape, strip_tags, strip_entities
 from django.utils.safestring import mark_safe
-from lxml import etree
+from lxml import etree, html
+import reversion
 
 from editorsnotes.djotero.models import ZoteroItem
 
@@ -36,6 +40,7 @@ FROM main_document AS part WHERE part.collection_id = main_document.id''',
                               '_has_transcript': '''EXISTS ( SELECT 1 
 FROM main_transcript WHERE main_transcript.document_id = main_document.id )''' })
 
+
 class Document(LastUpdateMetadata, Administered, URLAccessible, 
                ProjectPermissionsMixin, UpdatersMixin, ZoteroItem):
     u"""
@@ -50,6 +55,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
                                  unique=True, db_index=True)
     project = models.ForeignKey('Project', related_name='documents')
     description = fields.XHTMLField()
+    description_digest = models.CharField(max_length=32, editable=False)
     collection = models.ForeignKey('self', related_name='parts', blank=True, null=True)
     ordering = models.CharField(max_length=32, editable=False)
     language = models.CharField(max_length=32, default='English')
@@ -59,13 +65,47 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
     class Meta:
         app_label = 'main'
         ordering = ['ordering','import_id']    
+        unique_together = ('project', 'description_digest')
     def as_text(self):
         return utils.xhtml_to_text(self.description)
+    @staticmethod
+    def strip_description(description):
+        description_str = etree.tostring(description) \
+                if isinstance(description, html.HtmlElement) \
+                else description
+        return ''.join(
+            char for char in strip_entities(strip_tags(description_str))
+            if unicodedata.category(char)[0] in 'LNZ')
+    @staticmethod
+    def hash_description(description):
+        string_to_hash = Document.strip_description(description).lower()
+        return md5(string_to_hash).hexdigest()
+    def validate_unique(self, exclude=None):
+        super(Document, self).validate_unique(exclude)
+        qs = self.__class__.objects.filter(
+            description_digest=Document.hash_description(self.description),
+            project_id=self.project.id)
+        if self.id:
+            qs = qs.exclude(id=self.id)
+        if qs.exists():
+            raise ValidationError({
+                'description': [u'Document with this description already exists.']
+            })
     @models.permalink
     def get_absolute_url(self):
         return ('document_view', [str(self.project.slug), str(self.id)])
     def get_affiliation(self):
         return self.project
+    def clean_fields(self, exclude=None):
+        super(Document, self).clean_fields(exclude)
+        if exclude and 'description' in exclude:
+            return
+        description_stripped = Document.strip_description(self.description)
+        if not len(description_stripped):
+            raise ValidationError({'description': [u'Field required.']})
+
+        # Remove <br/> tags which have nothing after them 
+        utils.remove_stray_brs(self.description)
     @property
     def transcript(self):
         try:
@@ -166,7 +206,9 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
                 etree.tostring(self.description)))
     def save(self, *args, **kwargs):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
+        self.description_digest = Document.hash_description(self.description)
         super(Document, self).save(*args, **kwargs)
+reversion.register(Document)
 
 class TranscriptManager(models.Manager):
     # Include related document in default query.
@@ -204,6 +246,7 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible, ProjectPermiss
         return sorted(self.footnotes.all(),
                       key=lambda fn: fn_ids.index(fn.id)
                       if fn.id in fn_ids else 9999)
+reversion.register(Transcript)
 
 class Footnote(LastUpdateMetadata, Administered, URLAccessible,
                ProjectPermissionsMixin):
@@ -244,6 +287,7 @@ class Footnote(LastUpdateMetadata, Administered, URLAccessible,
         self.remove_self_from(self.transcript)
         self.transcript.save()
         super(Footnote, self).delete(*args, **kwargs)
+reversion.register(Footnote)
 
 class Scan(CreationMetadata, ProjectPermissionsMixin):
     u"""
@@ -259,6 +303,7 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
         return u'Scan for %s (order: %s)' % (self.document, self.ordering)
     def get_affiliation(self):
         return self.document.project
+reversion.register(Scan)
 
 class DocumentLink(CreationMetadata):
     u"""
@@ -271,6 +316,7 @@ class DocumentLink(CreationMetadata):
         app_label = 'main'
     def __unicode__(self):
         return self.url
+reversion.register(DocumentLink)
 
 class DocumentMetadata(CreationMetadata):
     u"""

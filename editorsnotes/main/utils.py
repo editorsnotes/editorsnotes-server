@@ -30,6 +30,35 @@ def truncate(text, length=120):
 def prepend_space(element):
     element.addprevious(etree.Entity('nbsp'))
 
+def remove_stray_brs(tree):
+    """
+    Destructive function that removes <br/> tags that either have nothing or
+    another <br/> tag afterwards.
+    """
+    if tree is None:
+        return
+
+    stray_brs = [el for el in tree.iterdescendants(tag='br')
+                 if (el.getnext() is None or el.getnext().tag == 'br')
+                 and not el.tail]
+    for br_tag in stray_brs:
+        br_tag.drop_tree()
+
+def remove_empty_els(html_tree, ignore=None):
+    """
+    Destructive function to remove tags with no text content.
+
+    Optional: iterable of tags to ignore. Defaults to <hr/> and <br/>
+    """
+    ignore = ignore or ('hr', 'br',)
+    if html_tree is None:
+        return
+
+    empty_els = (el for el in html_tree.iterdescendants()
+                 if el.tag not in ignore and not el.xpath('string()'))
+    for el in empty_els:
+        el.drop_tree()
+
 def naive_to_utc(naive_datetime, timezone_string=None):
     '''Converts a naive datetime (such as Django returns from DateTimeFields) 
     to an timezone-aware UTC datetime. It will be assumed that the naive 
