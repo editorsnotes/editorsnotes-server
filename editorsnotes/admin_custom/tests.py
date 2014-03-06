@@ -9,6 +9,11 @@ from editorsnotes.main import models as main_models
 
 class TopicAdminTestCase(WebTest):
     fixtures = ['projects.json']
+    def create_test_topic(self):
+        project = main_models.Project.objects.get(slug='emma');
+        node, topic = main_models.Topic.objects.create_along_with_node(
+            u'Emma Goldman', project, project.members.get())
+        return topic
     def test_create_topic(self):
         "A user should be able to create a topic with a unique name."
         topic_name = u'Emma Goldman'
@@ -32,6 +37,26 @@ class TopicAdminTestCase(WebTest):
         self.assertEqual(1, len(error_messages))
         self.assertEqual(error_messages[0].text.strip(),
                          u'Topic with this preferred name already exists.')
+
+    def test_add_citation(self):
+        topic = self.create_test_topic()
+        document = main_models.Document.objects.create(
+            description="a test document",
+            project_id=topic.project_id,
+            creator_id=topic.creator_id,
+            last_updater_id=topic.last_updater_id)
+        url = reverse('admin:main_topic_change',
+                      kwargs={'project_slug': 'emma', 'topic_node_id': topic.topic_node_id})
+
+        form = self.app.get(url, user='barry').forms[1]
+        form['citation-0-document'] = document.id
+        form['citation-0-notes'] = 'it was an interesting thing I found in here'
+
+        resp = form.submit().follow()
+        topic = main_models.Topic.objects.get(id=topic.id)
+        self.assertEqual(topic.summary_cites.count(), 1)
+        self.assertEqual(topic.summary_cites.get().document_id, document.id)
+        self.assertEqual(topic.summary_cites.get().object_id, topic.id)
 
     def test_create_empty_topic_error(self):
         "A user should not be able to create a topic with an empty name."

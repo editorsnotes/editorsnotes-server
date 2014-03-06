@@ -12,7 +12,6 @@ class TopicForm(models.ModelForm):
     class Media:
         js = (
             "function/admin-bootstrap-topic.js",
-            "function/admin-bootstrap-note-sections.js",
         )
     class Meta:
         model = Topic
@@ -28,7 +27,10 @@ class CitationForm(models.ModelForm):
     class Meta:
         model = Citation
         fields = ('document', 'notes', 'ordering',)
-        widgets = {'document': forms.widgets.HiddenInput()}
+        widgets = {
+            'document': forms.widgets.HiddenInput(),
+            'ordering': forms.widgets.HiddenInput()
+        }
 
 CitationFormset = generic_inlineformset_factory(
     Citation, form=CitationForm, extra=1)
