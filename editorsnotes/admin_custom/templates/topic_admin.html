@@ -40,14 +40,12 @@
     </fieldset>
     {% endwith %}
 
-    {% comment %}
     {% with formset=formsets.topicassignment %}
     <fieldset name="related_topics_fields" class="related-topics">
       <legend>Related topics</legend>
       {% include "includes/bootstrap_formset.html" %}
     </fieldset>
     {% endwith %}
-    {% endcomment %}
 
     <fieldset name="article_fields">
       <legend>Article</legend>

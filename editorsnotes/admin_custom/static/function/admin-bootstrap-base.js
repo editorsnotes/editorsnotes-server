@@ -262,7 +262,7 @@ $(document).ready(function () {
         // Replace this input with a text field
         $oldExtraField
           .prepend(ui.item.label)
-          .find('input[name$=topic]').val(ui.item.id);
+          .find('input[name$="topic_id"]').val(ui.item.id);
 
         // Clear this input
         event.preventDefault();

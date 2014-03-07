@@ -37,7 +37,8 @@ def topic_node(request, topic_node_id):
 def topic(request, project_slug, topic_node_id):
     o = {}
     topic_qs = Topic.objects.select_related('topic_node', 'creator',
-                                            'last_updater', 'project')
+                                            'last_updater', 'project')\
+            .prefetch_related('related_topics__topic')
     o['topic'] = topic = get_object_or_404(topic_qs,
                                            topic_node_id=topic_node_id,
                                            project__slug=project_slug)
