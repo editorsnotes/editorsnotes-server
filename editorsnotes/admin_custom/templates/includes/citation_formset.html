@@ -8,15 +8,18 @@
     {% for citation in citations_formset %}
     {% with citation.instance as c %}
 
-    <div class="citation citation-edit {% if forloop.last %}hide{% endif %}" id="{{ citation.prefix }}">
+    <div class="citation citation-edit {% if not c %}hide{% endif %}" id="{{ citation.prefix }}">
 
       <div class="citation-document">
         <i class="icon-file"></i>
-        {% if c.document %} {{ c.document.description|as_text }} {% endif %}
+        {% if c.document %}
+        {{ c.document.description|as_text }}
+        {% else %}
+        <input data-target-model="documents" data-project-slug="{{ project.slug }}" />
+        {% endif %}
       </div>
 
-      <div class="citation-notes">{% if c.has_notes %}{{ c.notes|as_html }}{% endif %}</div>
-
+      {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id=citation.prefix|add:"-toolbar" %}
       <div class="citation-fields">
         {% for field in citation %} {{ field }} {% endfor %}
       </div>
@@ -28,7 +31,6 @@
 
   </div>
 
-  {% include "includes/wysihtml5_full_toolbar.html" with toolbar_id="citation-toolbar" %}
   {% include "includes/add_document_modal.html" %}
 
 </div>

@@ -40,9 +40,10 @@ class DocumentForm(ModelForm):
         elif self.changed_data is not None and 'zotero_string' in self.changed_data:
             document.zotero_data = self.cleaned_data['zotero_string']
             document.save()
-            link, created = ZoteroLink.objects.get_or_create(zotero_item=document)
-            if not created:
-                link.save()
+            if not document.zotero_link:
+                ZoteroLink.objects.create(zotero_item=document)
+            else:
+                document.zotero_link.save()
         return document
 
 class DocumentLinkForm(ModelForm):

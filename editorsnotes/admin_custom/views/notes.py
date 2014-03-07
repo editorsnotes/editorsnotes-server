@@ -18,7 +18,7 @@ class NoteAdminView(BaseAdminView):
     model = Note
     form_class = forms.NoteForm
     formset_classes = (
-        # forms.TopicAssignmentFormset,
+        forms.common.TopicAssignmentFormset,
     )
     template_name = 'note_admin.html'
     def get_object(self, note_id=None):

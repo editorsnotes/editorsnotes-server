@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic.edit import View, ModelFormMixin, TemplateResponseMixin
 import reversion
 
-from editorsnotes.main.models import Project
+from editorsnotes.main.models import Project, Topic
 from editorsnotes.main.models.auth import RevisionProject
 
 VIEW_ERROR_MSG = 'You do not have permission to view {}.'
@@ -159,15 +159,15 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
             self.get_context_data(form=form, formsets=formsets))
 
     def save_topicassignment_formset_form(self, form):
-        if not form.cleaned_data['topic']:
+        if not form.cleaned_data['topic_qs']:
             return
         if form.instance and form.instance.id:
             return
-        if form.cleaned_data['topic'] in self.object.related_topics.all():
-            return
         ta = form.save(commit=False)
+        ta.topic = form.cleaned_data['topic_qs'].get(project__slug=self.project.slug)
+        if ta.topic in self.object.related_topics.all():
+            return
         ta.creator = self.request.user
-        ta.topic = form.cleaned_data['topic']
         ta.content_object = self.object
         ta.save()
         return ta

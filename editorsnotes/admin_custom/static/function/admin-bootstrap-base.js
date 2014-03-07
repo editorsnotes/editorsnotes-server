@@ -208,14 +208,14 @@ $(document).ready(function () {
     .autocomplete({
       source: function (request, response) {
         $.ajax({
-          url: '/api/topics/',
+          url: '/api' + window.location.pathname.match(/^\/projects\/[^/]+/)[0] + '/topics/',
           dataType: 'json',
           data: {'q': request.term},
           beforeSend: function () {
             $('#related-topics-loading').css('display', 'inline-block');
           },
           success: function (data) {
-            response($.map(data, function (item, index) {
+            response($.map(data.results, function (item, index) {
               return { id: item.id, label: item.preferred_name, uri: item.uri };
             }));
           },
@@ -262,7 +262,7 @@ $(document).ready(function () {
         // Replace this input with a text field
         $oldExtraField
           .prepend(ui.item.label)
-          .find('input[name$=topic]').val(ui.item.id);
+          .find('input[name$="topic_id"]').val(ui.item.id);
 
         // Clear this input
         event.preventDefault();

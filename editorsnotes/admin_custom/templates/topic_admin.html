@@ -56,14 +56,16 @@
       </div>
 
       <div class="article-citations" style="margin: 1em .5em;">
-        <h4>Citations</h4>
+        <legend>Citations</legend>
         {% include "includes/citation_formset.html" with citations_formset=formsets.citation %}
-        <a href="#" id="add-citation">Add citation</a>
+        <button type="button" class="btn btn-primary" id="add-citation">Add citation</a>
       </div>
 
   </fieldset>
 
-  <button type="submit" class="btn btn-primary">Save</button>
+  <hr />
+
+  <button type="submit" class="btn">Save</button>
 
   </form>
 {% endblock %}

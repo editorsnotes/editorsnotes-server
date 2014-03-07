@@ -17,7 +17,7 @@ $(document).ready(function () {
 
   var baseAutocompleteOptions = {
     source: function(request, response, x) {
-      var targetModel = this.element.attr('search-target') || this.element.data('search-target')
+      var targetModel = this.element.attr('search-target') || this.element.data('targetModel')
         , query = {'q': request.term}
         , projectSlug = this.element.data('projectSlug')
         , url = '/api/'
@@ -27,6 +27,8 @@ $(document).ready(function () {
         url += ('projects/' + projectSlug + '/');
       }
       url += (targetModel + '/');
+
+      console.log(this.element);
 
       modelMap = {
         topics: function (item) {
