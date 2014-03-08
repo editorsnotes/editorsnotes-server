@@ -48,77 +48,88 @@
   </head>
   {% load typogrify display %}
   <body>
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <ul class="nav">
-            <li><a class="brand" href="/">Editors' Notes</a></li>
-            <li class="divider-vertical"></li>
-            <li><a href="/browse/">Browse</a></li>
-            <li><a href="/about/">About</a></li>
-            <li class="divider-vertical"></li>
-            <form class="navbar-search" action="/search/" method="get">
-              <input type="text" class="search-query search-autocomplete" name="q" x-search-target="topics" placeholder="Search" />
-            </form> 
-            </ul>
+    <div class="main-wrapper">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <ul class="nav">
+              <li><a class="brand" href="/">Editors' Notes</a></li>
+              <li class="divider-vertical"></li>
+              <li><a href="/browse/">Browse</a></li>
+              <li><a href="/about/">About</a></li>
+              <li class="divider-vertical"></li>
+              <form class="navbar-search" action="/search/" method="get">
+                <input type="text" class="search-query search-autocomplete" name="q" x-search-target="topics" placeholder="Search" />
+              </form> 
+              </ul>
 
-            {% with user=request.user %}
-            {% if user.is_authenticated %}
-            {% if user.email %}
-            <input type="hidden" id="logged-in-user-email" value="{{ user.email }}" />
-            {% endif %}
-            <ul class="nav pull-right">
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  {{ user.display_name }}
-                  <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a href="{{ user.get_absolute_url }}">My profile</a></li>
-                  <li><a {% if browserid_authenticated %}class="browserid-logout" {% endif %}href="{% url "user_logout_view" %}">Log out</a></li>
-                </ul>
-              </li>
-              <li>
-              <div class="btn-group">
-                <a href="#" class="btn dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-pencil"></i>
-                  <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu" style="right: 0; left: auto;">
-                  {% block extra_edit_actions %}{% endblock %}
-                  {% for project in user.get_affiliated_projects %}
-                  {% if not forloop.last %}<li class="divider"></li>{% endif %}
-                  <li><a href="{% url "admin:main_note_add" project_slug=project.slug %}">Add note</a></li>
-                  <li><a href="{% url "admin:main_topic_add" project_slug=project.slug %}">Add topic</a></li>
-                  <li><a href="{% url "admin:main_document_add" project_slug=project.slug %}">Add document</a></li>
-                  {% endfor %}
-                </ul>
-              </div>
-              </li>
-            </ul>
-            {% else %}
-            <ul class="nav pull-right">
-              <li><a href="/accounts/login/{% if request.path|length > 1 %}?return_to={{ request.path }}{% endif %}">Log in</a></li>
-            </ul>
-            {% endif %}
-            {% endwith %}
+              {% with user=request.user %}
+              {% if user.is_authenticated %}
+              {% if user.email %}
+              <input type="hidden" id="logged-in-user-email" value="{{ user.email }}" />
+              {% endif %}
+              <ul class="nav pull-right">
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    {{ user.display_name }}
+                    <b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a href="{{ user.get_absolute_url }}">My profile</a></li>
+                    <li><a {% if browserid_authenticated %}class="browserid-logout" {% endif %}href="{% url "user_logout_view" %}">Log out</a></li>
+                  </ul>
+                </li>
+                <li>
+                <div class="btn-group">
+                  <a href="#" class="btn dropdown-toggle" data-toggle="dropdown">
+                    <i class="icon-pencil"></i>
+                    <b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu" style="right: 0; left: auto;">
+                    {% block extra_edit_actions %}{% endblock %}
+                    {% for project in user.get_affiliated_projects %}
+                    {% if not forloop.last %}<li class="divider"></li>{% endif %}
+                    <li><a href="{% url "admin:main_note_add" project_slug=project.slug %}">Add note</a></li>
+                    <li><a href="{% url "admin:main_topic_add" project_slug=project.slug %}">Add topic</a></li>
+                    <li><a href="{% url "admin:main_document_add" project_slug=project.slug %}">Add document</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                </li>
+              </ul>
+              {% else %}
+              <ul class="nav pull-right">
+                <li><a href="/accounts/login/{% if request.path|length > 1 %}?return_to={{ request.path }}{% endif %}">Log in</a></li>
+              </ul>
+              {% endif %}
+              {% endwith %}
+            </div>
           </div>
         </div>
-      </div>
 
-      {% if messages %}
-      <div id="message-list" class="container">
-        {% for message in messages %}
-        <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">
-          {{ message|safe }}
+        {% if messages %}
+        <div id="message-list" class="container">
+          {% for message in messages %}
+          <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">
+            {{ message|safe }}
+          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
-      </div>
-      {% endif %}
+        {% endif %}
 
-      <div id="main" class="container">
-        {% if breadcrumb %}{% include "includes/breadcrumb.html" %}{% endif %}
-        {% block content %}{% endblock %}
+        <div id="main" class="container">
+          {% if breadcrumb %}{% include "includes/breadcrumb.html" %}{% endif %}
+          {% block content %}{% endblock %}
+          <div class="push"></div>
+        </div>
+
+      </div>
+
+      {% load deployment_info %}
+      <div class="footer">
+        <div class="footer-inner container">
+          {% deployment_info %}
+        </div>
       </div>
 
     </body>
