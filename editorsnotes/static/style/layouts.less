@@ -1,6 +1,36 @@
 // Our layouts
 
-#main { margin-bottom: 18px; }
+html, body {
+  height: 100%;
+}
+
+// Bottom-bar
+//------------
+@bottomBarHeight: 2 * @baseLineHeight;
+
+.main-wrapper {
+  min-height: 100%;
+  margin: 0 auto -@bottomBarHeight;
+}
+
+.footer, .push {
+  height: @bottomBarHeight;
+}
+
+.push {
+  margin-top: 2em;
+}
+
+.footer {
+  background: #f6f6f6;
+}
+
+.footer-inner {
+  line-height: @bottomBarHeight;
+  font-size: 10px;
+  text-align: right;
+}
+
 
 // Navbars
 //---------
