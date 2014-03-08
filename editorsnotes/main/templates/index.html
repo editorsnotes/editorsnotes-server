@@ -32,6 +32,11 @@
   #features {
     margin-top: 22px;
   }
+  #features:after {
+    content: "";
+    clear: both;
+    display: table;
+  }
 
   #features-toggle {
     list-style-type: none;
@@ -40,9 +45,7 @@
     float: left;
   }
   #features-toggle li {
-    display: block;
     margin-bottom: 18px;
-    width: 224px;
   }
   #features-toggle li > a {
     display: inline-block;
