@@ -124,7 +124,7 @@ INSTALLED_APPS = (
     'editorsnotes.main',
     'editorsnotes.djotero',
     #'editorsnotes.refine',
-    'editorsnotes.admin_custom',
+    'editorsnotes.admin',
     'editorsnotes.api',
     'editorsnotes.search',
 )
