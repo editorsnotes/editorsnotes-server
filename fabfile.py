@@ -133,6 +133,7 @@ def watch_static():
                 if (datetime.datetime.now() - self.last_collected).total_seconds() < 1:
                     return
                 local('{python} manage.py collectstatic --noinput'.format(**env))
+                local('{python} manage.py compile_browserify'.format(**env))
                 sys.stdout.write('\n')
                 self.last_collected = datetime.datetime.now()
 
