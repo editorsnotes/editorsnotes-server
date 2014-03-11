@@ -127,6 +127,7 @@ INSTALLED_APPS = (
     'editorsnotes.admin',
     'editorsnotes.api',
     'editorsnotes.search',
+    'editorsnotes_app',
 )
 
 STATICFILES_FINDERS = (
