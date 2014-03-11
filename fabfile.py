@@ -141,6 +141,8 @@ def watch_static():
     observer = Observer()
     observer.schedule(
         event_handler, os.path.join(PROJ_ROOT, 'editorsnotes'), recursive=True)
+    observer.schedule(
+        event_handler, os.path.join(PROJ_ROOT, 'editorsnotes_app'), recursive=True)
     observer.start()
     print green('\nWatching *.js, *.css, and *.less files for changes.\n')
 
