@@ -39,7 +39,7 @@ def setup():
 def test():
     "Run the test suite locally."
     with lcd(PROJ_ROOT):
-        local('{python} manage.py test main admin_custom'.format(**env))
+        local('{python} manage.py test main admin'.format(**env))
 
 @task
 def sync_database():
