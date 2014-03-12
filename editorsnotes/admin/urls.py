@@ -16,5 +16,4 @@ urlpatterns = patterns('',
     url(r'^documents/(?P<document_id>\d+)/transcript/edit/$', views.documents.TranscriptAdminView.as_view(), name='main_transcript_add_or_change'),
     url(r'^notes/add/$', views.notes.NoteAdminView.as_view(), name='main_note_add'),
     url(r'^notes/(?P<note_id>\d+)/edit/$', views.notes.NoteAdminView.as_view(), name='main_note_change'),
-    url(r'^notes/(?P<note_id>\d+)/sections/$', views.notes.note_sections, name='main_note_sections_change'),
 )
