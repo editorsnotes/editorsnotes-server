@@ -6,7 +6,7 @@ function bindCitation($citation) {
       toolbar: $citation.prop('id') + '-toolbar',
       parserRules: wysihtml5ParserRules,
       useLineBreaks: false,
-      stylesheets: ['/static/function/wysihtml5/stylesheet.css']
+      stylesheets: ['/static/function/lib/wysihtml5/wysihtml5-stylesheet.css']
     });
 
   $('#' + prefix + '-toolbar').show();
@@ -81,7 +81,7 @@ $(document).ready(function() {
     toolbar: 'summary-toolbar',
     parserRules: wysihtml5ParserRules,
     useLineBreaks: false,
-    stylesheets: ['/static/function/wysihtml5/stylesheet.css']
+    stylesheets: ['/static/function/lib/wysihtml5/wysihtml5-stylesheet.css']
   });
 
   var formset = new citationFormset($('#citations-formset'));

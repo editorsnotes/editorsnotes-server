@@ -1,12 +1,5 @@
 {% extends "base.html" %}
 
-{% block js %}
-<script type="text/javascript" src="{{ STATIC_URL }}function/wymeditor/jquery.wymeditor.pack.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}function/admin.js"></script>
-{% endblock %}
-
-{% block css %}
-{% endblock %}
 {% block content %}
 <form enctype="multipart/form-data" method="post">{% csrf_token %}
   {{ form.as_p }}

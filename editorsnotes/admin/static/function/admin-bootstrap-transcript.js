@@ -93,7 +93,7 @@ $(document).ready(function () {
       return transcriptRules;
     })(wysihtml5ParserRules),
 
-    stylesheets: ['/static/function/wysihtml5/stylesheet.css']
+    stylesheets: ['/static/function/lib/wysihtml5/wysihtml5-stylesheet.css']
   });
 
   editor.on('load', function () {

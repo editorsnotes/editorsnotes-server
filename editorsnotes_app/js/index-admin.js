@@ -27,3 +27,10 @@ $.fn.editText = function (method) {
     $.error('No such method: ' + method);
   }
 }
+
+$(document).ready(function () {
+  // Initialize text editors
+  $('textarea.xhtml-textarea:visible').each(function (idx, textarea) {
+    $(textarea).editText();
+  });
+});
