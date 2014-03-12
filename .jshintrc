@@ -1,0 +1,15 @@
+{
+    "undef": true,
+    "unused": true,
+    "strict": true,
+    "maxlen": 100,
+
+    "asi": true,
+    "laxcomma": true,
+    "browser": true,
+    "globalstrict": true,
+    "globals": {
+        "module": false,
+        "require": false
+    }
+}
