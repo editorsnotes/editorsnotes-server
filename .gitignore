@@ -13,16 +13,17 @@
 .svn
 .tmp*
 
-/bin
-/build
-/lib
-/local
-/include
-/share
-/src
-/static
-/uploads
-/node_modules
+bin/*
+build/*
+lib/*
+local
+local/*
+include/*
+share/*
+src/*
+static/*
+uploads/*
+node_modules/*
 
 secret.txt
 settings_local.py
