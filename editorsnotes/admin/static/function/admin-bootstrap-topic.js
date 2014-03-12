@@ -12,7 +12,7 @@ function bindCitation($citation) {
   $('#' + prefix + '-toolbar').show();
 
   if ($input.length) {
-    autocompleteopts= $.extend($('body').data('baseAutocompleteOptions'), {
+    autocompleteopts = $.extend(EditorsNotes.baseAutoCompleteOpts, {
       select: function (e, ui) {
         if (!ui.item) return;
         $citation.find('.citation-document').addClass('document-selected');
@@ -29,9 +29,6 @@ function bindCitation($citation) {
           .appendTo(ul)
       }
   }
-
-
-
 }
 
 function citationFormset($el) {
