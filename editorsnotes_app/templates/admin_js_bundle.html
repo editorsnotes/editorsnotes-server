@@ -4,4 +4,7 @@
 <script type="text/javascript" src="{% static "function/lib/citeproc-js/citeproc.js" %}"></script>
 <script type="text/javascript" src="{% static "function/lib/wysihtml5/wysihtml5-0.3.0.js" %}"></script>
 
+{% comment %}This is depended on by admin views. It can be removed when that's no longer the case.{% endcomment %}
+<script type="text/javascript" src="{% static "function/lib/wysihtml5/wysihtml5-parser_rules.js" %}"></script>
+
 <script type="text/javascript" src="{% static "admin-bundle.js" %}"></script>
