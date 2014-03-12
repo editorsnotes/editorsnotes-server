@@ -10,7 +10,7 @@ browserify_bin = os.path.join(settings.EN_PROJECT_PATH,
 
 thisdir = os.path.dirname(__file__)
 base_index = os.path.join(thisdir, '..', '..', 'js', 'index-base.js')
-admin_index = os.path.join(thisdir, '..', '..', 'js', 'index-base.js')
+admin_index = os.path.join(thisdir, '..', '..', 'js', 'index-admin.js')
 
 class Command(BaseCommand):
     help = 'Create browserify bundles.'
