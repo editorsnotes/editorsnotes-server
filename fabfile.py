@@ -9,6 +9,7 @@ import fileinput
 import importlib
 import os
 import random
+import re
 import sys
 import time
 
@@ -120,6 +121,7 @@ def watch_static():
         abort(red('Install Watchdog python package to watch filesystem files.'))
 
     EXTS = ['.js', '.css', '.less']
+    browserify_template_pattern = re.compile('.*/editorsnotes_app/js/templates/.*html')
 
     class ChangeHandler(FileSystemEventHandler):
         def __init__(self, *args, **kwargs):
@@ -128,14 +130,20 @@ def watch_static():
         def on_any_event(self, event):
             if event.is_directory:
                 return
-            if os.path.splitext(event.src_path)[-1].lower() in EXTS:
-                now = datetime.datetime.now()
-                if (datetime.datetime.now() - self.last_collected).total_seconds() < 1:
-                    return
-                local('{python} manage.py collectstatic --noinput'.format(**env))
-                local('{python} manage.py compile_browserify'.format(**env))
-                sys.stdout.write('\n')
-                self.last_collected = datetime.datetime.now()
+            is_match = any((
+                os.path.splitext(event.src_path)[-1].lower() in EXTS,
+                browserify_template_pattern.match(event.src_path)
+            ))
+            if not is_match:
+                return
+            now = datetime.datetime.now()
+            if (datetime.datetime.now() - self.last_collected).total_seconds() < 1:
+                return
+
+            local('{python} manage.py collectstatic --noinput -v0'.format(**env))
+            local('{python} manage.py compile_browserify'.format(**env))
+            sys.stdout.write(green('Finished\n\n'))
+            self.last_collected = datetime.datetime.now()
 
     event_handler = ChangeHandler()
     observer = Observer()
