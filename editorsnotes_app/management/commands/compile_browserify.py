@@ -29,7 +29,7 @@ class Command(BaseCommand):
             raise CommandError('Browserify not installed. Run `npm install` '
                                'from the base directory.')
 
-        browserify_args = []
+        browserify_args = ['-d']
 
         if options.get('fast', False):
             browserify_args += []
