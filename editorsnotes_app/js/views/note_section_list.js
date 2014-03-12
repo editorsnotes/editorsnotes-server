@@ -35,7 +35,7 @@ module.exports = Backbone.View.extend({
   },
 
   render: function () {
-    var template = require('../templates/note_section_list')
+    var template = require('../templates/note_section_list.html')
 
     $('body').addClass('editing');
 

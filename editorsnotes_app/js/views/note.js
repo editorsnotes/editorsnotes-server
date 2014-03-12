@@ -33,7 +33,7 @@ module.exports = Backbone.View.extend({
 
   render: function () {
     var that = this
-      , template = require('../templates/note')
+      , template = require('../templates/note.html')
 
     this.$el.empty().html(template({ note: that.model.toJSON() }));
     this.sectionListView.setElement( that.$('#note-sections') );

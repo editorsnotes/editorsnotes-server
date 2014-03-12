@@ -3,10 +3,14 @@
     "browserify": "^3.32.1",
     "underscore": "^1.6.0",
     "backbone": "^1.1.2",
-    "browserify-shim": "^3.3.1"
+    "browserify-shim": "^3.3.1",
+    "node-underscorify": "0.0.7"
   },
   "browserify": {
-    "transform": ["browserify-shim"]
+    "transform": [
+      "browserify-shim",
+      "node-underscorify"
+    ]
   },
   "browserify-shim": {
     "jquery": "global:$",

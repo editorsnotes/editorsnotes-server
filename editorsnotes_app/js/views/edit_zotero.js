@@ -29,7 +29,7 @@ module.exports = Backbone.View.extend({
 
     $.getJSON('/api/document/itemtypes/')
       .done(function (itemTypes) {
-        var template = require('../templates/zotero_item_type_select')
+        var template = require('../templates/zotero_item_type_select.html')
           , select = template(itemTypes)
 
         that.$el.html('<hr />' + select);

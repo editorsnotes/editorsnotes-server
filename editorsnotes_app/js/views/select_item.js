@@ -47,7 +47,7 @@ module.exports = Backbone.View.extend({
   },
   render: function () {
     var that = this
-      , template = require('../templates/add_or_select_item')
+      , template = require('../templates/add_or_select_item.html')
       , $input
 
     this.$el.html(template({type: that.type}));

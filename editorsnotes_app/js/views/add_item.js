@@ -17,7 +17,7 @@ var Backbone = require('../backbone')
 module.exports = Backbone.View.extend({
   renderModal: function () {
     var that = this
-      , template = require('../templates/add_item_modal')
+      , template = require('../templates/add_item_modal.html')
       , widget
       , $loader
 
