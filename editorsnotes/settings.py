@@ -58,13 +58,16 @@ AUTHENTICATION_BACKENDS = (
 #################
 import os
 
-EN_PROJECT_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
+EN_PROJECT_PATH = os.path.abspath(os.path.join(
+    os.path.normpath(os.path.dirname(__file__)),
+    os.path.pardir
+))
 
 TEMPLATE_DIRS = (
-    os.path.abspath(os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'templates')),
+    os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'templates'),
 )
 STATICFILES_DIRS = (
-    os.path.abspath(os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'static')),
+    os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'static'),
 )
 
 # Override these variables in settings_local.py if desired
@@ -73,8 +76,8 @@ try:
 except ImportError:
     STORAGE_PATH = EN_PROJECT_PATH
 
-MEDIA_ROOT = os.path.abspath(os.path.join(STORAGE_PATH, 'uploads'))
-STATIC_ROOT = os.path.abspath(os.path.join(STORAGE_PATH, 'static'))
+MEDIA_ROOT = os.path.join(STORAGE_PATH, 'uploads')
+STATIC_ROOT = os.path.join(STORAGE_PATH, 'static')
 
 
 ###################
@@ -124,9 +127,10 @@ INSTALLED_APPS = (
     'editorsnotes.main',
     'editorsnotes.djotero',
     #'editorsnotes.refine',
-    'editorsnotes.admin_custom',
+    'editorsnotes.admin',
     'editorsnotes.api',
     'editorsnotes.search',
+    'editorsnotes_app',
 )
 
 STATICFILES_FINDERS = (
@@ -136,7 +140,7 @@ STATICFILES_FINDERS = (
 )
 BROWSERID_CREATE_USER = 'editorsnotes.main.views.auth.create_invited_user'
 
-LESSC_BINARY = 'lessc'
+LESSC_BINARY = os.path.join(EN_PROJECT_PATH, 'node_modules', '.bin', 'lessc')
 
 REST_FRAMEWORK = {
     #'FILTER_BACKEND': 'editorsnotes.api.filters.HaystackFilterBackend',

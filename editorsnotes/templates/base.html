@@ -23,24 +23,21 @@
     {% compress css %}{% block css %}{% endblock %}{% endcompress %}
     {% block css_nocompress %}{% endblock %}
 
+      <script type="text/javascript">
+        var EditorsNotes = {}
+
+        {% if request.user.is_authenticated and request.user.email %}
+          EditorsNotes.loggedInUser = '{{ request.user.email }}';
+        {% endif %}
+      </script>
+
     {% compress js %}
-    <script type="text/javascript" src="{% static "function/jquery/jquery-1.8.2.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "function/jquery/jquery-ui-1.10.4.custom.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "function/underscore.js" %}"></script>
-    <script type="text/javascript" src="{% static "function/backbone.js" %}"></script>
-    <script type="text/javascript" src="{% static "function/jquery/jquery.timeago.js" %}"></script>
-    <script type="text/javascript" src="{% static "function/jquery/jquery.ba-bbq.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "function/base.js" %}"></script>
-    <script type="text/javascript" src="{% static "function/bootstrap.min.js" %}"></script>
-    {% if request.user.is_authenticated and request.user.email %}
-    <script type="text/javascript">
-      EditorsNotes.loggedInUser = '{{ request.user.email }}';
-    </script>
-    {% endif %}
+      {% include "base_js_bundle.html" %}
+      {% if request.user.is_authenticated %}{% include "admin_js_bundle.html" %}{% endif %}
     {% endcompress %}
 
     <script type="text/javascript" src="https://login.persona.org/include.js"></script>
-    <script type="text/javascript" src="{% static "function/browserid.js" %}"></script>
+    <script type="text/javascript" src="{% static "function/lib/browserid.js" %}"></script>
 
     {% compress js %}{% block js %}{% endblock %}{% endcompress %}
     {% block js_nocompress %}{% endblock %}
