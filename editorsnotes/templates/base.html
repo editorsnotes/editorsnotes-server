@@ -37,7 +37,7 @@
     {% endcompress %}
 
     <script type="text/javascript" src="https://login.persona.org/include.js"></script>
-    <script type="text/javascript" src="{% static "function/browserid.js" %}"></script>
+    <script type="text/javascript" src="{% static "function/lib/browserid.js" %}"></script>
 
     {% compress js %}{% block js %}{% endblock %}{% endcompress %}
     {% block js_nocompress %}{% endblock %}
