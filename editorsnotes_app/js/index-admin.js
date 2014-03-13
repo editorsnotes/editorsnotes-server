@@ -10,6 +10,9 @@ EditorsNotes.Models = {
 EditorsNotes.Views = {
   Note: require('./views/note')
 }
+EditorsNotes.Utils = {
+  Autocompleter: require('./utils/autocomplete_widget')
+}
 
 $.fn.editText = function (method) {
   var editor = this.data('editor');
