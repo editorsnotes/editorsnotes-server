@@ -2,6 +2,7 @@
 
 var Backbone = require('../backbone')
   , $ = require('jquery')
+  , _ = require('underscore')
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')
 
@@ -10,10 +11,11 @@ module.exports = Backbone.View.extend({
   events: {
     'click #note-description': 'editDescription',
     'change select[name="note-status"]': 'updateStatus',
+    'input input.note-title-input': 'updateTitle'
   },
 
   initialize: function (options) {
-    var note = this.model
+    var note = this.model;
 
     this.sectionListView = new NoteSectionListView({ model: note });
     this.topicListView = new RelatedTopicsView({ collection: note.related_topics });
@@ -47,6 +49,14 @@ module.exports = Backbone.View.extend({
     });
     this.model.set('related_topics', topicNames).save();
   },
+
+  updateTitle: _.debounce(function (e) {
+    var title = e.target.value;
+    this.model.set('title', title);
+    if (title.length && !this.model.isNew()) {
+      this.model.save();
+    }
+  }, 1500),
 
   updateStatus: function (e) {
     this.model.set('status', e.target.value).save();
