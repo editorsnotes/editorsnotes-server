@@ -20,6 +20,10 @@ module.exports = Backbone.View.extend({
     this._sectionViews = [];
     this.activeRequests = [];
 
+    if (this.note.sections.length) {
+      this.note.sections.forEach(this.addSection, this);
+    }
+
     this.listenTo(this.note.sections, 'add', this.addSection);
     this.listenTo(this.note.sections, 'remove', this.removeSection);
     this.listenTo(this.note.sections, 'sync', this.saveOrder);
