@@ -17,7 +17,7 @@ class NoteList(ElasticSearchListMixin, BaseListAPIView):
     model = Note
     serializer_class = MinimalNoteSerializer
 
-class NoteDetail(ElasticSearchRetrieveMixin, BaseDetailView):
+class NoteDetail(BaseDetailView):
     model = Note
     serializer_class = NoteSerializer
     def post(self, request, *args, **kwargs):
