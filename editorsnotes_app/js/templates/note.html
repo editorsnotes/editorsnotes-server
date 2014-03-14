@@ -1,13 +1,18 @@
 <header><h2><%= note.title %></h2></header>
 <section id="note-details">
   <div id="note-about">
-    <div id="note-status"><strong>
-      This note is <span class="note-status-<%= note.status %>"><%= note.status %></span>
+    <div id="note-status">
+      <strong>This note is </strong>
+      <select name="note-status">
+        <% note.possibleStatuses.forEach(function (status) { %>
+        <option <% if (status == note.get('status')) { %>selected="selected"<% } %>><%= status %></option>
+        <% }); %>
+      </select>
     </strong></div>
     <div id="note-related-topics"></div>
   </div>
   <dl id="note-authorship">
   </dl>
 </section>
-<section id="note-description"><%= note.content %></section>
+<section id="note-description"><%= note.get('content') %></section>
 <section id="note-sections"></section>

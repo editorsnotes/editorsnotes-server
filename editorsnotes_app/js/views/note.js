@@ -8,7 +8,8 @@ var Backbone = require('../backbone')
 
 module.exports = Backbone.View.extend({
   events: {
-    'click #note-description': 'editDescription'
+    'click #note-description': 'editDescription',
+    'change select[name="note-status"]': 'updateStatus',
   },
 
   initialize: function (options) {
@@ -33,12 +34,11 @@ module.exports = Backbone.View.extend({
     var that = this
       , template = require('../templates/note.html')
 
-    this.$el.empty().html(template({ note: that.model.toJSON() }));
+    this.$el.empty().html(template({ note: that.model }));
     this.sectionListView.setElement( that.$('#note-sections') );
     this.sectionListView.render()
 
     this.topicListView.$el.appendTo( that.$('#note-authorship') );
-    // this.topicListView.render();
   },
 
   refreshRelatedTopics: function () {
@@ -46,6 +46,10 @@ module.exports = Backbone.View.extend({
       return model.get('name');
     });
     this.model.set('related_topics', topicNames).save();
+  },
+
+  updateStatus: function (e) {
+    this.model.set('status', e.target.value).save();
   },
 
   editDescription: function () {

@@ -15,7 +15,7 @@ module.exports = Backbone.Model.extend({
   defaults: {
     'title': null,
     'content': null,
-    'status': '1',
+    'status': 'open',
     'section_ordering': [],
     'related_topics': []
   },
@@ -46,6 +46,8 @@ module.exports = Backbone.Model.extend({
       return ordering.indexOf(section.id);
     }
   },
+
+  possibleStatuses: ['open', 'closed', 'hibernating'],
 
   parse: function (response) {
     var parsedNames = response.related_topics.map(function (t) { return t.name })
