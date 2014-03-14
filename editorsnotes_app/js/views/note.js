@@ -2,26 +2,27 @@
 
 var Backbone = require('../backbone')
   , $ = require('jquery')
+  , _ = require('underscore')
+  , NoteSectionListView = require('./note_section_list')
+  , RelatedTopicsView = require('./related_topics')
 
 
 module.exports = Backbone.View.extend({
   events: {
-    'click #note-description': 'editDescription'
+    'click #note-description': 'editDescription',
+    'change select[name="note-status"]': 'updateStatus',
+    'input input.note-title-input': 'updateTitle'
   },
 
   initialize: function (options) {
-    var note = this.model
-      , NoteSectionListView = require('./note_section_list')
+    var note = this.model;
 
     this.sectionListView = new NoteSectionListView({ model: note });
-    
-    /*
-    this.topicListView = new EditorsNotes.Views.RelatedTopicList({
-      model: note,
-      el: that.$('#note-related-topics');
-    });
-    */
+    this.topicListView = new RelatedTopicsView({ collection: note.related_topics });
 
+    this.listenTo(this.topicListView.collection, 'add', this.refreshRelatedTopics)
+    this.listenTo(this.topicListView.collection, 'remove', this.refreshRelatedTopics)
+    
     /*
     this.licenseChooser = new EditorsNotes.Views.NoteLicense({
       model: note,
@@ -35,10 +36,30 @@ module.exports = Backbone.View.extend({
     var that = this
       , template = require('../templates/note.html')
 
-    this.$el.empty().html(template({ note: that.model.toJSON() }));
+    this.$el.empty().html(template({ note: that.model }));
     this.sectionListView.setElement( that.$('#note-sections') );
     this.sectionListView.render()
-    // this.topicListView.render();
+
+    this.topicListView.$el.appendTo( that.$('#note-authorship') );
+  },
+
+  refreshRelatedTopics: function () {
+    var topicNames = this.model.related_topics.map(function (model) {
+      return model.get('name');
+    });
+    this.model.set('related_topics', topicNames).save();
+  },
+
+  updateTitle: _.debounce(function (e) {
+    var title = e.target.value;
+    this.model.set('title', title);
+    if (title.length && !this.model.isNew()) {
+      this.model.save();
+    }
+  }, 1500),
+
+  updateStatus: function (e) {
+    this.model.set('status', e.target.value).save();
   },
 
   editDescription: function () {

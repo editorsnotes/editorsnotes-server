@@ -2,13 +2,15 @@ function backboneInit(e) {
   var project = new EditorsNotes.Models.Project()
     , noteID = document.location.pathname.match(/notes\/(\d+)\//)[1]
     , note = project.notes.add({ id: noteID })
-    , noteView = new EditorsNotes.Views.Note({
-      model: note,
-      el: '#note'
-    });
+    , noteView
 
-    noteView.model.fetch()
-      .done(function () { noteView.render(); })
+    note.fetch()
+      .done(function () {
+        noteView = new EditorsNotes.Views.Note({
+          model: note,
+          el: '#note'
+        }).render();
+      })
       .fail(function () { alert('error') })
 
 }

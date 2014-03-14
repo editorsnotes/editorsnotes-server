@@ -1,7 +1,9 @@
 "use strict";
 
 var Backbone = require('../backbone')
+  , _ = require('underscore')
   , NoteSectionList = require('../collections/note_section')
+  , RelatedTopicList = require('../collections/topic')
 
 module.exports = Backbone.Model.extend({
   url: function() {
@@ -13,7 +15,7 @@ module.exports = Backbone.Model.extend({
   defaults: {
     'title': null,
     'content': null,
-    'status': '1',
+    'status': 'open',
     'section_ordering': [],
     'related_topics': []
   },
@@ -33,20 +35,31 @@ module.exports = Backbone.Model.extend({
       project: this.project
     });
 
+    this.related_topics = new RelatedTopicList([], {
+      project: this.project
+    });
+
     // Section ordering is a property of the Note, not the the individual
     // sections. So make them aware of that.
     this.sections.comparator = function (section) {
       var ordering = that.get('section_ordering');
       return ordering.indexOf(section.id);
     }
-    this.related_topics = [];
   },
 
+  possibleStatuses: ['open', 'closed', 'hibernating'],
+
   parse: function (response) {
-    var topicNames = response.related_topics.map(function (t) { return t.name });
+    var parsedNames = response.related_topics.map(function (t) { return t.name })
+      , existingNames = this.related_topics.map(function (t) { return t.get('name') })
+      , updateNames = !!_.difference(parsedNames, existingNames).length
 
     this.sections.set(response.sections);
-    this.set('related_topics', topicNames);
+
+    if (updateNames) {
+      this.related_topics.set(response.related_topics);
+      this.set('related_topics', parsedNames);
+    }
 
     delete response.sections;
     delete response.related_topics;

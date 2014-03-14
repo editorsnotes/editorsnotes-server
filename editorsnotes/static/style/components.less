@@ -54,6 +54,15 @@
   border-radius: 2px;
   left: 0;
 
+  .ui-autocomplete-header { border-bottom: 1px solid black; }
+  .ui-autocomplete-header a {
+    padding: 8px;
+    display: block;
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
   .ui-menu-item:not(:last-of-type) { border-bottom: 1px solid #f0f0f0; }
   .ui-menu-item a {
     padding: 8px;
@@ -65,4 +74,32 @@
     * { margin: 0; display: inline; }
   }
 
+}
+
+/* editing */
+
+#note-status select { margin-bottom: 0; width: 150px; }
+body.editing .note-title-input {
+  width: 90%;
+  font-size: 20px;
+  height: 30px;
+}
+
+@relatedTopicVerticalPadding: 4px;
+.related-topics-widget {
+  .related-topic {
+    font-size: 14px;
+    padding: @relatedTopicVerticalPadding 0;
+    &:hover {
+      background: #e2e2e2;
+    }
+  }
+  .related-topic a.destroy {
+    color: black;
+    padding: 6px 2*@relatedTopicVerticalPadding;
+    &:hover {
+      text-decoration: none;
+      color: @btnDangerBackground;
+    }
+  }
 }

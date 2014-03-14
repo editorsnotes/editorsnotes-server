@@ -112,7 +112,7 @@ class TopicManager(models.Manager):
                            creator=user, last_updater=user,
                            preferred_name=name or topic_node.preferred_name)
     def get_or_create_by_name(self, name, project, user):
-        qs = self.filter(preferred_name=name)
+        qs = self.filter(preferred_name=name, project=project)
         if qs.exists():
             return qs.get()
         node, topic = self.create_along_with_node(name, project, user)
