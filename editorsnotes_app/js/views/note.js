@@ -2,6 +2,8 @@
 
 var Backbone = require('../backbone')
   , $ = require('jquery')
+  , NoteSectionListView = require('./note_section_list')
+  , RelatedTopicsView = require('./related_topics')
 
 
 module.exports = Backbone.View.extend({
@@ -11,17 +13,13 @@ module.exports = Backbone.View.extend({
 
   initialize: function (options) {
     var note = this.model
-      , NoteSectionListView = require('./note_section_list')
 
     this.sectionListView = new NoteSectionListView({ model: note });
-    
-    /*
-    this.topicListView = new EditorsNotes.Views.RelatedTopicList({
-      model: note,
-      el: that.$('#note-related-topics');
-    });
-    */
+    this.topicListView = new RelatedTopicsView({ collection: note.related_topics });
 
+    this.listenTo(this.topicListView.collection, 'add', this.refreshRelatedTopics)
+    this.listenTo(this.topicListView.collection, 'remove', this.refreshRelatedTopics)
+    
     /*
     this.licenseChooser = new EditorsNotes.Views.NoteLicense({
       model: note,
@@ -38,7 +36,16 @@ module.exports = Backbone.View.extend({
     this.$el.empty().html(template({ note: that.model.toJSON() }));
     this.sectionListView.setElement( that.$('#note-sections') );
     this.sectionListView.render()
+
+    this.topicListView.$el.appendTo( that.$('#note-authorship') );
     // this.topicListView.render();
+  },
+
+  refreshRelatedTopics: function () {
+    var topicNames = this.model.related_topics.map(function (model) {
+      return model.get('name');
+    });
+    this.model.set('related_topics', topicNames).save();
   },
 
   editDescription: function () {

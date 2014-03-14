@@ -75,3 +75,22 @@
   }
 
 }
+
+@relatedTopicVerticalPadding: 4px;
+.related-topics-widget {
+  .related-topic {
+    font-size: 14px;
+    padding: @relatedTopicVerticalPadding 0;
+    &:hover {
+      background: #e2e2e2;
+    }
+  }
+  .related-topic a.destroy {
+    color: black;
+    padding: 6px 2*@relatedTopicVerticalPadding;
+    &:hover {
+      text-decoration: none;
+      color: @btnDangerBackground;
+    }
+  }
+}
