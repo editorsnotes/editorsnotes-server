@@ -1,12 +1,12 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , DocumentCollection = require('../collections/document')
-  , NoteCollection = require('../collections/note')
-  , TopicCollection = require('../collections/topic')
 
 module.exports = Backbone.Model.extend({
   initialize: function (attributes) {
+    var DocumentCollection = require('../collections/document')
+      , NoteCollection = require('../collections/note')
+      , TopicCollection = require('../collections/topic')
 
     // If a slug was not explictly passed to the project instance, try to
     // derive it from the current URL

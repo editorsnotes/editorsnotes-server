@@ -19,6 +19,5 @@ module.exports = ProjectSpecificBaseModel.extend({
       this.urlRoot() :
       this.urlRoot() + this.get('topic_node_id') + '/';
   }
-
 });
 
