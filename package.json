@@ -15,7 +15,9 @@
     "harness": "mocha",
     "files": "editorsnotes_app/js/test/*.js",
     "browsers": [
-      "firefox/latest"
+      "firefox/latest",
+      "chrome/latest",
+      "ie/latest"
     ]
   },
   "browserify": {
