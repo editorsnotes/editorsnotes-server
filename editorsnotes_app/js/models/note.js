@@ -6,6 +6,10 @@ var Backbone = require('../backbone')
   , RelatedTopicList = require('../collections/topic')
 
 module.exports = Backbone.Model.extend({
+  urlRoot: function () {
+    return this.project.url() + 'notes/';
+  },
+
   url: function() {
     // Same as EditorsNotes.Models.Document.url (ergo, same TODO as there)
     var origURL = Backbone.Model.prototype.url.call(this);
@@ -20,13 +24,13 @@ module.exports = Backbone.Model.extend({
     'related_topics': []
   },
 
-  initialize: function (options) {
+  initialize: function (attributes, options) {
     var that = this;
 
     // Same as in EditorsNotes.Models.Document.initialize (TODO)
-    this.project = (this.collection && this.collection.project);
+    this.project = (options && options.project) || (this.collection && this.collection.project);
     if (!this.project) {
-      throw new Error('Add notes through a project instance');
+      throw new Error('Notes must have a project set, either explicitly or through a collection.')
     }
 
     // Add a collection of NoteSection items to this note
