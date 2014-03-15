@@ -2,9 +2,15 @@
 
 var Backbone = require('backbone')
   , oldSync = Backbone.sync
+  , oldURL = Backbone.Model.prototype.url
   , $ = require('jquery')
 
 Backbone.$ = $
+
+Backbone.Model.prototype.url = function () {
+  var origURL = oldURL.call(this);
+  return origURL.slice(-1) === '/' ? origURL : origURL + '/';
+}
 
 Backbone.sync = function (method, model, options) {
   
