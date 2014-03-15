@@ -1,15 +1,8 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var ProjectSpecificBaseModel = require('./project_specific_base')
 
-module.exports = Backbone.Model.extend({
-  initialize: function () {
-    this.project = this.collection && this.collection.project;
-    if (!this.project) {
-      throw new Error('Add notes through a project instance');
-    }
-  },
-
+module.exports = ProjectSpecificBaseModel.extend({
   defaults: {
     preferred_name: null,
     topic_node_id: null,
@@ -17,10 +10,14 @@ module.exports = Backbone.Model.extend({
     summary: null
   },
 
+  urlRoot: function () {
+    return this.project.url() + 'topics/';
+  },
+
   url: function () {
     return this.isNew() ?
-      this.collection.url :
-      this.colection.url + this.get('topic_node_id') + '/';
+      this.urlRoot() :
+      this.urlRoot() + this.get('topic_node_id') + '/';
   }
 
 });
