@@ -36,7 +36,7 @@ module.exports = Backbone.Model.extend({
 
 
     if (results.map(function (p) { return p.get('slug') }).uniq().value().length > 1) {
-      throw new Error('Two different project passed. Not possible.')
+      throw new Error('Two different projects passed. Not possible.')
     }
 
     // Take the first result
