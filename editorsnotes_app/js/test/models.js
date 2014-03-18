@@ -131,7 +131,7 @@ describe('Document', function () {
     , dummyProject = new Project({ slug: 'emma' })
 
   it('should have the right base URL', function () {
-    var dokument = new Document({}, { project; dummyProject });
-    assert.equal(dokument.url(), '/api/projects/emma/documents');
+    var dokument = new Document({}, { project: dummyProject });
+    assert.equal(dokument.url(), '/api/projects/emma/documents/');
   });
 });
