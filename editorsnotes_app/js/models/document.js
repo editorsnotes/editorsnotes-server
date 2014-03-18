@@ -6,7 +6,6 @@ module.exports = ProjectSpecificBaseModel.extend({
   defaults: {
     description: null,
     zotero_data: null,
-    topics: []
   },
   
   urlRoot: function () {

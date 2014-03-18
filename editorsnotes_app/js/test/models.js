@@ -54,10 +54,18 @@ describe('Project-specific base model', function () {
   });
 });
 
+
 describe('Note', function () {
   var Note = require('../models/note')
     , Project = require('../models/project')
     , dummyProject = new Project({ slug: 'emma' })
+
+  it('should throw an error without being passed a project', function () {
+    assert.throws(
+      function () { new Note() }, 
+      /Must pass a project/
+    );
+  });
 
   it('should have an absolute url', function () {
     var note = new Note({}, { project: dummyProject });
@@ -72,5 +80,34 @@ describe('Note', function () {
   it('should have a default status of open', function () {
     var note = new Note({}, { project: dummyProject });
     assert.equal(note.get('status'), 'open');
+  });
+});
+
+
+describe('Topic', function () {
+  var Topic = require('../models/topic')
+    , Project = require('../models/project')
+    , dummyProject = new Project({ slug: 'emma' })
+
+  it('should have an absolute url as a new item', function () {
+    var topic = new Topic({}, { project: dummyProject });
+    assert.equal(topic.url(), '/api/projects/emma/topics/');
+  });
+
+  it('should derive its url from its topic node id', function () {
+    var topic = new Topic({ 'id': 99, 'topic_node_id': 88}, { project: dummyProject });
+    assert.equal(topic.url(), '/api/projects/emma/topics/88/');
+  });
+});
+
+
+describe('Document', function () {
+  var Document = require('../models/document')
+    , Project = require('../models/project')
+    , dummyProject = new Project({ slug: 'emma' })
+
+  it('should have the right base URL', function () {
+    var dokument = new Document({}, { project; dummyProject });
+    assert.equal(dokument.url(), '/api/projects/emma/documents');
   });
 });
