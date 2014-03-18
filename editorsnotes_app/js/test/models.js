@@ -56,7 +56,8 @@ describe('Project-specific base model', function () {
 
 
 describe('Related topics mixin', function () {
-  var RelatedTopicsMixin = require('../models/related_topics_mixin')
+  var Topic = require('../models/topic')
+    , RelatedTopicsMixin = require('../models/related_topics_mixin')
     , ProjectSpecificBaseModel = require('../models/project_specific_base')
     , TestModel = ProjectSpecificBaseModel.extend(RelatedTopicsMixin)
     , Project = require('../models/project')
@@ -67,6 +68,13 @@ describe('Related topics mixin', function () {
     obj.getRelatedTopicList().add({ 'preferred_name': 'Emma Goldman' });
     assert.equal(obj.get('related_topics').length, 1);
     assert.equal(obj.get('related_topics')[0], 'Emma Goldman');
+  });
+
+  it('Should not update a related_topics attribute for duplicate topics', function () {
+    var obj = new TestModel({}, { project: dummyProject });
+    obj.getRelatedTopicList().add({ preferred_name: 'Alexander Berkman', id: 123 });
+    obj.getRelatedTopicList().add({ preferred_name: 'Alexander Berkman', id: 123 });
+    assert.equal(obj.get('related_topics').length, 1);
   });
 
 });
@@ -119,26 +127,6 @@ describe('Topic', function () {
 
     assert.equal(topic.url(), '/api/projects/emma/topics/88/');
   });
-
-  it('should assume if only passed an id that it is the topic_node_id', function () {
-    var topic = new Topic({ 'id': 123 }, {
-      parse: true,
-      project: dummyProject
-    });
-
-    assert.equal(topic.get('topic_node_id'), 123);
-  });
-
-  it('should create an id attribute based on both project and topic_node_id', function () {
-    var topic = new Topic({ 'topic_node_id': 123 }, {
-      parse: true,
-      project: dummyProject
-    });
-
-    assert.equal(topic.isNew(), false);
-    assert.equal(topic.id, dummyProject.get('slug') + '123')
-  });
-
 });
 
 

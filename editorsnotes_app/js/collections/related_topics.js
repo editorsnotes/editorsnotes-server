@@ -9,9 +9,6 @@ module.exports = Backbone.Collection.extend({
   initialize: function (models, options) {
     this.project = options.project;
   },
-  parse: function (data) {
-    return _.isArray(data) ? data : data.related_topics;
-  },
   sync: function () { return null; },
   save: function () { return null; },
   fetch: function () {

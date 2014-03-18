@@ -14,32 +14,15 @@ Topic = ProjectSpecificBaseModel.extend({
     summary: null
   },
 
-  idAttribute: 'slugnode',
-
   initialize: function () {
     this.refreshRelatedTopics();
   },
 
   parse: function (response) {
-    if (!response.topic_node_id) {
-      if (response.id) {
-        response.topic_node_id = response.id;
-      } else if (response.url) {
-        response.topic_node_id = response.url.match(/\/topics\/([^\/]+)\//)[1];
-      }
-    }
-    response.slugnode = this.project.get('slug') + response.topic_node_id;
-    if (response.name && !response.preferred_name) {
-      response.preferred_name = response.name;
-    }
-
     this.getRelatedTopicList().set(response.related_topics || [], { parse: true });
-
     delete response.related_topics;
-    delete response.name;
-    delete response.id;
 
-    return response
+    return response;
   },
 
   urlRoot: function () {

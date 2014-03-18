@@ -2,12 +2,10 @@
 
 module.exports = {
   getRelatedTopicList: function () {
+    // This has to be inside here to prevent circular dependency (since
+    // topics can have related topics)
+    var RelatedTopicList = require('../collections/topic')
     if (!this.hasOwnProperty('relatedTopics')) {
-
-      // This has to be inside here to prevent circular dependency (since
-      // topics can have related topics)
-      var RelatedTopicList = require('../collections/related_topics');
-
       this.relatedTopics = new RelatedTopicList([], { project: this.project }); 
       this.listenTo(this.relatedTopics, 'add', this.refreshRelatedTopics);
       this.listenTo(this.relatedTopics, 'remove', this.refreshRelatedTopics);
