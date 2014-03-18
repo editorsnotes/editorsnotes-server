@@ -95,9 +95,33 @@ describe('Topic', function () {
   });
 
   it('should derive its url from its topic node id', function () {
-    var topic = new Topic({ 'id': 99, 'topic_node_id': 88}, { project: dummyProject });
+    var topic = new Topic({ 'id': 99, 'topic_node_id': 88 }, {
+      parse: true,
+      project: dummyProject
+    });
+
     assert.equal(topic.url(), '/api/projects/emma/topics/88/');
   });
+
+  it('should assume if only passed an id that it is the topic_node_id', function () {
+    var topic = new Topic({ 'id': 123 }, {
+      parse: true,
+      project: dummyProject
+    });
+
+    assert.equal(topic.get('topic_node_id'), 123);
+  });
+
+  it('should create an id attribute based on both project and topic_node_id', function () {
+    var topic = new Topic({ 'topic_node_id': 123 }, {
+      parse: true,
+      project: dummyProject
+    });
+
+    assert.equal(topic.isNew(), false);
+    assert.equal(topic.id, dummyProject.get('slug') + '123')
+  });
+
 });
 
 

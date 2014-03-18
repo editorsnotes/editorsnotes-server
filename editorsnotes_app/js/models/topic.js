@@ -10,6 +10,27 @@ module.exports = ProjectSpecificBaseModel.extend({
     summary: null
   },
 
+  idAttribute: 'slugnode',
+
+  parse: function (response) {
+    if (!response.topic_node_id) {
+      if (response.id) {
+        response.topic_node_id = response.id;
+      } else if (response.url) {
+        response.topic_node_id = response.url.match(/\/topics\/([^\/]+)\//)[1];
+      }
+    }
+    response.slugnode = this.project.get('slug') + response.topic_node_id;
+    if (response.name && !response.preferred_name) {
+      response.preferred_name = response.name;
+    }
+
+    delete response.name;
+    delete response.id;
+
+    return response
+  },
+
   urlRoot: function () {
     return this.project.url() + 'topics/';
   },
