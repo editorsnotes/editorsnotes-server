@@ -2,10 +2,11 @@
 
 var _ = require('underscore')
   , ProjectSpecificBaseModel = require('./project_specific_base')
+  , RelatedTopicsMixin = require('./related_topics_mixin')
   , NoteSectionList = require('../collections/note_section')
-  , RelatedTopicList = require('../collections/topic')
+  , Note
 
-module.exports = ProjectSpecificBaseModel.extend({
+Note = ProjectSpecificBaseModel.extend({
   defaults: {
     'title': null,
     'content': null,
@@ -17,9 +18,7 @@ module.exports = ProjectSpecificBaseModel.extend({
   initialize: function () {
     var that = this;
 
-    this.related_topics = new RelatedTopicList([], {
-      project: this.project
-    });
+    this.refreshRelatedTopics();
 
     // Add a collection of NoteSection items to this note
     this.sections = new NoteSectionList([], {
@@ -42,16 +41,8 @@ module.exports = ProjectSpecificBaseModel.extend({
   possibleStatuses: ['open', 'closed', 'hibernating'],
 
   parse: function (response) {
-    var parsedNames = response.related_topics.map(function (t) { return t.name })
-      , existingNames = this.related_topics.map(function (t) { return t.get('name') })
-      , updateNames = !!_.difference(parsedNames, existingNames).length
-
     this.sections.set(response.sections);
-
-    if (updateNames) {
-      this.related_topics.set(response.related_topics);
-      this.set('related_topics', parsedNames);
-    }
+    this.getRelatedTopicList().set(response.related_topics || [], { parse: true });
 
     delete response.sections;
     delete response.related_topics;
@@ -59,3 +50,7 @@ module.exports = ProjectSpecificBaseModel.extend({
     return response
   }
 });
+
+_.extend(Note.prototype, RelatedTopicsMixin);
+
+module.exports = Note;

@@ -55,6 +55,23 @@ describe('Project-specific base model', function () {
 });
 
 
+describe('Related topics mixin', function () {
+  var RelatedTopicsMixin = require('../models/related_topics_mixin')
+    , ProjectSpecificBaseModel = require('../models/project_specific_base')
+    , TestModel = ProjectSpecificBaseModel.extend(RelatedTopicsMixin)
+    , Project = require('../models/project')
+    , dummyProject = new Project({ slug: 'emma' })
+
+  it('Should set an object\'s related_topics attribute', function () {
+    var obj = new TestModel({}, { project: dummyProject });
+    obj.getRelatedTopicList().add({ 'preferred_name': 'Emma Goldman' });
+    assert.equal(obj.get('related_topics').length, 1);
+    assert.equal(obj.get('related_topics')[0], 'Emma Goldman');
+  });
+
+});
+
+
 describe('Note', function () {
   var Note = require('../models/note')
     , Project = require('../models/project')

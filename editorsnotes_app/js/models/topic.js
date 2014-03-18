@@ -1,16 +1,24 @@
 "use strict";
 
-var ProjectSpecificBaseModel = require('./project_specific_base')
+var _ = require('underscore')
+  , ProjectSpecificBaseModel = require('./project_specific_base')
+  , RelatedTopicsMixin = require('./related_topics_mixin')
+  , Topic
 
-module.exports = ProjectSpecificBaseModel.extend({
+Topic = ProjectSpecificBaseModel.extend({
   defaults: {
     preferred_name: null,
     topic_node_id: null,
     type: null,
+    related_topics: [],
     summary: null
   },
 
   idAttribute: 'slugnode',
+
+  initialize: function () {
+    this.refreshRelatedTopics();
+  },
 
   parse: function (response) {
     if (!response.topic_node_id) {
@@ -25,6 +33,9 @@ module.exports = ProjectSpecificBaseModel.extend({
       response.preferred_name = response.name;
     }
 
+    this.getRelatedTopicList().set(response.related_topics || [], { parse: true });
+
+    delete response.related_topics;
     delete response.name;
     delete response.id;
 
@@ -42,3 +53,5 @@ module.exports = ProjectSpecificBaseModel.extend({
   }
 });
 
+_.extend(Topic.prototype, RelatedTopicsMixin);
+module.exports = Topic;
