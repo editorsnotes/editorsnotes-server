@@ -1,7 +1,7 @@
 "use strict";
 
 var EditorsNotes = window.EditorsNotes
-  , $ = require('jquery')
+  , $ = require('../jquery')
   , Editor = require('./utils/text_editor')
 
 EditorsNotes.Models = {

@@ -1,6 +1,6 @@
 "use strict";
 
-var $ = require('jquery')
+var $ = require('../jquery')
   , EditorsNotes = window.EditorsNotes
 
 EditorsNotes.baseAutocompleteOpts = require('./utils/base_autocomplete_opts');

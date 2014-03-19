@@ -3,7 +3,7 @@
 var Backbone = require('backbone')
   , oldSync = Backbone.sync
   , oldURL = Backbone.Model.prototype.url
-  , $ = require('jquery')
+  , $ = require('./jquery')
 
 Backbone.$ = $
 

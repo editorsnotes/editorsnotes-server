@@ -1,7 +1,7 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , $ = require('jquery')
+  , $ = require('../jquery')
   , _ = require('underscore')
 
 module.exports = Backbone.View.extend({

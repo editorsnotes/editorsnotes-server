@@ -37,7 +37,7 @@ class Command(BaseCommand):
                    PREFIX + 'jquery/jquery-timeago.js',
                    'jquery',
                    'backbone')
-        browserify_args = ['-d', '--fast'] + ['--noparse={}'.format(f) for f in noparse]
+        browserify_args = ['-d'] #+ ['--noparse={}'.format(f) for f in noparse]
 
         if options.get('fast', False):
             browserify_args += []

@@ -1,7 +1,7 @@
 "use strict";
 
 var _ = require('underscore')
-  , $ = require('jquery')
+  , $ = require('../jquery')
   , wysihtml5 = require('wysihtml5')
   , toolbarTemplate = require('../templates/wysihtml5_toolbar.html')
   , defaults

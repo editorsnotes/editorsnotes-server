@@ -1,6 +1,6 @@
 "use strict";
 
-var $ = require('jquery')
+var $ = require('../jquery')
   , _ = require('underscore')
   , ALLOWED_MODELS = ['topics', 'documents', 'notes']
 
