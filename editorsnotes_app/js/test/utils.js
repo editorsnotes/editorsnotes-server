@@ -74,3 +74,90 @@ describe('Autocompleter widget', function () {
   });
 
 });
+
+describe('Text editor', function () {
+  var Editor = require('../utils/text_editor.js')
+
+  it('should fail without being passed an element', function () {
+    assert.throws(
+      function () { new Editor() },
+      /Must pass exactly one element/
+    );
+  });
+
+  it('should fail when passed a non-visible element', function () {
+    var el = global.document.createElement('div');
+    assert.throws(
+      function () { new Editor(el) },
+      /Can't edit text of element that is not visible/
+    );
+  });
+
+  describe('', function () {
+    var sandboxes = []
+      , sandbox
+      , testEl
+
+    beforeEach(function (done) {
+      sandbox = global.document.createElement('div');
+      testEl = global.document.createElement('p');
+
+      global.document.body.appendChild(sandbox);
+      testEl.innerHTML = 'Test content';
+      sandbox.appendChild(testEl);
+
+      sandboxes.push(sandbox);
+      done();
+    });
+
+    after(function (done) {
+      _.forEach(sandboxes, function (sandbox) {
+        global.document.body.removeChild(sandbox);
+      });
+      done();
+    });
+
+    it('should allow passing a non-jquery element', function () {
+      var editor = new Editor(testEl);
+      assert.equal(editor.$el[0], testEl);
+    });
+
+    it('should assign a unique ID to its element automatically', function () {
+      var editor = new Editor(testEl);
+      assert.notStrictEqual(editor.id, undefined);
+    });
+
+    it('should create its own textarea', function () {
+      var editor = new Editor(testEl);
+      assert.equal(editor.$textarea.length, 1);
+      assert.equal(editor.$textarea.is('textarea'), true);
+    });
+
+    it('should create its own toolbar', function () {
+      var editor = new Editor(testEl);
+      assert.equal(editor.$toolbar.is('div.wysihtml5-toolbar'), true);
+    });
+
+    it('should be able to get its own value', function (done) {
+      var editor = new Editor(testEl);
+      editor.editor.on('load', function () {
+        assert.equal(editor.value(), 'Test content');
+        done();
+      });
+    });
+
+    it('should clean up after itself', function (done) {
+      var editor = new Editor(testEl);
+      editor.editor.on('load', function () {
+        editor.value('<p>new value</p>');
+        editor.destroy();
+      });
+
+      editor.$el.on('editor:destroyed', function (e, val) {
+        assert.equal(val, '<p>new value</p>');
+        assert.equal(editor.$el.html(), '<p>new value</p>');
+        done();
+      });
+    });
+  });
+});
