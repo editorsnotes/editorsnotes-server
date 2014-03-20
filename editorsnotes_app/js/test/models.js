@@ -29,6 +29,7 @@ describe('Project-specific base model', function () {
       , testinstance
 
     testinstance = new ProjectSpecificBaseModel({}, { project: testproject });
+    assert.equal(testinstance.project.get('slug'), 'egp');
   });
 
   it('should allow a project passed in attributes', function () {
