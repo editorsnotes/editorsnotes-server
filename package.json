@@ -51,7 +51,7 @@
     "browsers": [
       "firefox/24..latest",
       "chrome/latest",
-      "ie/8..latest",
+      "ie/10..latest",
       "safari/6..latest",
       "opera/latest",
       "ipad/6..latest"

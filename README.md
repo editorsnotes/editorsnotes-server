@@ -14,3 +14,9 @@ and make sure you have the following dependencies
 2. Edit the generated "editorsnotes/settings\_local.py" file with your database information
 3. Run `fab sync_database`
 4. Start the development server with `fab runserver`
+
+## Browser compatibility
+Editors' Notes is tested against the latest versions of Firefox, Chrome, Safari, and Opera, as well as Internet Explorer 10+.
+
+[![browser support](https://ci.testling.com/editorsnotes/editorsnotes.png)
+](https://ci.testling.com/editorsnotes/editorsnotes)
