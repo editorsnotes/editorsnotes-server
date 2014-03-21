@@ -161,3 +161,28 @@ describe('Text editor', function () {
     });
   });
 });
+
+describe('Citation generator', function () {
+  var CitationGenerator = require('../utils/citation_generator');
+
+  it('should be able to be created', function () {
+    var testGenerator = new CitationGenerator();
+    assert.notEqual(testGenerator.engine, undefined);
+  });
+
+  it('should be able to produce citations', function () {
+    var testGenerator = new CitationGenerator()
+      , testData = {
+        id: 'testing',
+        type: 'Book',
+        title: 'Living My Life',
+        author: [{ family: 'Goldman', given: 'Emma' }],
+        issued: { raw: '1931' }
+      }
+
+    assert.equal(
+      testGenerator.makeCitation(testData),
+      'Emma Goldman, “Living My Life,” 1931.'
+    )
+  });
+});
