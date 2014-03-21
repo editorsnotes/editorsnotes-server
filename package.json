@@ -49,9 +49,12 @@
     "harness": "mocha",
     "files": "editorsnotes_app/js/test/*.js",
     "browsers": [
-      "firefox/latest",
+      "firefox/24..latest",
       "chrome/latest",
-      "ie/latest"
+      "ie/8..latest",
+      "safari/6..latest",
+      "opera/latest",
+      "ipad/6..latest"
     ]
   },
   "scripts": {
