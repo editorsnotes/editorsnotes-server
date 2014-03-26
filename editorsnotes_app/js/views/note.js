@@ -1,7 +1,7 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , $ = require('jquery')
+  , $ = require('../jquery')
   , _ = require('underscore')
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')

@@ -51,7 +51,8 @@ class TopicAssignmentField(RelatedField):
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
         self.many = True
     def field_to_native(self, obj, field_name):
-        return [{'name': ta.topic.preferred_name,
+        return [{'id':  ta.topic.id,
+                 'preferred_name': ta.topic.preferred_name,
                  'url': ta.topic.get_absolute_url()}
                 for ta in obj.related_topics.all()]
     def field_from_native(self, data, files, field_name, into):

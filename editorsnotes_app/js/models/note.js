@@ -1,17 +1,12 @@
 "use strict";
 
-var Backbone = require('../backbone')
-  , _ = require('underscore')
+var _ = require('underscore')
+  , ProjectSpecificBaseModel = require('./project_specific_base')
+  , RelatedTopicsMixin = require('./related_topics_mixin')
   , NoteSectionList = require('../collections/note_section')
-  , RelatedTopicList = require('../collections/topic')
+  , Note
 
-module.exports = Backbone.Model.extend({
-  url: function() {
-    // Same as EditorsNotes.Models.Document.url (ergo, same TODO as there)
-    var origURL = Backbone.Model.prototype.url.call(this);
-    return origURL.slice(-1) === '/' ? origURL : origURL + '/';
-  },
-
+Note = ProjectSpecificBaseModel.extend({
   defaults: {
     'title': null,
     'content': null,
@@ -20,22 +15,14 @@ module.exports = Backbone.Model.extend({
     'related_topics': []
   },
 
-  initialize: function (options) {
+  initialize: function () {
     var that = this;
 
-    // Same as in EditorsNotes.Models.Document.initialize (TODO)
-    this.project = (this.collection && this.collection.project);
-    if (!this.project) {
-      throw new Error('Add notes through a project instance');
-    }
+    this.refreshRelatedTopics();
 
     // Add a collection of NoteSection items to this note
     this.sections = new NoteSectionList([], {
       url: that.url(),
-      project: this.project
-    });
-
-    this.related_topics = new RelatedTopicList([], {
       project: this.project
     });
 
@@ -47,19 +34,15 @@ module.exports = Backbone.Model.extend({
     }
   },
 
+  urlRoot: function () {
+    return this.project.url() + 'notes/';
+  },
+
   possibleStatuses: ['open', 'closed', 'hibernating'],
 
   parse: function (response) {
-    var parsedNames = response.related_topics.map(function (t) { return t.name })
-      , existingNames = this.related_topics.map(function (t) { return t.get('name') })
-      , updateNames = !!_.difference(parsedNames, existingNames).length
-
     this.sections.set(response.sections);
-
-    if (updateNames) {
-      this.related_topics.set(response.related_topics);
-      this.set('related_topics', parsedNames);
-    }
+    this.getRelatedTopicList().set(response.related_topics || [], { parse: true });
 
     delete response.sections;
     delete response.related_topics;
@@ -67,3 +50,7 @@ module.exports = Backbone.Model.extend({
     return response
   }
 });
+
+_.extend(Note.prototype, RelatedTopicsMixin);
+
+module.exports = Note;

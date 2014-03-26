@@ -29,7 +29,15 @@ class Command(BaseCommand):
             raise CommandError('Browserify not installed. Run `npm install` '
                                'from the base directory.')
 
-        browserify_args = ['-d']
+        PREFIX = './editorsnotes_app/js/lib/'
+        noparse = (PREFIX + 'wysihtml5/wysihtml5-0.3.0.js',
+                   PREFIX + 'jquery/jquery-ui-1.10.4.custom.js',
+                   PREFIX + 'jquery/bootstrap.min.js',
+                   PREFIX + 'jquery/jquery-ba-bbq.min.js',
+                   PREFIX + 'jquery/jquery-timeago.js',
+                   'jquery',
+                   'backbone')
+        browserify_args = ['-d'] #+ ['--noparse={}'.format(f) for f in noparse]
 
         if options.get('fast', False):
             browserify_args += []

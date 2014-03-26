@@ -92,9 +92,10 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-        new_topic_node_id = response.data.get('id')
+        new_topic_node_id = response.data.get('topic_node_id')
         topic_obj = main_models.Topic.objects.get(
             topic_node_id=new_topic_node_id, project=self.project)
+        self.assertEqual(response.data.get('id'), topic_obj.id)
         self.assertEqual(etree.tostring(topic_obj.summary),
                          response.data.get('summary'))
 
@@ -154,7 +155,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         topic_data = response.data['results'][0]
 
-        self.assertEqual(topic_obj.topic_node_id, topic_data['id'])
+        self.assertEqual(topic_obj.topic_node_id, topic_data['topic_node_id'])
+        self.assertEqual(topic_obj.id, topic_data['id'])
         self.assertEqual(topic_obj.preferred_name, topic_data['preferred_name'])
         self.assertEqual(topic_data['preferred_name'], TEST_TOPIC['preferred_name'])
 
@@ -185,7 +187,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         updated_topic_obj = main_models.Topic.objects.get(
-            topic_node_id=response.data['id'], project=self.project)
+            topic_node_id=response.data['topic_node_id'], project=self.project)
         self.assertEqual(topic_obj, updated_topic_obj)
         self.assertEqual(data['summary'], response.data['summary'])
         self.assertEqual(data['summary'], etree.tostring(updated_topic_obj.summary))

@@ -1,6 +1,6 @@
 "use strict";
 
-var $ = require('jquery')
+var $ = require('../jquery')
   , _ = require('underscore')
   , ALLOWED_MODELS = ['topics', 'documents', 'notes']
 
@@ -22,7 +22,7 @@ function reprForModel(model) {
 function ModelCompleter(el, project, model, opts) {
   var $el;
 
-  if (!project) throw('Must pass project slug to argument');
+  if (!project) throw('Must pass project slug to function.');
   if (!_.contains(ALLOWED_MODELS, model)) throw('Invalid model.');
 
   $el = el ? $(el) : $('<input type="text">');
@@ -34,7 +34,7 @@ function ModelCompleter(el, project, model, opts) {
   this.url = '/api/projects/' + project + '/' + model + '/';
   this.opts = opts;
 
-  this.render();
+  this.enable();
 }
 
 ModelCompleter.prototype = {
@@ -62,7 +62,7 @@ ModelCompleter.prototype = {
   buildQuery: function (term) {
     return { 'q': term };
   },
-  render: function () {
+  enable: function () {
     var that = this
       , opts = this.getOpts();
 
@@ -90,8 +90,9 @@ ModelCompleter.prototype = {
       $.ui.autocomplete.prototype._renderMenu.call(this, ul, items);
     }
   },
-  destroy: function () {
+  disable: function () {
     this.$el.autocomplete('destroy');
+    this.$el.prop('placeholder', '');
   }
 }
 

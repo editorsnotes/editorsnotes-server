@@ -1,0 +1,40 @@
+<div class="zotero-item-edit">
+  <% var prefix = _.uniqueId('zoteroitem'); %>
+  <% _(data).forEach(function (val, key) { %>
+    
+    <% if (key === 'itemType') { %>
+    <div class="zotero-entry" data-zotero-key="<%= key %>">
+      <h5><%= i18n.translate(val).fetch() %></h5>
+      <input type="hidden" value="<%= val %>" />
+    </div>
+    <% } else if (key === 'tags') { %>
+      <% _(val).forEach(function (tag) { %>
+    <div class="zotero-entry" data-zotero-key="<%= key %>[]">
+      <input type="hidden" value="<%= tag.value %>" />
+    </div>
+      <% }); %>
+    <% } else if (key === 'creators') { %>
+
+    <% _(val).forEach(function(creator) { %>
+    <div class="zotero-entry" data-zotero-key="<%= key %>[]">
+      <% var creatorType = i18n.translate(creator.creatorType).fetch(); %>
+      <select data-zotero-attr="creatorType">
+        <option value="<%= creator.creatorType %>"><%= creatorType %></option>
+      </select>
+      <% if (creator.firstName || creator.lastName ) { %>
+        <input data-zotero-attr="lastName" value="<%= creator.lastName %>" />, 
+        <input data-zotero-attr="firstName" value="<%= creator.firstName %>" />
+      <% } else { %>
+        <input data-zotero-attr="name" value="<%= creator.name %>" />
+      <% } %>
+    </div>
+    <% }); %>
+
+    <% } else { %>
+    <div class="zotero-entry" data-zotero-key="<%= key %>">
+      <label for="<%= prefix + key %>"><%= i18n.translate(key).fetch() %></label>
+      <input id="<%= prefix + key %>" value="<%= val %>" />
+    </div>
+    <% } %>
+  <% }); %>
+</div>

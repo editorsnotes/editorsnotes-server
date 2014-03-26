@@ -1,6 +1,6 @@
 "use strict";
 
-var $ = require('jquery')
+var $ = require('../jquery')
   , truncateChars = require('./truncate_chars')
   , valMap = { topics: 'preferred_name', notes: 'title', documents: 'description' }
 

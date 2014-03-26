@@ -57,7 +57,7 @@ class DocumentTypeAdapter(object):
                             },
                             'related_topics': {
                                 'properties': {
-                                    'name': {'type': 'string', 'index': 'not_analyzed'},
+                                    'preferred_name': {'type': 'string', 'index': 'not_analyzed'},
                                     'url': {'type': 'string', 'index': 'not_analyzed'}
                                 }
                             },

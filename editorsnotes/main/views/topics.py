@@ -50,8 +50,7 @@ def topic(request, project_slug, topic_node_id):
         (topic.preferred_name, None)
     )
 
-    topic_query = {'query': {'term': {'serialized.related_topics.url':
-                                      topic.get_absolute_url() }}}
+    topic_query = {'query': {'term': {'serialized.related_topics.id': topic.id }}}
 
     model_searches = ( en_index.search_model(model, topic_query) for model in
                        (Document, Note, Topic) )

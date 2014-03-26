@@ -40,14 +40,14 @@ class TopicNodeSerializer(serializers.ModelSerializer):
 
 class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                       serializers.ModelSerializer):
-    id = Field(source='topic_node_id')
+    topic_node_id = Field(source='topic_node.id')
     type = Field(source='topic_node.type')
     url = URLField()
     project = ProjectSlugField()
     class Meta:
         model = Topic
-        fields = ('id', 'preferred_name', 'type', 'url', 'related_topics', 'project',
-                  'last_updated', 'summary')
+        fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
+                  'related_topics', 'project', 'last_updated', 'summary')
     def save_object(self, obj, **kwargs):
         if not obj.id:
             topic_node_id = self.context.get('topic_node_id', None)

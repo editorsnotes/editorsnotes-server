@@ -1,7 +1,7 @@
 "use strict";
 
 var _ = require('underscore')
-  , $ = require('jquery')
+  , $ = require('../jquery')
   , wysihtml5 = require('wysihtml5')
   , toolbarTemplate = require('../templates/wysihtml5_toolbar.html')
   , defaults
@@ -19,13 +19,23 @@ defaults = {
 }
 
 wysihtml5Opts = {
-  parserRules: require('./wysihtml5_parser_rules'),
+  parserRules: require('./wysihtml5_parser_rules_min'),
   stylesheets: ['/static/function/lib/wysihtml5/wysihtml5-stylesheet.css'],
   useLineBreaks: false
 }
 
 function Editor( $el, opts ){
-  var that = this
+  var that = this;
+
+  $el = $el instanceof $ ? $el : $($el);
+
+  if ($el.length !== 1 || $el[0].nodeType !== global.document.ELEMENT_NODE) {
+    throw new Error('Must pass exactly one element.')
+  }
+
+  if (!$el.is(':visible')) {
+    throw new Error('Can\'t edit text of element that is not visible.');
+  }
 
   this.options = _.extend({}, defaults, opts);
 
@@ -111,6 +121,7 @@ Editor.prototype.destroy = function () {
   }
 
   this.$el
+    .html(finalVal)
     .show()
     .removeData('editor')
     .trigger('editor:destroyed', finalVal); 
