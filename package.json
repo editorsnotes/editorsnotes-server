@@ -12,12 +12,14 @@
     "mocha": "^1.18.0",
     "testling": "^1.6.1",
     "sinon": "^1.9.0",
-    "brfs": "^1.0.0"
+    "brfs": "^1.0.0",
+    "jedify": "0.0.1"
   },
   "browserify": {
     "transform": [
       "browserify-shim",
       "node-underscorify",
+      "jedify",
       "brfs"
     ]
   },
