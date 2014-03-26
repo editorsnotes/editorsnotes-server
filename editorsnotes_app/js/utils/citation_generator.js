@@ -31,7 +31,7 @@ CitationGenerator.prototype = {
 
     _.forEach(data, function (cslItem) {
       if (!cslItem.hasOwnProperty('id')) {
-        cslItem.id = _.uniqueId('CSL-ITEM-');
+        cslItem.id = data.length > 1 ? _.uniqueId('CSL-ITEM-') : 'ITEM';
       }
       this.bibdata[cslItem.id] = cslItem;
       citationItems.push({ 'id': cslItem.id });
