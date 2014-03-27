@@ -18,7 +18,7 @@ module.exports = Backbone.View.extend({
     var note = this.model;
 
     this.sectionListView = new NoteSectionListView({ model: note });
-    this.topicListView = new RelatedTopicsView({ collection: note.related_topics });
+    this.topicListView = new RelatedTopicsView({ collection: note.relatedTopics });
 
     this.listenTo(this.topicListView.collection, 'add', this.refreshRelatedTopics)
     this.listenTo(this.topicListView.collection, 'remove', this.refreshRelatedTopics)
