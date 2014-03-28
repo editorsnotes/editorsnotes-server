@@ -37,17 +37,24 @@ class TopicNodeSerializer(serializers.ModelSerializer):
                                   args=(topic.project.slug, obj.id)))))
             for topic in obj.project_topics.select_related('project')]
 
+class AlternateNameField(serializers.SlugRelatedField):
+    def field_from_native(self, data, files, field_name, into):
+        if self.read_only:
+            return
+        into[field_name] = data.get(field_name, [])
 
 class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                       serializers.ModelSerializer):
     topic_node_id = Field(source='topic_node.id')
     type = Field(source='topic_node.type')
+    alternate_names = AlternateNameField(slug_field='name', many=True)
     url = URLField()
     project = ProjectSlugField()
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
-                  'related_topics', 'project', 'last_updated', 'summary')
+                  'alternate_names', 'related_topics', 'project',
+                  'last_updated', 'summary')
     def save_object(self, obj, **kwargs):
         if not obj.id:
             topic_node_id = self.context.get('topic_node_id', None)
@@ -61,4 +68,24 @@ class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                     last_updater_id=obj.creator_id)
                 topic_node_id = topic_node.id
             obj.topic_node_id = topic_node_id
-        return super(TopicSerializer, self).save_object(obj, **kwargs)
+        alternate_names = obj._related_data.pop('alternate_names')
+        super(TopicSerializer, self).save_object(obj, **kwargs)
+        self.save_alternate_names(obj, alternate_names)
+    def save_alternate_names(self, obj, alternate_names):
+        to_create = set(alternate_names)
+        to_delete = []
+
+        queryset = self.fields['alternate_names'].queryset or []
+        for alternate_name_obj in queryset:
+            name = alternate_name_obj.name
+            if name in alternate_names:
+                to_create.remove(name)
+            else:
+                to_delete.append(alternate_name_obj)
+
+        for alternate_name_obj in to_delete:
+            alternate_name_obj.delete()
+
+        user = self.context['request'].user
+        for name in to_create:
+            obj.alternate_names.create(name=name, creator_id=user.id)

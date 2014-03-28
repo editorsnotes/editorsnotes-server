@@ -31,6 +31,7 @@ def delete_es_indexes():
 
 TEST_TOPIC = {
     'preferred_name': u'Patrick Golden',
+    'alternate_names': [u'big guy', u'stretch'],
     'type': u'PER',
     'related_topics': [],
     'summary': u'<p>A writer of tests</p>'
