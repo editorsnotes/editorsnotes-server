@@ -1,11 +1,12 @@
 "use strict";
 
-var _ = require('underscore')
-  , ProjectSpecificBaseModel = require('./project_specific_base')
+var Backbone = require('../backbone')
+  , Cocktail = require('backbone.cocktail')
+  , ProjectSpecificMixin = require('./project_specific_mixin')
   , RelatedTopicsMixin = require('./related_topics_mixin')
   , Topic
 
-Topic = ProjectSpecificBaseModel.extend({
+module.exports = Topic = Backbone.Model.extend({
   defaults: {
     preferred_name: null,
     topic_node_id: null,
@@ -14,15 +15,10 @@ Topic = ProjectSpecificBaseModel.extend({
     summary: null
   },
 
-  initialize: function () {
-    this.refreshRelatedTopics();
-  },
-
-  parse: function (response) {
-    this.getRelatedTopicList().set(response.related_topics || [], { parse: true });
-    delete response.related_topics;
-
-    return response;
+  constructor: function () {
+    ProjectSpecificMixin.constructor.apply(this, arguments);
+    RelatedTopicsMixin.constructor.apply(this, arguments);
+    Backbone.Model.apply(this, arguments);
   },
 
   urlRoot: function () {
@@ -36,5 +32,4 @@ Topic = ProjectSpecificBaseModel.extend({
   }
 });
 
-_.extend(Topic.prototype, RelatedTopicsMixin);
-module.exports = Topic;
+Cocktail.mixin(Topic, RelatedTopicsMixin.mixin);

@@ -1,12 +1,13 @@
 "use strict";
 
-var _ = require('underscore')
-  , ProjectSpecificBaseModel = require('./project_specific_base')
+var Backbone = require('../backbone')
+  , Cocktail = require('backbone.cocktail')
+  , ProjectSpecificMixin = require('./project_specific_mixin')
   , RelatedTopicsMixin = require('./related_topics_mixin')
   , NoteSectionList = require('../collections/note_section')
   , Note
 
-Note = ProjectSpecificBaseModel.extend({
+module.exports = Note = Backbone.Model.extend({
   defaults: {
     'title': null,
     'content': null,
@@ -15,22 +16,20 @@ Note = ProjectSpecificBaseModel.extend({
     'related_topics': []
   },
 
-  initialize: function () {
-    var that = this;
-
-    this.refreshRelatedTopics();
-
-    // Add a collection of NoteSection items to this note
+  constructor: function () {
+    ProjectSpecificMixin.constructor.apply(this, arguments);
+    RelatedTopicsMixin.constructor.apply(this, arguments);
     this.sections = new NoteSectionList([], {
-      url: that.url(),
       project: this.project
     });
+    Backbone.Model.apply(this, arguments);
+  },
 
-    // Section ordering is a property of the Note, not the the individual
-    // sections. So make them aware of that.
+  initialize: function () {
+    var that = this;
+    this.sections.url = this.url();
     this.sections.comparator = function (section) {
-      var ordering = that.get('section_ordering');
-      return ordering.indexOf(section.id);
+      return that.get('section_order').indexOf(section.id);
     }
   },
 
@@ -42,15 +41,10 @@ Note = ProjectSpecificBaseModel.extend({
 
   parse: function (response) {
     this.sections.set(response.sections);
-    this.getRelatedTopicList().set(response.related_topics || [], { parse: true });
-
     delete response.sections;
-    delete response.related_topics;
 
-    return response
+    return response;
   }
 });
 
-_.extend(Note.prototype, RelatedTopicsMixin);
-
-module.exports = Note;
+Cocktail.mixin(Note, RelatedTopicsMixin.mixin)

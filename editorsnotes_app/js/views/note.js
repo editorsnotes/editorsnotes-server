@@ -20,9 +20,6 @@ module.exports = Backbone.View.extend({
     this.sectionListView = new NoteSectionListView({ model: note });
     this.topicListView = new RelatedTopicsView({ collection: note.relatedTopics });
 
-    this.listenTo(this.topicListView.collection, 'add', this.refreshRelatedTopics)
-    this.listenTo(this.topicListView.collection, 'remove', this.refreshRelatedTopics)
-    
     /*
     this.licenseChooser = new EditorsNotes.Views.NoteLicense({
       model: note,
@@ -41,13 +38,6 @@ module.exports = Backbone.View.extend({
     this.sectionListView.render()
 
     this.topicListView.$el.appendTo( that.$('#note-authorship') );
-  },
-
-  refreshRelatedTopics: function () {
-    var topicNames = this.model.related_topics.map(function (model) {
-      return model.get('name');
-    });
-    this.model.set('related_topics', topicNames).save();
   },
 
   updateTitle: _.debounce(function (e) {

@@ -2,14 +2,21 @@
 
 var assert = require('assert')
   , Backbone = require('../backbone')
+  , Cocktail = require('backbone.cocktail')
 
 describe('Project-specific base model', function () {
-  var ProjectSpecificBaseModel = require('../models/project_specific_base')
+  var ProjectSpecificMixin = require('../models/project_specific_mixin')
     , Project = require('../models/project')
+    , ProjectSpecificModel = Backbone.Model.extend({
+      constructor: function () {
+        ProjectSpecificMixin.constructor.apply(this, arguments);
+        Backbone.Model.apply(this, arguments);
+      }
+    })
 
   it('should throw an error without being passed a project', function () {
     assert.throws(
-      function () { new ProjectSpecificBaseModel() }, 
+      function () { new ProjectSpecificModel() }, 
       /Must pass a project/
     );
   });
@@ -20,7 +27,7 @@ describe('Project-specific base model', function () {
       , testinstance
 
     c.project = new Project({ 'slug': 'egp' });
-    testinstance = new ProjectSpecificBaseModel({}, { collection: c });
+    testinstance = new ProjectSpecificModel({}, { collection: c });
     assert.equal(testinstance.project, c.project);
   });
 
@@ -28,12 +35,12 @@ describe('Project-specific base model', function () {
     var testproject = new Project({ 'slug': 'egp' })
       , testinstance
 
-    testinstance = new ProjectSpecificBaseModel({}, { project: testproject });
+    testinstance = new ProjectSpecificModel({}, { project: testproject });
     assert.equal(testinstance.project.get('slug'), 'egp');
   });
 
   it('should allow a project passed in attributes', function () {
-    var testinstance = new ProjectSpecificBaseModel({
+    var testinstance = new ProjectSpecificModel({
       'name': 'nothing in particular',
       'project': {
         'name': 'Emma Goldman Papers',
@@ -49,7 +56,7 @@ describe('Project-specific base model', function () {
       , data = { 'project': { 'name': 'whatever', 'url': 'http://example.com/api/projects/not_egp/' }}
 
     assert.throws(
-      function () { new ProjectSpecificBaseModel(data, { project: testproject }) },
+      function () { new ProjectSpecificModel(data, { project: testproject }) },
       /Two different projects passed/
     );
   });
@@ -58,23 +65,31 @@ describe('Project-specific base model', function () {
 
 describe('Related topics mixin', function () {
   var Topic = require('../models/topic')
-    , RelatedTopicsMixin = require('../models/related_topics_mixin')
-    , ProjectSpecificBaseModel = require('../models/project_specific_base')
-    , TestModel = ProjectSpecificBaseModel.extend(RelatedTopicsMixin)
     , Project = require('../models/project')
+    , RelatedTopicsMixin = require('../models/related_topics_mixin')
+    , ProjectSpecificMixin = require('../models/project_specific_mixin')
+    , TestModel = Backbone.Model.extend({
+      constructor: function () {
+        ProjectSpecificMixin.constructor.apply(this, arguments);
+        RelatedTopicsMixin.constructor.apply(this, arguments);
+        Backbone.Model.apply(this, arguments);
+      }
+    })
     , dummyProject = new Project({ slug: 'emma' })
+
+  Cocktail.mixin(TestModel, RelatedTopicsMixin.mixin);
 
   it('Should set an object\'s related_topics attribute', function () {
     var obj = new TestModel({}, { project: dummyProject });
-    obj.getRelatedTopicList().add({ 'preferred_name': 'Emma Goldman' });
+    obj.relatedTopics.add({ 'preferred_name': 'Emma Goldman' });
     assert.equal(obj.get('related_topics').length, 1);
     assert.equal(obj.get('related_topics')[0], 'Emma Goldman');
   });
 
   it('Should not update a related_topics attribute for duplicate topics', function () {
     var obj = new TestModel({}, { project: dummyProject });
-    obj.getRelatedTopicList().add({ preferred_name: 'Alexander Berkman', id: 123 });
-    obj.getRelatedTopicList().add({ preferred_name: 'Alexander Berkman', id: 123 });
+    obj.relatedTopics.add({ preferred_name: 'Alexander Berkman', id: 123 });
+    obj.relatedTopics.add({ preferred_name: 'Alexander Berkman', id: 123 });
     assert.equal(obj.get('related_topics').length, 1);
   });
 
