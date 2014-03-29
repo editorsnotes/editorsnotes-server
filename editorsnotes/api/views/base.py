@@ -107,7 +107,9 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
     def pre_save(self, obj):
-        obj.creator = obj.last_updater = self.request.user
+        obj.creator = self.request.user
+        if hasattr(obj, 'last_updater'):
+            obj.last_updater = self.request.user
         super(BaseListAPIView, self).pre_save(obj)
 
 @create_revision_on_methods('update', 'destroy')

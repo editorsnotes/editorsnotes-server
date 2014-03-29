@@ -1,10 +1,13 @@
 from collections import OrderedDict
 import json
 
+from lxml import etree
 from rest_framework import serializers
+from rest_framework.fields import Field
 from rest_framework.relations import RelatedField
+from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Document
+from editorsnotes.main.models import Document, Citation
 
 from .base import (
     RelatedTopicSerializerMixin, ProjectSpecificItemMixin, URLField,
@@ -38,3 +41,19 @@ class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                 err = 'Zotero data must at least include an itemType field.'
                 raise serializers.ValidationError(err)
         return attrs
+
+class CitationSerializer(serializers.ModelSerializer):
+    document = serializers.SerializerMethodField('get_document_url')
+    document_description = serializers.SerializerMethodField('get_document_description')
+    class Meta:
+        model = Citation
+        fields = ('id', 'document', 'document_description', 'notes')
+    def get_document_description(self, obj):
+        return etree.tostring(obj.document.description)
+    def get_document_url(self, obj):
+        request = self.context['request']
+        return reverse('api:api-documents-detail',
+                       args=[request.project.slug, obj.document_id],
+                       request=request)
+
+
