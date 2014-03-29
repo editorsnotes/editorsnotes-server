@@ -2,10 +2,12 @@ from collections import OrderedDict
 
 from django.core.urlresolvers import reverse
 
+from lxml import etree
 from rest_framework import serializers
 from rest_framework.fields import Field
+from rest_framework.relations import RelatedField
 
-from editorsnotes.main.models.topics import Topic, TopicNode
+from editorsnotes.main.models import Topic, TopicNode, Citation
 
 from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                    ProjectSlugField, URLField)
@@ -43,6 +45,16 @@ class AlternateNameField(serializers.SlugRelatedField):
             return
         into[field_name] = data.get(field_name, [])
 
+class TopicCitationField(RelatedField):
+    read_only = True
+    many = True
+    def field_to_native(self, obj, field_name):
+        return [{'url': reverse('api:api-topic-citations-detail', args=(obj.project.slug, obj.id, citation.id)),
+                 'document': reverse('api:api-documents-detail', args=(obj.project.slug, citation.document_id)),
+                 'document_description': etree.tostring(citation.document.description),
+                 'notes': etree.tostring(citation.notes) if citation.has_notes() else None}
+                for citation in Citation.objects.get_for_object(obj)]
+
 class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                       serializers.ModelSerializer):
     topic_node_id = Field(source='topic_node.id')
@@ -50,11 +62,13 @@ class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     alternate_names = AlternateNameField(slug_field='name', many=True)
     url = URLField()
     project = ProjectSlugField()
+    #citations = serializers.HyperlinkedIdentityField(view_name='topic-citation-detail')
+    citations = TopicCitationField()
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
                   'alternate_names', 'related_topics', 'project',
-                  'last_updated', 'summary')
+                  'last_updated', 'summary', 'citations')
     def save_object(self, obj, **kwargs):
         if not obj.id:
             topic_node_id = self.context.get('topic_node_id', None)
