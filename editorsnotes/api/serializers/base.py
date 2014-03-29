@@ -37,7 +37,7 @@ class ProjectSpecificItemMixin(object):
         instance = super(ProjectSpecificItemMixin, self).restore_object(attrs, instance)
         if not instance.pk:
             instance.project = self.context['project']
-        elif instance.project != self.context['project']:
+        elif 'project' in self.context and instance.project != self.context['project']:
             raise ValueError('Can\'t change project from serializer.')
         return instance
 
