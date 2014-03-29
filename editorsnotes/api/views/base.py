@@ -94,6 +94,11 @@ class ProjectSpecificMixin(object):
         context = super(ProjectSpecificMixin, self).get_serializer_context()
         context['project'] = self.request.project
         return context
+    def get_queryset(self):
+        qs = super(ProjectSpecificMixin, self).get_queryset()
+        if hasattr(qs.model, 'project'):
+            qs = qs.filter(project_id=self.request.project.id)
+        return qs
 
 @create_revision_on_methods('create')
 class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
