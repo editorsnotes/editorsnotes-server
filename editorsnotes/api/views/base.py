@@ -106,7 +106,6 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
     paginate_by_param = 'page_size'
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
-    renderer_classes = (JSONRenderer,)
     def pre_save(self, obj):
         obj.creator = obj.last_updater = self.request.user
         super(BaseListAPIView, self).pre_save(obj)
@@ -115,18 +114,18 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
 class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
-    renderer_classes = (JSONRenderer,)
     def pre_save(self, obj):
-        obj.last_updater = self.request.user
+        if hasattr(obj, 'last_updater'):
+            obj.last_updater = self.request.user
         super(BaseDetailView, self).pre_save(obj)
 
 @api_view(('GET',))
 def root(request):
     return Response({
-        'auth-token': reverse('api:obtain-auth-token'),
-        'topics': reverse('api:api-topic-nodes-list'),
-        'projects': reverse('api:api-projects-list'),
-        'search': reverse('api:api-search') + '?q={query}'
+        'auth-token': reverse('api:obtain-auth-token', request=request),
+        'topics': reverse('api:api-topic-nodes-list', request=request),
+        'projects': reverse('api:api-projects-list', request=request),
+        'search': reverse('api:api-search', request=request) + '?q={query},'
         #'notes': reverse('api:api-notes-list'),
         #'documents': reverse('api:api-documents-list')
     })
