@@ -1,0 +1,33 @@
+<div>
+  <h2><%= topic.get('preferred_name') %></h2>
+</div>
+
+<div id="topic-related-topics">
+  <h3>Related topics</h3>
+</div>
+
+<div>
+  <h3>Type</h3>
+  <option>
+    <select><%= topic.get('type') %></select>
+  </option>
+</div>
+
+<div>
+  <h3>Alternate forms</h3>
+  <ul>
+    <% _.forEach(topic.get('alternate_names'), function (name) { %>
+    <li><%= name %></li>
+    <% }); %>
+  </ul>
+  <input type="text" placeholder="add alternate name" />
+</div>
+
+<div>
+  <h3>Article</h3>
+  <div id="topic-summary"><%= topic.get('summary') %></div>
+</div>
+
+<div>
+  <h3>Citations</h3>
+</div>
