@@ -158,8 +158,6 @@ def update_zotero_info(request, username=None):
     return HttpResponseRedirect(redirect_url)
 
 def zotero_template(request):
-    if not request.is_ajax():
-        return HttpResponseBadRequest()
     item_type = request.GET.get('itemType')
     if item_type:
         item_template = utils.get_item_template(item_type)
@@ -169,8 +167,6 @@ def zotero_template(request):
     return HttpResponse(form.as_p())
 
 def get_blank_item(request):
-    if not request.is_ajax():
-        return HttpResponseBadRequest()
     item_type = request.GET.get('itemType')
     blank_item = utils.get_item_template(item_type)
     form = ZoteroWidget()
@@ -182,7 +178,7 @@ def get_item_types(request):
     return HttpResponse(json.dumps(types), mimetype='application/json')
 
 def get_creator_types(request):
-    if not request.is_ajax() or not request.GET.get('itemType', False):
+    if not request.GET.get('itemType', False):
         return HttpResponseBadRequest()
     item_type = request.GET.get('itemType')
     creators_json = utils.get_creator_types(item_type)
