@@ -52,7 +52,7 @@ module.exports = Backbone.View.extend({
 
   renderItemTypeSelect: function (itemTypes) {
     var template = require('../templates/zotero_item_type_select.html');
-    this.$el.html(template(itemTypes));
+    this.$el.html(template({ _: _, itemTypes: itemTypes }));
     this.$('select').prop('selectedIndex', -1);
   },
 
