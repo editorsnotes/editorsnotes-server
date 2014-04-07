@@ -142,7 +142,8 @@ def watch_static():
                 return
 
             local('{python} manage.py collectstatic --noinput -v0'.format(**env))
-            local('{python} manage.py compile_browserify --fast'.format(**env))
+            if 'editorsnotes_app' in event.src_path:
+                local('{python} manage.py compile_browserify --fast'.format(**env))
             sys.stdout.write(green('Finished\n\n'))
             self.last_collected = datetime.datetime.now()
 
