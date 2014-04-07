@@ -103,3 +103,26 @@ body.editing .note-title-input {
     }
   }
 }
+
+/* Editing a zotero item, as rendered by the browserify template */
+.zotero-item-edit {
+  .zotero-entry {
+    padding: 5px 0;
+
+    & > * { display: inline-block; }
+
+    // The first child will always be the field label
+    & > :first-child {
+      width: 120px;
+      margin: 0 6px 0;
+      text-align: right;
+    }
+
+    // Lone inputs will be 600px; dual inputs (ie first/last name) ~half that.
+    & > input {
+      padding: 3px 4px;
+      width: 291px;
+    }
+    & > input:only-of-type { width: 600px; }
+  }
+}
