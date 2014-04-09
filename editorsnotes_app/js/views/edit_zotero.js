@@ -10,7 +10,7 @@ var Backbone = require('../backbone')
 module.exports = Backbone.View.extend({
   events: {
     'change .item-type-select': 'handleSelectItemType',
-    'click .common-item-types li': 'handleSelectItemType',
+    'click .common-item-types a': 'handleSelectItemType',
     'click .add-creator': 'addCreator',
     'click .remove-creator': 'removeCreator',
     'input .zotero-entry': 'updateZoteroData'
