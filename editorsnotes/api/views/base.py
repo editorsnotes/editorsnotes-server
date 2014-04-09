@@ -108,7 +108,7 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
     parser_classes = (JSONParser,)
     def pre_save(self, obj):
         obj.creator = self.request.user
-        if hasattr(obj, 'last_updater'):
+        if hasattr(obj.__class__, 'last_updater'):
             obj.last_updater = self.request.user
         super(BaseListAPIView, self).pre_save(obj)
 
@@ -117,7 +117,7 @@ class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
     def pre_save(self, obj):
-        if hasattr(obj, 'last_updater'):
+        if hasattr(obj.__class__, 'last_updater'):
             obj.last_updater = self.request.user
         super(BaseDetailView, self).pre_save(obj)
 

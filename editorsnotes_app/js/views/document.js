@@ -48,7 +48,7 @@ module.exports = Backbone.View.extend({
     this.model.save()
       .always(this.toggleLoaders.bind(this, false))
       .done(function () {
-        window.location.href = window.location.href.replace(/edit\//, '');
+        window.location.href = that.model.url().replace('\/api\/', '/');
       });
   }
 

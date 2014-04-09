@@ -43,11 +43,11 @@ module.exports = Backbone.View.extend({
   },
 
   fetchItemTypes: function () {
-    return $.getJSON('/api/metadata/documents/itemtypes/');
+    return $.getJSON('/api/metadata/documents/item_types/');
   },
 
   fetchItemTemplate: function (itemType) {
-    return $.getJSON('/api/metadata/documents/itemtemplate/', { itemType: itemType });
+    return $.getJSON('/api/metadata/documents/item_template/', { itemType: itemType });
   },
 
   renderItemTypeSelect: function (itemTypes) {

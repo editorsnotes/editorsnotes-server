@@ -118,8 +118,11 @@ class BootstrappedBackboneView(ProjectSpecificMixin, BreadcrumbMixin, TemplateVi
         assert getattr(self, 'serializer_class'), ("Must define a django-rest"
                                                    "framework serializer as a "
                                                    "serializer class.")
-        serializer = self.serializer_class(self.object)
-        context['bootstrap'] = JSONRenderer().render(serializer.data)
+        if self.object:
+            serializer = self.serializer_class(self.object)
+            context['bootstrap'] = JSONRenderer().render(serializer.data)
+        else:
+            context['bootstrap'] = 'null';
         return context
 
 class BaseAdminView(ProcessInlineFormsetsView, ProjectSpecificMixin,
