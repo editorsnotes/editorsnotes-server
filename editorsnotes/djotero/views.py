@@ -6,9 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from editorsnotes.main.models.auth import User
 
-from .forms import ZoteroForm
 from .models import CachedArchive
-from .widgets import ZoteroWidget
 from . import utils
 
 #@login_required
@@ -41,7 +39,7 @@ from . import utils
 #        zotero_uid = request.user.get_profile().zotero_uid
 #        zotero_key = request.user.get_profile().zotero_key
 #    libraries = utils.get_libraries(zotero_uid, zotero_key)
-#    return HttpResponse(json.dumps(libraries), mimetype='application/json')
+#    return HttpResponse(json.dumps(libraries), content_type='application/json')
 #
 #def collections(request):
 #    if not request.is_ajax():
@@ -50,7 +48,7 @@ from . import utils
 #    top_level = request.GET.get('top', 0)
 #    zotero_key = request.user.get_profile().zotero_key
 #    collections = utils.get_collections(zotero_key, loc, int(top_level))
-#    return HttpResponse(json.dumps(collections), mimetype='application/json')
+#    return HttpResponse(json.dumps(collections), content_type='application/json')
 #    
 #def items(request):
 #    if not request.is_ajax():
@@ -59,7 +57,7 @@ from . import utils
 #    opts = json.loads(request.GET.get('opts', '{}'))
 #    zotero_key = request.user.get_profile().zotero_key
 #    items = utils.get_items(zotero_key, loc, opts)
-#    return HttpResponse(json.dumps(items), mimetype='application/json')
+#    return HttpResponse(json.dumps(items), content_type='application/json')
 #
 #def items_continue(request):
 #    request.session['import_complete'] = False
@@ -157,39 +155,25 @@ def update_zotero_info(request, username=None):
     redirect_url = request.GET.get('return_to', '/')
     return HttpResponseRedirect(redirect_url)
 
-def zotero_template(request):
-    item_type = request.GET.get('itemType')
-    if item_type:
-        item_template = utils.get_item_template(item_type)
-        form = ZoteroForm(data={'zotero_data': item_template})
-    else:
-        form = ZoteroForm()
-    return HttpResponse(form.as_p())
+###
 
-def get_blank_item(request):
+def item_template(request):
     item_type = request.GET.get('itemType')
-    blank_item = utils.get_item_template(item_type)
-    form = ZoteroWidget()
-    new_form = form.render('', blank_item)
-    return HttpResponse(new_form, mimetype='text/plain')
+    if not item_type:
+        return HttpResponseBadRequest()
+    item_template = utils.get_item_template(item_type)
+    return HttpResponse(json.dumps(item_template), content_type='application/json')
 
-def get_item_types(request):
+def item_types(request):
     types = utils.get_item_types()
-    return HttpResponse(json.dumps(types), mimetype='application/json')
+    return HttpResponse(json.dumps(types), content_type='application/json')
 
-def get_creator_types(request):
-    if not request.GET.get('itemType', False):
-        return HttpResponseBadRequest()
+def item_type_creators(request):
     item_type = request.GET.get('itemType')
-    creators_json = utils.get_creator_types(item_type)
-    return HttpResponse(creators_json, mimetype='application/json')
-
-def zotero_json_to_csl(request):
-    if not request.is_ajax() or not request.GET.get('zotero-json', False):
+    if not item_type:
         return HttpResponseBadRequest()
-    zotero_json = request.GET.get('zotero-json')
-    csl = utils.as_csl(zotero_json, 'ITEM-1')
-    return HttpResponse(csl, mimetype='application/json')
+    creators = utils.get_creator_types(item_type)
+    return HttpResponse(json.dumps(creators), content_type='application/json')
 
 def archive_to_dict(archive):
     archive_dict = {}
@@ -203,4 +187,4 @@ def api_archives(request):
         name__icontains=q
     )
     archives = [ archive_to_dict(a) for a in queryset ]
-    return HttpResponse(json.dumps(archives), mimetype='text/plain')
+    return HttpResponse(json.dumps(archives), content_type='text/plain')
