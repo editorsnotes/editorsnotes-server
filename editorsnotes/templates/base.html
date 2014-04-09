@@ -129,5 +129,7 @@
         </div>
       </div>
 
+      {% if request.user.is_authenticated %}{% csrf_token %}{% endif %}
+
     </body>
 </html>
