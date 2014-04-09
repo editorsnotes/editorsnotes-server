@@ -3,10 +3,12 @@ import json
 
 from django.db import models
 
-import utils
+from . import utils
+from .fields import ZoteroField
+
 
 class ZoteroItem(models.Model):
-    zotero_data = models.TextField(blank=True, null=True)
+    zotero_data = ZoteroField(blank=True, null=True)
     zotero_link = models.OneToOneField('ZoteroLink', blank=True, null=True,
                                        related_name='zotero_item')
     class Meta:
