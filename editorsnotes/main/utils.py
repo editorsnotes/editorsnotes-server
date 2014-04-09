@@ -32,17 +32,19 @@ def prepend_space(element):
 
 def remove_stray_brs(tree):
     """
-    Destructive function that removes <br/> tags that either have nothing or
-    another <br/> tag afterwards.
+    Destructive function that removes <br/> tags that:
+        1. have nothing before them
+        2. have nothing after them
+        3. have another <br/> tag after them
     """
     if tree is None:
         return
 
     stray_brs = [el for el in tree.iterdescendants(tag='br')
-                 if (el.getnext() is None or el.getnext().tag == 'br')
-                 and not el.tail]
+                 if el.getprevious() is None
+                 or ((el.getnext() is None or el.getnext().tag == 'br') and not el.tail)]
     for br_tag in stray_brs:
-        br_tag.drop_tree()
+        br_tag.drop_tag()
 
 def remove_empty_els(html_tree, ignore=None):
     """
