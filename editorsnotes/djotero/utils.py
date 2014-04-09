@@ -1,10 +1,8 @@
 import json
-import re
-from collections import Counter, OrderedDict
-from urllib2 import urlopen, HTTPError, Request
+from collections import OrderedDict
+from urllib2 import urlopen, HTTPError
 
 from lxml import etree
-import requests
 
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
@@ -155,25 +153,6 @@ def get_creator_name(contributor):
     return name or None
 
 def resolve_names(zotero_data, format):
-    if format == 'csl':
-        # CSl output requires a dictionary whose keys are each creator type.
-        # The values of these keys are lists containing individual dictionaries
-        # containing the parts of each contributors' name. Example:
-        #
-        #{ 'author' : [{ "family" : "Doe", "given" : "Jane"},
-        #              { "family" : "Doe", "given" : "John"}],
-        #  'recipient' : [etc]}
-        contribs = {}
-        for creator in zotero_data['creators']:
-            try:
-                name = { "family" : creator['lastName'], "given" : creator['firstName'] }
-            except:
-                name = { "literal" : creator['name'] }
-            try:
-                contribs.setdefault(contrib_map['csl'][creator['creatorType']], []).append(name)
-            except KeyError:
-                pass
-
     if format == 'facets':
         # Data to be used in facets only needs a sortable name, either 'lastName' or 'name'
         contribs = []
@@ -192,7 +171,7 @@ def resolve_names(zotero_data, format):
                 continue
             name = creator.get('name') or '%(firstName)s %(lastName)s' % creator
             contribs.append({'zotero_key' : creator['creatorType'],
-                             'label' : contrib_map['readable'][creator['creatorType']],
+                             'label' : _(creator['creatorType']),
                              'value' : name})
     return contribs
 
@@ -207,4 +186,4 @@ def parse_xml(url):
                 'count' : root.xpath('./zot:totalResults', namespaces=NS)[0].text}
     except HTTPError, error:
         error_content = error.read()
-        raise Exception
+        raise Exception(error_content)
