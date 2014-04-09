@@ -38,7 +38,7 @@ class ZoteroField(models.TextField):
             cleaned_data = OrderedDict()
             item_template = utils.get_item_template(data['itemType'])
             for key, default_val in item_template.items():
-                cleaned_data[key] = data.get(key, default_val)
+                cleaned_data[key] = data.get(key, default_val) or default_val
             cleaned_value = json.dumps(cleaned_data)
         return cleaned_value
 
