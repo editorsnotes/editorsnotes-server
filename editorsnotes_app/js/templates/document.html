@@ -1,6 +1,6 @@
 <div>
   <h3>Printed citation</h3>
-  <div id="document-citation"><%= doc.get('description') %></div>
+  <div id="document-citation"><%= doc.get('description') || '<div>&nbsp;</div>' %></div>
 </div>
 
 <div id="document-related-topics">

@@ -27,7 +27,7 @@ function getCslField(zoteroKey, itemType) {
 }
 getCslField.cache = {};
 
-module.exports = global.x = function (zoteroObject) {
+module.exports = function (zoteroObject) {
   var cslObject = {}
     , itemType = zoteroObject.itemType
 
@@ -59,7 +59,7 @@ module.exports = global.x = function (zoteroObject) {
         });
         break;
       case 'date':
-        cslObject.issued = { 'raw': val }
+        cslObject.issued = { 'raw': val };
         break;
       default:
         cslObject[getCslField(key, zoteroObject.itemType)] = val;
