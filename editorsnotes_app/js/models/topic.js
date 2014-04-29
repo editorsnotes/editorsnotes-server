@@ -8,11 +8,11 @@ var Backbone = require('../backbone')
 
 module.exports = Topic = Backbone.Model.extend({
   defaults: {
-    preferred_name: null,
+    preferred_name: '',
     topic_node_id: null,
     type: null,
     related_topics: [],
-    summary: null
+    summary: ''
   },
 
   constructor: function () {

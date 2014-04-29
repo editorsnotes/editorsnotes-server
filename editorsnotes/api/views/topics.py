@@ -1,9 +1,13 @@
+import json
+
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from editorsnotes.main.models import Topic, TopicNode, Citation
+from editorsnotes.main.models.topics import TYPE_CHOICES
 
 from .base import (BaseListAPIView, BaseDetailView, ElasticSearchListMixin,
                    create_revision_on_methods)
@@ -12,6 +16,11 @@ from ..serializers.documents import CitationSerializer
 
 __all__ = ['TopicNodeList', 'TopicNodeDetail', 'TopicList', 'TopicDetail',
            'TopicCitationList', 'TopicCitationDetail']
+
+def topic_types(request):
+    types = { 'types': [{'key': key, 'localized': localized}
+                        for key, localized in TYPE_CHOICES] }
+    return HttpResponse(json.dumps(types), content_type="application/json")
 
 class TopicNodeList(ListAPIView):
     model = TopicNode

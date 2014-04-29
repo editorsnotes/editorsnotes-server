@@ -13,8 +13,9 @@ module.exports = Backbone.View.extend({
   render: function () {
     var that = this
       , template = require('../templates/topic.html')
+      , saveRow = require('../templates/save_row.html')()
 
-    this.$el.html(template({ topic: that.model, _: _ }));
+    this.$el.html( template({ topic: that.model, _: _ }) + saveRow );
     this.$('#topic-summary').editText();
 
     this.topicListView.$el.appendTo( that.$('#topic-related-topics') );

@@ -44,6 +44,7 @@ urlpatterns += patterns('',
 # API
 urlpatterns += patterns('',
     url(r'^api/', include('editorsnotes.api.urls', namespace='api', app_name='api')),
+    url(r'^api/metadata/topics/types/$', 'editorsnotes.api.views.topics.topic_types'),
 )
 
 
