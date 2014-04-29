@@ -9,8 +9,8 @@ var Backbone = require('../backbone')
 
 module.exports = Note = Backbone.Model.extend({
   defaults: {
-    'title': null,
-    'content': null,
+    'title': '',
+    'content': '',
     'status': 'open',
     'section_ordering': [],
     'related_topics': []

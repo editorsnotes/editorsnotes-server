@@ -17,5 +17,5 @@
   <dl id="note-authorship">
   </dl>
 </section>
-<section id="note-description"><%= note.get('content') %></section>
+<section id="note-description"><%= note.get('content') || '<div></div>' %></section>
 <section id="note-sections"></section>
