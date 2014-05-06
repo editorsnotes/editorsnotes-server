@@ -29,7 +29,6 @@ AdminRouter = Backbone.Router.extend({
   changeView: function (view) {
     if (this._view) this._view.remove();
     this._view = view;
-    this._view.render();
   },
 
   makeModelInstance: function (Model, projectSlug, id) {
