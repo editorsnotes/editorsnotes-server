@@ -34,8 +34,8 @@ module.exports = {
     }
 
 
-    if (results.map(function (p) { return p.get('slug') }).uniq().value().length > 1) {
-      throw new Error('Two different projects passed. Not possible.')
+    if (results.map(function (p) { return p.get('slug') }).flatten().uniq().value().length > 1) {
+      throw new Error('Two different projects passed.')
     }
 
     // Take the first result
