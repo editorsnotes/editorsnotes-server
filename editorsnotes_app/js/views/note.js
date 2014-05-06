@@ -1,83 +1,65 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , $ = require('../jquery')
-  , _ = require('underscore')
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')
 
-
 module.exports = Backbone.View.extend({
   events: {
-    'click #note-description': 'editDescription',
-    'change select[name="note-status"]': 'updateStatus',
-    'input input.note-title-input': 'updateTitle'
+    'click .save-item': 'saveItem',
+    'editor:input #note-description': function (e, data) {
+      this.model.set('content', data);
+    }
   },
 
-  initialize: function (options) {
+  bindings: {
+    'select[name="note-status"]': 'status',
+    '#note-title': 'title'
+  },
+
+  initialize: function () {
     var note = this.model;
 
     this.sectionListView = new NoteSectionListView({ model: note });
     this.topicListView = new RelatedTopicsView({ collection: note.relatedTopics });
 
-    /*
-    this.licenseChooser = new EditorsNotes.Views.NoteLicense({
-      model: note,
-      el: that.$();
-    });
-    */
-
+    this.render();
+    this.stickit();
   },
 
   render: function () {
     var that = this
       , template = require('../templates/note.html')
+      , saveRow = require('../templates/save_row.html')()
 
-    this.$el.empty().html(template({ note: that.model }));
-    this.sectionListView.setElement( that.$('#note-sections') );
-    this.sectionListView.render()
+    this.$el.empty().html(template({ note: that.model }) + saveRow);
+
+    if (!this.model.isNew()) {
+      this.sectionListView.setElement( that.$('#note-sections') );
+      this.sectionListView.render()
+    }
 
     this.topicListView.$el.appendTo( that.$('#note-authorship') );
-  },
-
-  updateTitle: _.debounce(function (e) {
-    var title = e.target.value;
-    this.model.set('title', title);
-    if (title.length && !this.model.isNew()) {
-      this.model.save();
-    }
-  }, 1500),
-
-  updateStatus: function (e) {
-    this.model.set('status', e.target.value).save();
+    this.editDescription();
   },
 
   editDescription: function () {
-    var $description = this.$('#note-description')
-      , note = this.model
-      , html
+    var $description = this.$('#note-description > :first-child').editText();
+  },
 
-    if ($description.hasClass('active')) return;
+  toggleLoaders: function (state) {
+    this.$('.save-item').prop('disabled', state);
+    this.$('.loader').toggle(state);
+  },
 
-    $description.addClass('active').find('> :first-child').editText({
-      afterInit: function () {
-        var that = this;
+  saveItem: function () {
+    var that = this;
 
-        html = ''
-          + '<div class="row">'
-            + '<a class="btn btn-primary save-changes pull-right">Save</a>'
-          + '</div>'
-
-        $(html).insertAfter(this.editor.composer.iframe).on('click .btn', function (e) {
-          setTimeout(function () { that.destroy() }, 0);
-        });
-      },
-      destroy: function (val) {
-        note.set('content', val).save().done(function (resp) {
-          $description.removeClass('active').html(resp.content);
-        });
-      }
-    });
+    this.toggleLoaders(true);
+    this.model.save()
+      .always(this.toggleLoaders.bind(this, false))
+      .done(function () {
+        window.location.href = that.model.url().replace('\/api\/', '/');
+      });
   }
-
 });

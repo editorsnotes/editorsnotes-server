@@ -90,10 +90,17 @@ Editor.prototype.init = function () {
     that.$container.css('min-height', '')
   });
 
+  this.editor.on('change', function () {
+    that.$el.trigger('editor:change', that.editor.getValue());
+  });
+  
+  this.editor.on('input', function () {
+    that.$el.trigger('editor:input', that.editor.getValue());
+  });
+
   if ( typeof(this.options.afterInit) === 'function' ) {
     this.options.afterInit.call( that );
   }
-
 
   return this.$el;
 }
