@@ -2,6 +2,7 @@
 
 var AddItemView = require('./add_item')
   , _ = require('underscore')
+  , Document = require('../models/document')
 
 module.exports = AddItemView.extend({
   itemType: 'document',
@@ -9,7 +10,7 @@ module.exports = AddItemView.extend({
   initialize: function (options) {
     var EditZoteroView = require('./edit_zotero');
 
-    this.model = options.project.documents.add({}, {at: 0}).at(0);
+    this.model = new Document({}, { project: options.project });
     this.render();
     this.$('.modal-body').append('<div class="add-document-zotero-data">');
     this.zoteroView = new EditZoteroView({
