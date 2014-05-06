@@ -1,14 +1,13 @@
 "use strict";
 
 var Backbone = require('../backbone')
+  , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
   , ZoteroDataView = require('./edit_zotero')
+  , SaveItemMixin = require('./save_item_mixin')
+  , DocumentView
 
-module.exports = Backbone.View.extend({
-  events: {
-    'click .save-item': 'saveItem'
-  },
-
+module.exports = DocumentView = Backbone.View.extend({
   initialize: function (options) {
     var that = this;
 
@@ -23,33 +22,17 @@ module.exports = Backbone.View.extend({
       that.model.set('zotero_data', data);
     });
 
+    this.render();
   },
 
   render: function () {
     var that = this
       , template = require('../templates/document.html')
-      , saveRow = require('../templates/save_row.html')()
 
-    this.$el.html( template({ doc: that.model }) + saveRow );
-
+    this.$el.html( template({ doc: that.model }));
     this.topicListView.$el.appendTo( that.$('#document-related-topics') );
     this.zoteroView.$el.appendTo( that.$('#document-zotero-data') );
-  },
-
-  toggleLoaders: function (state) {
-    this.$('.save-item').prop('disabled', state);
-    this.$('.loader').toggle(state);
-  },
-
-  saveItem: function () {
-    var that = this;
-
-    this.toggleLoaders(true);
-    this.model.save()
-      .always(this.toggleLoaders.bind(this, false))
-      .done(function () {
-        window.location.href = that.model.url().replace('\/api\/', '/');
-      });
   }
-
 });
+
+Cocktail.mixin(DocumentView, SaveItemMixin);

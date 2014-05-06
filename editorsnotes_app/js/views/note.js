@@ -1,12 +1,14 @@
 "use strict";
 
 var Backbone = require('../backbone')
+  , Cocktail = require('backbone.cocktail')
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')
+  , SaveItemMixin = require('./save_item_mixin')
+  , NoteView
 
-module.exports = Backbone.View.extend({
+NoteView = module.exports = Backbone.View.extend({
   events: {
-    'click .save-item': 'saveItem',
     'editor:input #note-description': function (e, data) {
       this.model.set('content', data);
     }
@@ -30,9 +32,8 @@ module.exports = Backbone.View.extend({
   render: function () {
     var that = this
       , template = require('../templates/note.html')
-      , saveRow = require('../templates/save_row.html')()
 
-    this.$el.empty().html(template({ note: that.model }) + saveRow);
+    this.$el.empty().html(template({ note: that.model }));
 
     if (!this.model.isNew()) {
       this.sectionListView.setElement( that.$('#note-sections') );
@@ -45,21 +46,7 @@ module.exports = Backbone.View.extend({
 
   editDescription: function () {
     var $description = this.$('#note-description > :first-child').editText();
-  },
-
-  toggleLoaders: function (state) {
-    this.$('.save-item').prop('disabled', state);
-    this.$('.loader').toggle(state);
-  },
-
-  saveItem: function () {
-    var that = this;
-
-    this.toggleLoaders(true);
-    this.model.save()
-      .always(this.toggleLoaders.bind(this, false))
-      .done(function () {
-        window.location.href = that.model.url().replace('\/api\/', '/');
-      });
   }
 });
+
+Cocktail.mixin(NoteView, SaveItemMixin);
