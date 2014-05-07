@@ -1,6 +1,6 @@
 <div>
   <h3>Preferred name</h3>
-  <input maxlength="200" class="topic-preferred-name" type="text" value="<%= topic.get('preferred_name') %>" />
+  <input id="topic-name" maxlength="200" class="topic-preferred-name" type="text" />
 </div>
 
 <div id="topic-related-topics">
@@ -9,9 +9,9 @@
 
 <div>
   <h3>Type</h3>
-  <option>
-    <select><%= topic.get('type') %></select>
-  </option>
+  <select id="topic-type">
+    <option><%= topic.get('type') %></option>
+  </select>
 </div>
 
 <div>
@@ -26,7 +26,7 @@
 
 <div>
   <h3>Article</h3>
-  <div id="topic-summary"><%= topic.get('summary') %></div>
+  <div id="topic-summary"><%= topic.get('summary') || '<div></div>' %></div>
 </div>
 
 <div>
