@@ -2,6 +2,8 @@
 
 var Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
+  , _ = require('underscore')
+  , i18n = require('../utils/i18n').main
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')
   , SaveItemMixin = require('./save_item_mixin')
@@ -15,16 +17,23 @@ NoteView = module.exports = Backbone.View.extend({
   },
 
   bindings: {
-    'select[name="note-status"]': 'status',
+    'select[name="note-status"]': {
+      observe: 'status',
+      selectOptions: {
+        collection: function () {
+          return _.map(this.model.possibleStatuses, function (s) {
+            return { value: s + '111', label: i18n.translate(s).fetch() }
+          });
+        }
+      }
+    },
     '#note-title': 'title'
   },
 
   initialize: function () {
     var note = this.model;
-
     this.sectionListView = new NoteSectionListView({ model: note });
     this.topicListView = new RelatedTopicsView({ collection: note.relatedTopics });
-
     this.render();
     this.stickit();
   },
@@ -41,11 +50,7 @@ NoteView = module.exports = Backbone.View.extend({
     }
 
     this.topicListView.$el.appendTo( that.$('#note-authorship') );
-    this.editDescription();
-  },
-
-  editDescription: function () {
-    var $description = this.$('#note-description > :first-child').editText();
+    this.$('#note-description > :first-child').editText();
   }
 });
 
