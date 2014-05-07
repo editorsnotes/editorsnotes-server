@@ -20,6 +20,9 @@ module.exports = {
       this.defaultSave();
     }
   },
+  handleError: function (errorObj) {
+    alert(window.JSON.stringify(errorObj));
+  },
   defaultSave: function () {
     var that = this;
 
@@ -28,6 +31,9 @@ module.exports = {
       .always(this.toggleLoaders.bind(this, false))
       .done(function () {
         window.location.href = that.model.url().replace('\/api\/', '/');
+      })
+      .fail(function (jqXHR, textStatus, error) {
+        that.handleError(jqXHR.responseJSON);
       });
   }
 }
