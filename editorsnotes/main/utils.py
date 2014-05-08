@@ -41,10 +41,20 @@ def remove_stray_brs(tree):
         return
 
     stray_brs = [el for el in tree.iterdescendants(tag='br')
-                 if el.getprevious() is None
-                 or ((el.getnext() is None or el.getnext().tag == 'br') and not el.tail)]
+                 if (el.getnext() is None or el.getnext().tag == 'br')
+                 and not el.tail]
+
     for br_tag in stray_brs:
         br_tag.drop_tag()
+
+    # Check if there's a leading line break without text before it.
+    if not len([text for text in tree.xpath('//text()') if not text.is_tail]):
+        try:
+            first_child = tree.iterchildren().next()
+            if first_child.tag == 'br':
+                first_child.drop_tag()
+        except StopIteration:
+            pass
 
 def remove_empty_els(html_tree, ignore=None):
     """
