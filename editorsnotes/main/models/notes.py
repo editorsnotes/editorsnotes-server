@@ -10,7 +10,8 @@ import reversion
 
 from .. import fields
 from auth import ProjectPermissionsMixin, UpdatersMixin
-from base import Administered, LastUpdateMetadata, URLAccessible
+from base import (Administered, LastUpdateMetadata, URLAccessible,
+                  OrderingManager)
 
 NOTE_STATUS_CHOICES = (
     ('0', 'closed'),
@@ -59,6 +60,7 @@ class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     ordering = models.PositiveIntegerField(blank=True, null=True)
     related_topics = generic.GenericRelation('TopicAssignment')
     objects = InheritanceManager()
+    objects_ordering = OrderingManager()
     class Meta:
         app_label = 'main'
         ordering = ['ordering', 'note_section_id']
