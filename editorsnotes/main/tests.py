@@ -361,10 +361,15 @@ class OrderingTestCase(TestCase):
             'b': 22.5,
             'c': 5000000
         }
-        normalized_position_dict = main_models.base.OrderingManager\
-                .normalize_position_dict(position_dict)
-        self.assertEqual(sorted(normalized_position_dict.items()),
+        position_dict = main_models.base.OrderingManager\
+                .normalize_position_dict(position_dict, 1)
+        self.assertEqual(sorted(position_dict.items()),
                          [('a', 1), ('b', 2), ('c', 3)])
+
+        position_dict = main_models.base.OrderingManager\
+                .normalize_position_dict(position_dict, 100)
+        self.assertEqual(sorted(position_dict.items()),
+                         [('a', 100), ('b', 200), ('c', 300)])
     def test_reordering(self):
         m3 = OrderedModel.objects.create(name='third')
         m2 = OrderedModel.objects.create(name='second')
@@ -388,6 +393,6 @@ class OrderingTestCase(TestCase):
 
         positions = { m1.id: 666, m2.id: 777 }
         OrderedModel.objects.bulk_update_order('the_ordering', positions,
-                                               fill_in_empty=True)
+                                               fill_in_empty=True, step=10)
         self.assertEqual(tuple(OrderedModel.objects.values_list('id', 'the_ordering')),
-                         ((m1.id, 1), (m2.id, 2), (m3.id, 3), (m4.id, 4)))
+                         ((m1.id, 10), (m2.id, 20), (m3.id, 30), (m4.id, 40)))

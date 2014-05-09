@@ -47,13 +47,14 @@ class OrderingManager(models.Manager):
     """
     use_for_related_fields = True
     @staticmethod
-    def normalize_position_dict(positions_dict):
+    def normalize_position_dict(positions_dict, step):
         """
         Given a dict, will return a new dict with the same keys, and int values
-        incrementing from 1.
+        incrementing by `step` from the first value after 0.
         """
         items = sorted(positions_dict.items(), key=lambda x: x[1])
-        counter = itertools.count(1)
+        counter = itertools.count(0, step)
+        counter.next()
         return dict(zip([item for item, order in items], counter))
     def _generate_update_sql(self, ordering_field, positions_dict):
         """
@@ -78,7 +79,8 @@ class OrderingManager(models.Manager):
             raise ValueError('{} can only manage integer ordering fields; '
                              '{} is an instance of {}.'.format(
                                  self, ordering_field_name, ordering_field.__class__))
-    def bulk_update_order(self, ordering_field, positions, fill_in_empty=False):
+    def bulk_update_order(self, ordering_field, positions, fill_in_empty=False,
+                         step=1):
         """
         Bulk update an ordering field for a queryset.
 
@@ -91,12 +93,17 @@ class OrderingManager(models.Manager):
             If set to False, it will raise a ValueError. If set to True, it will
             append the omitted item IDs to the end of the ordering with whatever
             the default order of the queryset is.
+        step - an integer between 1 and 1000 representing the step between
+            consecutive orders.
         """
         self._ensure_integer_field(ordering_field)
+        if not (0 < step < 1000):
+            raise ValueError('Step value must be between 1 and 1000.')
+
         positions_dict = dict(positions)
         if not all((isinstance(p, numbers.Number) for p in positions.values())):
             raise ValueError('All position values must be numbers.')
-        positions_dict = OrderingManager.normalize_position_dict(positions_dict)
+        positions_dict = OrderingManager.normalize_position_dict(positions_dict, step)
         collection_ids = self.get_query_set().values_list('id', flat=True)
         missing_ids = set(collection_ids) - set(positions_dict.keys()) 
         if len(missing_ids):
@@ -104,8 +111,15 @@ class OrderingManager(models.Manager):
                 raise ValueError('Ordering not provided for every member of collection.')
             else:
                 # Keep default ordering, whatever it is, and increment.
-                counter = itertools.count(max(positions_dict.values()) + 1)
+                counter = itertools.count(max(positions_dict.values()) + step, step)
                 positions_dict.update(dict(zip(missing_ids, counter)))
         query, params = self._generate_update_sql(ordering_field, positions_dict)
         cursor = connection.cursor()
         cursor.execute(query, params)
+    def normalize_update_values(self, ordering_field, fill_in_empty=False,
+                                step=1):
+        self._ensure_integer_field(ordering_field)
+        positions_by_id = self.get_query_set()\
+                .filter(**{ ordering_field + '__isnull': False })\
+                .values_list('id', ordering_field)
+        self.bulk_update_order(ordering_field, dict(positions_by_id), fill_in_empty, step)
