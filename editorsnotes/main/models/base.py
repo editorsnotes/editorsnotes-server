@@ -111,12 +111,12 @@ class OrderingManager(models.Manager):
                 raise ValueError('Ordering not provided for every member of collection.')
             else:
                 # Keep default ordering, whatever it is, and increment.
-                counter = itertools.count(max(positions_dict.values()) + step, step)
+                counter = itertools.count(max(positions_dict.values() or [0]) + step, step)
                 positions_dict.update(dict(zip(missing_ids, counter)))
         query, params = self._generate_update_sql(ordering_field, positions_dict)
         cursor = connection.cursor()
         cursor.execute(query, params)
-    def normalize_update_values(self, ordering_field, fill_in_empty=False,
+    def normalize_ordering_values(self, ordering_field, fill_in_empty=False,
                                 step=1):
         self._ensure_integer_field(ordering_field)
         positions_by_id = self.get_query_set()\
