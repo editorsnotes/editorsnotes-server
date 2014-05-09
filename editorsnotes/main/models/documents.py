@@ -298,7 +298,7 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
     ordering = models.IntegerField(blank=True, null=True)
     class Meta:
         app_label = 'main'
-        ordering = ['ordering'] 
+        ordering = ['ordering', '-created'] 
     def __unicode__(self):
         return u'Scan for %s (order: %s)' % (self.document, self.ordering)
     def get_affiliation(self):
