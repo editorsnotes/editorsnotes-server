@@ -10,7 +10,7 @@ var Backbone = require('../backbone')
 module.exports = Backbone.View.extend({
   events: {
     'change .item-type-select': 'handleSelectItemType',
-    'click .common-item-types li': 'handleSelectItemType',
+    'click .common-item-types a': 'handleSelectItemType',
     'click .add-creator': 'addCreator',
     'click .remove-creator': 'removeCreator',
     'input .zotero-entry': 'updateZoteroData'
@@ -43,16 +43,16 @@ module.exports = Backbone.View.extend({
   },
 
   fetchItemTypes: function () {
-    return $.getJSON('/api/metadata/documents/itemtypes/');
+    return $.getJSON('/api/metadata/documents/item_types/');
   },
 
   fetchItemTemplate: function (itemType) {
-    return $.getJSON('/api/metadata/documents/itemtemplate/', { itemType: itemType });
+    return $.getJSON('/api/metadata/documents/item_template/', { itemType: itemType });
   },
 
   renderItemTypeSelect: function (itemTypes) {
     var template = require('../templates/zotero_item_type_select.html');
-    this.$el.html(template(itemTypes));
+    this.$el.html(template({ _: _, itemTypes: itemTypes }));
     this.$('select').prop('selectedIndex', -1);
   },
 

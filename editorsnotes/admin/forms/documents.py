@@ -3,7 +3,7 @@
 from django import forms
 from django.forms.models import ModelForm, inlineformset_factory
 
-from editorsnotes.djotero.widgets import ZoteroWidget
+#from editorsnotes.djotero.widgets import ZoteroWidget
 from editorsnotes.djotero.models import ZoteroLink
 from editorsnotes.main.models import (
     Document, DocumentLink, Scan, Transcript, Footnote)
@@ -11,7 +11,7 @@ from editorsnotes.main.models import (
 from ..fields import MultipleFileInput
 
 class DocumentForm(ModelForm):
-    zotero_string = forms.CharField(required=False, widget=ZoteroWidget())
+    #zotero_string = forms.CharField(required=False, widget=ZoteroWidget())
     class Media:
         js = (
             "function/admin-bootstrap-document.js",

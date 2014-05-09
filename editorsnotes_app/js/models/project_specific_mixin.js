@@ -1,16 +1,15 @@
 "use strict";
 
-var Backbone = require('../backbone')
-  , _ = require('underscore')
+var _ = require('underscore')
   , Project = require('./project')
 
 /*
- * Base model for objects which need to have a project set.
+ * Mixin for models which require a project to be set.
  *
  * Looks for attribute, collection, and explicit passing in options. Will raise
  * an error if no project is found, or if different projects are found.
  */
-module.exports = Backbone.Model.extend({
+module.exports = {
   constructor: function (attributes, options) {
     var candidates, results, slug;
 
@@ -35,13 +34,11 @@ module.exports = Backbone.Model.extend({
     }
 
 
-    if (results.map(function (p) { return p.get('slug') }).uniq().value().length > 1) {
-      throw new Error('Two different projects passed. Not possible.')
+    if (results.map(function (p) { return p.get('slug') }).flatten().uniq().value().length > 1) {
+      throw new Error('Two different projects passed.')
     }
 
     // Take the first result
     this.project = results.first().value();
-
-    Backbone.Model.apply(this, arguments);
   }
-});
+}

@@ -11,7 +11,7 @@ RelatedTopicItemView = Backbone.View.extend({
   },
   className: 'related-topic',
   render: function () {
-    this.$el.html('<a href="#" class="destroy"><i class="icon-minus-sign"></i></a>' + this.model.get('name'));
+    this.$el.html('<a href="#" class="destroy"><i class="icon-minus-sign"></i></a>' + this.model.get('preferred_name'));
   },
   destroy: function (e) { 
     var that = this;
@@ -53,7 +53,7 @@ module.exports = Backbone.View.extend({
     event.target.value = '';
     var topic = this.collection.add({
       url: ui.item.uri,
-      name: ui.item.value
+      preferred_name: ui.item.value
     });
   }
 });

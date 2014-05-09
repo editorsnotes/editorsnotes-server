@@ -141,15 +141,13 @@ module.exports = Backbone.View.extend({
   },
 
   createSection: function (sectionType, idx) {
-    var _idx = idx || 0;
-
     // Sort is false because sections are ordered by the index of their ID in
     // the note's section_ordering field. Since this new section does not yet
     // have an ID, it can't be sorted.
     return this.note.sections.add(
       { 'section_type': sectionType }, 
-      { at: _idx || 0, sort: false }
-    ).at(_idx);
+      { at: idx || 0, sort: false }
+    );
   },
 
   addSection: function (section) {

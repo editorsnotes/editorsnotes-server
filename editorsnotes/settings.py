@@ -7,7 +7,7 @@ TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
 DATETIME_FORMAT = 'N j, Y, P'
 USE_L10N = False
-USE_I18N = False
+USE_I18N = True
 
 
 ########################

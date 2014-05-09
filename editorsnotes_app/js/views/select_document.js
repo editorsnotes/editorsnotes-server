@@ -1,6 +1,7 @@
 "use strict";
 
 var SelectItemView = require('./select_item')
+  , Document = require('../models/document')
 
 module.exports =  SelectItemView.extend({
   type: 'document',
@@ -8,7 +9,7 @@ module.exports =  SelectItemView.extend({
   autocompleteURL: function () { return this.project.url() + 'documents/' },
 
   selectItem: function (event, ui) {
-    this.trigger('documentSelected', this.project.documents.add(ui.item).get(ui.item.id));
+    this.trigger('documentSelected', new Document(ui.item));
   },
 
   addItem: function (e) {

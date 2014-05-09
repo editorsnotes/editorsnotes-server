@@ -1,9 +1,9 @@
 <h5>Common item types:</h5>
 
-<% if (common) { %>
+<% if (itemTypes.common) { %>
 <ul class="unstyled common-item-types">
-  <% common.slice(0, 6).forEach(function (commonType) { %>
-  <% var type = _.findWhere(itemTypes, { itemType: commonType }) %>
+  <% itemTypes.common.slice(0, 6).forEach(function (commonType) { %>
+  <% var type = _.findWhere(itemTypes.itemTypes, { itemType: commonType }) %>
   <li><a href="#" data-item-type="<%= type.itemType %>"><%= type.localized %></a></li>
   <% }) %>
 </ul>
@@ -11,7 +11,7 @@
 
 <h5>All types</h5>
 <select class="item-type-select">
-  <% itemTypes.forEach(function (type) { %>
+  <% itemTypes.itemTypes.forEach(function (type) { %>
   <option value="<%= type.itemType %>"><%= type.localized %></option>
   <% }) %>
 </select>

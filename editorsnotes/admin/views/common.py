@@ -1,12 +1,13 @@
-from django import http
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.decorators import method_decorator
-from django.views.generic.edit import View, ModelFormMixin, TemplateResponseMixin
+from django.views.generic.base import View, TemplateView, TemplateResponseMixin
+from django.views.generic.edit import ModelFormMixin
+from rest_framework.renderers import JSONRenderer
 import reversion
 
-from editorsnotes.main.models import Project, Topic
+from editorsnotes.main.models import Project
 from editorsnotes.main.models.auth import RevisionProject
 
 VIEW_ERROR_MSG = 'You do not have permission to view {}.'
@@ -64,7 +65,7 @@ class ProcessInlineFormsetsView(View):
         raise NotImplementedError(
             'Child views must create a default formset saving method.')
 
-class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseMixin):
+class ProjectSpecificMixin(object):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         self.project = get_object_or_404(
@@ -75,23 +76,15 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
             if not can_access:
                 raise PermissionDenied(
                     'You are not a member of {}.'.format(self.project.name))
-        return super(BaseAdminView, self).dispatch(*args, **kwargs)
-    def get_context_data(self, **kwargs):
-        context = super(BaseAdminView, self).get_context_data(**kwargs)
-        context['project'] = self.project
-        context['breadcrumb'] = self.get_breadcrumb()
-        return context
-    def get_breadcrumb(self):
-        "Override this method with (label, url) pairs to generate page breadcrumb."
-        return ()
+        return super(ProjectSpecificMixin, self).dispatch(*args, **kwargs)
     def get(self, request, *args, **kwargs):
         self.object = self.get_object(**kwargs)
         self.check_perms()
-        return super(BaseAdminView, self).get(request, *args, **kwargs)
+        return super(ProjectSpecificMixin, self).get(request, *args, **kwargs)
     def post(self, request, *args, **kwargs):
         self.object = self.get_object(**kwargs)
         self.check_perms()
-        return super(BaseAdminView, self).post(request, *args, **kwargs)
+        return super(ProjectSpecificMixin, self).post(request, *args, **kwargs)
     def get_default_perms(self):
         opts = self.model._meta
         add_action = self.object is None or not self.object.id
@@ -105,6 +98,35 @@ class BaseAdminView(ProcessInlineFormsetsView, ModelFormMixin, TemplateResponseM
     def get_object(self, project, *args, **kwargs):
         raise NotImplementedError(
             'Child views must create get_object method')
+
+class BreadcrumbMixin(object):
+    def get_context_data(self, **kwargs):
+        context = super(BreadcrumbMixin, self).get_context_data(**kwargs)
+        context['project'] = self.project
+        context['breadcrumb'] = self.get_breadcrumb()
+        return context
+    def get_breadcrumb(self):
+        "Override this method with (label, url) pairs to generate page breadcrumb."
+        return ()
+
+class BootstrappedBackboneView(ProjectSpecificMixin, BreadcrumbMixin, TemplateView):
+    model = None
+    serializer_class = None
+    template_name = "backbone_bootstrap.html"
+    def get_context_data(self, **kwargs):
+        context = super(BootstrappedBackboneView, self).get_context_data(**kwargs)
+        assert getattr(self, 'serializer_class'), ("Must define a django-rest"
+                                                   "framework serializer as a "
+                                                   "serializer class.")
+        if self.object:
+            serializer = self.serializer_class(self.object)
+            context['bootstrap'] = JSONRenderer().render(serializer.data)
+        else:
+            context['bootstrap'] = 'null';
+        return context
+
+class BaseAdminView(ProcessInlineFormsetsView, ProjectSpecificMixin,
+                    ModelFormMixin, BreadcrumbMixin, TemplateResponseMixin):
     def get_form_kwargs(self):
         kwargs = super(ModelFormMixin, self).get_form_kwargs()
         if hasattr(self, 'object') and self.object:

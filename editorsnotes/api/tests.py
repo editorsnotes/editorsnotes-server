@@ -31,6 +31,7 @@ def delete_es_indexes():
 
 TEST_TOPIC = {
     'preferred_name': u'Patrick Golden',
+    'alternate_names': [u'big guy', u'stretch'],
     'type': u'PER',
     'related_topics': [],
     'summary': u'<p>A writer of tests</p>'
@@ -39,7 +40,7 @@ TEST_TOPIC = {
 TEST_DOCUMENT = {
     'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>',
     'related_topics': [],
-    'zotero_data': json.dumps({
+    'zotero_data': {
         'itemType': 'book',
         'title': 'Roots of American Communism',
         'creators': [
@@ -47,7 +48,7 @@ TEST_DOCUMENT = {
              'firstName': 'Theodore',
              'lastName': 'Draper'}
         ]
-    })
+    }
 }
 
 TEST_NOTE = {
@@ -279,7 +280,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
     def create_test_document(self):
         data = TEST_DOCUMENT
         document = main_models.Document.objects.create(
-            description=data['description'], zotero_data=data['zotero_data'],
+            description=data['description'],
+            zotero_data=json.dumps(data['zotero_data']),
             project=self.project, creator=self.user, last_updater=self.user)
         return document
 

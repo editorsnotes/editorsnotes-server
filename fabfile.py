@@ -10,6 +10,7 @@ import importlib
 import os
 import random
 import re
+import subprocess
 import sys
 import time
 
@@ -122,7 +123,7 @@ def watch_static():
         abort(red('Install Watchdog python package to watch filesystem files.'))
 
     EXTS = ['.js', '.css', '.less']
-    browserify_template_pattern = re.compile('.*/editorsnotes_app/js/templates/.*html')
+    browserify_template_pattern = re.compile('.*/editorsnotes_app/js/templates/.*html$')
 
     class ChangeHandler(FileSystemEventHandler):
         def __init__(self, *args, **kwargs):
@@ -142,24 +143,31 @@ def watch_static():
                 return
 
             local('{python} manage.py collectstatic --noinput -v0'.format(**env))
-            local('{python} manage.py compile_browserify'.format(**env))
-            sys.stdout.write(green('Finished\n\n'))
+            local('touch -c editorsnotes_app/js/index-admin.js')
+            local('touch -c editorsnotes_app/js/index-base.js')
             self.last_collected = datetime.datetime.now()
 
     event_handler = ChangeHandler()
     observer = Observer()
     observer.schedule(
-        event_handler, os.path.join(PROJ_ROOT, 'editorsnotes'), recursive=True)
+        event_handler,
+        os.path.join(PROJ_ROOT, 'editorsnotes'),
+        recursive=True)
     observer.schedule(
-        event_handler, os.path.join(PROJ_ROOT, 'editorsnotes_app'), recursive=True)
+        event_handler,
+        os.path.join(PROJ_ROOT, 'editorsnotes_app', 'js'),
+        recursive=True)
     observer.start()
+
     print green('\nWatching *.js, *.css, and *.less files for changes.\n')
+    watchify_proc = subprocess.Popen([env.python, 'manage.py', 'compile_browserify', '--watch'])
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
+        watchify_proc.terminate()
     observer.join()
 
 def get_db_tables():

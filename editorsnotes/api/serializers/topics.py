@@ -2,10 +2,12 @@ from collections import OrderedDict
 
 from django.core.urlresolvers import reverse
 
+from lxml import etree
 from rest_framework import serializers
 from rest_framework.fields import Field
+from rest_framework.relations import RelatedField
 
-from editorsnotes.main.models.topics import Topic, TopicNode
+from editorsnotes.main.models import Topic, TopicNode, Citation
 
 from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                    ProjectSlugField, URLField)
@@ -37,17 +39,36 @@ class TopicNodeSerializer(serializers.ModelSerializer):
                                   args=(topic.project.slug, obj.id)))))
             for topic in obj.project_topics.select_related('project')]
 
+class AlternateNameField(serializers.SlugRelatedField):
+    def field_from_native(self, data, files, field_name, into):
+        if self.read_only:
+            return
+        into[field_name] = data.get(field_name, [])
+
+class TopicCitationField(RelatedField):
+    read_only = True
+    many = True
+    def field_to_native(self, obj, field_name):
+        return [{'url': reverse('api:api-topic-citations-detail', args=(obj.project.slug, obj.id, citation.id)),
+                 'document': reverse('api:api-documents-detail', args=(obj.project.slug, citation.document_id)),
+                 'document_description': etree.tostring(citation.document.description),
+                 'notes': etree.tostring(citation.notes) if citation.has_notes() else None}
+                for citation in Citation.objects.get_for_object(obj)]
 
 class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                       serializers.ModelSerializer):
     topic_node_id = Field(source='topic_node.id')
     type = Field(source='topic_node.type')
+    alternate_names = AlternateNameField(slug_field='name', many=True)
     url = URLField()
     project = ProjectSlugField()
+    #citations = serializers.HyperlinkedIdentityField(view_name='topic-citation-detail')
+    citations = TopicCitationField()
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
-                  'related_topics', 'project', 'last_updated', 'summary')
+                  'alternate_names', 'related_topics', 'project',
+                  'last_updated', 'summary', 'citations')
     def save_object(self, obj, **kwargs):
         if not obj.id:
             topic_node_id = self.context.get('topic_node_id', None)
@@ -61,4 +82,24 @@ class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                     last_updater_id=obj.creator_id)
                 topic_node_id = topic_node.id
             obj.topic_node_id = topic_node_id
-        return super(TopicSerializer, self).save_object(obj, **kwargs)
+        alternate_names = obj._related_data.pop('alternate_names')
+        super(TopicSerializer, self).save_object(obj, **kwargs)
+        self.save_alternate_names(obj, alternate_names)
+    def save_alternate_names(self, obj, alternate_names):
+        to_create = set(alternate_names)
+        to_delete = []
+
+        queryset = self.fields['alternate_names'].queryset or []
+        for alternate_name_obj in queryset:
+            name = alternate_name_obj.name
+            if name in alternate_names:
+                to_create.remove(name)
+            else:
+                to_delete.append(alternate_name_obj)
+
+        for alternate_name_obj in to_delete:
+            alternate_name_obj.delete()
+
+        user = self.context['request'].user
+        for name in to_create:
+            obj.alternate_names.create(name=name, creator_id=user.id)

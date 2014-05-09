@@ -74,6 +74,10 @@ class UtilsTestCase(unittest.TestCase):
         test3 = html.fragment_fromstring('<div>I<br/><br/> am really annoying.<br/><br/><br/></div>')
         utils.remove_stray_brs(test3)
         self.assertEqual('<div>I<br/> am really annoying.</div>', etree.tostring(test3))
+
+        test4 = html.fragment_fromstring('<div><br/>No leading break?</div>')
+        utils.remove_stray_brs(test4)
+        self.assertEqual('<div>No leading break?</div>', etree.tostring(test4))
     def test_remove_empty_els(self):
         """
         Elements which have no text (or children with text) should be removed,

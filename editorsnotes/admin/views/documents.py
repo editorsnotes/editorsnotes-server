@@ -6,11 +6,35 @@ from django.shortcuts import get_object_or_404
 import reversion
 
 from editorsnotes.main.models import Document, Transcript
+from editorsnotes.api.serializers import DocumentSerializer
 
-from common import BaseAdminView
+from common import BaseAdminView, BootstrappedBackboneView
 from .. import forms
 
-class DocumentAdminView(BaseAdminView):
+class DocumentAdminView(BootstrappedBackboneView):
+    model = Document
+    serializer_class = DocumentSerializer
+    def get_object(self, document_id=None):
+        return document_id and get_object_or_404(
+            Document, id=document_id, project_id=self.project.id)
+    def get_breadcrumb(self):
+        breadcrumbs = (
+            (self.project.name, self.project.get_absolute_url()),
+            ('Documents', reverse('all_documents_view',
+                               kwargs={'project_slug': self.project.slug})),
+        )
+        if self.object is None:
+            breadcrumbs += (
+                ('Add', None),
+            )
+        else:
+            breadcrumbs += (
+                (self.object.as_text(), self.object.get_absolute_url()),
+                ('Edit', None)
+            )
+        return breadcrumbs
+
+class OldDocumentAdminView(BaseAdminView):
     model = Document
     form_class = forms.DocumentForm
     formset_classes = (

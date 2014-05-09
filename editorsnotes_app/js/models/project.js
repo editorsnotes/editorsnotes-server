@@ -21,12 +21,6 @@ module.exports = Backbone.Model.extend({
       throw new Error('Could not get project without url or argument');
     }
     this.set('slug', slug);
-
-    // Instantiate the collections for documents, notes, and topics.
-    this.documents = new DocumentCollection([], { project: this });
-    this.notes = new NoteCollection([], { project: this });
-    this.topics = new TopicCollection([], { project: this });
-
   },
 
   url: function () { return '/api/projects/' + this.get('slug') + '/'; }

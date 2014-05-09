@@ -94,6 +94,11 @@ class ProjectSpecificMixin(object):
         context = super(ProjectSpecificMixin, self).get_serializer_context()
         context['project'] = self.request.project
         return context
+    def get_queryset(self):
+        qs = super(ProjectSpecificMixin, self).get_queryset()
+        if hasattr(qs.model, 'project'):
+            qs = qs.filter(project_id=self.request.project.id)
+        return qs
 
 @create_revision_on_methods('create')
 class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
@@ -101,27 +106,28 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
     paginate_by_param = 'page_size'
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
-    renderer_classes = (JSONRenderer,)
     def pre_save(self, obj):
-        obj.creator = obj.last_updater = self.request.user
+        obj.creator = self.request.user
+        if hasattr(obj.__class__, 'last_updater'):
+            obj.last_updater = self.request.user
         super(BaseListAPIView, self).pre_save(obj)
 
 @create_revision_on_methods('update', 'destroy')
 class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
-    renderer_classes = (JSONRenderer,)
     def pre_save(self, obj):
-        obj.last_updater = self.request.user
+        if hasattr(obj.__class__, 'last_updater'):
+            obj.last_updater = self.request.user
         super(BaseDetailView, self).pre_save(obj)
 
 @api_view(('GET',))
 def root(request):
     return Response({
-        'auth-token': reverse('api:obtain-auth-token'),
-        'topics': reverse('api:api-topic-nodes-list'),
-        'projects': reverse('api:api-projects-list'),
-        'search': reverse('api:api-search') + '?q={query}'
+        'auth-token': reverse('api:obtain-auth-token', request=request),
+        'topics': reverse('api:api-topic-nodes-list', request=request),
+        'projects': reverse('api:api-projects-list', request=request),
+        'search': reverse('api:api-search', request=request) + '?q={query},'
         #'notes': reverse('api:api-notes-list'),
         #'documents': reverse('api:api-documents-list')
     })

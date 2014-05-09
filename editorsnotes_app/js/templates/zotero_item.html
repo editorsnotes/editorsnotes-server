@@ -4,6 +4,7 @@
     
     <% if (key === 'itemType') { %>
     <div class="zotero-entry" data-zotero-key="<%= key %>">
+      <label>Item type</label>
       <h5><%= i18n.translate(val).fetch() %></h5>
       <input type="hidden" value="<%= val %>" />
     </div>
