@@ -3,7 +3,7 @@ Django==1.5.1
 South==0.7.6
 django-browserid==0.7.1
 django_compressor==1.3
-django-model-utils==1.3.0
+django-model-utils==2.0.3
 django-reversion==1.7
 -e git+https://github.com/editorsnotes/django-licensing.git#egg=licensing
 djangorestframework==2.2.5

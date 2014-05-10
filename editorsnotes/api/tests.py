@@ -713,6 +713,15 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Revision.objects.count(), 3)
 
+        response = self.client.post(
+            reverse('api:api-notes-normalize-section-order',
+                    args=[self.project.slug, note_obj.id]),
+            json.dumps({}),
+            content_type='application/json'
+        )
+        self.assertEqual(tuple(note_obj.sections.values_list('ordering', flat=True)),
+                         (100, 200, 300))
+
     def test_note_api_create_note_section_bad_permissions(self):
         "Adding a new note section in an outside project is NOT OK"
         note_obj = self.create_test_note()

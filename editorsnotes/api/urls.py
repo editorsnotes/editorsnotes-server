@@ -13,6 +13,7 @@ project_specific_patterns = patterns('',
     url(r'^notes/$', views.NoteList.as_view(), name='api-notes-list'),
     url(r'^notes/(?P<pk>\d+)/$', views.NoteDetail.as_view(), name='api-notes-detail'),
     url(r'^notes/(?P<note_id>\d+)/s(?P<section_id>\d+)/$', views.NoteSectionDetail.as_view(), name='api-notes-section-detail'),
+    url(r'^notes/(?P<pk>\d+)/normalize_section_order/$', views.normalize_section_order, name='api-notes-normalize-section-order'),
     url(r'^documents/$', views.DocumentList.as_view(), name='api-documents-list'),
     url(r'^documents/(?P<pk>\d+)/$', views.DocumentDetail.as_view(), name='api-documents-detail'),
 )

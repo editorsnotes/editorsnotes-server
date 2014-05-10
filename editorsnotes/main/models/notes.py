@@ -5,7 +5,7 @@ from django.db import models, transaction
 
 from licensing.models import License
 from lxml import etree
-from model_utils.managers import InheritanceManager
+from model_utils.managers import InheritanceManagerMixin
 import reversion
 
 from .. import fields
@@ -50,6 +50,9 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return project_topic.id in \
                 self.related_topics.values_list('topic_id', flat=True)
 
+class NoteSectionManager(OrderingManager, InheritanceManagerMixin):
+    pass
+
 class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     u"""
     The concrete base class for any note section.
@@ -59,8 +62,7 @@ class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     note_section_id = models.PositiveIntegerField(blank=True, null=True)
     ordering = models.PositiveIntegerField(blank=True, null=True)
     related_topics = generic.GenericRelation('TopicAssignment')
-    objects = InheritanceManager()
-    objects_ordering = OrderingManager()
+    objects = NoteSectionManager()
     class Meta:
         app_label = 'main'
         ordering = ['ordering', 'note_section_id']
