@@ -84,42 +84,6 @@ class NoteSectionField(serializers.RelatedField):
         serializer = serializer_class(section, context=self.context)
         return serializer.data
 
-class SectionOrderingField(serializers.WritableField):
-    def section_ids(self, note):
-        if not hasattr(self, '_section_ids'):
-            self._section_ids = [
-                ns.note_section_id for ns in note.sections.all()
-            ]
-        return self._section_ids
-    def field_to_native(self, obj, field_name):
-        return self.section_ids(obj)
-    def field_from_native(self, data, files, field_name, into):
-        note = self.root.object
-
-        if not data.has_key(field_name):
-            data[field_name] = self.section_ids(note)
-
-        ids = data.get(field_name, None)
-
-        if not isinstance(ids, list):
-            raise serializers.ValidationError('Must be a list')
-
-        different_ids = set.symmetric_difference(
-            set(ids), set(self.section_ids(note)))
-
-        if len(different_ids):
-            raise serializers.ValidationError(
-                'Must contain every section id and no more')
-
-        for section in note.sections.all():
-            section.ordering = data[field_name].index(section.note_section_id)
-            section.save()
-
-        # we don't need to update the "into" dict, because nothing changed.
-        # The section_ordering list doesn't map to a native object.
-
-        return 
-
 class NoteStatusField(serializers.WritableField):
     def field_to_native(self, obj, field_name):
         return obj.get_status_display().lower()
@@ -137,12 +101,11 @@ class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     project = ProjectSlugField()
     updaters = UpdatersField()
     status = NoteStatusField()
-    section_ordering = SectionOrderingField()
     sections = NoteSectionField(many=True)
     class Meta:
         model = Note
         fields = ('id', 'title', 'url', 'project', 'last_updated', 'updaters',
-                  'related_topics', 'content', 'status', 'section_ordering', 'sections',)
+                  'related_topics', 'content', 'status', 'sections',)
 
 class MinimalNoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                             serializers.ModelSerializer):
