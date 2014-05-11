@@ -5,7 +5,7 @@ import numbers
 
 from django.conf import settings
 from django.core import urlresolvers
-from django.db import connection, models
+from django.db import models
 from django.utils.html import conditional_escape
 
 from .. import utils
@@ -96,6 +96,7 @@ class OrderingManager(models.Manager):
         step - an integer between 1 and 1000 representing the step between
             consecutive orders.
         """
+        from django.db import connection, transaction
         self._ensure_integer_field(ordering_field)
         if not (0 < step < 1000):
             raise ValueError('Step value must be between 1 and 1000.')
@@ -116,6 +117,7 @@ class OrderingManager(models.Manager):
         query, params = self._generate_update_sql(ordering_field, positions_dict)
         cursor = connection.cursor()
         cursor.execute(query, params)
+        transaction.commit_unless_managed()
     def normalize_ordering_values(self, ordering_field, fill_in_empty=False,
                                 step=1):
         self._ensure_integer_field(ordering_field)
