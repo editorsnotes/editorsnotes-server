@@ -1,13 +1,14 @@
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser
 
 from editorsnotes.main.models import Document, Scan
 
-from .base import (BaseListAPIView, BaseDetailView, ElasticSearchRetrieveMixin,
-                   ElasticSearchListMixin)
+from .base import BaseListAPIView, BaseDetailView, ElasticSearchListMixin
 from ..serializers import DocumentSerializer, ScanSerializer
 
-__all__ = ['DocumentList', 'DocumentDetail', 'ScanList', 'ScanDetail']
+__all__ = ['DocumentList', 'DocumentDetail', 'ScanList', 'ScanDetail',
+           'normalize_scan_order']
 
 class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     model = Document
@@ -16,6 +17,17 @@ class DocumentList(ElasticSearchListMixin, BaseListAPIView):
 class DocumentDetail(BaseDetailView):
     model = Document
     serializer_class = DocumentSerializer
+
+def normalize_scan_order(request, project_slug, document_id):
+    document_qs = Document.objects.select_related('scans')
+    document = get_object_or_404(document_qs, id=document_id)
+    can_edit = (request.user and
+                request.user.has_project_perm(document.project, 'main.change_document'))
+    if not can_edit:
+        raise HttpResponseForbidden('You do not have permissions to perform this action.')
+    step = int(request.GET.get('step', 100))
+    document.scans.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
+    return HttpResponse()
 
 class ScanList(BaseListAPIView):
     model = Scan
