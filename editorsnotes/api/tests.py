@@ -607,6 +607,13 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
 
+        note_obj.is_private = True
+        response = self.client.get(
+            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id])
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
+
     def test_note_api_update_logged_out(self):
         "Updating a note while logged out is NOT OK"
         note_obj = self.create_test_note()

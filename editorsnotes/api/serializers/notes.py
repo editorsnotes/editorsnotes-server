@@ -104,12 +104,13 @@ class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     sections = NoteSectionField(many=True)
     class Meta:
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'last_updated', 'updaters',
-                  'related_topics', 'content', 'status', 'sections',)
+        fields = ('id', 'title', 'url', 'project', 'is_private', 'last_updated',
+                  'updaters', 'related_topics', 'content', 'status', 'sections',)
 
 class MinimalNoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                             serializers.ModelSerializer):
     status = NoteStatusField()
     class Meta:
         model = Note
-        fields = ('id', 'title', 'related_topics', 'content', 'status',)
+        fields = ('id', 'title', 'related_topics', 'content', 'status',
+                  'is_private',)

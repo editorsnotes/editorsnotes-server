@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -15,6 +16,13 @@ def note(request, note_id, project_slug):
             .prefetch_related('related_topics')
     note = get_object_or_404(qs, id=note_id, project__slug=project_slug)
 
+    if note.is_private:
+        can_view = (
+            request.user.is_authenticated() and
+            request.user.has_project_perm(note.project, 'main.view_private_note'))
+        if not can_view:
+            raise PermissionDenied()
+
     o['breadcrumb'] = (
         (note.project.name, note.project.get_absolute_url()),
         ("Notes", reverse('all_notes_view',
@@ -31,8 +39,9 @@ def note(request, note_id, project_slug):
             .select_subclasses()\
             .select_related('citationns__document__project',
                             'notereferencens__note_reference__project')
-    o['can_edit'] = request.user.is_authenticated() and \
-            request.user.has_project_perm(o['note'].project, 'main.change_note')
+    o['can_edit'] = (
+        request.user.is_authenticated() and
+        request.user.has_project_perm(o['note'].project, 'main.change_note'))
 
 
     return render_to_response(

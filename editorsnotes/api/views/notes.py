@@ -34,6 +34,10 @@ class NoteList(ElasticSearchListMixin, BaseListAPIView):
 class NoteDetail(BaseDetailView):
     model = Note
     serializer_class = NoteSerializer
+    permissions = {
+        'GET': ('main.view_private_note',),
+        'HEAD': ('main.view_private_note',),
+    }
     def post(self, request, *args, **kwargs):
         """Add a new note section"""
         section_type = request.DATA.get('section_type', None)
@@ -61,6 +65,10 @@ class NoteDetail(BaseDetailView):
 
 class NoteSectionDetail(BaseDetailView):
     model = NoteSection
+    permissions = {
+        'GET': ('main.view_private_note',),
+        'HEAD': ('main.view_private_note',),
+    }
     def get_object(self, queryset=None):
         queryset = self.get_queryset()
         obj = queryset.get()

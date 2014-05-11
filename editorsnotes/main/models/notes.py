@@ -33,12 +33,16 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     project = models.ForeignKey('Project', related_name='notes')
     assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, null=True)
     status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1, default='1')
+    is_private = models.BooleanField(default=False)
     license = models.ForeignKey(License, blank=True, null=True)
     related_topics = generic.GenericRelation('TopicAssignment')
     sections_counter = models.PositiveIntegerField(default=0)
     class Meta:
         app_label = 'main'
         ordering = ['-last_updated']  
+        permissions = (
+            (u'view_private_note', u'Can view notes private to a project.'),
+        )
     def as_text(self):
         return self.title
     @models.permalink
