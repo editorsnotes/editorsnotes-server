@@ -31,7 +31,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     project = ProjectSlugField()
     zotero_data = ZoteroField(required=False)
     url = URLField()
-    scans = ScanSerializer(many=True)
+    scans = ScanSerializer(many=True, required=False, read_only=True)
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
