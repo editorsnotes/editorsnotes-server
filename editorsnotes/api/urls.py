@@ -16,6 +16,8 @@ project_specific_patterns = patterns('',
     url(r'^notes/(?P<pk>\d+)/normalize_section_order/$', views.normalize_section_order, name='api-notes-normalize-section-order'),
     url(r'^documents/$', views.DocumentList.as_view(), name='api-documents-list'),
     url(r'^documents/(?P<pk>\d+)/$', views.DocumentDetail.as_view(), name='api-documents-detail'),
+    url(r'^documents/(?P<document_id>\d+)/scans/$', views.ScanList.as_view(), name='api-scans-list'),
+    url(r'^documents/(?P<document_id>\d+)/scans/(?P<scan_id>\d+)/$', views.ScanDetail.as_view(), name='api-scans-detail'),
 )
 
 urlpatterns = patterns('',

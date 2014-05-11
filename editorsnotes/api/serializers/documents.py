@@ -7,7 +7,7 @@ from rest_framework.fields import Field
 from rest_framework.relations import RelatedField
 from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Document, Citation
+from editorsnotes.main.models import Document, Citation, Scan
 
 from .base import (
     RelatedTopicSerializerMixin, ProjectSpecificItemMixin, URLField,
@@ -20,15 +20,22 @@ class ZoteroField(serializers.WritableField):
     def from_native(self, data):
         return data and json.dumps(data)
 
+class ScanSerializer(serializers.ModelSerializer):
+    creator = serializers.Field('creator.username')
+    class Meta:
+        model = Scan
+        fields = ('id', 'image', 'ordering', 'created', 'creator')
+
 class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                          serializers.ModelSerializer):
     project = ProjectSlugField()
     zotero_data = ZoteroField(required=False)
     url = URLField()
+    scans = ScanSerializer(many=True)
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
-                  'related_topics', 'zotero_data',)
+                  'scans', 'related_topics', 'zotero_data',)
 
 class CitationSerializer(serializers.ModelSerializer):
     document = serializers.SerializerMethodField('get_document_url')
@@ -43,5 +50,4 @@ class CitationSerializer(serializers.ModelSerializer):
         return reverse('api:api-documents-detail',
                        args=[request.project.slug, obj.document_id],
                        request=request)
-
 
