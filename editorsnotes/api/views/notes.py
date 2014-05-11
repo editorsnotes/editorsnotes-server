@@ -22,7 +22,7 @@ def normalize_section_order(request, project_slug, pk):
     if not can_edit:
         raise HttpResponseForbidden('You do not have permissions to perform this action.')
 
-    step = request.GET.get('step', 100)
+    step = int(request.GET.get('step', 100))
 
     note.sections.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
     return HttpResponse()
