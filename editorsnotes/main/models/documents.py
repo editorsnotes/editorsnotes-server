@@ -20,7 +20,8 @@ from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
 from auth import ProjectPermissionsMixin, UpdatersMixin
-from base import CreationMetadata, LastUpdateMetadata, URLAccessible, Administered
+from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
+                  Administered, OrderingManager)
 
 __all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink',
            'Citation']
@@ -296,9 +297,10 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
     document = models.ForeignKey(Document, related_name='scans')
     image = models.ImageField(upload_to='scans/%Y/%m')
     ordering = models.IntegerField(blank=True, null=True)
+    objects = OrderingManager()
     class Meta:
         app_label = 'main'
-        ordering = ['ordering'] 
+        ordering = ['ordering', '-created'] 
     def __unicode__(self):
         return u'Scan for %s (order: %s)' % (self.document, self.ordering)
     def get_affiliation(self):
@@ -329,7 +331,7 @@ class DocumentMetadata(CreationMetadata):
         app_label = 'main'
         unique_together = ('document', 'key')
 
-class CitationManager(models.Manager):
+class CitationManager(OrderingManager):
     def get_for_object(self, obj):
         return self.filter(
             content_type=ContentType.objects.get_for_model(obj),
