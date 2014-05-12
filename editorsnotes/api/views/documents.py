@@ -33,9 +33,10 @@ class ScanList(BaseListAPIView):
     model = Scan
     serializer_class = ScanSerializer
     parser_classes = (MultiPartParser,)
+    paginate_by = None
     def get_document(self):
         document_id = self.kwargs.get('document_id')
-        document_qs = Document.objects.select_related('scans')
+        document_qs = Document.objects.prefetch_related('scans__creator')
         document = get_object_or_404(document_qs, id=document_id)
         return document
     def get_queryset(self):
@@ -58,6 +59,6 @@ class ScanDetail(BaseDetailView):
     def get_queryset(self):
         document_id = self.kwargs.get('document_id')
         scan_id = self.kwargs.get('scan_id')
-        document_qs = Document.objects.select_related('scans')
+        document_qs = Document.objects.prefetch_related('scans__creator')
         document = get_object_or_404(document_qs, id=document_id)
         return document.scans.filter(id=scan_id)

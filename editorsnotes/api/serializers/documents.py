@@ -3,8 +3,6 @@ import json
 
 from lxml import etree
 from rest_framework import serializers
-from rest_framework.fields import Field
-from rest_framework.relations import RelatedField
 from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Document, Citation, Scan
