@@ -1,14 +1,18 @@
-from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.response import Response
+from rest_framework.serializers import SortedDictWithMetadata
+from rest_framework.views import APIView
 
 from editorsnotes.main.models import Document, Scan
 
-from .base import BaseListAPIView, BaseDetailView, ElasticSearchListMixin
+from .base import (BaseListAPIView, BaseDetailView, ElasticSearchListMixin,
+                   ProjectSpecificMixin)
+from ..permissions import ProjectSpecificPermissions
 from ..serializers import DocumentSerializer, ScanSerializer
 
 __all__ = ['DocumentList', 'DocumentDetail', 'ScanList', 'ScanDetail',
-           'normalize_scan_order']
+           'NormalizeScanOrder']
 
 class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     model = Document
@@ -18,16 +22,31 @@ class DocumentDetail(BaseDetailView):
     model = Document
     serializer_class = DocumentSerializer
 
-def normalize_scan_order(request, project_slug, document_id):
-    document_qs = Document.objects.select_related('scans')
-    document = get_object_or_404(document_qs, id=document_id)
-    can_edit = (request.user and
-                request.user.has_project_perm(document.project, 'main.change_document'))
-    if not can_edit:
-        raise HttpResponseForbidden('You do not have permissions to perform this action.')
-    step = int(request.GET.get('step', 100))
-    document.scans.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
-    return HttpResponse()
+class NormalizeScanOrder(ProjectSpecificMixin, APIView):
+    """
+    Normalize the order of a document's scans. Items will remain in the same
+    order, but their `ordering` property will be equally spaced out.
+
+    @param step: integer indicating the step between each ordering value.
+    Default 100.
+    """
+    parser_classes = (JSONParser,)
+    permission_classes = (ProjectSpecificPermissions,)
+    permissions = {
+        'POST': ('main.change_document',)
+    }
+    def get_object(self):
+        qs = Document.objects\
+                .filter(project__id=self.request.project.id,
+                        id=self.kwargs.get('document_id'))\
+                .select_related('scans')
+        return get_object_or_404(qs)
+    def post(self, request, *args, **kwargs):
+        document = self.get_object()
+        self.check_object_permissions(self.request, document)
+        step = int(request.GET.get('step', 100))
+        document.scans.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
+        return Response()
 
 class ScanList(BaseListAPIView):
     model = Scan
