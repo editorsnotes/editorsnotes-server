@@ -20,11 +20,24 @@ class ZoteroField(serializers.WritableField):
     def from_native(self, data):
         return data and json.dumps(data)
 
+class HyperLinkedImageField(serializers.ImageField):
+    def to_native(self, value):
+        if not value.name:
+            return None
+
+        if 'request' in self.context:
+            return self.context['request'].build_absolute_uri(value.url)
+        else:
+            return value.url
+
 class ScanSerializer(serializers.ModelSerializer):
     creator = serializers.Field('creator.username')
+    image = HyperLinkedImageField()
+    image_thumbnail = HyperLinkedImageField(read_only=True)
     class Meta:
         model = Scan
-        fields = ('id', 'image', 'ordering', 'created', 'creator')
+        fields = ('id', 'image', 'image_thumbnail', 'ordering', 'created',
+                  'creator',)
 
 class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                          serializers.ModelSerializer):
