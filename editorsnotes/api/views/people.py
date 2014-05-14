@@ -17,7 +17,8 @@ class ProjectList(ListAPIView):
 class ProjectDetail(RetrieveAPIView):
     model = Project
     serializer_class = ProjectSerializer
-    def get_object(self, qs):
+    def get_object(self):
+        qs = self.get_queryset()
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
         return project
 
