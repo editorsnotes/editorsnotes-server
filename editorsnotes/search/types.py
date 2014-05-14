@@ -1,4 +1,10 @@
+import json
+from urlparse import urlparse
+
+from django.conf import settings
+from django.core.handlers.wsgi import WSGIRequest
 from pyelasticsearch.exceptions import ElasticHttpNotFoundError
+from rest_framework.renderers import JSONRenderer
 
 from editorsnotes.api import serializers
 
@@ -78,12 +84,12 @@ class DocumentTypeAdapter(object):
         mapping = self.get_mapping()
         self.es.put_mapping(self.index_name, self.type_label, mapping)
 
-    def data_from_serializer(self, obj):
-        return self.serializer(obj).data
-
-    def format_data(self, obj):
+    def data_from_object(self, obj, request=None):
         if not hasattr(obj, '_rest_serialized'):
-            obj._rest_serialized = self.serializer(obj).data
+            context = { 'request': request or self.make_dummy_request() }
+            serializer = self.serializer(obj, context=context)
+            data = json.loads(JSONRenderer().render(serializer.data))
+            obj._rest_serialized = data
         data = {
             'id': obj.id,
             'serialized': obj._rest_serialized,
@@ -99,14 +105,32 @@ class DocumentTypeAdapter(object):
             raise ValueError('Instance must be a {} object'.format(self.model))
         return obj
 
-    def index(self, instance=None, pk=None):
+    def make_dummy_request(self):
+        es_items_url = settings.ELASTICSEARCH_SITE
+        parsed = urlparse(es_items_url)
+
+        secure = parsed.scheme is 'https'
+        hostname = parsed.hostname
+        port = parsed.port or (443 if secure else 80)
+
+        request = WSGIRequest({
+            'REQUEST_METHOD': 'GET',
+            'wsgi.input': '',
+            'SERVER_NAME': hostname,
+            'SERVER_PORT': port
+        })
+        if secure:
+            request._is_secure = lambda: True
+        return request
+
+    def index(self, instance=None, pk=None, request=None):
         obj = self.get_object(instance, pk)
-        doc = self.format_data(obj)
+        doc = self.data_from_object(obj, request)
         self.es.index(self.index_name, self.type_label, doc, obj.pk, refresh=True)
 
-    def update(self, instance=None, pk=None):
+    def update(self, instance=None, pk=None, request=None):
         obj = self.get_object(instance, pk)
-        doc = self.format_data(obj)
+        doc = self.data_from_object(obj, request)
         self.es.update(self.index_name, self.type_label, obj.pk, doc=doc, refresh=True)
 
     def remove(self, instance=None, pk=None):
@@ -124,6 +148,6 @@ class DocumentTypeAdapter(object):
             chunk = _qs[i:i + chunk_size]
             if not chunk:
                 break
-            data = [ self.format_data(obj) for obj in chunk ]
+            data = [ self.data_from_object(obj) for obj in chunk ]
             self.es.bulk_index(self.index_name, self.type_label, data)
             i += chunk_size

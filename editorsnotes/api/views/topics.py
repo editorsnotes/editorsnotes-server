@@ -23,6 +23,8 @@ def topic_types(request):
     return HttpResponse(json.dumps(types), content_type="application/json")
 
 class TopicNodeList(ListAPIView):
+    paginate_by = 50
+    paginate_by_param = 'page_size'
     model = TopicNode
     serializer_class = TopicNodeSerializer
 

@@ -1,23 +1,56 @@
-from django.contrib.contenttypes.models import ContentType
-
-from rest_framework.relations import RelatedField
-from rest_framework.serializers import Field, ModelSerializer
-import reversion
+from django.core.urlresolvers import NoReverseMatch
+from rest_framework.relations import HyperlinkedRelatedField, RelatedField
+from rest_framework.reverse import reverse
+from rest_framework.serializers import Field
 
 from editorsnotes.main.models import Topic, TopicAssignment
-from editorsnotes.main.models.auth import RevisionProject
+
+def nested_getattr(obj, attr_string):
+    for attr in attr_string.split('.'):
+        obj = getattr(obj, attr)
+    return obj
 
 class URLField(Field):
+    """
+    An identity URL field.
+
+    lookup_arg_attrs should be an iterable of strings that will be applied to
+    the object to get the lookup args.
+    """
     read_only = True
-    def field_to_native(self, obj, field_name):
-        return obj.get_absolute_url()
+    def __init__(self, view_name=None, lookup_arg_attrs=None):
+        self.view_name = view_name
+        self.lookup_args = lookup_arg_attrs or ('project.slug', 'id')
+        super(URLField, self).__init__()
+    def _get_default_view_name(self, obj):
+        return 'api:api-{}-detail'.format(obj.__class__._meta.verbose_name_plural[:])
+    def _get_lookup_args(self, obj):
+        return tuple(nested_getattr(obj, attr) for attr in self.lookup_args)
+    def field_to_native(self, obj, field):
+        view = self.view_name or self._get_default_view_name(obj)
+        args = self._get_lookup_args(obj)
+        return reverse(view, args=args, request=self.context['request'])
 
 class ProjectSlugField(Field):
     read_only = True
     def field_to_native(self, obj, field_name):
         project = obj.get_affiliation()
-        return { 'name': project.name,
-                 'url': project.get_absolute_url() }
+        url = reverse('api:api-project-detail', args=(project.slug,),
+                      request=self.context['request'])
+        return { 'name': project.name, 'url': url }
+
+class HyperlinkedProjectItemField(HyperlinkedRelatedField):
+    def to_native(self, obj):
+        """
+        Return URL from item requiring project slug kwarg
+        """
+        try:
+            return reverse(
+                self.view_name, args=[obj.project.slug, obj.id],
+                request=self.context.get('request', None),
+                format=self.format or self.context.get('format', None))
+        except NoReverseMatch:
+            raise Exception('Could not resolve URL for document.')
 
 class ProjectSpecificItemMixin(object):
     """
@@ -50,11 +83,21 @@ class TopicAssignmentField(RelatedField):
     def __init__(self, *args, **kwargs):
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
         self.many = True
+    def format_topic_assignment(self, ta):
+        url = reverse('api:api-topics-detail',
+                      args=(ta.topic.project.slug, ta.topic.id),
+                      request=self.context['request'])
+        return {
+            'id': ta.topic.id,
+            'preferred_name': ta.topic.preferred_name,
+            'url': url
+        }
     def field_to_native(self, obj, field_name):
-        return [{'id':  ta.topic.id,
-                 'preferred_name': ta.topic.preferred_name,
-                 'url': ta.topic.get_absolute_url()}
-                for ta in obj.related_topics.all()]
+        if obj is None:
+            ret = []
+        else:
+            ret = [self.format_topic_assignment(ta) for ta in obj.related_topics.all()]
+        return ret
     def field_from_native(self, data, files, field_name, into):
         if self.read_only:
             return

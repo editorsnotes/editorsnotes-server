@@ -1,25 +1,24 @@
 from collections import OrderedDict
 
-from django.core.urlresolvers import reverse
-
-from lxml import etree
 from rest_framework import serializers
 from rest_framework.fields import Field
-from rest_framework.relations import RelatedField
+from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Topic, TopicNode, Citation
+from editorsnotes.main.models import Topic, TopicNode
 
 from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                    ProjectSlugField, URLField)
+from .documents import CitationSerializer
 
 class TopicNodeSerializer(serializers.ModelSerializer):
     name = Field(source='_preferred_name')
-    url = URLField()
+    url = URLField('api:api-topic-nodes-detail', ('id',))
     alternate_forms = serializers.SerializerMethodField('get_alternate_forms')
-    projects = serializers.SerializerMethodField('get_project_value')
+    project_topics = serializers.SerializerMethodField('get_project_value')
     class Meta:
         model = TopicNode
-        fields = ('id', 'name', 'url', 'alternate_forms', 'type', 'projects',)
+        fields = ('id', 'name', 'url', 'alternate_forms', 'type',
+                  'project_topics',)
     def get_alternate_forms(self, obj):
         topics = obj.project_topics.select_related('alternate_names')
         alternate_forms = set() 
@@ -32,11 +31,14 @@ class TopicNodeSerializer(serializers.ModelSerializer):
         return list(alternate_forms)
     def get_project_value(self, obj):
         return [OrderedDict((
-            ('name', topic.project.name),
-            ('url', topic.project.get_absolute_url()),
+            ('project_name', topic.project.name),
+            ('project_url', reverse('api:api-project-detail',
+                            args=(topic.project.slug,),
+                            request=self.context['request'])),
             ('preferred_name', topic.preferred_name),
-            ('topic_url', reverse('api:api-topics-detail',
-                                  args=(topic.project.slug, obj.id)))))
+            ('url', reverse('api:api-topics-detail',
+                                  args=(topic.project.slug, obj.id),
+                                  request=self.context['request']))))
             for topic in obj.project_topics.select_related('project')]
 
 class AlternateNameField(serializers.SlugRelatedField):
@@ -45,25 +47,14 @@ class AlternateNameField(serializers.SlugRelatedField):
             return
         into[field_name] = data.get(field_name, [])
 
-class TopicCitationField(RelatedField):
-    read_only = True
-    many = True
-    def field_to_native(self, obj, field_name):
-        return [{'url': reverse('api:api-topic-citations-detail', args=(obj.project.slug, obj.id, citation.id)),
-                 'document': reverse('api:api-documents-detail', args=(obj.project.slug, citation.document_id)),
-                 'document_description': etree.tostring(citation.document.description),
-                 'notes': etree.tostring(citation.notes) if citation.has_notes() else None}
-                for citation in Citation.objects.get_for_object(obj)]
-
 class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                       serializers.ModelSerializer):
     topic_node_id = Field(source='topic_node.id')
     type = Field(source='topic_node.type')
     alternate_names = AlternateNameField(slug_field='name', many=True)
-    url = URLField()
+    url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
     project = ProjectSlugField()
-    #citations = serializers.HyperlinkedIdentityField(view_name='topic-citation-detail')
-    citations = TopicCitationField()
+    citations = CitationSerializer(source='summary_cites', many=True, read_only=True)
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',

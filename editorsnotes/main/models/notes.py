@@ -54,7 +54,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return project_topic.id in \
                 self.related_topics.values_list('topic_id', flat=True)
 
-class NoteSectionManager(OrderingManager, InheritanceManagerMixin):
+class NoteSectionManager(InheritanceManagerMixin, OrderingManager):
     pass
 
 class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):

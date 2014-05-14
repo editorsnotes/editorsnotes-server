@@ -12,9 +12,8 @@ class ElasticSearchFilterBackend(BaseFilterBackend):
         params = request.QUERY_PARAMS
 
         if hasattr(request, 'project') or 'project' in params:
-            project = params.get('project', request.project.slug)
-            filters.append({ 'term': { 'serialized.project.url':
-                                       '/projects/{}/'.format(project) }})
+            project = params.get('project', request.project.name)
+            filters.append({ 'term': { 'serialized.project.name': project }})
 
         if 'updater' in params:
             filters.append({ 'term': { 'serialized.updater.username':

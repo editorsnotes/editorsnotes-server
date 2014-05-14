@@ -1,30 +1,14 @@
-from django.core.urlresolvers import NoReverseMatch
 from lxml import etree
 
 from rest_framework import serializers
-from rest_framework.relations import (
-    RelatedField, SlugRelatedField, HyperlinkedRelatedField)
-from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Note, TextNS, CitationNS, NoteReferenceNS
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (ProjectSpecificItemMixin, RelatedTopicSerializerMixin,
-                   URLField, ProjectSlugField, UpdatersField)
+                   URLField, ProjectSlugField, UpdatersField,
+                   HyperlinkedProjectItemField)
 
-
-class HyperlinkedProjectItemField(HyperlinkedRelatedField):
-    def to_native(self, obj):
-        """
-        Return URL from item requiring project slug kwarg
-        """
-        try:
-            return reverse(
-                self.view_name, args=[obj.project.slug, obj.id],
-                request=self.context.get('request', None),
-                format=self.format or self.context.get('format', None))
-        except NoReverseMatch:
-            raise Exception('Could not resolve URL for document.')
 
 class TextNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
@@ -73,12 +57,11 @@ def _serializer_from_section_type(section_type):
 
 class NoteSectionField(serializers.RelatedField):
     def field_to_native(self, note, field_name):
-        qs = note.sections.select_subclasses()\
+        qs = note.sections.all().select_subclasses()\
                 .select_related('citationns__document__project',
                                 'notereferencens__note__project')
         return [self.to_native(section) for section in qs.all()]
     def to_native(self, section):
-        section_type = getattr(section, '_section_type')
         serializer_class = _serializer_from_section_type(
             section.section_type_label)
         serializer = serializer_class(section, context=self.context)
@@ -86,7 +69,7 @@ class NoteSectionField(serializers.RelatedField):
 
 class NoteStatusField(serializers.WritableField):
     def field_to_native(self, obj, field_name):
-        return obj.get_status_display().lower()
+        return obj.get_status_display().lower() if obj else 'open'
     def from_native(self, data):
         status_choice = [ val for val, label in NOTE_STATUS_CHOICES
                           if label.lower() == data.lower() ]
@@ -110,7 +93,8 @@ class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
 class MinimalNoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                             serializers.ModelSerializer):
     status = NoteStatusField()
+    url = URLField()
     class Meta:
         model = Note
-        fields = ('id', 'title', 'related_topics', 'content', 'status',
+        fields = ('id', 'url', 'title', 'related_topics', 'content', 'status',
                   'is_private',)
