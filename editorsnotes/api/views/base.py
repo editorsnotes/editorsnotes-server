@@ -126,7 +126,7 @@ def root(request):
         'auth-token': reverse('api:obtain-auth-token', request=request),
         'topics': reverse('api:api-topic-nodes-list', request=request),
         'projects': reverse('api:api-projects-list', request=request),
-        'search': reverse('api:api-search', request=request) + '?q={query},'
+        'search': reverse('api:api-search', request=request)
         #'notes': reverse('api:api-notes-list'),
         #'documents': reverse('api:api-documents-list')
     })
