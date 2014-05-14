@@ -119,7 +119,8 @@ class BootstrappedBackboneView(ProjectSpecificMixin, BreadcrumbMixin, TemplateVi
                                                    "framework serializer as a "
                                                    "serializer class.")
         if self.object:
-            serializer = self.serializer_class(self.object)
+            serializer_context = { 'request': self.request }
+            serializer = self.serializer_class(self.object, context=serializer_context)
             context['bootstrap'] = JSONRenderer().render(serializer.data)
         else:
             context['bootstrap'] = 'null';
