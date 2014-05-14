@@ -17,8 +17,8 @@ module.exports = Document = Backbone.Model.extend({
   constructor: function () {
     ProjectSpecificMixin.constructor.apply(this, arguments);
     RelatedTopicsMixin.constructor.apply(this, arguments);
-    Backbone.Model.apply(this, arguments);
     this.scans = new ScanList([], { "document": this });
+    Backbone.Model.apply(this, arguments);
   },
 
   urlRoot: function () {

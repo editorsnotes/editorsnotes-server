@@ -1,0 +1,6 @@
+<% scans.each(function (scan) { %>
+  <div>
+    <h6><%= scan.get('image') %></h6>
+    <a href="<%= scan.get('image') %>" target="_blank"><img src="<%= scan.get('image_thumbnail') %>" /></a>
+  </div>
+<% }); %>
