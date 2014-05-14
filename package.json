@@ -7,8 +7,8 @@
     "jquery": "^1.11.0"
   },
   "devDependencies": {
-    "browserify": "^3.32.1",
-    "browserify-shim": "^3.3.1",
+    "browserify": "^4.1.2",
+    "browserify-shim": "^3.5.0",
     "node-underscorify": "0.0.9",
     "less": "1.3.0",
     "mocha": "^1.18.0",
@@ -16,7 +16,7 @@
     "sinon": "^1.9.0",
     "brfs": "1.0.0",
     "jedify": "0.0.1",
-    "watchify": "^0.8.2"
+    "watchify": "^0.9.0"
   },
   "browserify": {
     "transform": [
