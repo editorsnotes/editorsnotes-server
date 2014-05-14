@@ -1,6 +1,13 @@
 <% scans.each(function (scan) { %>
   <div>
-    <h6><%= scan.get('image') %></h6>
+    <h6>
+      <%= scan.getFilename() %>
+      <a class="delete-scan" href="#" data-scan="<%= scan.cid %>">Delete</a>
+    </h6>
     <a href="<%= scan.get('image') %>" target="_blank"><img src="<%= scan.get('image_thumbnail') %>" /></a>
   </div>
 <% }); %>
+
+<div id="scan-drop" style="height: 100px; line-height: 100px; text-align: center; width: 100%; border: 4px solid black;">
+  Drop image files here to add them as scans.
+</div>
