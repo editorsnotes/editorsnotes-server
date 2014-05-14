@@ -26,7 +26,7 @@ urlpatterns = patterns('',
     url(r'^auth-token/$', 'rest_framework.authtoken.views.obtain_auth_token', name='obtain-auth-token'),
     url(r'^search/$', views.SearchView.as_view(), name='api-search'),
     url(r'^topics/$', views.TopicNodeList.as_view(), name='api-topic-nodes-list'),
-    url(r'^topics/(?P<pk>\d+)/$$', views.TopicNodeDetail.as_view(), name='api-topic-nodes-list'),
+    url(r'^topics/(?P<pk>\d+)/$$', views.TopicNodeDetail.as_view(), name='api-topic-nodes-detail'),
     url(r'^projects/$', views.ProjectList.as_view(), name='api-projects-list'),
     url(r'^projects/(?P<project_slug>\w+)/', include(project_specific_patterns)),
 )
