@@ -58,7 +58,7 @@ def _serializer_from_section_type(section_type):
 
 class NoteSectionField(serializers.RelatedField):
     def field_to_native(self, note, field_name):
-        qs = note.sections.select_subclasses()\
+        qs = note.sections.all().select_subclasses()\
                 .select_related('citationns__document__project',
                                 'notereferencens__note__project')
         return [self.to_native(section) for section in qs.all()]

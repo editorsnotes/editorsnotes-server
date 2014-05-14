@@ -88,7 +88,8 @@ class NoteSectionDetail(BaseDetailView):
         note_id = self.kwargs.get('note_id')
         section_id = self.kwargs.get('section_id')
         note = Note.objects.get(id=note_id)
-        qs = note.sections.select_subclasses()\
+        qs = note.sections.all()\
+                .select_subclasses()\
                 .filter(note_section_id=section_id)
         if qs.count() != 1:
             raise Http404()

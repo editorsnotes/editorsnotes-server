@@ -36,6 +36,7 @@ def note(request, note_id, project_slug):
     o['topics'] = [ta.topic for ta in o['note'].related_topics.all()]
     o['sections'] = note.sections\
             .order_by('ordering', 'note_section_id')\
+            .all()\
             .select_subclasses()\
             .select_related('citationns__document__project',
                             'notereferencens__note_reference__project')
