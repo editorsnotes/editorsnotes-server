@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.response import Response
-from rest_framework.serializers import SortedDictWithMetadata
 from rest_framework.views import APIView
 
 from editorsnotes.main.models import Document, Scan

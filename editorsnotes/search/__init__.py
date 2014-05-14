@@ -3,7 +3,6 @@ from django.dispatch import receiver
 
 from reversion import post_revision_commit
 
-from editorsnotes.api.serializers import TopicSerializer
 from editorsnotes.main import models as main_models
 
 from .index import ENIndex, ActivityIndex

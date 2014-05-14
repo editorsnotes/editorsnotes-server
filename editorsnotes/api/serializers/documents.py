@@ -3,13 +3,11 @@ import json
 
 from lxml import etree
 from rest_framework import serializers
-from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Document, Citation, Scan
 
-from .base import (
-    RelatedTopicSerializerMixin, ProjectSpecificItemMixin, URLField,
-    ProjectSlugField, HyperlinkedProjectItemField)
+from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+                   URLField, ProjectSlugField, HyperlinkedProjectItemField)
 
 class ZoteroField(serializers.WritableField):
     def to_native(self, zotero_data):

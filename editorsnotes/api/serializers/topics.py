@@ -1,12 +1,10 @@
 from collections import OrderedDict
 
-from lxml import etree
 from rest_framework import serializers
 from rest_framework.fields import Field
-from rest_framework.relations import RelatedField
 from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Topic, TopicNode, Citation
+from editorsnotes.main.models import Topic, TopicNode
 
 from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                    ProjectSlugField, URLField)

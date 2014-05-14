@@ -1,4 +1,3 @@
-from django.core.urlresolvers import NoReverseMatch
 from lxml import etree
 
 from rest_framework import serializers
@@ -63,7 +62,6 @@ class NoteSectionField(serializers.RelatedField):
                                 'notereferencens__note__project')
         return [self.to_native(section) for section in qs.all()]
     def to_native(self, section):
-        section_type = getattr(section, '_section_type')
         serializer_class = _serializer_from_section_type(
             section.section_type_label)
         serializer = serializer_class(section, context=self.context)

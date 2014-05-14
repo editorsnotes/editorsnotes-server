@@ -1,12 +1,9 @@
-from django.contrib.contenttypes.models import ContentType
-
+from django.core.urlresolvers import NoReverseMatch
 from rest_framework.relations import HyperlinkedRelatedField, RelatedField
 from rest_framework.reverse import reverse
-from rest_framework.serializers import Field, ModelSerializer
-import reversion
+from rest_framework.serializers import Field
 
 from editorsnotes.main.models import Topic, TopicAssignment
-from editorsnotes.main.models.auth import RevisionProject
 
 def nested_getattr(obj, attr_string):
     for attr in attr_string.split('.'):
