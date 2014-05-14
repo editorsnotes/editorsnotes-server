@@ -9,7 +9,7 @@ from editorsnotes.main.models import Document, Citation, Scan
 
 from .base import (
     RelatedTopicSerializerMixin, ProjectSpecificItemMixin, URLField,
-    ProjectSlugField)
+    ProjectSlugField, HyperlinkedProjectItemField)
 
 class ZoteroField(serializers.WritableField):
     def to_native(self, zotero_data):
@@ -21,12 +21,12 @@ class ZoteroField(serializers.WritableField):
 class HyperLinkedImageField(serializers.ImageField):
     def to_native(self, value):
         if not value.name:
-            return None
-
-        if 'request' in self.context:
-            return self.context['request'].build_absolute_uri(value.url)
+            ret = None
+        elif 'request' in self.context:
+            ret = self.context['request'].build_absolute_uri(value.url)
         else:
-            return value.url
+            ret = value.url
+        return ret
 
 class ScanSerializer(serializers.ModelSerializer):
     creator = serializers.Field('creator.username')
@@ -49,16 +49,12 @@ class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                   'scans', 'related_topics', 'zotero_data',)
 
 class CitationSerializer(serializers.ModelSerializer):
-    document = serializers.SerializerMethodField('get_document_url')
+    url = URLField('api:api-topic-citations-detail',
+                   ('content_object.project.slug', 'content_object.topic_node_id', 'id'))
+    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail')
     document_description = serializers.SerializerMethodField('get_document_description')
     class Meta:
         model = Citation
-        fields = ('id', 'document', 'document_description', 'notes')
+        fields = ('id', 'url', 'document', 'document_description', 'notes')
     def get_document_description(self, obj):
         return etree.tostring(obj.document.description)
-    def get_document_url(self, obj):
-        request = self.context['request']
-        return reverse('api:api-documents-detail',
-                       args=[request.project.slug, obj.document_id],
-                       request=request)
-

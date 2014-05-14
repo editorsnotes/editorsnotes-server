@@ -2,29 +2,14 @@ from django.core.urlresolvers import NoReverseMatch
 from lxml import etree
 
 from rest_framework import serializers
-from rest_framework.relations import (
-    RelatedField, SlugRelatedField, HyperlinkedRelatedField)
-from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Note, TextNS, CitationNS, NoteReferenceNS
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (ProjectSpecificItemMixin, RelatedTopicSerializerMixin,
-                   URLField, ProjectSlugField, UpdatersField)
+                   URLField, ProjectSlugField, UpdatersField,
+                   HyperlinkedProjectItemField)
 
-
-class HyperlinkedProjectItemField(HyperlinkedRelatedField):
-    def to_native(self, obj):
-        """
-        Return URL from item requiring project slug kwarg
-        """
-        try:
-            return reverse(
-                self.view_name, args=[obj.project.slug, obj.id],
-                request=self.context.get('request', None),
-                format=self.format or self.context.get('format', None))
-        except NoReverseMatch:
-            raise Exception('Could not resolve URL for document.')
 
 class TextNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
@@ -110,7 +95,8 @@ class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
 class MinimalNoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                             serializers.ModelSerializer):
     status = NoteStatusField()
+    url = URLField()
     class Meta:
         model = Note
-        fields = ('id', 'title', 'related_topics', 'content', 'status',
+        fields = ('id', 'url', 'title', 'related_topics', 'content', 'status',
                   'is_private',)
