@@ -11,6 +11,7 @@ POSTGRES_DB = {
     'PORT': ''
 }
 
+ELASTICSEARCH_ENABLED = True
 
 # Each ElasticSearch index created will be prefixed with this string.
 ELASTICSEARCH_PREFIX = 'editorsnotes'
