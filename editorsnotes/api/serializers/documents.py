@@ -41,6 +41,14 @@ class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     zotero_data = ZoteroField(required=False)
     url = URLField()
     scans = ScanSerializer(many=True, required=False, read_only=True)
+    def get_validation_exclusions(self):
+        # TODO: This can be removed in future versions of django rest framework.
+        # It's necessary because for the time being, DRF excludes non-required
+        # fields from validation (not something I find particularly useful, but
+        # they must've had their reasons...)
+        exclusions = super(DocumentSerializer, self).get_validation_exclusions()
+        exclusions.remove('zotero_data')
+        return exclusions
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
