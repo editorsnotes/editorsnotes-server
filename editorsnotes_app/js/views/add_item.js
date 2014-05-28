@@ -39,6 +39,7 @@ module.exports = Backbone.View.extend({
 
   setModalSize: function () {
     var that = this
+      , options = this.options || {}
       , $w = $(window)
       , modalHeight
       , bodyHeight
@@ -49,14 +50,14 @@ module.exports = Backbone.View.extend({
         'collision': 'none',
       }
 
-    modalHeight = this.options.height || (function () {
+    modalHeight = options.height || (function () {
       var windowHeight = $w.height() - 50
-        , minHeight = that.options.minHeight || 500
+        , minHeight = options.minHeight || 500
 
       return windowHeight > minHeight ? windowHeight : minHeight;
     })();
 
-    bodyHeight = modalHeight
+    bodyHeight = (modalHeight
       - this.$('.modal-header').innerHeight()
       - this.$('.modal-footer').innerHeight()
       - (function (b) {
@@ -64,11 +65,11 @@ module.exports = Backbone.View.extend({
             , pbot = parseInt(b.css('padding-bottom'));
           return ptop + pbot;
         })(this.$('.modal-body'))
-      - 2; // border
+      - 2); // border
 
     this.$el.css({
       position: 'absolute',
-      width: this.options.width || 840,
+      width: options.width || 840,
       height: modalHeight
     }).position(modalPosition).position(modalPosition);
 

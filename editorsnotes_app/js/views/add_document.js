@@ -16,7 +16,7 @@ module.exports = AddItemView.extend({
     this.zoteroView = new EditZoteroView({
       el: this.$('.add-document-zotero-data')
     });
-    this.listenTo(this.zoteroView, 'citationUpdated', function (citation) {
+    this.listenTo(this.zoteroView, 'updatedCitation', function (citation) {
       this.$('.item-text-main').val(citation);
     });
   },
