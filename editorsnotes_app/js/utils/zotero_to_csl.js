@@ -52,9 +52,11 @@ module.exports = function (zoteroObject) {
           if (!cslObject[cslCreatorKey]) {
             cslObject[cslCreatorKey] = [];
           }
-          if (creator.firstName || creator.lastName) {
+          if (creator.hasOwnProperty('firstName') || creator.hasOwnProperty('lastName')) {
             creatorObject.given = creator.firstName;
             creatorObject.family = creator.lastName;
+          } else {
+            creatorObject.literal = creator.name;
           }
           cslObject[cslCreatorKey].push(creatorObject);
         });

@@ -69,7 +69,7 @@ class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     objects = NoteSectionManager()
     class Meta:
         app_label = 'main'
-        ordering = ['ordering', 'note_section_id']
+        ordering = ['ordering', '-note_section_id']
         unique_together = ['note', 'note_section_id']
     def get_affiliation(self):
         return self.note.project
