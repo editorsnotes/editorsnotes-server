@@ -38,12 +38,9 @@ NoteSectionView = Backbone.View.extend({
   },
 
   edit: function () {
-    var that = this
-      , html
+    var that = this, html;
 
     if (this.isActive) return;
-
-    this.model.collection.trigger('deactivate');
 
     this.isActive = true;
     this.$el.addClass('note-section-edit-active');
@@ -84,12 +81,7 @@ NoteSectionView = Backbone.View.extend({
     if (this.isEmpty() || deleteModel) {
       collection = this.model.collection
       this.remove();
-      this.model.destroy({
-        success: function (model) {
-          collection.remove(model);
-          collection.trigger('removeEmpty');
-        }
-      });
+      this.model.destroy();
     } else {
       this.model.save();
     }

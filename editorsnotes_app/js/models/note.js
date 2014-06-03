@@ -12,7 +12,6 @@ module.exports = Note = Backbone.Model.extend({
     'title': '',
     'content': '',
     'status': 'open',
-    'section_ordering': [],
     'related_topics': []
   },
 
