@@ -29,7 +29,7 @@ module.exports = Note = Backbone.Model.extend({
     var that = this;
     this.sections.url = this.url();
     this.sections.comparator = function (section) {
-      return that.get('section_order').indexOf(section.id);
+      return section.get('ordering');
     }
   },
 

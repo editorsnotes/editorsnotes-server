@@ -21,8 +21,11 @@ NoteSectionView = Backbone.View.extend({
   events: { 'click': 'edit' },
 
   initialize: function () {
+    var that = this;
+
     this.render();
     this.$el.addClass('note-section-' + this.model.get('section_type'));
+    this.$el.data('cid', that.model.cid);
   },
 
   render: function () {

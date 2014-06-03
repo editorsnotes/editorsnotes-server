@@ -192,33 +192,6 @@ module.exports = Backbone.View.extend({
     this._sectionViews.forEach(function (view) {
       view.deactivate.call(view);
     });
-  },
-
-  saveOrder: function () {
-    var that = this
-      , noteOrdering = this.note.get('section_ordering')
-      , viewOrdering = []
-      , renderedOrder
-
-    renderedOrder = this.$sections.children('.note-section').map(function (idx, el) {
-      return $(el).data('sectionCID');
-    }).toArray();
-
-    this._sectionViews.sort(function (a, b) {
-      var idxa = renderedOrder.indexOf(a.model.cid)
-        , idxb = renderedOrder.indexOf(b.model.cid)
-
-      return idxa > idxb;
-    });
-
-    this._sectionViews.forEach(function (view) {
-      if (view.model.id) viewOrdering.push(view.model.id);
-    });
-
-    if (noteOrdering.join('') !== viewOrdering.join('')) {
-      this.note.set('section_ordering', viewOrdering);
-      this.note.save();
-    }
   }
 
 });

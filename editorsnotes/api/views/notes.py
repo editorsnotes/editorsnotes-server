@@ -35,7 +35,11 @@ class NormalizeSectionOrder(ProjectSpecificMixin, APIView):
         self.check_object_permissions(self.request, note)
         step = int(request.GET.get('step', 100))
         note.sections.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
-        return Response()
+
+        return Response([
+            { 'section_id': _id, 'ordering': ordering }
+            for _id, ordering in note.sections.values_list('note_section_id', 'ordering')
+        ])
 
 class NoteList(ElasticSearchListMixin, BaseListAPIView):
     model = Note
