@@ -36,6 +36,18 @@
           <dt>Project</dt>
           <dd>{{ note.project|as_link }}</dd>
 
+          <dt>Private</dt> 
+          <dd>
+            {% if note.is_private %}Yes{% else %}No{% endif %}
+          </dd>
+
+          <dt>License</dt>
+          <dd>
+          <a class="license-link" href="{{ license.url }}" title="{{ license }}">
+            {% for symbol in license.symbols %}<i class="license-symbol">{{ symbol }}</i>{% endfor %}
+          </a>
+          </dd>
+
           {% with authors=note.get_all_updaters %}
           <dt>Author{% if authors|length > 1 %}s{% endif %}</dt>
           <dd>
@@ -44,13 +56,6 @@
             </ul>
           </dd>
           {% endwith %}
-
-          <dt>License</dt>
-          <dd>
-          <a class="license-link" href="{{ license.url }}" title="{{ license }}">
-            {% for symbol in license.symbols %}<i class="license-symbol">{{ symbol }}</i>{% endfor %}
-          </a>
-          </dd>
 
           <dt>Last updated</dt>
           <dd>{{ note.last_updated }} (<a href="#">view history</a>)</dd>

@@ -22,9 +22,15 @@ NoteView = module.exports = Backbone.View.extend({
       selectOptions: {
         collection: function () {
           return _.map(this.model.possibleStatuses, function (s) {
-            return { value: s + '111', label: i18n.translate(s).fetch() }
+            return { value: s, label: i18n.translate(s).fetch() }
           });
         }
+      }
+    },
+    '#note-private': {
+      observe: 'is_private',
+      selectOptions: {
+        collection: [{ label: 'Yes', value: true }, { label: 'No', value: false }]
       }
     },
     '#note-title': 'title'
@@ -49,7 +55,7 @@ NoteView = module.exports = Backbone.View.extend({
       this.sectionListView.render()
     }
 
-    this.topicListView.$el.appendTo( that.$('#note-authorship') );
+    this.topicListView.$el.appendTo( that.$('#note-related-topics') );
     this.$('#note-description > :first-child').editText();
   }
 });
