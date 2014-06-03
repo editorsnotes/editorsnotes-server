@@ -28,4 +28,8 @@ $(document).ready(function () {
     return $li;
   }
 
+  $('body')
+    .tooltip({ selector: '[data-toggle="tooltip"]' })
+    .on('click', 'a[data-toggle="tooltip"][href="#"]', function () { return false });
+
 });

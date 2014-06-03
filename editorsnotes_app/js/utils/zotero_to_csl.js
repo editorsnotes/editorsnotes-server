@@ -71,5 +71,5 @@ module.exports = function (zoteroObject) {
     }
   });
 
-  return cslObject;
+  return _.isEmpty(_.omit(cslObject, 'type')) ? {} : cslObject;
 }

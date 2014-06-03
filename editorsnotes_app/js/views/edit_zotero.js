@@ -37,8 +37,8 @@ module.exports = Backbone.View.extend({
 
     // If passed data, render data editing form. Otherwize, render a form to
     // select the item type first.
-    if (opts && opts.zoteroData) {
-      this.renderZoteroForm(opts.zoteroData);
+    if (opts && opts.zoteroData && !_.isEmpty(opts.zoteroData)) {
+      this.renderZoteroData(opts.zoteroData);
     } else {
       fetchItemTypes().done(this.renderItemTypeSelect.bind(this));
     }
@@ -48,9 +48,10 @@ module.exports = Backbone.View.extend({
     var template = require('../templates/zotero_item_type_select.html');
     this.$el.html(template({ _: _, itemTypes: itemTypes }));
     this.$('select').prop('selectedIndex', -1);
+    this.trigger('rendered');
   },
 
-  renderZoteroForm: function (zoteroItem) {
+  renderZoteroData: function (zoteroItem) {
     var that = this
       , template = require('../templates/zotero_item.html')
 
@@ -61,6 +62,23 @@ module.exports = Backbone.View.extend({
         i18n: i18n.zotero,
         creatorTypes: creatorTypes
       }));
+
+      that.trigger('rendered');
+
+      /*
+       * Hide unused fields
+       *
+      that.$('.zotero-entry:not(.zotero-creator) input:only-of-type').filter(function (i) {
+        return i > 1 && !this.value;
+      }).closest('.zotero-entry').hide();
+
+      $('<div><br/><span class="quiet">Not showing blank metadata fields. </span><button class="btn">Show</button></div>')
+        .appendTo(that.$el)
+        .on('click button', function () {
+          that.$('.zotero-entry').show();
+          $(this).remove();
+        });
+      */
     });
     this.renderedItemType = zoteroItem.itemType;
 
@@ -72,7 +90,7 @@ module.exports = Backbone.View.extend({
       : $(e.currentTarget).data('item-type');
 
     // Fetch an empty item template
-    if (itemType) fetchItemTemplate(itemType).done(this.renderZoteroForm.bind(this));
+    if (itemType) fetchItemTemplate(itemType).done(this.renderZoteroData.bind(this));
 
     return false;
   },
@@ -120,13 +138,17 @@ module.exports = Backbone.View.extend({
 
   updateZoteroData: function () {
     var zoteroData
+      , cslData
       , citation
 
     zoteroData = this.formToObject();
-    citation = this.citationEngine.makeCitation(zoteroToCsl(zoteroData));
+    cslData = _.isEmpty(zoteroData) ? {} : zoteroToCsl(zoteroData);
+    citation = _.isEmpty(cslData) ? null : this.citationEngine.makeCitation(cslData);
 
     this.trigger('updatedZoteroData', zoteroData);
     this.trigger('updatedCitation', citation);
+
+    return { data: zoteroData, citation: citation }
   },
 
   formToObject: function () {
