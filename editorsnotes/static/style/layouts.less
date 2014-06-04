@@ -1,50 +1,63 @@
-// Our layouts
+/*
+ *  LAYOUTS
+ * =========
+ * Layouts for Editors' Notes or full pages should go here.
+ * 
+ * Style rules for reusable components/widgets should go in ./components.less
+ *
+ */
 
-html, body {
-  height: 100%;
-}
 
-// Bottom-bar
-//------------
+html, body { height: 100%; }
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           SITE-WIDE STYLES                                 //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+ *  Bottom bar
+ * ============
+ * This is the bar stuck along the bottom of every page.
+ *
+ * Adjustable variables:
+ *   - bottomBarHeight
+ */
 @bottomBarHeight: 2 * @baseLineHeight;
-
-.main-wrapper {
-  min-height: 100%;
-  margin: 0 auto -@bottomBarHeight;
-}
-
-.footer, .push {
-  height: @bottomBarHeight;
-}
-
-.push {
-  margin-top: 2em;
-}
-
-.footer {
-  background: #f6f6f6;
-}
-
+.footer, .push { height: @bottomBarHeight; }
+.push { margin-top: 2em; }
+.footer { background: #f6f6f6; }
 .footer-inner {
   line-height: @bottomBarHeight;
   font-size: 10px;
   text-align: right;
 }
+.main-wrapper {
+  min-height: 100%;
+  margin: 0 auto -@bottomBarHeight;
+}
 
 
-// Navbars
-//---------
+/*
+ *  Navigation bars
+ * =================
+ * The navigation bar (non-fixed) on the top of the page.
+ *
+ */
+.navbar .container { width: 940px; }
 .navbar-inner {
-  .border-radius(0);
-  .box-shadow(0 3px 4px rgba(0,0,0,.065));
+  .border-radius(0); // No border radius so that the bar takes up the whole space.
+  .box-shadow(0 3px 4px rgba(0,0,0,.065)); // A very slight box shadow
   border: none;
   border-bottom: none;
 }
 
-.navbar .container {
-  width: 940px;
-}
+// Search box
+.navbar-search .search-query { border-radius: 14px; }
 
+// Navigation items
 .navbar .nav > li { 
   > a {
     padding-left: 11px;
@@ -63,6 +76,7 @@ html, body {
   }
 }
 
+// Navigation button group (containing lists of actions)
 .navbar .nav > li > .btn-group {
   margin-left: 12px;
   .dropdown-menu {
@@ -75,18 +89,18 @@ html, body {
   }
 }
 
-.navbar-search .search-query {
-  border-radius: 14px;
-}
 
-
-// Tabs
-// -----
+/*
+ *  Tabs
+ * ======
+ */
 .nav-tabs a { color: @textColor; }
 
 
-// Breadcrumbs
-// -----------
+/*
+ *  Breadcrumbs
+ * =============
+ */
 .breadcrumb-top {
   .breadcrumb;
   background: none;
@@ -105,6 +119,16 @@ html, body {
   li.show-all-link { margin-top: 4px; }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           PAGE-WIDE STYLES                                 //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * GARBAGE! Organize the stuff below this!!!
+ */
 
 // Document page
 // --------------
