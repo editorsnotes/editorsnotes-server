@@ -5,6 +5,7 @@ var _ = require('underscore')
   , Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
+  , CitationsView = require('./citations')
   , SaveItemMixin = require('./save_item_mixin')
   , TopicView
 
@@ -22,6 +23,10 @@ module.exports = TopicView = Backbone.View.extend({
     var that = this;
     this.topicListView = new RelatedTopicsView({ collection: that.model.relatedTopics });
     this.render();
+    this.citationListView = new CitationsView({
+      el: '#topic-citations',
+      collection: that.model.citations
+    });
     this.stickit();
   },
 
