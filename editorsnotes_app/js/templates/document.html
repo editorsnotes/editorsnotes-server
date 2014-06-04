@@ -1,9 +1,9 @@
-<div>
+<div class="edit-section">
   <h3>
     Printed citation 
     <a href="#"
       data-toggle="tooltip"
-      title="The textual representation of this document. This will be generated automatically from this item's metadata unless you edit it manually.">
+      title="The textual representation of this document. This field will be generated automatically from this item's metadata unless you edit it manually.">
       <i class="icon-question-sign"></i>
     </a>
   </h3>
@@ -13,18 +13,18 @@
       <%= doc.get('description') || '<div><span class="quiet">Enter document metadata to generate a citation, or edit it manually.</span></div>' %>
       </div>
     </div>
-    <div style="margin-top: 12px;"><button class="btn"></button></div>
+    <div style="margin-top: 12px;"><button class="btn">&nbsp;</button></div>
   </div>
 </div>
 
-<div id="document-zotero-data">
+<div class="edit-section" id="document-zotero-data">
   <h3>Metadata</h3>
 </div>
 
-<div id="document-related-topics">
+<div class="edit-section" id="document-related-topics">
   <h3>Related topics</h3>
 </div>
 
-<div id="document-scans">
+<div class="edit-section" id="document-scans">
   <h3>Scans</h3>
 </div>

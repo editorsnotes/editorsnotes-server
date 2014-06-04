@@ -130,6 +130,19 @@ html, body { height: 100%; }
  * GARBAGE! Organize the stuff below this!!!
  */
 
+.edit-section {
+ > h3:first-child { border-bottom: 1px solid #999; }
+ margin-bottom: 2em;
+} 
+
+[data-toggle="tooltip"] [class*="icon"] {
+  color: @textColor;
+  &:hover {
+    text-decoration: none;
+    color: @linkColor;
+  }
+}
+
 // Document page
 // --------------
 td.zotero-key {
