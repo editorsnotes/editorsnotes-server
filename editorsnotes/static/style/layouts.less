@@ -130,9 +130,19 @@ html, body { height: 100%; }
  * GARBAGE! Organize the stuff below this!!!
  */
 
+input.big {
+  font-size: 20px;
+  height: 30px;
+  padding: 6px 8px;
+}
+
+input.wide {
+  width: 90%;
+}
+
 .edit-section {
  > h3:first-child { border-bottom: 1px solid #999; }
- margin-bottom: 2em;
+ margin-bottom: 1.5em;
 } 
 
 [data-toggle="tooltip"] [class*="icon"] {
@@ -141,6 +151,7 @@ html, body { height: 100%; }
     text-decoration: none;
     color: @linkColor;
   }
+  &:focus { text-decoration: none; }
 }
 
 // Document page

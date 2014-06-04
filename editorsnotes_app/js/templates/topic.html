@@ -1,21 +1,20 @@
-<div>
-  <h3>Preferred name</h3>
-  <input id="topic-name" maxlength="200" class="topic-preferred-name" type="text" />
+<div class="edit-section">
+  <h3>
+    Preferred name
+    <a href="#"
+      title="The name with which this topic will displayed and indexed."
+      data-toggle="tooltip"><i class="icon-question-sign"></i></a>
+  </h3>
+  <input class="big wide" id="topic-name" maxlength="200" class="topic-preferred-name" type="text" />
 </div>
 
-<div id="topic-related-topics">
-  <h3>Related topics</h3>
-</div>
-
-<div>
-  <h3>Type</h3>
-  <select id="topic-type">
-    <option><%= topic.get('type') %></option>
-  </select>
-</div>
-
-<div>
-  <h3>Alternate forms</h3>
+<div class="edit-section">
+  <h3>
+    Alternate forms
+    <a href="#"
+      title="Any alternate name forms or aliases of this topic"
+      data-toggle="tooltip"><i class="icon-question-sign"></i></a>
+  </h3>
   <ul>
     <% _.forEach(topic.get('alternate_names'), function (name) { %>
     <li><%= name %></li>
@@ -24,11 +23,22 @@
   <input type="text" placeholder="add alternate name" />
 </div>
 
-<div>
+<div class="edit-section">
+  <h3>Type</h3>
+  <select id="topic-type">
+    <option><%= topic.get('type') %></option>
+  </select>
+</div>
+
+<div class="edit-section" id="topic-related-topics">
+  <h3>Related topics</h3>
+</div>
+
+<div class="edit-section">
   <h3>Article</h3>
   <div id="topic-summary"><%= topic.get('summary') || '<div></div>' %></div>
 </div>
 
-<div>
+<div class="edit-section">
   <h3>Citations</h3>
 </div>
