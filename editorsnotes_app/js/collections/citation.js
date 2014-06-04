@@ -1,8 +1,8 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var OrderedCollection = require('./ordered_collection')
   , Citation = require('../models/citation')
 
-module.exports = Backbone.Collection.extend({
+module.exports = OrderedCollection.extend({
   model: Citation
 });

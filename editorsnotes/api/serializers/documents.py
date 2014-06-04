@@ -61,6 +61,6 @@ class CitationSerializer(serializers.ModelSerializer):
     document_description = serializers.SerializerMethodField('get_document_description')
     class Meta:
         model = Citation
-        fields = ('id', 'url', 'document', 'document_description', 'notes')
+        fields = ('id', 'url', 'ordering', 'document', 'document_description', 'notes')
     def get_document_description(self, obj):
         return etree.tostring(obj.document.description)
