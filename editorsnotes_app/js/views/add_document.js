@@ -1,6 +1,6 @@
 "use strict";
 
-var AddItemView = require('./add_item')
+var AddItemView = require('./generic/add_item_base')
   , _ = require('underscore')
 
 module.exports = AddItemView.extend({

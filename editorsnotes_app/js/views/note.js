@@ -6,7 +6,7 @@ var Backbone = require('../backbone')
   , i18n = require('../utils/i18n').main
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')
-  , SaveItemMixin = require('./save_item_mixin')
+  , SaveItemMixin = require('./generic/save_item_mixin')
   , NoteView
 
 NoteView = module.exports = Backbone.View.extend({

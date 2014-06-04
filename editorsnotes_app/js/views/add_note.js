@@ -1,6 +1,6 @@
 "use strict";
 
-var AddItemView = require('./add_item')
+var AddItemView = require('./generic/add_item_base')
 
 module.exports = AddItemView.extend({
   itemType: 'note',

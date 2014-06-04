@@ -1,6 +1,6 @@
 "use strict";
 
-var SelectItemView = require('./select_item')
+var SelectItemView = require('./generic/select_item_base')
 
 module.exports = SelectItemView.extend({
   type: 'note',

@@ -6,7 +6,7 @@ var _ = require('underscore')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
   , CitationsView = require('./citations')
-  , SaveItemMixin = require('./save_item_mixin')
+  , SaveItemMixin = require('./generic/save_item_mixin')
   , TopicView
 
 module.exports = TopicView = Backbone.View.extend({

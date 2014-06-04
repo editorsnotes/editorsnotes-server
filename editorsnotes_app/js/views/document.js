@@ -5,7 +5,7 @@ var Backbone = require('../backbone')
   , RelatedTopicsView = require('./related_topics')
   , ZoteroDataView = require('./edit_zotero')
   , ScanListView = require('./scan_list')
-  , SaveItemMixin = require('./save_item_mixin')
+  , SaveItemMixin = require('./generic/save_item_mixin')
   , DocumentView
 
 module.exports = DocumentView = Backbone.View.extend({

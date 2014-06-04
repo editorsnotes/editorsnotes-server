@@ -1,6 +1,6 @@
 "use strict";
 
-var saveRow = require('../templates/save_row.html')();
+var saveRow = require('../../templates/save_row.html')();
 
 module.exports = {
   events: {

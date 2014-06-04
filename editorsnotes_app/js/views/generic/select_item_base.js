@@ -10,8 +10,8 @@
  *    autocompleteopts: object defining settings for the autocomplete input
  */
 
-var Backbone = require('../backbone')
-  , $ = require('../jquery')
+var Backbone = require('../../backbone')
+  , $ = require('../../jquery')
   , _ = require('underscore')
 
 module.exports = Backbone.View.extend({
@@ -47,7 +47,7 @@ module.exports = Backbone.View.extend({
   },
   render: function () {
     var that = this
-      , template = require('../templates/add_or_select_item.html')
+      , template = require('../../templates/add_or_select_item.html')
       , $input
 
     this.$el.html(template({type: that.type}));
