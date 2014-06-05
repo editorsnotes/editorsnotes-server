@@ -21,11 +21,8 @@ NoteSectionView = Backbone.View.extend({
   events: { 'click': 'edit' },
 
   initialize: function () {
-    var that = this;
-
     this.render();
     this.$el.addClass('note-section-' + this.model.get('section_type'));
-    this.$el.data('cid', that.model.cid);
   },
 
   render: function () {
@@ -34,7 +31,7 @@ NoteSectionView = Backbone.View.extend({
       , template = require('../templates/note_section')[sectionType]
 
     this.$el.html( template({ns: that.model.toJSON()}) );
-    this.afterRender && this.afterRender.call(this);
+    if (this.afterRender) this.afterRender();
   },
 
   edit: function () {
@@ -43,7 +40,7 @@ NoteSectionView = Backbone.View.extend({
     if (this.isActive) return;
 
     this.isActive = true;
-    this.$el.addClass('note-section-edit-active');
+    this.$el.addClass('note-section-edit-active no-sort');
     this.$('.note-section-text-content').editText({
       initialValue: that.model.get('content'),
       destroy: function (val) {
@@ -75,7 +72,7 @@ NoteSectionView = Backbone.View.extend({
     if (!this.isActive) return;
 
     this.isActive = false;
-    this.$el.removeClass('note-section-edit-active');
+    this.$el.removeClass('note-section-edit-active no-sort');
     this.$('.note-section-text-content').editText('destroy');
 
     if (this.isEmpty() || deleteModel) {

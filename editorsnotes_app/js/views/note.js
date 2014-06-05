@@ -38,7 +38,7 @@ NoteView = module.exports = Backbone.View.extend({
 
   initialize: function () {
     var note = this.model;
-    this.sectionListView = new NoteSectionListView({ model: note });
+    this.sectionListView = new NoteSectionListView({ collection: note.sections });
     this.topicListView = new RelatedTopicsView({ collection: note.relatedTopics });
     this.render();
     this.stickit();
