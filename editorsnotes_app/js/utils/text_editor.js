@@ -62,10 +62,10 @@ Editor.prototype.init = function () {
   var that = this
     , content
 
-  if (this.options.hasOwnProperty('initialValue')) {
+  if ('initialValue' in this.options && this.options.initialValue !== null) {
     content = _.result(this.options, 'initialValue');
   } else {
-   content = this.isTextarea ? this.$el.val() : this.$el.html();
+    content = this.isTextarea ? this.$el.val() : this.$el.html();
   }
 
   this.$textarea = this.isTextarea ?

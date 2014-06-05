@@ -17,7 +17,7 @@ module.exports = Backbone.View.extend({
 
     if (_.isFunction(this.makeItemView)) {
       view = this.makeItemView(item);
-    } else if (this.hasOwnProperty('itemViewConstructor')) {
+    } else if ('itemViewConstructor' in this) {
       view = new this.itemViewConstructor({ model: item });
     } else {
       throw ('Ordered collection views must define either a `makeItemView` ' +

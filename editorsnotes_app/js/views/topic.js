@@ -22,11 +22,8 @@ module.exports = TopicView = Backbone.View.extend({
   initialize: function (options) {
     var that = this;
     this.topicListView = new RelatedTopicsView({ collection: that.model.relatedTopics });
+    this.citationListView = new CitationsView({ collection: that.model.citations });
     this.render();
-    this.citationListView = new CitationsView({
-      el: '#topic-citations',
-      collection: that.model.citations
-    });
     this.stickit();
   },
 
@@ -48,6 +45,8 @@ module.exports = TopicView = Backbone.View.extend({
     });
 
     this.topicListView.$el.appendTo( that.$('#topic-related-topics') );
+    this.citationListView.setElement( that.$('#topic-citations') );
+    this.citationListView.render();
   }
 
 });

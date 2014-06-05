@@ -25,6 +25,7 @@ module.exports = Topic = Backbone.Model.extend({
     this.citations.url = function () {
       return that.isNew() ? null : that.url() + 'citations/';
     };
+    this.citations.project = this.project;
     Backbone.Model.apply(this, arguments);
   },
 

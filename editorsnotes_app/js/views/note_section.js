@@ -35,17 +35,22 @@ NoteSectionView = Backbone.View.extend({
   },
 
   edit: function () {
-    var that = this, html;
+    var that = this
+      , html
+      , contentField
 
     if (this.isActive) return;
+
+    // HACKY so we can use this for topic citations as well (sorry)
+    contentField = this.model.has('content') ? 'content': 'notes';
 
     this.isActive = true;
     this.$el.addClass('note-section-edit-active no-sort');
     this.$('.note-section-text-content').editText({
-      initialValue: that.model.get('content'),
+      initialValue: that.model.get(contentField),
       destroy: function (val) {
         $(this).html(val);
-        that.model.set('content', val);
+        that.model.set(contentField, val);
         that.$('.edit-row').remove();
       }
     });
@@ -91,8 +96,9 @@ NoteSectionView = Backbone.View.extend({
 CitationSectionView = NoteSectionView.extend({
   afterRender: function () {
     var that = this
+      , project = this.model.project || this.model.collection.project
       , SelectDocumentView = require('./select_document')
-      , documentSelect = new SelectDocumentView({ project: this.model.project })
+      , documentSelect = new SelectDocumentView({ project: project })
       , $documentContainer
 
     if (!this.model.isNew()) return;

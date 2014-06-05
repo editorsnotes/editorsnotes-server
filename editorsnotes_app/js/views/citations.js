@@ -1,24 +1,62 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var OrderedCollectionView = require('./generic/ordered_collection_base')
+  , $ = require('jquery')
+  , CitationView = require('./citation')
 
-module.exports = Backbone.View.extend({
-  initialize: function () {
-    this.render();
+module.exports = OrderedCollectionView.extend({
+  itemViewConstructor: CitationView,
+  events: {
+    'click .add-citation': 'handleAddCitationButton'
   },
   render: function () {
-    var template = require('../templates/note_section_citation.html')
-      , els
+    var that = this
+      , template = require('../templates/citation_list.html')
 
-    els = this.collection.map(function (citation) {
-      return '<div class="note-section">' + template({
-        ns: {
-          'document': citation.get('document'),
-          'document_description': citation.get('document_description'),
-          'content': citation.get('notes')
+    this.$el.empty().html( template() );
+    this.$itemsEl = this.$('.citation-list');
+    this.renderItems();
+    this.initDrag();
+    this.initSort({
+      stop: function (event, ui) {
+        $(this).removeClass('sort-active');
+        if (ui.item.hasClass('add-citation')) {
+          that.collection.add({}, { at: ui.item.index() });
+          ui.item.remove();
         }
-      }) + '</div>';
+      }
     });
-    this.$el.html(els.join(''));
+  },
+  onAddItemView: function (view) {
+    if (view.model.isNew()) {
+      view.edit();
+    }
+  },
+  handleAddCitationButton: function (e) {
+    e.preventDefault();
+    this.collection.add({});
+  },
+  initDrag: function () {
+    var that = this
+      , $addBar = this.$('#citation-edit-bar').css('overflow', 'auto')
+      , st
+
+    $('.add-citation', $addBar).draggable({
+      axis: 'y',
+      distance: 10,
+      appendTo: $addBar,
+      connectToSortable: that.$itemsEl,
+      helper: function () {
+        return $('<div class="drag-placeholder">')
+          .html( $(this).html() )
+          .css('width', that.$itemsEl.innerWidth() - 22)
+      },
+      start: function () {
+        st = $(this).offsetParent().scrollTop();
+      },
+      drag: function (e, ui) {
+        ui.position.top -= st;
+      }
+    });
   }
 });

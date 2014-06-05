@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
@@ -91,7 +92,8 @@ class TopicCitationList(CitationMixin, BaseListAPIView):
     model = Citation
     serializer_class = CitationSerializer
     def pre_save(self, obj):
-        obj.content_obj = self.get_topic()
+        obj.content_type = ContentType.objects.get_for_model(Topic)
+        obj.object_id = self.get_topic().id
         super(TopicCitationList, self).pre_save(obj)
 
 class TopicCitationDetail(CitationMixin, BaseDetailView):
