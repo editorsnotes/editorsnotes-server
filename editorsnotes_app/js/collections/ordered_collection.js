@@ -7,7 +7,7 @@ var _ = require('underscore-contrib')
 function makeorderedSave(origSave) {
   return function (attributes, options) {
     var that = this
-      , needsNormalization = this.collection.getMinOrderingStep() < this.collection.minOrderingStep
+      , needsNormalization = this.collection.needsNormalization()
       , normalize = this.collection.normalizeOrderingValues.bind(this.collection)
       , refresh = this.collection.refreshOrdering.bind(this.collection)
       , save = origSave.bind(this, attributes, options)
@@ -136,6 +136,18 @@ module.exports = Backbone.Collection.extend({
       }
     }, this);
     this.sort();
+  },
+
+  needsNormalization: function () {
+    var curMinOrderingStep = this.getMinOrderingStep();
+
+    if (!_.isFinite(curMinOrderingStep)) {
+      return true;
+    } else if (curMinOrderingStep < this.minOrderingStep) {
+      return true;
+    } else {
+      return false;
+    }
   },
 
   getMinOrderingStep: function () {
