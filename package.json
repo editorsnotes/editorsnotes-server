@@ -35,6 +35,9 @@
     "jquery-timeago": "./editorsnotes_app/js/lib/jquery/jquery.timeago.js",
     "jquery-bootstrap": "./editorsnotes_app/js/lib/jquery/bootstrap.min.js",
     "jquery-babbq": "./editorsnotes_app/js/lib/jquery/jquery.ba-bbq.min.js",
+    "sinon-event": "sinon/lib/sinon/util/event",
+    "sinon-fakeserver": "sinon/lib/sinon/util/fake_server",
+    "sinon-fakexhr": "sinon/lib/sinon/util/fake_xml_http_request",
     "wysihtml5": "./editorsnotes_app/js/lib/wysihtml5/wysihtml5-0.3.0.min.js"
   },
   "browserify-shim": {
