@@ -48,9 +48,10 @@ module.exports = Backbone.Collection.extend({
   add: function (models, options) {
     var orderingStart
       , orderingAttribute = this.orderingAttribute
+      , singular = !_.isArray(models)
 
     options = options || {};
-    models = _.isArray(models) ? models : [models];
+    models = singular ? [models] : models;
 
     if (_.isEmpty(models)) return;
 
@@ -75,7 +76,9 @@ module.exports = Backbone.Collection.extend({
       }
     }, this);
 
-    Backbone.Collection.prototype.add.call(this, models, options);
+    models = singular ? models[0] : models;
+
+    return Backbone.Collection.prototype.add.call(this, models, options);
   },
 
   normalizeOrderingValues: function () {
