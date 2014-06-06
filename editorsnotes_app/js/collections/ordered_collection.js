@@ -35,8 +35,10 @@ module.exports = Backbone.Collection.extend({
   minOrderingStep: 25,
 
   initialize: function () {
-    var origSave = this.model.prototype.save;
-    this.model.prototype.save = makeorderedSave(origSave);
+    var orderAwareModel = this.model.extend({});
+    orderAwareModel.prototype.save = makeorderedSave(this.model.prototype.save);
+    this.model = orderAwareModel;
+
     this.comparator = this.orderingAttribute;
   },
 
