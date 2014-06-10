@@ -28,7 +28,9 @@ module.exports = OrderedCollectionView.extend({
       }
     });
     this.initDrag();
+    this.initStickyBar();
   },
+
   onAddItemView: function (view) {
     if (view.model.isNew()) {
       view.edit();
@@ -51,26 +53,53 @@ module.exports = OrderedCollectionView.extend({
       { at: idx }
     );
   },
+
+  initStickyBar: function () {
+    var $window = $(window)
+      , $barContainer = this.$('#section-add-bar-container')
+      , $bar = $barContainer.find('#citation-edit-bar')
+      , $tmp = $('.note-section-list')
+
+    $window
+      .off('scroll.note-section-list')
+      .on('scroll.note-section-list', function () {
+        var scrollTop = $window.scrollTop()
+          , offsetTop = $barContainer.offset().top
+
+        if (scrollTop > offsetTop) {
+          $bar.addClass('sticky');
+        } else {
+          $bar.removeClass('sticky');
+        }
+      });
+  },
+
   initDrag: function () {
     var that = this
       , $addBar = this.$('#citation-edit-bar').css('overflow', 'auto')
-      , st
+      , threshold
 
     $('.add-section', $addBar).draggable({
       axis: 'y',
-      distance: 10,
-      appendTo: $addBar,
+      distance: 5,
+      appendTo: $addBar.parent(),
       connectToSortable: that.$itemsEl,
       helper: function () {
         return $('<div class="drag-placeholder">')
           .html( $(this).html() )
           .css('width', that.$itemsEl.innerWidth() - 22)
       },
-      start: function () {
-        st = $(this).offsetParent().scrollTop();
-      },
       drag: function (e, ui) {
-        ui.position.top -= st;
+        ui.position.top = null;
+
+        if (e.pageY < threshold) {
+          ui.helper.css('top', e.pageY - 10);
+        } else {
+          ui.helper.show();
+        }
+      },
+      start: function () {
+        threshold = $('.note-section-list').offset().top;
       }
     });
   }

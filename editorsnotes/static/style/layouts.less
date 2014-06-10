@@ -367,6 +367,7 @@ a.license-link {
  * ===================
  */
 
+
 // Mixin for any item that can be edited when clicked
 .editing-affordance {
   cursor: pointer;
@@ -412,13 +413,12 @@ a.license-link {
   .add-section-icon {
   }
 
-  // "Add section" toolbar
-  #citation-edit-bar {
-    margin-bottom: 1em;
-    padding: .75em;
-    border: 1px solid #999;
+@sectionBarHeight: 38px;
 
-    i { vertical-align: middle; font-size: 22px; color: #333; }
+  #section-add-bar-container {
+    min-height: 58px;
+    margin-bottom: 2em;
+    .clearfix;
 
     .drag-placeholder {
       position: absolute;
@@ -427,6 +427,25 @@ a.license-link {
       background: #fff;
       text-align: center;
     }
+
+  }
+
+  // "Add section" toolbar
+  #citation-edit-bar {
+    height: @sectionBarHeight;
+    padding: 10px 0;
+    background: #f0f0f0;
+    text-align: center;
+
+    &.sticky {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+    }
+
+    i { vertical-align: middle; font-size: 22px; color: #333; }
 
     h4 { display: inline-block; margin: 0 12px 0 0; }
     .add-section {
