@@ -144,7 +144,11 @@ module.exports = Backbone.Collection.extend({
   needsNormalization: function () {
     var curMinOrderingStep = this.getMinOrderingStep();
 
-    if (!_.isFinite(curMinOrderingStep)) {
+    if (this.length === 0) {
+      return false;
+    } else if (this.length === 1 && _.isFinite(this.at(0).get(this.orderingAttribute))) {
+      return false
+    } else if (!_.isFinite(curMinOrderingStep)) {
       return true;
     } else if (curMinOrderingStep < this.minOrderingStep) {
       return true;
