@@ -10,6 +10,9 @@ module.exports = OrderedCollectionView.extend({
   initialize: function () {
     $('body').addClass('editing');
     OrderedCollectionView.prototype.initialize.apply(this, arguments);
+    if (this.collection.needsNormalization()) {
+      this.collection.normalizeOrderingValues();
+    }
   },
   render: function () {
     var that = this
