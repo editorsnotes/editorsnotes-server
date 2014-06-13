@@ -81,6 +81,25 @@ module.exports = Backbone.Collection.extend({
     return Backbone.Collection.prototype.add.call(this, models, options);
   },
 
+  move: function (model, to) {
+    var ordering
+      , curIdx = this.indexOf(model)
+
+    if (curIdx < 0) throw "Model not part of collection";
+    if (!_.isInteger(to) && to > 0 && to <= this.length + 1) throw "Invalid collection index.";
+
+    if (curIdx === to) return model;
+
+    if (curIdx < to) {
+      to += 1;
+    }
+
+    model.set(this.orderingAttribute, this.getIntermediateOrderingValue(to, false));
+
+    this.sort();
+    return model;
+  },
+
   normalizeOrderingValues: function () {
     var that = this
       , promise = $.ajax({

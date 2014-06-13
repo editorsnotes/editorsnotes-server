@@ -42,6 +42,26 @@ describe('Ordered collection', function () {
     assert.equal(model3.get('ordering'), 25);
   });
 
+  it('should allow models to be moved explicitly', function () {
+    var collection = new FakeCollection([])
+      , model1 = collection.add({ ordering: 50 })
+      , model2 = collection.add({ ordering: 100 })
+      , model3 = collection.add({ ordering: 200 })
+      , model4 = collection.add({ ordering: 1000 });
+
+    collection.move(model3, 0);
+    assert.equal(model3.get('ordering'), 25);
+    assert.deepEqual(collection.pluck('ordering'), [ 25, 50, 100, 1000 ]);
+
+    collection.move(model1, 2);
+    assert.equal(model1.get('ordering'), 550);
+    assert.deepEqual(collection.pluck('ordering'), [ 25, 100, 550, 1000 ]);
+
+    collection.move(model1, 3);
+    assert.equal(model1.get('ordering'), 1100);
+    assert.deepEqual(collection.pluck('ordering'), [ 25, 100, 1000, 1100 ]);
+  });
+
   it('should make a call to the server after an existing model is saved if order normalization is required', function () {
     var collection, model1, model2, req;
 
