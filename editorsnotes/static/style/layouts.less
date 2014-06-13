@@ -127,6 +127,71 @@ html, body { height: 100%; }
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * Document editing page
+ */
+
+.scan-container {
+  .makeRow();
+  position: relative;
+}
+
+.scan-list {
+  list-style-type: none;
+  counter-reset: scan-counter;
+  box-sizing: border-box;
+
+  > li {
+    margin-bottom: 1em;
+    position: relative;
+    padding-left: 56px;
+    border: 1px solid #ccc;
+    min-height: 100px;
+  }
+  > li:before {
+    content: counter(scan-counter);
+    counter-increment: scan-counter;
+    background: #eee;
+    font-size: 18px;
+    height: 100%;
+    margin-left: -56px;
+    padding-top: 10px;
+    position: absolute;
+    text-align: center;
+    width: 44px;
+    box-sizing: border-box;
+  }
+  .reorder-scans {
+    position: absolute;
+    margin-left: -49px;
+    > button {
+      font-size: 10px;
+      display: block;
+      margin-bottom: 3px;
+    }
+  }
+
+  .scan-thumb {
+    img {
+      max-width: 200px;
+      max-height: 200px;
+    }
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+}
+
+@scanDropBoxSize: 300px;
+#scan-drop {
+  background: #fafafa;
+  box-sizing: border-box;
+  border: 2px dotted #333;
+  height: @scanDropBoxSize;
+  line-height: @scanDropBoxSize;
+  text-align: center;
+}
+
+
+/*
  * GARBAGE! Organize the stuff below this!!!
  */
 

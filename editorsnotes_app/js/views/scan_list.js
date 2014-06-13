@@ -6,13 +6,19 @@ var Backbone = require('../backbone')
 module.exports = Backbone.View.extend({
   events: {
     'click .delete-scan': 'handleDeleteClick',
+    'click .move-scan': 'handleMoveClick',
     'dragover #scan-drop': function (e) { e.preventDefault(); e.stopPropagation(); },
     'dragenter #scan-drop': 'handleDragenter',
     'dragleave #scan-drop': 'handleDragleave',
     'drop #scan-drop.drop-ready': 'handleDrop'
   },
+  className: 'scan-container',
   initialize: function () {
     this.render();
+    if (this.collection.needsNormalization()) {
+      this.collection.normalizeOrderingValues();
+    }
+    this.listenTo(this.collection, 'add remove sort', this.render);
   },
   render: function () {
     var that = this
@@ -20,6 +26,7 @@ module.exports = Backbone.View.extend({
 
     this.$el.html( template({ scans: that.collection }) );
     this.$dropTarget = this.$('#scan-drop');
+    this.refreshScanButtons();
   },
   handleDeleteClick: function (e) {
     e.preventDefault();
@@ -28,6 +35,17 @@ module.exports = Backbone.View.extend({
 
     scan.destroy();
     this.render();
+  },
+  handleMoveClick: function (e) {
+    var scan = this.collection.get(e.target.dataset.scan)
+      , direction = parseInt(e.target.dataset.direction, 10);
+
+    this.collection.move(scan, this.collection.indexOf(scan) + direction);
+  },
+  refreshScanButtons: function () {
+    var $moveBtns = this.$('.move-scan').prop('disabled', false);
+    $moveBtns.first().prop('disabled', 'true');
+    $moveBtns.last().prop('disabled', 'true');
   },
   getImageFiles: function (fileList) {
     var imageFiles = [];

@@ -1,13 +1,21 @@
+<ol class="scan-list span5">
 <% scans.each(function (scan) { %>
-  <div>
+  <li>
     <h6>
       <%= scan.getFilename() %>
       <a class="delete-scan" href="#" data-scan="<%= scan.cid %>">Delete</a>
     </h6>
-    <a href="<%= scan.get('image') %>" target="_blank"><img src="<%= scan.get('image_thumbnail') %>" /></a>
-  </div>
+    <div class="reorder-scans">
+      <button class="move-scan" data-direction="-1" data-scan="<%= scan.cid %>">
+        <i class="icon-arrow-up"></i>
+      </button>
+      <button class="move-scan" data-direction="1" data-scan="<%= scan.cid %>">
+        <i class="icon-arrow-down"></i>
+      </button>
+    </div>
+    <a class="scan-thumb" href="<%= scan.get('image') %>" target="_blank"><img src="<%= scan.get('image_thumbnail') %>" /></a>
+  </li>
 <% }); %>
+</ol>
 
-<div id="scan-drop" style="height: 100px; line-height: 100px; text-align: center; width: 100%; border: 4px solid black;">
-  Drop image files here to add them as scans.
-</div>
+<div class="span7" id="scan-drop">Drop image files here to add them as scans.</div>
