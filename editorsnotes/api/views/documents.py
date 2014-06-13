@@ -45,7 +45,10 @@ class NormalizeScanOrder(ProjectSpecificMixin, APIView):
         self.check_object_permissions(self.request, document)
         step = int(request.GET.get('step', 100))
         document.scans.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
-        return Response()
+        return Response([
+            { 'id': _id, 'ordering': ordering }
+            for _id, ordering in document.scans.values_list('id', 'ordering')
+        ])
 
 class ScanList(BaseListAPIView):
     model = Scan
