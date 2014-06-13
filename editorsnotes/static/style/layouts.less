@@ -140,14 +140,14 @@ html, body { height: 100%; }
   counter-reset: scan-counter;
   box-sizing: border-box;
 
-  > li {
+  > li.scan {
     margin-bottom: 1em;
     position: relative;
     padding-left: 56px;
     border: 1px solid #ccc;
     min-height: 100px;
   }
-  > li:before {
+  > li.scan:before {
     content: counter(scan-counter);
     counter-increment: scan-counter;
     background: #eee;

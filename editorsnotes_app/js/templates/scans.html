@@ -1,6 +1,6 @@
 <ol class="scan-list span5">
 <% scans.each(function (scan) { %>
-  <li>
+  <li class="scan">
     <h6>
       <%= scan.getFilename() %>
       <a class="delete-scan" href="#" data-scan="<%= scan.cid %>">Delete</a>
