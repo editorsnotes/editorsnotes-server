@@ -30,15 +30,15 @@ module.exports = Backbone.View.extend({
   },
   handleDeleteClick: function (e) {
     e.preventDefault();
-    var cid = e.target.dataset.scan
+    var cid = e.currentTarget.dataset.scan
       , scan = this.collection.get(cid)
 
     scan.destroy();
     this.render();
   },
   handleMoveClick: function (e) {
-    var scan = this.collection.get(e.target.dataset.scan)
-      , direction = parseInt(e.target.dataset.direction, 10);
+    var scan = this.collection.get(e.currentTarget.dataset.scan)
+      , direction = parseInt(e.currentTarget.dataset.direction, 10);
 
     this.collection.move(scan, this.collection.indexOf(scan) + direction);
   },
