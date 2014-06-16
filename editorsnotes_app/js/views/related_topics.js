@@ -2,6 +2,7 @@
 
 var Backbone = require('../backbone')
   , $ = require('../jquery')
+  , Topic = require('../models/topic')
   , Autocompleter = require('../utils/autocomplete_widget')
   , RelatedTopicItemView
 
@@ -25,19 +26,40 @@ RelatedTopicItemView = Backbone.View.extend({
 
 module.exports = Backbone.View.extend({
   events: {
-    'autocompleteselect': 'selectItem'
+    'autocompleteselect': 'selectItem',
+    'click .add-new-object': 'addItem'
   },
   className: 'related-topics-widget',
   initialize: function (options) {
-    var autocompleter;
+    var autocompleter
+      , template = require('../templates/add_or_select_item.html')
+
     this.$topicList = $('<div class="related-topics-list">').appendTo(this.$el);
 
     this.listenTo(this.collection, 'add', this.addTopic);
     this.collection.forEach(this.addTopic, this);
 
-    this.$search = $('<input type="text">').prependTo(this.$el);
+    this.$search = $(template({ type: 'topic' }))
+      .prependTo(this.$el)
+      .filter('input')
+        .css('width', '350px');
+
     autocompleter = new Autocompleter(this.$search, this.collection.project.get('slug'), 'topics');
 
+  },
+  addItem: function (e) {
+    e.preventDefault();
+
+    var that = this
+      , AddTopicView = require('./add_topic')
+      , addView = new AddTopicView({
+        model: new Topic({}, { project: this.collection.project }),
+        el: $('<div>').appendTo('body')
+      })
+
+    this.listenTo(addView.model, 'sync', this.collection.add.bind(this.collection));
+
+    addView.$el.modal();
   },
   addTopic: function (topic) {
     var view = new RelatedTopicItemView({ model: topic });
