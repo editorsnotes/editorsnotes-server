@@ -45,8 +45,10 @@ module.exports = TopicView = Backbone.View.extend({
     });
 
     this.topicListView.$el.appendTo( that.$('#topic-related-topics') );
-    this.citationListView.setElement( that.$('#topic-citations') );
-    this.citationListView.render();
+    if (!this.model.isNew()) {
+      this.citationListView.setElement( that.$('#topic-citations') );
+      this.citationListView.render();
+    }
   }
 
 });
