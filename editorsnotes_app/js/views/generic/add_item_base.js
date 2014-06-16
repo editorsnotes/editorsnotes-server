@@ -11,22 +11,23 @@
  *    width
  */
 
-var Backbone = require('../../backbone')
-  , $ = require('../../jquery')
+var $ = require('../../jquery')
 
-module.exports = Backbone.View.extend({
+module.exports = {
   renderModal: function () {
     var that = this
       , template = require('../../templates/add_item_modal.html')
       , widget
       , $loader
 
-    widget = template({
-      type: that.itemType,
-      textarea: !!that.textarea
-    });
+    widget = template({ type: that.itemType });
 
-    this.$el.html(widget).addClass('modal');
+    this.$el.children().wrapAll('<div class="modal-body"></div>');
+    this.$el
+      .addClass('modal')
+      .prepend( $(widget).filter('.modal-header') )
+      .append( $(widget).filter('.modal-footer') );
+
     $loader = this.$('.loader-icon');
 
     this.$el
@@ -79,5 +80,5 @@ module.exports = Backbone.View.extend({
     });
 
   }
-});
+}
 
