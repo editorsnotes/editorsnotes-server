@@ -120,12 +120,12 @@ NoteReferenceSectionView = NoteSectionView.extend({
   afterRender: function () {
     var that = this
       , SelectNoteView = require('./select_note')
-      , noteSelect = new SelectNoteView({ projet: this.model.project })
+      , noteSelect = new SelectNoteView({ project: this.model.project })
       , $noteContainer
 
     if (!this.model.isNew()) return;
 
-    $noteContainer = this.$('.note-reference-note-container')
+    $noteContainer = this.$('.note-reference-note')
       .html(noteSelect.el);
 
     this.listenToOnce(noteSelect, 'noteSelected', function (note) {
