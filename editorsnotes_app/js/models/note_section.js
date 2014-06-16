@@ -3,6 +3,9 @@
 var Backbone = require('../backbone')
 
 module.exports = Backbone.Model.extend({
+  defaults: {
+    content: null
+  },
   idAttribute: 'section_id',
 
   initialize: function () {

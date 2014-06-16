@@ -42,7 +42,7 @@ NoteSectionView = Backbone.View.extend({
     if (this.isActive) return;
 
     // HACKY so we can use this for topic citations as well (sorry)
-    contentField = this.model.has('content') ? 'content': 'notes';
+    contentField = 'content' in this.model.toJSON() ? 'content': 'notes';
 
     this.isActive = true;
     this.$el.addClass('note-section-edit-active no-sort');
