@@ -6,9 +6,6 @@ var Cocktail = require('backbone.cocktail')
 
 module.exports = Cocktail.mixin(DocumentView, AddItemMixin, {
   itemType: 'document',
-  events: {
-    'hidden': 'handleHidden'
-  },
   initialize: function () {
     this.$('.save-row').remove();
     this.renderModal();
@@ -20,8 +17,5 @@ module.exports = Cocktail.mixin(DocumentView, AddItemMixin, {
     this.model.save().then(function () {
       that.$el.modal('hide')
     });
-  },
-  handleHidden: function () {
-    if (this.model.isNew()) this.model.destroy();
   }
 });

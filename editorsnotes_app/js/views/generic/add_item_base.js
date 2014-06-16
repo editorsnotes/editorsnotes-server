@@ -14,6 +14,13 @@
 var $ = require('../../jquery')
 
 module.exports = {
+  events: {
+    'ajaxStart': 'showLoader',
+    'ajaxStop': 'hideLoader',
+    'hidden': 'handleHidden',
+    'shown': 'setModalSize',
+    'click .btn-save-item': 'saveItem'
+  },
   renderModal: function () {
     var that = this
       , template = require('../../templates/add_item_modal.html')
@@ -28,14 +35,16 @@ module.exports = {
       .prepend( $(widget).filter('.modal-header') )
       .append( $(widget).filter('.modal-footer') );
 
-    $loader = this.$('.loader-icon');
+    this.$loader = this.$('.loader-icon');
+  },
 
-    this.$el
-      .on('ajaxStart', function () { $loader.show(); })
-      .on('ajaxStop', function () { $loader.hide(); })
-      .on('hidden', that.remove.bind(that))
-      .on('shown', that.setModalSize.bind(that))
-      .on('click', '.btn-save-item', that.saveItem.bind(that));
+  showLoader: function () { this.$loader.show() },
+
+  hideLoader: function () { this.$loader.hide() },
+
+  handleHidden: function () {
+    if (this.model.isNew()) this.model.destroy();
+    this.remove();
   },
 
   setModalSize: function () {
