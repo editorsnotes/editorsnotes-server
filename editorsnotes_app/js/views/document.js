@@ -37,7 +37,6 @@ module.exports = DocumentView = Backbone.View.extend({
     });
 
     this.render();
-
   },
 
   render: function () {
@@ -47,9 +46,12 @@ module.exports = DocumentView = Backbone.View.extend({
     this.$el.html( template({ doc: that.model }));
     this.topicListView.$el.appendTo( that.$('#document-related-topics') );
     this.zoteroView.$el.appendTo( that.$('#document-zotero-data') );
-    this.scanListView.$el.appendTo( that.$('#document-scans') );
 
-    this.$citationEditToggle = $('#document-citation button');
+    if (!this.model.isNew()) {
+      this.scanListView.$el.appendTo( that.$('#document-scans') );
+    }
+
+    this.$citationEditToggle = this.$('#document-citation button');
   },
 
   editCitationManually: function () {
