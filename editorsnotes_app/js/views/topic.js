@@ -5,7 +5,8 @@ var _ = require('underscore')
   , Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
-  , SaveItemMixin = require('./save_item_mixin')
+  , CitationsView = require('./citations')
+  , SaveItemMixin = require('./generic/save_item_mixin')
   , TopicView
 
 module.exports = TopicView = Backbone.View.extend({
@@ -18,9 +19,10 @@ module.exports = TopicView = Backbone.View.extend({
     '#topic-type': 'type',
     '#topic-name': 'preferred_name'
   },
-  initialize: function (options) {
+  initialize: function () {
     var that = this;
     this.topicListView = new RelatedTopicsView({ collection: that.model.relatedTopics });
+    this.citationListView = new CitationsView({ collection: that.model.citations });
     this.render();
     this.stickit();
   },
@@ -43,6 +45,10 @@ module.exports = TopicView = Backbone.View.extend({
     });
 
     this.topicListView.$el.appendTo( that.$('#topic-related-topics') );
+    if (!this.model.isNew()) {
+      this.citationListView.setElement( that.$('#topic-citations') );
+      this.citationListView.render();
+    }
   }
 
 });

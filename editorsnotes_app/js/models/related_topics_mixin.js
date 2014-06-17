@@ -10,12 +10,10 @@ module.exports = {
   },
   mixin: {
     initialize: function () {
-      this.listenTo(this.relatedTopics, 'add', this.refreshRelatedTopics);
-      this.listenTo(this.relatedTopics, 'remove', this.refreshRelatedTopics);
-      this.listenTo(this.relatedTopics, 'reset', this.refreshRelatedTopics);
+      this.listenTo(this.relatedTopics, 'add remove reset', this.refreshRelatedTopics);
       this.refreshRelatedTopics();
     },
-    refreshRelatedTopics: function (e) {
+    refreshRelatedTopics: function () {
       var topicNames = this.relatedTopics.map(function (t) {
         return t.get('preferred_name')
       });

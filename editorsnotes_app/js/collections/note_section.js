@@ -1,15 +1,18 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var OrderedCollection = require('./ordered_collection')
   , NoteSection = require('../models/note_section')
+  , ProjectSpecificMixin = require('../models/project_specific_mixin')
 
-module.exports = Backbone.Collection.extend({
+module.exports = OrderedCollection.extend({
   model: NoteSection,
-
-  initialize: function (models, options) {
-    this.project = options.project;
+  constructor: function () {
+    ProjectSpecificMixin.constructor.apply(this, arguments);
+    OrderedCollection.apply(this, arguments);
   },
-
-  parse: function (response) { return response.sections; }
+  orderNormalizationURL: function () {
+    return this.url + 'normalize_section_order/'
+  },
+  parse: function (response) { return response.sections }
 });
 

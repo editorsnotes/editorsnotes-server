@@ -45,6 +45,10 @@
   }
 }
 
+body.modal-open .tooltip {
+  z-index: 1051;
+}
+
 .ui-helper-hidden-accessible { display: none; }
 .ui-autocomplete {
   border: 1px solid #aaa;
@@ -106,17 +110,26 @@
 
 
 .save-row {
-  line-height: 52px;
   background: #f0f0f0;
   padding: 0 30px;
   margin: 2em 0;
-  text-align: right;
+  position: relative;
+  height: 52px;
 
-  .save-item {
+  .save-item, .delete-item {
     .btn;
-    .btn-primary;
     font-size: 15px;
     padding: 8px 19px;
+    margin-top: 8px;
+  }
+
+  .save-item {
+    .btn-primary;
+    .pull-right;
+  }
+
+  .delete-item {
+    .btn-danger;
   }
 }
 
@@ -135,11 +148,10 @@
       text-align: right;
     }
 
-    // Lone inputs will be 600px; dual inputs (ie first/last name) ~half that.
-    & > input {
-      padding: 3px 4px;
-      width: 291px;
-    }
+    // Lone inputs will be 600px; dual inputs (ie first/ljst name) ~half that.
+    & > input { padding: 3px 4px; }
     & > input:only-of-type { width: 600px; }
+    &.zotero-creator > input { width: 246px; }
+    &.zotero-creator > input:only-of-type { width: 508px; }
   }
 }

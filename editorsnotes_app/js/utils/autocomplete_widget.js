@@ -48,7 +48,7 @@ ModelCompleter.prototype = {
           response([{'count': data.count}].concat(results));
         });
       },
-      open: function (e) {
+      open: function () {
         var autocomplete, ul;
         if (that.$countEl) {
           autocomplete = that.$el.data('ui-autocomplete');

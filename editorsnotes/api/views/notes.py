@@ -9,14 +9,14 @@ import reversion
 from editorsnotes.main.models import Note, NoteSection
 from editorsnotes.main.models.auth import RevisionProject
 
-from .base import (BaseListAPIView, BaseDetailView, ElasticSearchListMixin,
-                   ProjectSpecificMixin)
+from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
+                   ElasticSearchListMixin, ProjectSpecificMixin)
 from ..permissions import ProjectSpecificPermissions
 from ..serializers.notes import (
     MinimalNoteSerializer, NoteSerializer, _serializer_from_section_type)
 
 __all__ = ['NoteList', 'NoteDetail', 'NoteSectionDetail',
-           'NormalizeSectionOrder']
+           'NormalizeSectionOrder', 'NoteConfirmDelete']
 
 class NormalizeSectionOrder(ProjectSpecificMixin, APIView):
     parser_classes = (JSONParser,)
@@ -35,7 +35,11 @@ class NormalizeSectionOrder(ProjectSpecificMixin, APIView):
         self.check_object_permissions(self.request, note)
         step = int(request.GET.get('step', 100))
         note.sections.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
-        return Response()
+
+        return Response([
+            { 'section_id': _id, 'ordering': ordering }
+            for _id, ordering in note.sections.values_list('note_section_id', 'ordering')
+        ])
 
 class NoteList(ElasticSearchListMixin, BaseListAPIView):
     model = Note
@@ -72,7 +76,6 @@ class NoteDetail(BaseDetailView):
 
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
-
 class NoteSectionDetail(BaseDetailView):
     model = NoteSection
     permissions = {
@@ -98,3 +101,10 @@ class NoteSectionDetail(BaseDetailView):
     def get_serializer_class(self):
         section_type = getattr(self.object, 'section_type_label')
         return _serializer_from_section_type(section_type)
+
+class NoteConfirmDelete(DeleteConfirmAPIView):
+    model = Note
+    permissions = {
+        'GET': ('main.delete_note',),
+        'HEAD': ('main.delete_note',)
+    }

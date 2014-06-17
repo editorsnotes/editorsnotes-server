@@ -3,15 +3,6 @@
 
 {% block title %}: {{ note.title }}{% endblock %}
 
-{% block js %}
-
-  {% if can_edit %}
-  <script type="text/javascript" src="{% static "function/zotero-jquery/zotero-functions.js" %}"></script>
-  <script type="text/javascript" src="{% static "function/note.js" %}"></script>
-  {% endif %}
-
-{% endblock %}
-
 {% block content %}
       <div id="note">
 
@@ -45,6 +36,18 @@
           <dt>Project</dt>
           <dd>{{ note.project|as_link }}</dd>
 
+          <dt>Private</dt> 
+          <dd>
+            {% if note.is_private %}Yes{% else %}No{% endif %}
+          </dd>
+
+          <dt>License</dt>
+          <dd>
+          <a class="license-link" href="{{ license.url }}" title="{{ license }}">
+            {% for symbol in license.symbols %}<i class="license-symbol">{{ symbol }}</i>{% endfor %}
+          </a>
+          </dd>
+
           {% with authors=note.get_all_updaters %}
           <dt>Author{% if authors|length > 1 %}s{% endif %}</dt>
           <dd>
@@ -54,16 +57,17 @@
           </dd>
           {% endwith %}
 
-          <dt>License</dt>
-          <dd>
-          <a class="license-link" href="{{ license.url }}" title="{{ license }}">
-            {% for symbol in license.symbols %}<i class="license-symbol">{{ symbol }}</i>{% endfor %}
-          </a>
-          </dd>
-
           <dt>Last updated</dt>
           <dd>{{ note.last_updated }} (<a href="#">view history</a>)</dd>
+
         </dl>
+
+          <div class="row">
+            <div class="span12 container" style="text-align: center; padding-top: 19px; border-top: 1px solid #ddd;">
+              <a href="{% url "admin:main_note_change" note.project.slug note.id %}" class="btn btn-default">Edit note</a>
+            </div>
+          </div>
+
       </section>
 
       <section id="note-description">
@@ -74,7 +78,5 @@
         {% for section in sections %}{% include section|ns_template_name %}{% endfor %}
       </section>
     </div>
-
-    {% if can_edit %}<div style="display: none;">{% csrf_token %}</div>{% endif %}
 
 {% endblock %}

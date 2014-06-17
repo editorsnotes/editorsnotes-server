@@ -8,9 +8,15 @@
       <strong>This note is </strong>
       <select name="note-status"></select>
     </div>
-    <div id="note-related-topics"></div>
+    <div id="note-related-topics">
+      <span>Related topics</span>
+    </div>
   </div>
-  <dl id="note-authorship"></dl>
+
+  <dl id="note-authorship">
+    <dt>Private</dt>
+    <dd><select id="note-private"></select></dd>
+  </dl>
 </section>
 <section id="note-description"><%= note.get('content') || '<div></div>' %></section>
 <section id="note-sections"></section>

@@ -20,7 +20,7 @@ function getCslField(zoteroKey, itemType) {
     field = getTypeMap(itemType).querySelector('[value="' + zoteroKey + '"]');
     lookup = 'map[zField="' + (field.getAttribute('baseField') || zoteroKey) + '"]';
     map = doc.querySelector('cslFieldMap ' + lookup + ', cslCreatorMap ' + lookup);
-    getCslField.cache[cacheKey] = map.getAttribute('cslField');
+    if (map) getCslField.cache[cacheKey] = map.getAttribute('cslField');
   }
 
   return getCslField.cache[cacheKey];
@@ -34,6 +34,7 @@ module.exports = function (zoteroObject) {
   cslObject.type = getTypeMap(itemType).getAttribute('cslType');
 
   _.forEach(zoteroObject, function (val, key) {
+    var field;
     if (!val.length) return;
     switch (key) {
       case 'itemType':
@@ -51,9 +52,11 @@ module.exports = function (zoteroObject) {
           if (!cslObject[cslCreatorKey]) {
             cslObject[cslCreatorKey] = [];
           }
-          if (creator.firstName || creator.lastName) {
+          if (creator.hasOwnProperty('firstName') || creator.hasOwnProperty('lastName')) {
             creatorObject.given = creator.firstName;
             creatorObject.family = creator.lastName;
+          } else {
+            creatorObject.literal = creator.name;
           }
           cslObject[cslCreatorKey].push(creatorObject);
         });
@@ -62,10 +65,11 @@ module.exports = function (zoteroObject) {
         cslObject.issued = { 'raw': val };
         break;
       default:
-        cslObject[getCslField(key, zoteroObject.itemType)] = val;
+        field = getCslField(key, zoteroObject.itemType);
+        if (field) cslObject[field] = val;
         break;
     }
   });
 
-  return cslObject;
+  return _.isEmpty(_.omit(cslObject, 'type')) ? {} : cslObject;
 }

@@ -4,6 +4,7 @@ var Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
   , ProjectSpecificMixin = require('./project_specific_mixin')
   , RelatedTopicsMixin = require('./related_topics_mixin')
+  , ScanList = require('../collections/scan')
   , Document
 
 module.exports = Document = Backbone.Model.extend({
@@ -16,11 +17,18 @@ module.exports = Document = Backbone.Model.extend({
   constructor: function () {
     ProjectSpecificMixin.constructor.apply(this, arguments);
     RelatedTopicsMixin.constructor.apply(this, arguments);
+    this.scans = new ScanList([], { "document": this });
     Backbone.Model.apply(this, arguments);
   },
 
   urlRoot: function () {
     return this.project.url() + 'documents/';
+  },
+
+  parse: function (response) {
+    this.scans.set(response.scans);
+    delete response.scans;
+    return response;
   }
 });
 

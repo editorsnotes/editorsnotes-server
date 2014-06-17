@@ -1,51 +1,21 @@
 "use strict";
 
-var AddItemView = require('./add_item')
-  , _ = require('underscore')
-  , Document = require('../models/document')
+var Cocktail = require('backbone.cocktail')
+  , DocumentView = require('./document')
+  , AddItemMixin = require('./generic/add_item_base')
 
-module.exports = AddItemView.extend({
+module.exports = Cocktail.mixin(DocumentView, AddItemMixin, {
   itemType: 'document',
-  textarea: true,
-  initialize: function (options) {
-    var EditZoteroView = require('./edit_zotero');
-
-    this.model = new Document({}, { project: options.project });
-    this.render();
-    this.$('.modal-body').append('<div class="add-document-zotero-data">');
-    this.zoteroView = new EditZoteroView({
-      el: this.$('.add-document-zotero-data')
-    });
-    this.listenTo(this.zoteroView, 'citationUpdated', function (citation) {
-      this.$('.item-text-main').val(citation);
-    });
-  },
-
-  render: function () {
-    var that = this;
-
+  initialize: function () {
+    this.$('.save-row').remove();
     this.renderModal();
-    this.$el.on('hidden', function () {
-      if (that.model.isNew()) that.model.destroy();
-    });
+    this.generateCitation();
   },
-
   saveItem: function (e) {
-    var that = this
-      , data = { description: this.$('.item-text-main').val() }
-      , zotero_data = this.zoteroView.getZoteroData();
-
+    var that = this;
     e.preventDefault();
-
-    if (!_.isEmpty(zotero_data)) {
-      data.zotero_data = JSON.stringify(zotero_data);
-    }
-
-    this.model.set(data);
-    this.model.save(data, {
-      success: function () { that.$el.modal('hide') }
+    this.model.save().then(function () {
+      that.$el.modal('hide')
     });
-
   }
 });
-

@@ -17,17 +17,35 @@
     <% } else if (key === 'creators') { %>
 
     <% _(val).forEach(function(creator) { %>
-    <div class="zotero-entry" data-zotero-key="<%= key %>[]">
-      <% var creatorType = i18n.translate(creator.creatorType).fetch(); %>
+    <div class="zotero-entry zotero-creator" data-zotero-key="<%= key %>[]">
+
+
       <select data-zotero-attr="creatorType">
-        <option value="<%= creator.creatorType %>"><%= creatorType %></option>
+        <% _(creatorTypes).forEach(function (creatorType) { %>
+        <% var localized = i18n.translate(creatorType.creatorType).fetch(); %>
+          <option
+            value="<%= creatorType.creatorType %>"
+            <% if (creatorType.creatorType === creator.creatorType) print(selected="selected"); %>
+            ><%= localized %></option>
+        <% }); %>
+
       </select>
-      <% if (creator.firstName || creator.lastName ) { %>
-        <input data-zotero-attr="lastName" value="<%= creator.lastName %>" />, 
-        <input data-zotero-attr="firstName" value="<%= creator.firstName %>" />
+      <button class="toggle-creator-field" title="Switch between fields for first/last name, or single name field"><i class="icon-random"></i></button>
+      <% if ('firstName' in creator || 'lastName' in creator) { %>
+        <input
+          data-zotero-attr="firstName"
+          value="<%= creator.firstName %>"
+          placeholder="Given (first) name" />
+
+        <input
+          data-zotero-attr="lastName"
+          value="<%= creator.lastName %>"
+          placeholder="Family (last) name" />
       <% } else { %>
-        <input data-zotero-attr="name" value="<%= creator.name %>" />
+        <input data-zotero-attr="name" placeholder="Full name" value="<%= creator.name %>" />
       <% } %>
+      <button class="add-creator" title="Add creator"><i class="icon-plus"></i></button>
+      <button class="remove-creator" title="Remove creator" style="color: #800;"><i class="icon-minus"></i></button>
     </div>
     <% }); %>
 

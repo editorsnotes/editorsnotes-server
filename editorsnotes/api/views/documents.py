@@ -5,13 +5,13 @@ from rest_framework.views import APIView
 
 from editorsnotes.main.models import Document, Scan
 
-from .base import (BaseListAPIView, BaseDetailView, ElasticSearchListMixin,
-                   ProjectSpecificMixin)
+from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
+                   ElasticSearchListMixin, ProjectSpecificMixin)
 from ..permissions import ProjectSpecificPermissions
 from ..serializers import DocumentSerializer, ScanSerializer
 
-__all__ = ['DocumentList', 'DocumentDetail', 'ScanList', 'ScanDetail',
-           'NormalizeScanOrder']
+__all__ = ['DocumentList', 'DocumentDetail', 'DocumentConfirmDelete',
+           'ScanList', 'ScanDetail', 'NormalizeScanOrder']
 
 class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     model = Document
@@ -20,6 +20,13 @@ class DocumentList(ElasticSearchListMixin, BaseListAPIView):
 class DocumentDetail(BaseDetailView):
     model = Document
     serializer_class = DocumentSerializer
+
+class DocumentConfirmDelete(DeleteConfirmAPIView):
+    model = Document
+    permissions = {
+        'GET': ('main.delete_document',),
+        'HEAD': ('main.delete_document',)
+    }
 
 class NormalizeScanOrder(ProjectSpecificMixin, APIView):
     """
@@ -45,7 +52,10 @@ class NormalizeScanOrder(ProjectSpecificMixin, APIView):
         self.check_object_permissions(self.request, document)
         step = int(request.GET.get('step', 100))
         document.scans.normalize_ordering_values('ordering', step=step, fill_in_empty=True)
-        return Response()
+        return Response([
+            { 'id': _id, 'ordering': ordering }
+            for _id, ordering in document.scans.values_list('id', 'ordering')
+        ])
 
 class ScanList(BaseListAPIView):
     model = Scan

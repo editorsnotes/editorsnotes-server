@@ -12,7 +12,6 @@ module.exports = Note = Backbone.Model.extend({
     'title': '',
     'content': '',
     'status': 'open',
-    'section_ordering': [],
     'related_topics': []
   },
 
@@ -26,10 +25,9 @@ module.exports = Note = Backbone.Model.extend({
   },
 
   initialize: function () {
-    var that = this;
     this.sections.url = this.url();
     this.sections.comparator = function (section) {
-      return that.get('section_order').indexOf(section.id);
+      return section.get('ordering');
     }
   },
 

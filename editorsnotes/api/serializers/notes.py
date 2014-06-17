@@ -15,7 +15,7 @@ class TextNSSerializer(serializers.ModelSerializer):
     section_type = serializers.Field(source='section_type_label')
     class Meta:
         model = TextNS
-        fields = ('section_id', 'section_type', 'content',)
+        fields = ('section_id', 'section_type', 'ordering', 'content',)
 
 class CitationNSSerializer(serializers.ModelSerializer):
     section_id = serializers.Field(source='note_section_id')
@@ -25,7 +25,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
     document_description = serializers.SerializerMethodField('get_document_description')
     class Meta:
         model = CitationNS
-        fields = ('note_id', 'section_id', 'section_type',
+        fields = ('section_id', 'section_type', 'ordering',
                   'document', 'document_description', 'content',)
     def get_document_description(self, obj):
         return etree.tostring(obj.document.description)
@@ -38,8 +38,8 @@ class NoteReferenceNSSerializer(serializers.ModelSerializer):
         'get_referenced_note_title')
     class Meta:
         model = NoteReferenceNS
-        fields = ('section_id', 'section_type', 'note_reference',
-                  'note_reference_title', 'content',)
+        fields = ('section_id', 'section_type', 'ordering',
+                  'note_reference', 'note_reference_title', 'content',)
     def get_referenced_note_title(self, obj):
         return obj.note_reference.title
 

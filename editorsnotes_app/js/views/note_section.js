@@ -31,33 +31,35 @@ NoteSectionView = Backbone.View.extend({
       , template = require('../templates/note_section')[sectionType]
 
     this.$el.html( template({ns: that.model.toJSON()}) );
-    this.afterRender && this.afterRender.call(this);
+    if (this.afterRender) this.afterRender();
   },
 
   edit: function () {
     var that = this
       , html
+      , contentField
 
     if (this.isActive) return;
 
-    this.model.collection.trigger('deactivate');
+    // HACKY so we can use this for topic citations as well (sorry)
+    contentField = 'content' in this.model.toJSON() ? 'content': 'notes';
 
     this.isActive = true;
-    this.$el.addClass('note-section-edit-active');
+    this.$el.addClass('note-section-edit-active no-sort');
     this.$('.note-section-text-content').editText({
-      initialValue: that.model.get('content'),
+      initialValue: that.model.get(contentField),
       destroy: function (val) {
         $(this).html(val);
-        that.model.set('content', val);
+        that.model.set(contentField, val);
         that.$('.edit-row').remove();
       }
     });
 
-    html = ''
-      + '<div class="edit-row row">'
-        + '<a class="btn btn-primary save-section pull-right">Save</a>'
-        + '<a class="btn btn-danger delete-section">Delete section</a>'
-      + '</div>'
+    html = '' +
+      '<div class="edit-row row">' +
+        '<a class="btn btn-primary save-section pull-right">Save</a>' +
+        '<a class="btn btn-danger delete-section">Delete section</a>' +
+      '</div>';
 
     $(html)
       .appendTo(this.$el)
@@ -75,18 +77,13 @@ NoteSectionView = Backbone.View.extend({
     if (!this.isActive) return;
 
     this.isActive = false;
-    this.$el.removeClass('note-section-edit-active');
+    this.$el.removeClass('note-section-edit-active no-sort');
     this.$('.note-section-text-content').editText('destroy');
 
     if (this.isEmpty() || deleteModel) {
       collection = this.model.collection
       this.remove();
-      this.model.destroy({
-        success: function (model) {
-          collection.remove(model);
-          collection.trigger('removeEmpty');
-        }
-      });
+      this.model.destroy();
     } else {
       this.model.save();
     }
@@ -99,8 +96,9 @@ NoteSectionView = Backbone.View.extend({
 CitationSectionView = NoteSectionView.extend({
   afterRender: function () {
     var that = this
+      , project = this.model.project || this.model.collection.project
       , SelectDocumentView = require('./select_document')
-      , documentSelect = new SelectDocumentView({ project: this.model.project })
+      , documentSelect = new SelectDocumentView({ project: project })
       , $documentContainer
 
     if (!this.model.isNew()) return;
@@ -122,12 +120,12 @@ NoteReferenceSectionView = NoteSectionView.extend({
   afterRender: function () {
     var that = this
       , SelectNoteView = require('./select_note')
-      , noteSelect = new SelectNoteView({ projet: this.model.project })
+      , noteSelect = new SelectNoteView({ project: this.model.project })
       , $noteContainer
 
     if (!this.model.isNew()) return;
 
-    $noteContainer = this.$('.note-reference-note-container')
+    $noteContainer = this.$('.note-reference-note')
       .html(noteSelect.el);
 
     this.listenToOnce(noteSelect, 'noteSelected', function (note) {

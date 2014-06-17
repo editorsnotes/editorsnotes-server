@@ -1,6 +1,6 @@
 "use strict";
 
-var SelectItemView = require('./select_item')
+var SelectItemView = require('./generic/select_item_base')
   , Document = require('../models/document')
 
 module.exports =  SelectItemView.extend({
@@ -15,7 +15,7 @@ module.exports =  SelectItemView.extend({
   addItem: function (e) {
     var that = this
       , AddDocumentView = require('./add_document')
-      , addView = new AddDocumentView({ project: this.project });
+      , addView = new AddDocumentView({ model: new Document({}, { project: this.project }) });
 
     e.preventDefault();
 

@@ -10,6 +10,7 @@ var _ = require('underscore')
 defaults = {
     toolbarType: 'full',
     className: '',
+    height: null,
     minHeight: 200,
     idPrefix: 'texteditor_id_auto',
     container: '',
@@ -44,7 +45,7 @@ function Editor( $el, opts ){
   this.id = (this.isTextarea && this.$el.attr('id')) || _.uniqueId(that.options.idPrefix);
   this.$toolbar = $(toolbarTemplate({ id: that.id + '-toolbar', type: that.options.toolbarType }));
 
-  this.height = (function (h) {
+  this.height = this.options.height || (function (h) {
     return h < that.options.minHeight ? that.options.minHeight : h;
   })(this.$el.innerHeight());
 
@@ -59,10 +60,12 @@ function Editor( $el, opts ){
 
 Editor.prototype.init = function () {
   var that = this
-    , content = this.options.initialValue
+    , content
 
-  if (!content) {
-   content = this.isTextarea ? this.$el.val() : this.$el.html();
+  if ('initialValue' in this.options && this.options.initialValue !== null) {
+    content = _.result(this.options, 'initialValue');
+  } else {
+    content = this.isTextarea ? this.$el.val() : this.$el.html();
   }
 
   this.$textarea = this.isTextarea ?
