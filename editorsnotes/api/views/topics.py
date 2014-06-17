@@ -13,14 +13,15 @@ from rest_framework.views import APIView
 from editorsnotes.main.models import Topic, TopicNode, Citation
 from editorsnotes.main.models.topics import TYPE_CHOICES
 
-from .base import (BaseListAPIView, BaseDetailView, ElasticSearchListMixin,
-                   ProjectSpecificMixin, ProjectSpecificPermissions,
-                   create_revision_on_methods)
+from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
+                   ElasticSearchListMixin, ProjectSpecificMixin,
+                   ProjectSpecificPermissions, create_revision_on_methods)
 from ..serializers.topics import TopicSerializer, TopicNodeSerializer
 from ..serializers.documents import CitationSerializer
 
 __all__ = ['TopicNodeList', 'TopicNodeDetail', 'TopicList', 'TopicDetail',
-           'TopicCitationList', 'TopicCitationDetail', 'NormalizeCitationOrder']
+           'TopicConfirmDelete', 'TopicCitationList', 'TopicCitationDetail',
+           'NormalizeCitationOrder']
 
 def topic_types(request):
     types = { 'types': [{'key': key, 'localized': localized}
@@ -68,11 +69,25 @@ class TopicList(ElasticSearchListMixin, BaseListAPIView):
     model = Topic
     serializer_class = TopicSerializer
 
+class TopicConfirmDelete(DeleteConfirmAPIView):
+    model = Topic
+    permissions = {
+        'GET': ('main.delete_topic',),
+        'HEAD': ('main.delete_topic',)
+    }
+    def get_object(self):
+        qs = self.model.objects.filter(project=self.request.project,
+                                       topic_node_id=self.kwargs['topic_node_id'])
+        obj = get_object_or_404(qs)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
 @create_revision_on_methods('create')
 class TopicDetail(BaseDetailView, CreateModelMixin):
     model = Topic
     serializer_class = TopicSerializer
     def get_object(self, queryset=None):
+        # TODO: Make sure permissions are in fact checked
         filtered_queryset = self.filter_queryset(self.get_queryset())
         return get_object_or_404(filtered_queryset,
                                  project=self.request.project,

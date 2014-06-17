@@ -1,13 +1,17 @@
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 
 from django.conf import settings
+from django.db.models.deletion import Collector
+from django.utils.text import force_text
 
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView)
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.utils import formatting
 import reversion
 
 from editorsnotes.main.models import Project
@@ -98,6 +102,51 @@ class ProjectSpecificMixin(object):
         if hasattr(qs.model, 'project'):
             qs = qs.filter(project_id=self.request.project.id)
         return qs
+
+rel_model = {
+    'notesection': lambda original, related: related.note,
+    'topicassignment': lambda original, related: related.topic \
+        if related.topic != original else related.content_object,
+    'citation': lambda original, related: related.content_object,
+    'scan': lambda original, related: related.document
+}
+
+class DeleteConfirmAPIView(ProjectSpecificMixin, GenericAPIView):
+    permission_classes = (ProjectSpecificPermissions,)
+    def get(self, request, **kwargs):
+        obj = self.get_object()
+        collector = Collector(using='default')
+        collector.collect([obj])
+        collector.sort()
+
+        ret = {'items': []}
+
+        for model, instances in collector.data.items():
+            display_obj = rel_model.get(model._meta.module_name,
+                                        lambda original, related: related)
+            instances = [display_obj(obj, instance) for instance in instances]
+            instances = filter(lambda instance: hasattr(instance, 'get_absolute_url'), instances)
+            counter = Counter(instances)
+            ret['items'] += [{
+                'name': force_text(instance),
+                'preview_url': request._request.build_absolute_uri(instance.get_absolute_url()),
+                'type': model._meta.verbose_name,
+                'count': count
+            } for instance, count in counter.items()]
+
+        ret['items'].sort(key=lambda item: item['type'] != obj._meta.verbose_name)
+
+        return Response(ret)
+
+    def get_view_description(self, html=False):
+        description = self.__doc__ or """
+        Returns a nested list of objects that would be also be deleted when this
+        object is deleted.
+        """
+        description = formatting.dedent(description)
+        if html:
+            return formatting.markup_description(description)
+        return description
 
 @create_revision_on_methods('create')
 class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
