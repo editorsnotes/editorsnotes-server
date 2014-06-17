@@ -30,7 +30,7 @@ module.exports = Backbone.View.extend({
     'click .add-new-object': 'addItem'
   },
   className: 'related-topics-widget',
-  initialize: function (options) {
+  initialize: function () {
     var autocompleter
       , template = require('../templates/add_or_select_item.html')
 
@@ -50,8 +50,7 @@ module.exports = Backbone.View.extend({
   addItem: function (e) {
     e.preventDefault();
 
-    var that = this
-      , AddTopicView = require('./add_topic')
+    var AddTopicView = require('./add_topic')
       , addView = new AddTopicView({
         model: new Topic({}, { project: this.collection.project }),
         el: $('<div>').appendTo('body')
@@ -73,7 +72,7 @@ module.exports = Backbone.View.extend({
     if (!ui.item) return;
     event.preventDefault();
     event.target.value = '';
-    var topic = this.collection.add({
+    this.collection.add({
       url: ui.item.uri,
       preferred_name: ui.item.value
     });

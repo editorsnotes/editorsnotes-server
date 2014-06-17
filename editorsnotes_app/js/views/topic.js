@@ -19,7 +19,7 @@ module.exports = TopicView = Backbone.View.extend({
     '#topic-type': 'type',
     '#topic-name': 'preferred_name'
   },
-  initialize: function (options) {
+  initialize: function () {
     var that = this;
     this.topicListView = new RelatedTopicsView({ collection: that.model.relatedTopics });
     this.citationListView = new CitationsView({ collection: that.model.citations });

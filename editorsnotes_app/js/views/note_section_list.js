@@ -61,7 +61,6 @@ module.exports = OrderedCollectionView.extend({
     var $window = $(window)
       , $barContainer = this.$('#section-add-bar-container')
       , $bar = $barContainer.find('#citation-edit-bar')
-      , $tmp = $('.note-section-list')
 
     $window
       .off('scroll.note-section-list')

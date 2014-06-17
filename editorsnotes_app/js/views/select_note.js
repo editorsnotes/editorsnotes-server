@@ -1,6 +1,7 @@
 "use strict";
 
-var SelectItemView = require('./generic/select_item_base')
+var $ = require('../jquery')
+  , SelectItemView = require('./generic/select_item_base')
   , Note = require('../models/note')
 
 module.exports = SelectItemView.extend({

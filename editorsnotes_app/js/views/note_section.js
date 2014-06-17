@@ -55,11 +55,11 @@ NoteSectionView = Backbone.View.extend({
       }
     });
 
-    html = ''
-      + '<div class="edit-row row">'
-        + '<a class="btn btn-primary save-section pull-right">Save</a>'
-        + '<a class="btn btn-danger delete-section">Delete section</a>'
-      + '</div>'
+    html = '' +
+      '<div class="edit-row row">' +
+        '<a class="btn btn-primary save-section pull-right">Save</a>' +
+        '<a class="btn btn-danger delete-section">Delete section</a>' +
+      '</div>';
 
     $(html)
       .appendTo(this.$el)

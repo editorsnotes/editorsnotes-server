@@ -1,6 +1,7 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var $ = require('../jquery')
+  , Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
   , ZoteroDataView = require('./edit_zotero')
@@ -14,7 +15,7 @@ module.exports = DocumentView = Backbone.View.extend({
     'click .js-generate-citation': 'generateCitation'
   },
 
-  initialize: function (options) {
+  initialize: function () {
     var that = this;
 
     this.topicListView = new RelatedTopicsView({ collection: that.model.relatedTopics });

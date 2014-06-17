@@ -82,8 +82,7 @@ module.exports = Backbone.Collection.extend({
   },
 
   move: function (model, to) {
-    var ordering
-      , curIdx = this.indexOf(model)
+    var curIdx = this.indexOf(model);
 
     if (curIdx < 0) throw "Model not part of collection";
     if (!_.isInteger(to) && to > 0 && to <= this.length + 1) throw "Invalid collection index.";

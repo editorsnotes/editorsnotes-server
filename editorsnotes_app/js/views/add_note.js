@@ -6,7 +6,7 @@ var Cocktail = require('backbone.cocktail')
 
 module.exports = Cocktail.mixin(NoteView, AddItemMixin, {
   itemType: 'note',
-  initialize: function (options) {
+  initialize: function () {
     this.$('.save-row').remove();
     this.renderModal();
   },

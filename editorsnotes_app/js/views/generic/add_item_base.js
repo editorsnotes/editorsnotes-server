@@ -25,7 +25,6 @@ module.exports = {
     var that = this
       , template = require('../../templates/add_item_modal.html')
       , widget
-      , $loader
 
     widget = template({ type: that.itemType });
 
@@ -48,8 +47,7 @@ module.exports = {
   },
 
   setModalSize: function () {
-    var that = this
-      , options = this.options || {}
+    var options = this.options || {}
       , $w = $(window)
       , modalHeight
       , bodyHeight
@@ -67,15 +65,14 @@ module.exports = {
       return windowHeight > minHeight ? windowHeight : minHeight;
     })();
 
-    bodyHeight = (modalHeight
-      - this.$('.modal-header').innerHeight()
-      - this.$('.modal-footer').innerHeight()
-      - (function (b) {
+    bodyHeight = (modalHeight -
+      this.$('.modal-header').innerHeight() -
+      this.$('.modal-footer').innerHeight() -
+      (function (b) {
           var ptop = parseInt(b.css('padding-top'))
             , pbot = parseInt(b.css('padding-bottom'));
           return ptop + pbot;
-        })(this.$('.modal-body'))
-      - 2); // border
+        })(this.$('.modal-body')) - 2); // Subtract 2 for border
 
     this.$el.css({
       position: 'absolute',

@@ -25,7 +25,6 @@ module.exports = Note = Backbone.Model.extend({
   },
 
   initialize: function () {
-    var that = this;
     this.sections.url = this.url();
     this.sections.comparator = function (section) {
       return section.get('ordering');
