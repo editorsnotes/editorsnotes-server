@@ -9,7 +9,6 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{{ STATIC_URL }}style/disqus.css" type="text/css"/>
 <link rel="stylesheet" href="{{ STATIC_URL }}style/topic.css" type="text/css"/>
 <link rel="stylesheet" href="{{ STATIC_URL }}style/facets.css" type="text/css" />
 {% endblock %}
@@ -31,9 +30,9 @@
     </header>
 
     <ul id="tabs" class="nav nav-tabs">
-      <li class="active"><a href="#article-tab">Article</a></li>
-      <li><a href="#notes-tab">Related Notes <span class="alt">&amp;</span> Queries ({{ notes|length }})</a></li>
-      <li><a href="#documents-tab">Related Documents ({{ documents|length }})</a></li>
+      <li class="active"><a href="#article-tab" data-toggle="tab">Article</a></li>
+      <li><a href="#notes-tab" data-toggle="tab">Related Notes <span class="alt">&amp;</span> Queries ({{ notes|length }})</a></li>
+      <li><a href="#documents-tab" data-toggle="tab">Related Documents ({{ documents|length }})</a></li>
     </ul>
 
     <div class="tab-content">

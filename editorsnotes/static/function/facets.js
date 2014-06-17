@@ -18,11 +18,11 @@
       init: function( options ) {
 
         if (!options.fields) {
-          console.log('Provide a list of fields to facet on');
+          throw 'Provide a list of fields to facet on';
           return;
         }
         if (!options.itemSelector) {
-          console.log('Provide a selector for the items to be faceted.');
+          throw 'Provide a selector for the items to be faceted.';
           return;
         }
 
@@ -83,10 +83,10 @@
 
           $facetContainer.insertBefore(container);
 
-          $('.facet-input').live('click', function() {
+          $facetContainer.on('change .facet-input', function() {
             container.facet('update')
           });
-          $('.document-facet').live('click', function() {
+          $('.document-facet').on('click', function() {
             var $filter = $(this),
               criteria = $filter.data('for'),
               target = $('.' + criteria + '-facet-container').toggle();
