@@ -8,6 +8,7 @@ var _ = require('underscore')
   , ZoteroDataView = require('./edit_zotero')
   , ScanListView = require('./scan_list')
   , SaveItemMixin = require('./generic/save_item_mixin')
+  , HandleErrorMixin = require('./generic/handle_error_mixin')
   , DocumentView
 
 module.exports = DocumentView = Backbone.View.extend({
@@ -111,4 +112,4 @@ module.exports = DocumentView = Backbone.View.extend({
   }
 });
 
-Cocktail.mixin(DocumentView, SaveItemMixin);
+Cocktail.mixin(DocumentView, SaveItemMixin, HandleErrorMixin);

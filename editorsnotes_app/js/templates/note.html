@@ -1,5 +1,6 @@
 <header>
   <h3>Title</h3>
+  <div data-error-target="title"></div>
   <input maxlength="80" id="note-title" type="text" />
 </header>
 <section id="note-details">
@@ -18,5 +19,5 @@
     <dd><select id="note-private"></select></dd>
   </dl>
 </section>
-<section id="note-description"><%= note.get('content') || '<div></div>' %></section>
+<section id="note-description" data-error-target="content"><%= note.get('content') || '<div></div>' %></section>
 <section id="note-sections"></section>
