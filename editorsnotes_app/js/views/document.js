@@ -1,6 +1,7 @@
 "use strict";
 
-var $ = require('../jquery')
+var _ = require('underscore')
+  , $ = require('../jquery')
   , Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
@@ -23,6 +24,7 @@ module.exports = DocumentView = Backbone.View.extend({
     this.zoteroView = new ZoteroDataView({ zoteroData: that.model.get('zotero_data') });
 
     this.listenTo(this.zoteroView, 'updatedZoteroData', function (data) {
+      data = _.isEmpty(data) ? null : data;
       that.model.set('zotero_data', data);
     });
 
