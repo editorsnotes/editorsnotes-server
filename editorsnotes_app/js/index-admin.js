@@ -9,6 +9,19 @@ var Backbone = require('./backbone')
 $(document).ready(function () {
   var admin = new AdminRouter();
 
+  var feedbackHtml = (
+    '<div class="feedback-prompt">' +
+      '<span class="feedback-label">Feedback</span>' +
+      '<i class="icon-plus"></i>' +
+    '</div>');
+
+  $(feedbackHtml)
+    .appendTo('body')
+    .on('click', function () {
+      var FeedbackView = require('./views/feedback');
+      new FeedbackView({ purpose: 'Feedback' });
+    });
+
   // pushState doesn't actually matter here because we just use normal anchor
   // tags for page transitions (ie this is not a single page app (..yet?))
   Backbone.history.start({ pushState: true });

@@ -1,13 +1,17 @@
 import re
 
 from django.contrib import auth
-from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django_browserid.views import Verify
 import reversion
 
 from editorsnotes.search import activity_index
+from ..forms import UserFeedbackForm
 from ..models import User, Project, ProjectInvitation
 
 @reversion.create_revision()
@@ -52,6 +56,8 @@ def user(request, username=None):
     o = {}
     if not username:
         user = request.user
+        if not user or not user.is_authenticated():
+            return HttpResponseRedirect(reverse('user_login_view'))
         o['own_profile'] = True
     else:
         user = get_object_or_404(User, username=username)
@@ -71,6 +77,28 @@ def user(request, username=None):
         o['zotero_status'] = user.zotero_key and user.zotero_uid
     return render_to_response(
         'user.html', o, context_instance=RequestContext(request))
+
+@login_required
+def user_feedback(request):
+    o = {}
+    template = 'user_feedback.html'
+    initial = { 'user': request.user }
+    if request.method == 'POST':
+        o['form'] = UserFeedbackForm(request.POST)
+        if o['form'].is_valid():
+            obj = o['form'].save(commit=False)
+            obj.user = request.user
+            obj.save()
+            messages.add_message(request, messages.SUCCESS, 'Feedback submitted.')
+            return HttpResponseRedirect(request.path)
+            return render_to_response(
+                template, o, context_instance=RequestContext(request))
+    else:
+        o['form'] = UserFeedbackForm()
+    return render_to_response(
+        template, o, context_instance=RequestContext(request))
+
+
 
 def project(request, project_slug):
     o = {}
