@@ -67,6 +67,7 @@ module.exports = DocumentView = Backbone.View.extend({
 
     this.stopListening(this.zoteroView, 'updatedCitation');
     this.$('#printed-citation')
+      .html('')
       .on('editor:input', function (e, val) {
         that.model.set('description', val);
       })
