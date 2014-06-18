@@ -15,11 +15,14 @@ $(document).ready(function () {
       '<i class="icon-plus"></i>' +
     '</div>');
 
-  $(feedbackHtml)
+  var $feedback = $(feedbackHtml)
     .appendTo('body')
     .on('click', function () {
-      var FeedbackView = require('./views/feedback');
-      new FeedbackView({ purpose: 'Feedback' });
+      var FeedbackView = require('./views/feedback')
+        , view = new FeedbackView({ purpose: 'Feedback' });
+
+      $feedback.hide();
+      view.$el.on('hidden', function () { $feedback.show() });
     });
 
   // pushState doesn't actually matter here because we just use normal anchor
