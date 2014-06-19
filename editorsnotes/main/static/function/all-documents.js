@@ -52,7 +52,6 @@ $(function() {
           $facets = $('#facets', newdoc);
 
           // Restore previously selected facets
-          console.log(prevSelectedFacets);
           for (var i = 0; i < prevSelectedFacets.length; i++) {
             var selector = 'li[data-facet-toggle="' + prevSelectedFacets[i] + '"]'
             $(selector, $facets).trigger('click');

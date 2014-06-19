@@ -50,6 +50,7 @@ def topic(request, project_slug, topic_node_id):
     )
 
     topic_query = {'query': {'term': {'serialized.related_topics.id': topic.id }}}
+    topic_query['size'] = 1000
 
     model_searches = ( en_index.search_model(model, topic_query) for model in
                        (Document, Note, Topic) )

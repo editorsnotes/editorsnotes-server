@@ -96,7 +96,7 @@ def all_documents(request, project_slug=None):
     query = {
         'query': { 'filtered': { 'query': { 'match_all': {} } } },
         'facets': {},
-        'size': 100
+        'size': 1000
     }
 
     for label, field in facet_fields:

@@ -1,5 +1,7 @@
 from django import forms
 
+from .models.auth import UserFeedback
+
 PURPOSE_CHOICES = (
     ('1', 'Feedback'),
     ('2', 'Bug report'),
@@ -13,3 +15,7 @@ class FeedbackForm(forms.Form):
     purpose = forms.ChoiceField(choices=PURPOSE_CHOICES)
     message = forms.CharField(widget=forms.Textarea(
         attrs={'cols': '50', 'rows': '7', 'style': 'width: 50em;' }))
+
+class UserFeedbackForm(forms.models.ModelForm):
+    class Meta:
+        model = UserFeedback

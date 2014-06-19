@@ -120,6 +120,67 @@ html, body { height: 100%; }
 }
 
 
+// Feedback button
+// ----------------
+.feedback-prompt {
+  position: fixed;
+  top: 35%;
+  left: 0;
+  .rotate(90deg);
+  -webkit-transform-origin: left bottom;
+  -moz-transform-origin: left bottom;
+  -ms-transform-origin: left bottom;
+  -o-transform-origin: left bottom;
+  transform-origin: left bottom;
+
+  // One above modal background
+  z-index: 1041; 
+
+  cursor: pointer;
+
+  .buttonBackground(@btnBackground, @btnBackgroundHighlight, @grayDark, 0 1px 1px rgba(255,255,255,.75));
+  // Hover/focus state
+  &:hover,
+  &:focus {
+    color: @grayDark;
+    text-decoration: none;
+    background-position: 0 -15px;
+
+    // transition is only when going to hover/focus, otherwise the background
+    // behind the gradient (there for IE<=9 fallback) gets mismatched
+    .transition(background-position .1s linear);
+  }
+  padding: .4em 1em;
+  border: 1px solid @gray;
+  border-radius: 5px 5px 0 0;
+  border-bottom: none;
+
+  .feedback-label {
+    display: inline-block;
+    padding: .5em 1em .5em 0;
+    margin-right: 1em;
+    border-right: 1px solid #aaa;
+  }
+
+}
+
+@media (max-width: 75em) {
+  .feedback-prompt {
+    padding: 2px 1em;
+    .rotate(0deg);
+    top: auto;
+    left: auto;
+    bottom: 0;
+  }
+}
+
+.feedback-modal textarea {
+  box-sizing: border-box;
+  width: 100%;
+  height: 120px;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 //                           PAGE-WIDE STYLES                                 //

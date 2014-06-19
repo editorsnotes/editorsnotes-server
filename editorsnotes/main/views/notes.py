@@ -83,7 +83,7 @@ def all_notes(request, project_slug=None):
                 'terms': { 'field': 'serialized.status' }
             }
         },
-        'size': 500
+        'size': 1000
     }
 
     if project_slug is None:

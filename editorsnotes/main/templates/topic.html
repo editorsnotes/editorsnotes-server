@@ -9,7 +9,6 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{{ STATIC_URL }}style/disqus.css" type="text/css"/>
 <link rel="stylesheet" href="{{ STATIC_URL }}style/topic.css" type="text/css"/>
 <link rel="stylesheet" href="{{ STATIC_URL }}style/facets.css" type="text/css" />
 {% endblock %}
@@ -23,7 +22,7 @@
         <span class="quiet">Related topics:</span> 
         <ul class="topic-list">
           {% for related_topic in topic.related_topics.all %}
-          <li>{{ related_topic.topic|as_link }}</a>{% if not forloop.last %} | {% endif %}</li>
+          <li>{{ related_topic.topic|as_link }}{% if not forloop.last %} | {% endif %}</li>
           {% endfor %}
         </ul>
         {% endif %}
@@ -31,9 +30,9 @@
     </header>
 
     <ul id="tabs" class="nav nav-tabs">
-      <li class="active"><a href="#article-tab">Article</a></li>
-      <li><a href="#notes-tab">Related Notes <span class="alt">&amp;</span> Queries ({{ notes|length }})</a></li>
-      <li><a href="#documents-tab">Related Documents ({{ documents|length }})</a></li>
+      <li class="active"><a href="#article-tab" data-toggle="tab">Article</a></li>
+      <li><a href="#notes-tab" data-toggle="tab">Related Notes <span class="alt">&amp;</span> Queries ({{ notes|length }})</a></li>
+      <li><a href="#documents-tab" data-toggle="tab">Related Documents ({{ documents|length }})</a></li>
     </ul>
 
     <div class="tab-content">
@@ -84,7 +83,7 @@
               <span class="quiet">Related topics: </span>
               <ul class="topic-list unstyled">
                 {% for topic in note_topics %}
-                <li><a href="{{ topic.url }}">{{ topic.name }}</a> {% if not forloop.last %} | {% endif %}</li>
+                <li><a href="{{ topic.url }}">{{ topic.preferred_name }}</a> {% if not forloop.last %} | {% endif %}</li>
                 {% endfor %}
               </ul>
             </div>

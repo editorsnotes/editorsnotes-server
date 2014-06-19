@@ -1,6 +1,6 @@
-{% include "includes/bootstrap_errors.html" with errors=field.errors %}
 <div class="control-group">
   <label class="control-label" for="{{ field.auto_id }}">{{ field.label }}</label>
+  {% include "includes/bootstrap_errors.html" with errors=field.errors %}
   <div class="controls">
     {{ field }}
   </div>

@@ -2,6 +2,7 @@
 
 from collections import Counter
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -88,6 +89,22 @@ class User(AbstractUser, URLAccessible):
     @staticmethod
     def get_activity_for(user, max_count=50):
         return activity_for(user, max_count=50)
+
+
+PURPOSE_CHOICES = (
+    (1, 'Feedback'),
+    (2, 'Bug report'),
+    (9, 'Other')
+)
+
+class UserFeedback(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False)
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    purpose = models.IntegerField(choices=PURPOSE_CHOICES)
+    message = models.TextField()
+    class Meta:
+        app_label = 'main'
+
 
 class UpdatersMixin(object):
     """
