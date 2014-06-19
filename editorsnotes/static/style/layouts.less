@@ -552,6 +552,9 @@ a.license-link {
       border: 1px solid #999;
       background: #fff;
       text-align: center;
+      padding-left: 20px;
+      padding-right: 20px;
+      .section-drag-handle { display: none; }
     }
 
   }
@@ -569,18 +572,53 @@ a.license-link {
       left: 0;
       width: 100%;
       z-index: 100;
+      box-shadow: 0px 1px 2px #bbb;
     }
 
-    i { vertical-align: middle; font-size: 22px; color: #333; }
+    i.section-drag-handle {
+      box-sizing: border-box;
+      display: inline-block;
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 34px;
+      padding: 10px 8px;
 
-    h4 { display: inline-block; margin: 0 12px 0 0; }
+      color: #777;
+      border-left: 1px solid black;
+    }
+
+    i.section-icon {
+      vertical-align: baseline;
+      margin-right: 3px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    h4 {
+      display: inline-block;
+      margin: 0 20px 0 0;
+      a {
+        font-size: 18px;
+        vertical-align: middle;
+      }
+    }
     .add-section {
-      .btn;
+      position: relative;
+
+      display: inline-block;
+      padding: 4px 34px 4px 20px;
+      border: 1px solid #333;
+      border-radius: 2px;
+      background: white;
+      box-shadow: 2px 2px 3px #bbb;
+      cursor: pointer;
+
       margin-right: 18px;
       line-height: 26px;
-      padding-left: 20px;
-      padding-right: 20px;
       min-width: 100px;
+
+      &:hover { background: #f8f8f8; }
     }
     img.loader {
       display: none;
@@ -618,7 +656,7 @@ a.license-link {
     .note-section-text .btn-toolbar { margin-top: 0px; }
 
     // Include some whitespace at the bottom of the note section container
-    .note-section-list { padding-bottom: 200px; }
+    .note-section-list, .citation-list { padding-bottom: 200px; }
 
   }
 

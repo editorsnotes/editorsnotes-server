@@ -4,9 +4,6 @@ var OrderedCollectionView = require('./generic/ordered_collection_base')
   , $ = require('../jquery')
 
 module.exports = OrderedCollectionView.extend({
-  events: {
-    'click .add-section': 'handleAddSectionButton'
-  },
   initialize: function () {
     $('body').addClass('editing');
     OrderedCollectionView.prototype.initialize.apply(this, arguments);
@@ -83,8 +80,9 @@ module.exports = OrderedCollectionView.extend({
 
     $('.add-section', $addBar).draggable({
       axis: 'y',
-      distance: 5,
+      distance: 2,
       appendTo: $addBar.parent(),
+      cursor: 'move',
       connectToSortable: that.$itemsEl,
       helper: function () {
         return $('<div class="drag-placeholder">')
