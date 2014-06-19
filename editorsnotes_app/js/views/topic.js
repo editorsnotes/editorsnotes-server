@@ -7,6 +7,7 @@ var _ = require('underscore')
   , RelatedTopicsView = require('./related_topics')
   , CitationsView = require('./citations')
   , SaveItemMixin = require('./generic/save_item_mixin')
+  , HandleErrorMixin = require('./generic/handle_error_mixin')
   , TopicView
 
 module.exports = TopicView = Backbone.View.extend({
@@ -53,4 +54,4 @@ module.exports = TopicView = Backbone.View.extend({
 
 });
 
-Cocktail.mixin(TopicView, SaveItemMixin);
+Cocktail.mixin(TopicView, SaveItemMixin, HandleErrorMixin);

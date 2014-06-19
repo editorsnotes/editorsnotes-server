@@ -1,12 +1,14 @@
 "use strict";
 
-var $ = require('../jquery')
+var _ = require('underscore')
+  , $ = require('../jquery')
   , Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
   , ZoteroDataView = require('./edit_zotero')
   , ScanListView = require('./scan_list')
   , SaveItemMixin = require('./generic/save_item_mixin')
+  , HandleErrorMixin = require('./generic/handle_error_mixin')
   , DocumentView
 
 module.exports = DocumentView = Backbone.View.extend({
@@ -23,6 +25,7 @@ module.exports = DocumentView = Backbone.View.extend({
     this.zoteroView = new ZoteroDataView({ zoteroData: that.model.get('zotero_data') });
 
     this.listenTo(this.zoteroView, 'updatedZoteroData', function (data) {
+      data = _.isEmpty(data) ? null : data;
       that.model.set('zotero_data', data);
     });
 
@@ -65,6 +68,7 @@ module.exports = DocumentView = Backbone.View.extend({
 
     this.stopListening(this.zoteroView, 'updatedCitation');
     this.$('#printed-citation')
+      .html('')
       .on('editor:input', function (e, val) {
         that.model.set('description', val);
       })
@@ -108,4 +112,4 @@ module.exports = DocumentView = Backbone.View.extend({
   }
 });
 
-Cocktail.mixin(DocumentView, SaveItemMixin);
+Cocktail.mixin(DocumentView, SaveItemMixin, HandleErrorMixin);

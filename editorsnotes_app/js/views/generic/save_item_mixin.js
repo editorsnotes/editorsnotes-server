@@ -17,9 +17,6 @@ module.exports = {
     this.$('.save-item').prop('disabled', state);
     this.$('.loader').toggle(state);
   },
-  handleError: function (errorObj) {
-    alert(window.JSON.stringify(errorObj));
-  },
   _handleSave: function () {
     if (this.saveItem) {
       this.saveItem();
@@ -36,9 +33,6 @@ module.exports = {
       .done(function () {
         window.location.href = that.model.url().replace('\/api\/', '/');
       })
-      .fail(function (jqXHR, textStatus, error) {
-        that.handleError(jqXHR.responseJSON);
-      });
   },
   _handleDelete: function () {
     if (this.deleteItem) {
@@ -62,8 +56,7 @@ module.exports = {
           that.model.destroy()
             .done(function () {
               window.location.href = that.model.project.url().replace('\/api\/', '/');
-            })
-            .fail(function (jqXHR) { that.handleError(jqXHR.responseJSON) });
+            });
         });
     });
   }

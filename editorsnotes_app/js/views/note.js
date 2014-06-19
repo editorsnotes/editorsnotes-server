@@ -7,6 +7,7 @@ var Backbone = require('../backbone')
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')
   , SaveItemMixin = require('./generic/save_item_mixin')
+  , HandleErrorMixin = require('./generic/handle_error_mixin')
   , NoteView
 
 NoteView = module.exports = Backbone.View.extend({
@@ -60,4 +61,4 @@ NoteView = module.exports = Backbone.View.extend({
   }
 });
 
-Cocktail.mixin(NoteView, SaveItemMixin);
+Cocktail.mixin(NoteView, SaveItemMixin, HandleErrorMixin);
