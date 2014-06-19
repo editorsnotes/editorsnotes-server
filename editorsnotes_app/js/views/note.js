@@ -31,7 +31,9 @@ NoteView = module.exports = Backbone.View.extend({
     '#note-private': {
       observe: 'is_private',
       selectOptions: {
-        collection: [{ label: 'Yes', value: true }, { label: 'No', value: false }]
+        collection: function () {
+          return [{ label: 'Yes', value: true }, { label: 'No', value: false }]
+        }
       }
     },
     '#note-title': 'title'
