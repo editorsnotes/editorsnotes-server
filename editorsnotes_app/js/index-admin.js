@@ -21,7 +21,7 @@ $(document).ready(function () {
       var FeedbackView = require('./views/feedback')
         , view = new FeedbackView({ purpose: 'Feedback' });
 
-      $feedback.hide();
+      view.$el.on('shown', function () { $feedback.hide() });
       view.$el.on('hidden', function () { $feedback.show() });
     });
 
