@@ -2,7 +2,6 @@
 
 var _ = require('underscore')
   , $ = require('../../jquery')
-  , saveRow = require('../../templates/save_row.html')();
 
 module.exports = {
   events: {
@@ -11,7 +10,8 @@ module.exports = {
     
   },
   render: function () {
-    this.$el.append(saveRow)
+    var template = require('../../templates/save_row.html');
+    this.$el.append(template({ model: this.model }));
   },
   toggleLoaders: function (state) {
     this.$('.save-item').prop('disabled', state);
