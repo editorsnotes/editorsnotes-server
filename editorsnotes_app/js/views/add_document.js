@@ -4,7 +4,7 @@ var Cocktail = require('backbone.cocktail')
   , DocumentView = require('./document')
   , AddItemMixin = require('./generic/add_item_base')
 
-module.exports = Cocktail.mixin(DocumentView, AddItemMixin, {
+module.exports = Cocktail.mixin(DocumentView.extend({}), AddItemMixin, {
   itemType: 'document',
   initialize: function () {
     this.$('.save-row').remove();
