@@ -1,6 +1,11 @@
 "use strict";
 
 var _ = require('underscore')
+  , $ = require('../../jquery')
+
+function animateErrorEl(html, container) {
+  return $(html).hide().prependTo(container).fadeIn();
+}
 
 module.exports = {
   initialize: function () {
@@ -13,24 +18,26 @@ module.exports = {
       this.listenTo(this.collection, 'request', this._emptyErrors);
     }
   },
-  _handleError: function (modelOrCollection, resp, options) {
+  _handleError: function (modelOrCollection, resp) {
     var template = require('../../templates/error_message.html')
       , miscErrors = {}
 
     _.forEach(resp.responseJSON, function (errors, key) {
       var $container = this.$('[data-error-target="' + key + '"]')
-        , errorObj = {}
-
-      errorObj[key] = errors;
-      $container.prepend(template({ errors: errorObj, includeLabel: false }));
+        , errorObj
 
       if (!$container.length) {
         miscErrors[key] = errors;
+        return;
       }
+
+      errorObj = {};
+      errorObj[key] = errors;
+      animateErrorEl(template({ errors: errorObj, includeLabel: false }), $container);
     }, this);
 
     if (!_.isEmpty(miscErrors)) {
-      this.$el.prepend(template({ errors: miscErrors, includeLabel: true }));
+      animateErrorEl(template({ errors: miscErrors, includeLabel: true }), this.$el);
     }
   },
   _emptyErrors: function () {
