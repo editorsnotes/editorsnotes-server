@@ -92,7 +92,7 @@ module.exports = {
         'value': ui.item.id
       }).insertAfter($this);
 
-      $('<i class="icon-remove-sign clear-search">')
+      $('<i class="fa fa-times-circle clear-search">')
         .css({
           'margin-left': '6px',
           'cursor': 'pointer'

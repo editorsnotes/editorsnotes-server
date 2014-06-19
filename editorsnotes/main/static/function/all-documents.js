@@ -20,10 +20,10 @@ $(function() {
           .filter(':first')
             .trigger('click');
       }
-      $('i', $this).toggleClass('icon-plus icon-minus');
+      $('i', $this).toggleClass('fa-plus fa-minus');
     })
     .on('click', '#facets .facet-header', function () {
-      $('i', this).toggleClass('icon-plus icon-minus');
+      $('i', this).toggleClass('fa-plus fa-minus');
       $('.facet-body').toggle();
     })
     .on('click', '#facets .facet-form input', function () {

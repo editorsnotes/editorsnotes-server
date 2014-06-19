@@ -12,7 +12,7 @@ $(document).ready(function () {
   var feedbackHtml = (
     '<div class="feedback-prompt">' +
       '<span class="feedback-label">Feedback</span>' +
-      '<i class="icon-plus"></i>' +
+      '<i class="fa fa-plus"></i>' +
     '</div>');
 
   var $feedback = $(feedbackHtml)

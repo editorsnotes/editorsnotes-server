@@ -30,7 +30,7 @@
         <% }); %>
 
       </select>
-      <button class="toggle-creator-field" title="Switch between fields for first/last name, or single name field"><i class="icon-random"></i></button>
+      <button class="toggle-creator-field" title="Switch between fields for first/last name, or single name field"><i class="fa fa-random"></i></button>
       <% if ('firstName' in creator || 'lastName' in creator) { %>
         <input
           data-zotero-attr="firstName"
@@ -44,8 +44,8 @@
       <% } else { %>
         <input data-zotero-attr="name" placeholder="Full name" value="<%= creator.name %>" />
       <% } %>
-      <button class="add-creator" title="Add creator"><i class="icon-plus"></i></button>
-      <button class="remove-creator" title="Remove creator" style="color: #800;"><i class="icon-minus"></i></button>
+      <button class="add-creator" title="Add creator"><i class="fa fa-plus"></i></button>
+      <button class="remove-creator" title="Remove creator" style="color: #800;"><i class="fa fa-minus"></i></button>
     </div>
     <% }); %>
 

@@ -12,7 +12,7 @@ RelatedTopicItemView = Backbone.View.extend({
   },
   className: 'related-topic',
   render: function () {
-    this.$el.html('<a href="#" class="destroy"><i class="icon-minus-sign"></i></a>' + this.model.get('preferred_name'));
+    this.$el.html('<a href="#" class="destroy"><i class="fa fa-minus-circle"></i></a>' + this.model.get('preferred_name'));
   },
   destroy: function (e) { 
     var that = this;

@@ -16,21 +16,21 @@
   <div>
     {% if can_change_roster or can_view_roster %}
     <a class="btn" href="{% url "admin:main_project_roster_change" project.slug %}">
-      <i class="icon-user"></i>
+      <i class="fa fa-user"></i>
       {% if can_change_roster %}Edit{% else %}View{% endif %} roster
     </a>
     {% endif %}
 
     {% if can_change_project %}
     <a class="btn" href="{% url "admin:main_project_change" project.slug %}">
-      <i class="icon-edit"></i>
+      <i class="fa fa-pencil-square-o"></i>
       Edit project description
     </a>
     {% endif %}
 
     {% if can_change_featured_items %}
     <a class="btn" href="{% url "admin:main_featured_items_change" project.slug %}">
-      <i class="icon-star"></i>
+      <i class="fa fa-star"></i>
       Select featured items
     </a>
     {% endif %}
