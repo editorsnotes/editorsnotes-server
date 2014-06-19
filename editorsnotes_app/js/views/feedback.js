@@ -1,10 +1,9 @@
 "use strict";
 
 var _ = require('underscore')
+  , $ = require('../jquery')
   , Backbone = require('../backbone')
   , FEEDBACK_URL = '/accounts/profile/feedback/'
-
-var FEEDBACK_URL
 
 module.exports = Backbone.View.extend({
   events: {
@@ -34,8 +33,7 @@ module.exports = Backbone.View.extend({
     });
   },
   submit: function () {
-    var that = this
-      , $modalBody = this.$('.modal-body')
+    var $modalBody = this.$('.modal-body')
       , $btns = this.$('button').prop('disabled', 'disabled')
 
     $.post(FEEDBACK_URL, this.$('form').serialize(), function (form) {
