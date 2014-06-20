@@ -6,8 +6,10 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-browserify_bin = os.path.join(settings.EN_PROJECT_PATH,
-                              'node_modules', '.bin', 'browserify')
+default_browserify = os.path.join(settings.EN_PROJECT_PATH,
+                                  'node_modules', '.bin', 'browserify')
+browserify_bin = getattr(settings, 'BROWSERIFY_BIN', default_browserify)
+                         
 watchify_bin = os.path.join(settings.EN_PROJECT_PATH,
                             'node_modules', '.bin', 'watchify')
 
@@ -81,7 +83,7 @@ class Command(BaseCommand):
     )
     def handle(self, **options):
 
-        if not os.path.exists(browserify_bin):
+        if browserify_bin == default_browserify and not os.path.exists(browserify_bin):
             raise CommandError('Browserify not installed. Run `npm install` '
                                'from the base directory.')
 
