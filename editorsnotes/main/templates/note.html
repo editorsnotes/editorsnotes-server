@@ -62,11 +62,13 @@
 
         </dl>
 
+        {% if can_edit %}
           <div class="row">
             <div class="span12 container" style="text-align: center; padding-top: 19px; border-top: 1px solid #ddd;">
               <a href="{% url "admin:main_note_change" note.project.slug note.id %}" class="btn btn-default">Edit note</a>
             </div>
           </div>
+        {% endif %}
 
       </section>
 
