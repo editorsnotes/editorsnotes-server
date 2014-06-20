@@ -1,3 +1,7 @@
+v0.8.2
+=======
+  * Fix some npm/browserify issues, especially for deployment.
+
 v0.8.1
 =======
   * Add this file.
