@@ -15,6 +15,7 @@
     "browserify-shim": "^3.5.0",
     "node-underscorify": "0.0.9",
     "less": "^1.7.0",
+    "uglify-js": "^2.4.14",
     "mocha": "^1.18.0",
     "testling": "^1.6.1",
     "sinon": "^1.9.0",
