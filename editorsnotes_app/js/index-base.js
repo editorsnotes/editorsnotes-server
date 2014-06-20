@@ -1,6 +1,6 @@
 "use strict";
 
-var $ = require('jquery')
+var $ = require('./jquery')
   , EditorsNotes = window.EditorsNotes
 
 EditorsNotes.baseAutocompleteOpts = require('./utils/base_autocomplete_opts');
@@ -27,5 +27,9 @@ $(document).ready(function () {
     $li.find('a').prepend('<strong>' + item.type + ': </strong>');
     return $li;
   }
+
+  $('body')
+    .tooltip({ selector: '[data-toggle="tooltip"]' })
+    .on('click', 'a[data-toggle="tooltip"][href="#"]', function () { return false });
 
 });

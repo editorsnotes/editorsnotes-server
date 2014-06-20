@@ -1,7 +1,7 @@
 "use strict";
 
 var _ = require('underscore')
-  , $ = require('jquery')
+  , $ = require('../jquery')
   , wysihtml5 = require('wysihtml5')
   , toolbarTemplate = require('../templates/wysihtml5_toolbar.html')
   , defaults
@@ -10,6 +10,7 @@ var _ = require('underscore')
 defaults = {
     toolbarType: 'full',
     className: '',
+    height: null,
     minHeight: 200,
     idPrefix: 'texteditor_id_auto',
     container: '',
@@ -19,13 +20,23 @@ defaults = {
 }
 
 wysihtml5Opts = {
-  parserRules: require('./wysihtml5_parser_rules'),
+  parserRules: require('./wysihtml5_parser_rules_min'),
   stylesheets: ['/static/function/lib/wysihtml5/wysihtml5-stylesheet.css'],
   useLineBreaks: false
 }
 
 function Editor( $el, opts ){
-  var that = this
+  var that = this;
+
+  $el = $el instanceof $ ? $el : $($el);
+
+  if ($el.length !== 1 || $el[0].nodeType !== global.document.ELEMENT_NODE) {
+    throw new Error('Must pass exactly one element.')
+  }
+
+  if (!$el.is(':visible')) {
+    throw new Error('Can\'t edit text of element that is not visible.');
+  }
 
   this.options = _.extend({}, defaults, opts);
 
@@ -34,7 +45,7 @@ function Editor( $el, opts ){
   this.id = (this.isTextarea && this.$el.attr('id')) || _.uniqueId(that.options.idPrefix);
   this.$toolbar = $(toolbarTemplate({ id: that.id + '-toolbar', type: that.options.toolbarType }));
 
-  this.height = (function (h) {
+  this.height = this.options.height || (function (h) {
     return h < that.options.minHeight ? that.options.minHeight : h;
   })(this.$el.innerHeight());
 
@@ -49,10 +60,12 @@ function Editor( $el, opts ){
 
 Editor.prototype.init = function () {
   var that = this
-    , content = this.options.initialValue
+    , content
 
-  if (!content) {
-   content = this.isTextarea ? this.$el.val() : this.$el.html();
+  if ('initialValue' in this.options && this.options.initialValue !== null) {
+    content = _.result(this.options, 'initialValue');
+  } else {
+    content = this.isTextarea ? this.$el.val() : this.$el.html();
   }
 
   this.$textarea = this.isTextarea ?
@@ -80,10 +93,17 @@ Editor.prototype.init = function () {
     that.$container.css('min-height', '')
   });
 
+  this.editor.on('change', function () {
+    that.$el.trigger('editor:change', that.editor.getValue());
+  });
+  
+  this.editor.on('input', function () {
+    that.$el.trigger('editor:input', that.editor.getValue());
+  });
+
   if ( typeof(this.options.afterInit) === 'function' ) {
     this.options.afterInit.call( that );
   }
-
 
   return this.$el;
 }
@@ -111,6 +131,7 @@ Editor.prototype.destroy = function () {
   }
 
   this.$el
+    .html(finalVal)
     .show()
     .removeData('editor')
     .trigger('editor:destroyed', finalVal); 

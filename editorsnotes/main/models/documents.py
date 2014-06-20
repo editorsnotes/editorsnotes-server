@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from io import BytesIO
 import json
+import os
 import re
 from hashlib import md5
 from itertools import chain
@@ -9,18 +11,21 @@ import unicodedata
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models
 from django.utils.html import escape, strip_tags, strip_entities
 from django.utils.safestring import mark_safe
 from lxml import etree, html
+from PIL import Image
 import reversion
 
 from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
 from auth import ProjectPermissionsMixin, UpdatersMixin
-from base import CreationMetadata, LastUpdateMetadata, URLAccessible, Administered
+from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
+                  Administered, OrderingManager)
 
 __all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink',
            'Citation']
@@ -104,7 +109,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         if not len(description_stripped):
             raise ValidationError({'description': [u'Field required.']})
 
-        # Remove <br/> tags which have nothing after them 
+        # Remove <br/> tags which have nothing before nor after them 
         utils.remove_stray_brs(self.description)
     @property
     def transcript(self):
@@ -207,7 +212,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
     def save(self, *args, **kwargs):
         self.ordering = re.sub(r'[^\w\s]', '', utils.xhtml_to_text(self.description))[:32]
         self.description_digest = Document.hash_description(self.description)
-        super(Document, self).save(*args, **kwargs)
+        return super(Document, self).save(*args, **kwargs)
 reversion.register(Document)
 
 class TranscriptManager(models.Manager):
@@ -295,14 +300,37 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
     """
     document = models.ForeignKey(Document, related_name='scans')
     image = models.ImageField(upload_to='scans/%Y/%m')
+    image_thumbnail = models.ImageField(upload_to='scans/%Y/%m', blank=True, null=True)
     ordering = models.IntegerField(blank=True, null=True)
+    objects = OrderingManager()
     class Meta:
         app_label = 'main'
-        ordering = ['ordering'] 
+        ordering = ['ordering', '-created'] 
     def __unicode__(self):
         return u'Scan for %s (order: %s)' % (self.document, self.ordering)
-    def get_affiliation(self):
-        return self.document.project
+    def generate_thumbnail(self, save=True):
+        size = 256, 256
+
+        self.image.seek(0)
+        thumbnail_image = Image.open(self.image)
+        thumbnail_image.thumbnail(size, Image.ANTIALIAS)
+
+        thumbfile = BytesIO()
+        thumbnail_image.save(thumbfile, format=thumbnail_image.format)
+        thumbfile.seek(0)
+
+        path, ext = os.path.splitext(self.image.name)
+        thumbnail_name = os.path.join(path + '_thumb', ext)
+        self.image_thumbnail.save(path + '_thumb' + ext,
+                                  ContentFile(thumbfile.read()),
+                                  save=save)
+        thumbfile.close()
+
+    def save(self, *args, **kwargs):
+        if self.image and not self.pk:
+            self.generate_thumbnail(save=False)
+        return super(Scan, self).save(*args, **kwargs)
+
 reversion.register(Scan)
 
 class DocumentLink(CreationMetadata):
@@ -329,7 +357,7 @@ class DocumentMetadata(CreationMetadata):
         app_label = 'main'
         unique_together = ('document', 'key')
 
-class CitationManager(models.Manager):
+class CitationManager(OrderingManager):
     def get_for_object(self, obj):
         return self.filter(
             content_type=ContentType.objects.get_for_model(obj),

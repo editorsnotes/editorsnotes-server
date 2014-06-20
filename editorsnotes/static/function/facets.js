@@ -18,11 +18,11 @@
       init: function( options ) {
 
         if (!options.fields) {
-          console.log('Provide a list of fields to facet on');
+          throw 'Provide a list of fields to facet on';
           return;
         }
         if (!options.itemSelector) {
-          console.log('Provide a selector for the items to be faceted.');
+          throw 'Provide a selector for the items to be faceted.';
           return;
         }
 
@@ -54,9 +54,9 @@
 
           // Show/hide the container
           $('<h3 style="cursor: pointer;" id="facet-title">')
-            .html('Filters <i style="vertical-align: baseline;" class="icon-minus"></i>')
+            .html('Filters <i style="vertical-align: baseline;" class="fa fa-minus"></i>')
             .bind('click', function() {
-              $(this).find('i').toggleClass('icon-plus icon-minus');
+              $(this).find('i').toggleClass('fa-plus fa-minus');
               $container.toggle();
             }).appendTo($heading);
 
@@ -68,7 +68,7 @@
               // Button to select this filter
               $('<li class="document-facet btn">')
                 .data('for', facetKey)
-                .html('<i class="icon-plus"></i>' + facetLabel)
+                .html('<i class="fa fa-plus"></i>' + facetLabel)
                 .appendTo($selectors)
 
                 // List of values for this filter
@@ -83,17 +83,17 @@
 
           $facetContainer.insertBefore(container);
 
-          $('.facet-input').live('click', function() {
+          $facetContainer.on('change .facet-input', function() {
             container.facet('update')
           });
-          $('.document-facet').live('click', function() {
+          $('.document-facet').on('click', function() {
             var $filter = $(this),
               criteria = $filter.data('for'),
               target = $('.' + criteria + '-facet-container').toggle();
             $filter
               .toggleClass('document-facet-selected facet-selected btn-primary')
               .find('i')
-                .toggleClass('icon-plus icon-minus icon-white');
+                .toggleClass('fa-plus fa-minus fa-inverse');
             if (!$filter.hasClass('document-facet-selected')) {
               target.find('input')
                 .prop('checked', false)

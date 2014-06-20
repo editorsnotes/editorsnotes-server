@@ -19,7 +19,6 @@ def _sort_citations(instance):
     cites['all'].sort(key=lambda c: c.ordering)
     return cites
 
-
 class LegacyTopicRedirectView(RedirectView):
     permanent = True
     query_string = True
@@ -50,8 +49,8 @@ def topic(request, project_slug, topic_node_id):
         (topic.preferred_name, None)
     )
 
-    topic_query = {'query': {'term': {'serialized.related_topics.url':
-                                      topic.get_absolute_url() }}}
+    topic_query = {'query': {'term': {'serialized.related_topics.id': topic.id }}}
+    topic_query['size'] = 1000
 
     model_searches = ( en_index.search_model(model, topic_query) for model in
                        (Document, Note, Topic) )
@@ -63,8 +62,8 @@ def topic(request, project_slug, topic_node_id):
     o['related_topics'] = Topic.objects.filter(id__in=[t['id'] for t in topics])
     note_objects = Note.objects.in_bulk([n['id'] for n in notes])
     for note in notes:
-        related_topics = [ topic for topic in note['related_topics']
-                           if topic['url'] != request.path ]
+        related_topics = list((topic for topic in note['related_topics']
+                               if topic['url'] != request.path))
         note_objects[note['id']] = (note_objects[note['id']], related_topics,)
     o['notes'] = note_objects.values()
 

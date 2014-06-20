@@ -219,9 +219,6 @@ $(document).ready(function () {
         }
       }
     });
-    $(this).change(function(event) {
-      console.log(event);
-    });
   };
 
   $('.autocomplete-documents').filter(function() {

@@ -22,4 +22,4 @@ before_script:
   - psql -c "CREATE DATABASE testdb;" -U postgres
 
 script:
-  - python manage.py test main api admin
+  - python manage.py test main api

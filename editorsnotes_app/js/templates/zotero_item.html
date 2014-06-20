@@ -1,0 +1,59 @@
+<div class="zotero-item-edit">
+  <% var prefix = _.uniqueId('zoteroitem'); %>
+  <% _(data).forEach(function (val, key) { %>
+    
+    <% if (key === 'itemType') { %>
+    <div class="zotero-entry" data-zotero-key="<%= key %>">
+      <label>Item type</label>
+      <h5><%= i18n.translate(val).fetch() %></h5>
+      <input type="hidden" value="<%= val %>" />
+    </div>
+    <% } else if (key === 'tags') { %>
+      <% _(val).forEach(function (tag) { %>
+    <div class="zotero-entry" data-zotero-key="<%= key %>[]">
+      <input type="hidden" value="<%= tag.value %>" />
+    </div>
+      <% }); %>
+    <% } else if (key === 'creators') { %>
+
+    <% _(val).forEach(function(creator) { %>
+    <div class="zotero-entry zotero-creator" data-zotero-key="<%= key %>[]">
+
+
+      <select data-zotero-attr="creatorType">
+        <% _(creatorTypes).forEach(function (creatorType) { %>
+        <% var localized = i18n.translate(creatorType.creatorType).fetch(); %>
+          <option
+            value="<%= creatorType.creatorType %>"
+            <% if (creatorType.creatorType === creator.creatorType) print(selected="selected"); %>
+            ><%= localized %></option>
+        <% }); %>
+
+      </select>
+      <button class="toggle-creator-field" title="Switch between fields for first/last name, or single name field"><i class="fa fa-random"></i></button>
+      <% if ('firstName' in creator || 'lastName' in creator) { %>
+        <input
+          data-zotero-attr="firstName"
+          value="<%= creator.firstName %>"
+          placeholder="Given (first) name" />
+
+        <input
+          data-zotero-attr="lastName"
+          value="<%= creator.lastName %>"
+          placeholder="Family (last) name" />
+      <% } else { %>
+        <input data-zotero-attr="name" placeholder="Full name" value="<%= creator.name %>" />
+      <% } %>
+      <button class="add-creator" title="Add creator"><i class="fa fa-plus"></i></button>
+      <button class="remove-creator" title="Remove creator" style="color: #800;"><i class="fa fa-minus"></i></button>
+    </div>
+    <% }); %>
+
+    <% } else { %>
+    <div class="zotero-entry" data-zotero-key="<%= key %>">
+      <label for="<%= prefix + key %>"><%= i18n.translate(key).fetch() %></label>
+      <input id="<%= prefix + key %>" value="<%= val %>" />
+    </div>
+    <% } %>
+  <% }); %>
+</div>

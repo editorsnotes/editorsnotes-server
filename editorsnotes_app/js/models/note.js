@@ -1,69 +1,49 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , _ = require('underscore')
+  , Cocktail = require('backbone.cocktail')
+  , ProjectSpecificMixin = require('./project_specific_mixin')
+  , RelatedTopicsMixin = require('./related_topics_mixin')
   , NoteSectionList = require('../collections/note_section')
-  , RelatedTopicList = require('../collections/topic')
+  , Note
 
-module.exports = Backbone.Model.extend({
-  url: function() {
-    // Same as EditorsNotes.Models.Document.url (ergo, same TODO as there)
-    var origURL = Backbone.Model.prototype.url.call(this);
-    return origURL.slice(-1) === '/' ? origURL : origURL + '/';
-  },
-
+module.exports = Note = Backbone.Model.extend({
   defaults: {
-    'title': null,
-    'content': null,
+    'title': '',
+    'content': '',
     'status': 'open',
-    'section_ordering': [],
+    'is_private': false,
     'related_topics': []
   },
 
-  initialize: function (options) {
-    var that = this;
-
-    // Same as in EditorsNotes.Models.Document.initialize (TODO)
-    this.project = (this.collection && this.collection.project);
-    if (!this.project) {
-      throw new Error('Add notes through a project instance');
-    }
-
-    // Add a collection of NoteSection items to this note
+  constructor: function () {
+    ProjectSpecificMixin.constructor.apply(this, arguments);
+    RelatedTopicsMixin.constructor.apply(this, arguments);
     this.sections = new NoteSectionList([], {
-      url: that.url(),
       project: this.project
     });
+    Backbone.Model.apply(this, arguments);
+  },
 
-    this.related_topics = new RelatedTopicList([], {
-      project: this.project
-    });
-
-    // Section ordering is a property of the Note, not the the individual
-    // sections. So make them aware of that.
+  initialize: function () {
+    this.sections.url = this.url();
     this.sections.comparator = function (section) {
-      var ordering = that.get('section_ordering');
-      return ordering.indexOf(section.id);
+      return section.get('ordering');
     }
+  },
+
+  urlRoot: function () {
+    return this.project.url() + 'notes/';
   },
 
   possibleStatuses: ['open', 'closed', 'hibernating'],
 
   parse: function (response) {
-    var parsedNames = response.related_topics.map(function (t) { return t.name })
-      , existingNames = this.related_topics.map(function (t) { return t.get('name') })
-      , updateNames = !!_.difference(parsedNames, existingNames).length
-
     this.sections.set(response.sections);
-
-    if (updateNames) {
-      this.related_topics.set(response.related_topics);
-      this.set('related_topics', parsedNames);
-    }
-
     delete response.sections;
-    delete response.related_topics;
 
-    return response
+    return response;
   }
 });
+
+Cocktail.mixin(Note, RelatedTopicsMixin.mixin)

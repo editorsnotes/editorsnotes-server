@@ -1,29 +1,35 @@
 "use strict";
 
 var Backbone = require('../backbone')
+  , Cocktail = require('backbone.cocktail')
+  , ProjectSpecificMixin = require('./project_specific_mixin')
+  , RelatedTopicsMixin = require('./related_topics_mixin')
+  , ScanList = require('../collections/scan')
+  , Document
 
-module.exports = Backbone.Model.extend({
-  initialize: function () {
-    // As stated in project.js, for now, we only work with documents inside an instance
-    // of DocumentCollection inside a Project. This stuff should be part of a
-    // base model, but I didn't do that because method inheritence in javascript
-    // is icky. (so, TODO)
-    this.project = (this.collection && this.collection.project);
-    if (!this.project) {
-      throw new Error('Add notes through a project instance');
-    }
-  },
-
-  url: function () {
-    // Make sure URLs end with slashes. This should also be part of a base
-    // model. (TODO)
-    var origURL = Backbone.Model.prototype.url.call(this);
-    return origURL.slice(-1) === '/' ? origURL : origURL + '/';
-  },
-
+module.exports = Document = Backbone.Model.extend({
   defaults: {
     description: null,
     zotero_data: null,
-    topics: []
+    related_topics: []
+  },
+
+  constructor: function () {
+    ProjectSpecificMixin.constructor.apply(this, arguments);
+    RelatedTopicsMixin.constructor.apply(this, arguments);
+    this.scans = new ScanList([], { "document": this });
+    Backbone.Model.apply(this, arguments);
+  },
+
+  urlRoot: function () {
+    return this.project.url() + 'documents/';
+  },
+
+  parse: function (response) {
+    this.scans.set(response.scans);
+    delete response.scans;
+    return response;
   }
 });
+
+Cocktail.mixin(Document, RelatedTopicsMixin.mixin);

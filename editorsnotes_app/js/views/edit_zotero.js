@@ -1,88 +1,178 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , $ = require('jquery')
+  , _ = require('underscore')
+  , $ = require('../jquery')
+  , CitationEngine = require('../utils/citation_generator')
+  , zoteroToCsl = require('../utils/zotero_to_csl')
+  , i18n = require('../utils/i18n')
+
+function fetchItemTypes() {
+  return $.getJSON('/api/metadata/documents/item_types/');
+}
+
+function fetchItemTemplate(itemType) {
+  return $.getJSON('/api/metadata/documents/item_template/', { itemType: itemType });
+}
+
+function fetchCreatorTypes(itemType) {
+  return $.getJSON('/api/metadata/documents/item_type_creators/', { itemType: itemType });
+}
+
 
 module.exports = Backbone.View.extend({
   events: {
-    'change .item-type-select': function (e) {
-      this.renderZoteroForm(e.currentTarget.value);
-    },
-    'click .common-item-types li': function (e) {
-      e.preventDefault();
-      this.renderZoteroForm($('a', e.currentTarget).data('item-type'));
-    },
+    'change .item-type-select': 'handleSelectItemType',
+    'click .common-item-types a': 'handleSelectItemType',
     'click .add-creator': 'addCreator',
     'click .remove-creator': 'removeCreator',
-    'input .zotero-entry': 'sendZoteroData',
+    'click .toggle-creator-field': 'toggleCreatorField',
+    'input': 'updateZoteroData',
+    'change select': 'updateZoteroData'
   },
 
-  initialize: function () {
-    var that = this
+  initialize: function (opts) {
+    this.citationEngine = new CitationEngine();
+    this.renderedItemType = null;
 
-    this.citeprocWorker = new Worker('/static/function/citeproc-worker.js');
-    this.citeprocWorker.addEventListener('message', function (e) {
-      that.trigger('citationUpdated', e.data.citation);
+    // If passed data, render data editing form. Otherwize, render a form to
+    // select the item type first.
+    if (opts && opts.zoteroData && !_.isEmpty(opts.zoteroData)) {
+      this.renderZoteroData(opts.zoteroData);
+    } else {
+      fetchItemTypes().done(this.renderItemTypeSelect.bind(this));
+    }
+  },
+
+  renderItemTypeSelect: function (itemTypes) {
+    var template = require('../templates/zotero_item_type_select.html');
+    this.$el.html(template({ _: _, itemTypes: itemTypes }));
+    this.$('select').prop('selectedIndex', -1);
+    this.trigger('rendered');
+  },
+
+  renderZoteroData: function (zoteroItem) {
+    var that = this
+      , template = require('../templates/zotero_item.html')
+
+    fetchCreatorTypes(zoteroItem.itemType).done(function (creatorTypes) {
+      that.$el.html(template({
+          _: _,
+        data: zoteroItem,
+        i18n: i18n.zotero,
+        creatorTypes: creatorTypes
+      }));
+
+      that.trigger('rendered');
+
+      /*
+       * Hide unused fields
+       *
+      that.$('.zotero-entry:not(.zotero-creator) input:only-of-type').filter(function (i) {
+        return i > 1 && !this.value;
+      }).closest('.zotero-entry').hide();
+
+      $('<div><br/><span class="quiet">Not showing blank metadata fields. </span><button class="btn">Show</button></div>')
+        .appendTo(that.$el)
+        .on('click button', function () {
+          that.$('.zotero-entry').show();
+          $(this).remove();
+        });
+      */
     });
+    this.renderedItemType = zoteroItem.itemType;
 
-    this.render();
-
-    $.getJSON('/api/document/itemtypes/')
-      .done(function (itemTypes) {
-        var template = require('../templates/zotero_item_type_select.html')
-          , select = template(itemTypes)
-
-        that.$el.html('<hr />' + select);
-        that.$('select').prop('selectedIndex', -1);
-      })
-      .error(function () {
-        console.error('Could not fetch item types from server.');
-      });
   },
 
-  renderZoteroForm: function (itemType) {
-    var that = this
-      , $input = this.$('input').hide()
+  handleSelectItemType: function (e) {
+    var itemType = e.type === 'change' ?
+      e.currentTarget.value
+      : $(e.currentTarget).data('item-type');
 
-    $.get('/api/document/template/?itemType=' + itemType)
-      .done(function (template) {
-        var $template = $(template).filter('#zotero-information-edit');
+    // Fetch an empty item template
+    if (itemType) fetchItemTemplate(itemType).done(this.renderZoteroData.bind(this));
 
-        that.$el
-          .html('<hr />' + $template.html())
-          .find('.zotero-entry-delete').remove();
-      })
-      .fail(function () {
-        alert('Could not retrieve template');
-        $input.show()
-      });
+    return false;
   },
 
   addCreator: function (e) {
-    var $creator = $(e.currentTarget).closest('.zotero-creator');
-
-    e.preventDefault();
-    $creator.clone().insertAfter($creator).find('textarea').val('');
+    var $creator = $(e.currentTarget).closest('.zotero-entry');
+    $creator.clone().insertAfter($creator).find('input').val('');
+    this.$el.trigger('input');
+    return false;
   },
 
   removeCreator: function (e) {
-    var $creator = $(e.currentTarget).closest('.zotero-creator')
-
-    e.preventDefault();
-    $creator.siblings('.zotero-creator').length ?
-      $creator.remove() :
-      $('textarea', $creator).val('')
+    var $creator = $(e.currentTarget).closest('.zotero-entry');
+    if ($creator.siblings('.zotero-creator').length) {
+      $creator.remove();
+    } else {
+      $('input', $creator).val('');
+    }
+    this.$el.trigger('input');
+    return false;
   },
 
-  getZoteroData: function () {
-    return EditorsNotes.zotero.zoteroFormToObject(this.$el);
+  toggleCreatorField: function (e) {
+    var $creator = $(e.currentTarget).closest('.zotero-entry')
+      , $inputs = $creator.find('input')
+      , val
+
+    if ($inputs.length > 1) {
+      // Switch to single field
+      val = _($inputs.toArray()).chain().pluck('value').filter(Boolean).value().join(' ');
+      $('<input data-zotero-attr="name" placeholder="Full name" value="' + val + '">').insertBefore($inputs.first());
+      $inputs.remove();
+    } else {
+      // Switch to multiple fields
+      val = $inputs.val().split(' ');
+      $('<input data-zotero-attr="lastName" placeholder="Family (last) name" value="' + (val.pop() || '') + '">')
+        .insertAfter($inputs);
+      $('<input data-zotero-attr="firstName" placeholder="Given (first) name" value="' + val.join(' ') + '">')
+        .css('margin-right', '3px')
+        .insertAfter($inputs);
+      $inputs.remove();
+      
+    }
   },
 
-  sendZoteroData: function () {
-    var that = this;
+  updateZoteroData: function () {
+    var zoteroData
+      , cslData
+      , citation
 
-    this.citeprocWorker.postMessage({
-      zotero_data: that.getZoteroData()
+    zoteroData = this.formToObject();
+    cslData = _.isEmpty(zoteroData) ? {} : zoteroToCsl(zoteroData);
+    citation = _.isEmpty(cslData) ? null : this.citationEngine.makeCitation(cslData);
+
+    this.trigger('updatedZoteroData', zoteroData);
+    this.trigger('updatedCitation', citation);
+
+    return { data: zoteroData, citation: citation }
+  },
+
+  formToObject: function () {
+    var zoteroObject = {};
+
+    this.$('.zotero-entry').each(function (i, el) {
+      var $field = $(el)
+        , fieldKey = $field.data('zotero-key')
+
+      if (fieldKey.substr(-2, 2) == '[]') {
+        fieldKey = fieldKey.slice(0, -2);
+        if (!zoteroObject[fieldKey]) zoteroObject[fieldKey] = [];
+        zoteroObject[fieldKey].push((function () {
+          var item = {};
+          $('[data-zotero-attr]', $field).each(function (i, el) {
+            item[el.getAttribute('data-zotero-attr')] = el.value;
+          });
+          return item;
+        })());
+      } else {
+        zoteroObject[fieldKey] = $('textarea, input', $field).val();
+      }
     });
-  },
+
+    return zoteroObject;
+  }
 });

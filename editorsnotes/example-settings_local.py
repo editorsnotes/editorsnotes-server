@@ -11,7 +11,6 @@ POSTGRES_DB = {
     'PORT': ''
 }
 
-
 ELASTICSEARCH_ENABLED = True
 
 # Each ElasticSearch index created will be prefixed with this string.
@@ -23,6 +22,11 @@ ELASTICSEARCH_PREFIX = 'editorsnotes'
 # like ``http://elasticsearch.example.com:9200``.
 #
 ELASTICSEARCH_URLS = 'http://127.0.0.1:9200'
+
+# The base URL for your site, with protocol, hostname, and port (if not 80 for
+# http or 443 for https). This will be used to construct fully-qualified URLs
+# from hyperlinks in the Elasticsearch index.
+ELASTICSEARCH_SITE = 'http://127.0.0.1:8000'
 
 
 SITE_URL = '127.0.0.1'

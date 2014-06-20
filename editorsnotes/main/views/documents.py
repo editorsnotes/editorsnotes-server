@@ -96,7 +96,7 @@ def all_documents(request, project_slug=None):
     query = {
         'query': { 'filtered': { 'query': { 'match_all': {} } } },
         'facets': {},
-        'size': 100
+        'size': 1000
     }
 
     for label, field in facet_fields:
@@ -125,8 +125,7 @@ def all_documents(request, project_slug=None):
         o['facets'][facet_label] = [ (f['term'], f['term'], f['count'])
                                      for f in facet_vals['terms'] ]
 
-    o['documents'] = [ d['_source']['serialized'] for d in
-                       executed_query['hits']['hits'] ]
+    o['documents'] = [d['_source'] for d in executed_query['hits']['hits']]
 
     return render_to_response(
         template, o, context_instance=RequestContext(request))

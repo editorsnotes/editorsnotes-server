@@ -31,6 +31,7 @@ def delete_es_indexes():
 
 TEST_TOPIC = {
     'preferred_name': u'Patrick Golden',
+    'alternate_names': [u'big guy', u'stretch'],
     'type': u'PER',
     'related_topics': [],
     'summary': u'<p>A writer of tests</p>'
@@ -39,7 +40,7 @@ TEST_TOPIC = {
 TEST_DOCUMENT = {
     'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>',
     'related_topics': [],
-    'zotero_data': json.dumps({
+    'zotero_data': {
         'itemType': 'book',
         'title': 'Roots of American Communism',
         'creators': [
@@ -47,7 +48,7 @@ TEST_DOCUMENT = {
              'firstName': 'Theodore',
              'lastName': 'Draper'}
         ]
-    })
+    }
 }
 
 TEST_NOTE = {
@@ -92,9 +93,10 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-        new_topic_node_id = response.data.get('id')
+        new_topic_node_id = response.data.get('topic_node_id')
         topic_obj = main_models.Topic.objects.get(
             topic_node_id=new_topic_node_id, project=self.project)
+        self.assertEqual(response.data.get('id'), topic_obj.id)
         self.assertEqual(etree.tostring(topic_obj.summary),
                          response.data.get('summary'))
 
@@ -154,7 +156,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         topic_data = response.data['results'][0]
 
-        self.assertEqual(topic_obj.topic_node_id, topic_data['id'])
+        self.assertEqual(topic_obj.topic_node_id, topic_data['topic_node_id'])
+        self.assertEqual(topic_obj.id, topic_data['id'])
         self.assertEqual(topic_obj.preferred_name, topic_data['preferred_name'])
         self.assertEqual(topic_data['preferred_name'], TEST_TOPIC['preferred_name'])
 
@@ -185,7 +188,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         updated_topic_obj = main_models.Topic.objects.get(
-            topic_node_id=response.data['id'], project=self.project)
+            topic_node_id=response.data['topic_node_id'], project=self.project)
         self.assertEqual(topic_obj, updated_topic_obj)
         self.assertEqual(data['summary'], response.data['summary'])
         self.assertEqual(data['summary'], etree.tostring(updated_topic_obj.summary))
@@ -277,7 +280,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
     def create_test_document(self):
         data = TEST_DOCUMENT
         document = main_models.Document.objects.create(
-            description=data['description'], zotero_data=data['zotero_data'],
+            description=data['description'],
+            zotero_data=json.dumps(data['zotero_data']),
             project=self.project, creator=self.user, last_updater=self.user)
         return document
 
@@ -603,6 +607,13 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
 
+        note_obj.is_private = True
+        response = self.client.get(
+            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id])
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
+
     def test_note_api_update_logged_out(self):
         "Updating a note while logged out is NOT OK"
         note_obj = self.create_test_note()
@@ -708,6 +719,15 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Revision.objects.count(), 3)
+
+        response = self.client.post(
+            reverse('api:api-notes-normalize-section-order',
+                    args=[self.project.slug, note_obj.id]),
+            json.dumps({}),
+            content_type='application/json'
+        )
+        self.assertEqual(tuple(note_obj.sections.values_list('ordering', flat=True)),
+                         (100, 200, 300))
 
     def test_note_api_create_note_section_bad_permissions(self):
         "Adding a new note section in an outside project is NOT OK"

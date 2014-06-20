@@ -20,10 +20,10 @@ $(function() {
           .filter(':first')
             .trigger('click');
       }
-      $('i', $this).toggleClass('icon-plus icon-minus');
+      $('i', $this).toggleClass('fa-plus fa-minus');
     })
     .on('click', '#facets .facet-header', function () {
-      $('i', this).toggleClass('icon-plus icon-minus');
+      $('i', this).toggleClass('fa-plus fa-minus');
       $('.facet-body').toggle();
     })
     .on('click', '#facets .facet-form input', function () {
@@ -52,7 +52,6 @@ $(function() {
           $facets = $('#facets', newdoc);
 
           // Restore previously selected facets
-          console.log(prevSelectedFacets);
           for (var i = 0; i < prevSelectedFacets.length; i++) {
             var selector = 'li[data-facet-toggle="' + prevSelectedFacets[i] + '"]'
             $(selector, $facets).trigger('click');

@@ -9,7 +9,7 @@
     width: 16px;
     margin-left: 0;
     line-height: 19px;
-    i { font-size: 24px; color: #333; }
+    i { font-size: 18px; color: #333; }
   }
 
   > div[class*='-main'] {
@@ -43,6 +43,10 @@
     }
 
   }
+}
+
+body.modal-open .tooltip {
+  z-index: 1051;
 }
 
 .ui-helper-hidden-accessible { display: none; }
@@ -79,7 +83,7 @@
 /* editing */
 
 #note-status select { margin-bottom: 0; width: 150px; }
-body.editing .note-title-input {
+#note-title {
   width: 90%;
   font-size: 20px;
   height: 30px;
@@ -101,5 +105,63 @@ body.editing .note-title-input {
       text-decoration: none;
       color: @btnDangerBackground;
     }
+  }
+}
+
+
+.save-row {
+  background: #f0f0f0;
+  padding: 0 30px;
+  margin: 2em 0;
+  position: relative;
+  height: 52px;
+
+  .save-item, .delete-item {
+    .btn;
+    font-size: 15px;
+    padding: 8px 19px;
+    margin-top: 8px;
+  }
+
+  .save-item {
+    .btn-primary;
+    .pull-right;
+  }
+
+  .delete-item {
+    .btn-danger;
+  }
+}
+
+// Bootstrap error messages
+// -------------------------
+.error-message {
+  ul { margin-bottom: 0; }
+  ul > li:only-of-type {
+    list-style-type: none;
+    margin-left: -25px;
+  }
+}
+
+
+/* Editing a zotero item, as rendered by the browserify template */
+.zotero-item-edit {
+  .zotero-entry {
+    padding: 5px 0;
+
+    & > * { display: inline-block; }
+
+    // The first child will always be the field label
+    & > :first-child {
+      width: 120px;
+      margin: 0 6px 0;
+      text-align: right;
+    }
+
+    // Lone inputs will be 600px; dual inputs (ie first/ljst name) ~half that.
+    & > input { padding: 3px 4px; }
+    & > input:only-of-type { width: 600px; }
+    &.zotero-creator > input { width: 246px; }
+    &.zotero-creator > input:only-of-type { width: 508px; }
   }
 }

@@ -43,6 +43,6 @@ def render_search_result(result_dict):
         result_body = u''
 
     return TEMPLATE.format(result_type=result_type.title(),
-                           result_url=serialized['url'],
+                           result_url=result_dict['_source'].get('display_url', serialized['url']),
                            result_display=result_display,
                            result_body=result_body)

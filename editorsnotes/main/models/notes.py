@@ -5,12 +5,13 @@ from django.db import models, transaction
 
 from licensing.models import License
 from lxml import etree
-from model_utils.managers import InheritanceManager
+from model_utils.managers import InheritanceManagerMixin
 import reversion
 
 from .. import fields
 from auth import ProjectPermissionsMixin, UpdatersMixin
-from base import Administered, LastUpdateMetadata, URLAccessible
+from base import (Administered, LastUpdateMetadata, URLAccessible,
+                  OrderingManager)
 
 NOTE_STATUS_CHOICES = (
     ('0', 'closed'),
@@ -32,12 +33,16 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     project = models.ForeignKey('Project', related_name='notes')
     assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, null=True)
     status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1, default='1')
+    is_private = models.BooleanField(default=False)
     license = models.ForeignKey(License, blank=True, null=True)
     related_topics = generic.GenericRelation('TopicAssignment')
     sections_counter = models.PositiveIntegerField(default=0)
     class Meta:
         app_label = 'main'
         ordering = ['-last_updated']  
+        permissions = (
+            (u'view_private_note', u'Can view notes private to a project.'),
+        )
     def as_text(self):
         return self.title
     @models.permalink
@@ -49,6 +54,9 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return project_topic.id in \
                 self.related_topics.values_list('topic_id', flat=True)
 
+class NoteSectionManager(InheritanceManagerMixin, OrderingManager):
+    pass
+
 class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     u"""
     The concrete base class for any note section.
@@ -58,10 +66,10 @@ class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     note_section_id = models.PositiveIntegerField(blank=True, null=True)
     ordering = models.PositiveIntegerField(blank=True, null=True)
     related_topics = generic.GenericRelation('TopicAssignment')
-    objects = InheritanceManager()
+    objects = NoteSectionManager()
     class Meta:
         app_label = 'main'
-        ordering = ['ordering', 'note_section_id']
+        ordering = ['ordering', '-note_section_id']
         unique_together = ['note', 'note_section_id']
     def get_affiliation(self):
         return self.note.project

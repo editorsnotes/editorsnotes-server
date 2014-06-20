@@ -88,7 +88,7 @@ $(document).ready(function () {
     .on('click', '.collapsable legend', function () {
       var $this = $(this);
       $this.toggleClass('.collapsed')
-        .find('i').toggleClass('icon-plus icon-minus');
+        .find('i').toggleClass('fa-plus fa-minus');
       $this.siblings('.fieldset-content').toggle();
     })
 
@@ -108,7 +108,7 @@ $(document).ready(function () {
     .css('cursor', 'pointer')
     .each(function () {
       $('<i>', {
-        'class': 'icon-minus',
+        'class': 'fa fa-minus',
         'css': {'margin': '6px 0 0 3px'}
       }).appendTo(this);
     })
@@ -122,7 +122,7 @@ $(document).ready(function () {
     $('<a>', {
       'class': 'remove-related-topic',
       'href': '#',
-      'html': '<i class="icon-remove-sign"></i>'
+      'html': '<i class="fa fa-times-circle"></i>'
     }).appendTo($(this).hide().parents('.topicassignment'));
   });
 

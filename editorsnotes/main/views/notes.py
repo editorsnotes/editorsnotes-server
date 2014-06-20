@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -15,6 +16,13 @@ def note(request, note_id, project_slug):
             .prefetch_related('related_topics')
     note = get_object_or_404(qs, id=note_id, project__slug=project_slug)
 
+    if note.is_private:
+        can_view = (
+            request.user.is_authenticated() and
+            request.user.has_project_perm(note.project, 'main.view_private_note'))
+        if not can_view:
+            raise PermissionDenied()
+
     o['breadcrumb'] = (
         (note.project.name, note.project.get_absolute_url()),
         ("Notes", reverse('all_notes_view',
@@ -28,11 +36,13 @@ def note(request, note_id, project_slug):
     o['topics'] = [ta.topic for ta in o['note'].related_topics.all()]
     o['sections'] = note.sections\
             .order_by('ordering', 'note_section_id')\
+            .all()\
             .select_subclasses()\
             .select_related('citationns__document__project',
                             'notereferencens__note_reference__project')
-    o['can_edit'] = request.user.is_authenticated() and \
-            request.user.has_project_perm(o['note'].project, 'main.change_note')
+    o['can_edit'] = (
+        request.user.is_authenticated() and
+        request.user.has_project_perm(o['note'].project, 'main.change_note'))
 
 
     return render_to_response(
@@ -73,7 +83,7 @@ def all_notes(request, project_slug=None):
                 'terms': { 'field': 'serialized.status' }
             }
         },
-        'size': 500
+        'size': 1000
     }
 
     if project_slug is None:
@@ -115,8 +125,7 @@ def all_notes(request, project_slug=None):
     status_facets = executed_query['facets']['status_facet']['terms']
     o['status_facets'] = status_facets
 
-    o['notes'] = [ n['_source']['serialized'] for n in
-                   executed_query['hits']['hits'] ]
+    o['notes'] = [n['_source'] for n in executed_query['hits']['hits']]
 
     return render_to_response(
         template, o, context_instance=RequestContext(request))

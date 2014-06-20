@@ -1,19 +1,9 @@
 "use strict";
 
-/*
- * As things stand now, items (documents, notes, topics) should be added
- * within a project instance. This eases things in terms of dealing with
- * URLs, although that could be changed in the future.
- */
-
 var Backbone = require('../backbone')
-  , DocumentCollection = require('../collections/document')
-  , NoteCollection = require('../collections/note')
-  , TopicCollection = require('../collections/topic')
 
 module.exports = Backbone.Model.extend({
-  initialize: function (attributes, options) {
-
+  initialize: function (attributes) {
     // If a slug was not explictly passed to the project instance, try to
     // derive it from the current URL
     var slug = (attributes && attributes.slug) || (function (pathname) {
@@ -27,12 +17,6 @@ module.exports = Backbone.Model.extend({
       throw new Error('Could not get project without url or argument');
     }
     this.set('slug', slug);
-
-    // Instantiate the collections for documents, notes, and topics.
-    this.documents = new DocumentCollection([], { project: this });
-    this.notes = new NoteCollection([], { project: this });
-    this.topics = new TopicCollection([], { project: this });
-
   },
 
   url: function () { return '/api/projects/' + this.get('slug') + '/'; }

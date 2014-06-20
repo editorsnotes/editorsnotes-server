@@ -1,6 +1,7 @@
 "use strict";
 
-var SelectItemView = require('./select_item')
+var SelectItemView = require('./generic/select_item_base')
+  , Document = require('../models/document')
 
 module.exports =  SelectItemView.extend({
   type: 'document',
@@ -8,13 +9,13 @@ module.exports =  SelectItemView.extend({
   autocompleteURL: function () { return this.project.url() + 'documents/' },
 
   selectItem: function (event, ui) {
-    this.trigger('documentSelected', this.project.documents.add(ui.item).get(ui.item.id));
+    this.trigger('documentSelected', new Document(ui.item));
   },
 
   addItem: function (e) {
     var that = this
       , AddDocumentView = require('./add_document')
-      , addView = new AddDocumentView({ project: this.project });
+      , addView = new AddDocumentView({ model: new Document({}, { project: this.project }) });
 
     e.preventDefault();
 

@@ -1,35 +1,50 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , $ = require('jquery')
+  , Cocktail = require('backbone.cocktail')
   , _ = require('underscore')
+  , i18n = require('../utils/i18n').main
   , NoteSectionListView = require('./note_section_list')
   , RelatedTopicsView = require('./related_topics')
+  , SaveItemMixin = require('./generic/save_item_mixin')
+  , HandleErrorMixin = require('./generic/handle_error_mixin')
+  , NoteView
 
-
-module.exports = Backbone.View.extend({
+NoteView = module.exports = Backbone.View.extend({
   events: {
-    'click #note-description': 'editDescription',
-    'change select[name="note-status"]': 'updateStatus',
-    'input input.note-title-input': 'updateTitle'
+    'editor:input #note-description': function (e, data) {
+      this.model.set('content', data);
+    }
   },
 
-  initialize: function (options) {
+  bindings: {
+    'select[name="note-status"]': {
+      observe: 'status',
+      selectOptions: {
+        collection: function () {
+          return _.map(this.model.possibleStatuses, function (s) {
+            return { value: s, label: i18n.translate(s).fetch() }
+          });
+        }
+      }
+    },
+    '#note-private': {
+      observe: 'is_private',
+      selectOptions: {
+        collection: function () {
+          return [{ label: 'Yes', value: true }, { label: 'No', value: false }]
+        }
+      }
+    },
+    '#note-title': 'title'
+  },
+
+  initialize: function () {
     var note = this.model;
-
-    this.sectionListView = new NoteSectionListView({ model: note });
-    this.topicListView = new RelatedTopicsView({ collection: note.related_topics });
-
-    this.listenTo(this.topicListView.collection, 'add', this.refreshRelatedTopics)
-    this.listenTo(this.topicListView.collection, 'remove', this.refreshRelatedTopics)
-    
-    /*
-    this.licenseChooser = new EditorsNotes.Views.NoteLicense({
-      model: note,
-      el: that.$();
-    });
-    */
-
+    this.sectionListView = new NoteSectionListView({ collection: note.sections });
+    this.topicListView = new RelatedTopicsView({ collection: note.relatedTopics });
+    this.render();
+    this.stickit();
   },
 
   render: function () {
@@ -37,57 +52,15 @@ module.exports = Backbone.View.extend({
       , template = require('../templates/note.html')
 
     this.$el.empty().html(template({ note: that.model }));
-    this.sectionListView.setElement( that.$('#note-sections') );
-    this.sectionListView.render()
 
-    this.topicListView.$el.appendTo( that.$('#note-authorship') );
-  },
-
-  refreshRelatedTopics: function () {
-    var topicNames = this.model.related_topics.map(function (model) {
-      return model.get('name');
-    });
-    this.model.set('related_topics', topicNames).save();
-  },
-
-  updateTitle: _.debounce(function (e) {
-    var title = e.target.value;
-    this.model.set('title', title);
-    if (title.length && !this.model.isNew()) {
-      this.model.save();
+    if (!this.model.isNew()) {
+      this.sectionListView.setElement( that.$('#note-sections') );
+      this.sectionListView.render()
     }
-  }, 1500),
 
-  updateStatus: function (e) {
-    this.model.set('status', e.target.value).save();
-  },
-
-  editDescription: function () {
-    var $description = this.$('#note-description')
-      , note = this.model
-      , html
-
-    if ($description.hasClass('active')) return;
-
-    $description.addClass('active').find('> :first-child').editText({
-      afterInit: function () {
-        var that = this;
-
-        html = ''
-          + '<div class="row">'
-            + '<a class="btn btn-primary save-changes pull-right">Save</a>'
-          + '</div>'
-
-        $(html).insertAfter(this.editor.composer.iframe).on('click .btn', function (e) {
-          setTimeout(function () { that.destroy() }, 0);
-        });
-      },
-      destroy: function (val) {
-        note.set('content', val).save().done(function (resp) {
-          $description.removeClass('active').html(resp.content);
-        });
-      }
-    });
+    this.topicListView.$el.appendTo( that.$('#note-related-topics') );
+    this.$('#note-description > :first-child').editText();
   }
-
 });
+
+Cocktail.mixin(NoteView, SaveItemMixin, HandleErrorMixin);

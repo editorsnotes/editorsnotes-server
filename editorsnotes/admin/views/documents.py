@@ -1,33 +1,19 @@
-import json
-
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-import reversion
 
 from editorsnotes.main.models import Document, Transcript
+from editorsnotes.api.serializers import DocumentSerializer
 
-from common import BaseAdminView
+from common import BaseAdminView, BootstrappedBackboneView
 from .. import forms
 
-class DocumentAdminView(BaseAdminView):
+class DocumentAdminView(BootstrappedBackboneView):
     model = Document
-    form_class = forms.DocumentForm
-    formset_classes = (
-        forms.TopicAssignmentFormset,
-        forms.DocumentLinkFormset,
-        forms.ScanFormset
-    )
-    template_name = 'document_admin.html'
-    def post(self, request, *args, **kwargs):
-        if request.is_ajax():
-            return self.ajax_post(request, *args, **kwargs)
-        return super(DocumentAdminView, self).post(request, *args, **kwargs)
-
+    serializer_class = DocumentSerializer
     def get_object(self, document_id=None):
         return document_id and get_object_or_404(
             Document, id=document_id, project_id=self.project.id)
-
     def get_breadcrumb(self):
         breadcrumbs = (
             (self.project.name, self.project.get_absolute_url()),
@@ -44,40 +30,6 @@ class DocumentAdminView(BaseAdminView):
                 ('Edit', None)
             )
         return breadcrumbs
-
-    def save_object(self, form, formsets):
-        obj, action = super(DocumentAdminView, self).save_object(form, formsets)
-        form.save_zotero_data()
-        return obj, action
-
-    def save_formset_form(self, form):
-        obj = form.save(commit=False)
-        obj.document = self.object
-        obj.creator = self.request.user
-        obj.save()
-        return obj
-
-    def ajax_post(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        self.object = self.get_object()
-        if self.object is not None:
-            return HttpResponse(
-                'Cannot save existing documents via ajax.', status=400)
-        if form.is_valid():
-            with reversion.create_revision():
-                document = form.save(commit=False)
-                document.creator = self.request.user
-                document.last_updater = self.request.user
-                document.project = self.project
-                document.save()
-                form.save_zotero_data()
-            return HttpResponse(json.dumps(
-                {'value': document.as_text(),
-                 'id': document.id}
-            ))
-        else:
-            return HttpResponse(json.dumps(form.errors), status=400)
 
 class TranscriptAdminView(BaseAdminView):
     model = Transcript

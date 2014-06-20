@@ -4,7 +4,7 @@ import unittest
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import models, transaction, IntegrityError
 from django.test import TestCase, TransactionTestCase
 from lxml import etree, html
 
@@ -74,6 +74,10 @@ class UtilsTestCase(unittest.TestCase):
         test3 = html.fragment_fromstring('<div>I<br/><br/> am really annoying.<br/><br/><br/></div>')
         utils.remove_stray_brs(test3)
         self.assertEqual('<div>I<br/> am really annoying.</div>', etree.tostring(test3))
+
+        test4 = html.fragment_fromstring('<div><br/>No leading break?</div>')
+        utils.remove_stray_brs(test4)
+        self.assertEqual('<div>No leading break?</div>', etree.tostring(test4))
     def test_remove_empty_els(self):
         """
         Elements which have no text (or children with text) should be removed,
@@ -342,3 +346,53 @@ class ProjectSpecificPermissionsTestCase(TestCase):
         new_role.add_permissions(ok_perm1, ok_perm2)
         self.assertRaises(ValueError, new_role.add_permissions, bad_perm)
         self.assertEqual(len(new_role.get_permissions()), 2)
+
+class OrderedModel(models.Model):
+    name = models.CharField(max_length=10)
+    the_ordering = models.PositiveIntegerField(blank=True, null=True)
+    objects = main_models.base.OrderingManager()
+    class Meta:
+        ordering = ['the_ordering', 'name']
+
+class OrderingTestCase(TestCase):
+    def test_normalize_position_dict(self):
+        position_dict = {
+            'a': 10,
+            'b': 22.5,
+            'c': 5000000
+        }
+        position_dict = main_models.base.OrderingManager\
+                .normalize_position_dict(position_dict, 1)
+        self.assertEqual(sorted(position_dict.items()),
+                         [('a', 1), ('b', 2), ('c', 3)])
+
+        position_dict = main_models.base.OrderingManager\
+                .normalize_position_dict(position_dict, 100)
+        self.assertEqual(sorted(position_dict.items()),
+                         [('a', 100), ('b', 200), ('c', 300)])
+    def test_reordering(self):
+        m3 = OrderedModel.objects.create(name='third')
+        m2 = OrderedModel.objects.create(name='second')
+        m1 = OrderedModel.objects.create(name='first')
+
+        positions = { m1.id: 100, m2.id: 200 }
+        self.assertRaises(ValueError,
+                          OrderedModel.objects.bulk_update_order,
+                          'the_ordering', positions)
+
+        positions[m3.id] = 200.5
+        OrderedModel.objects.bulk_update_order('the_ordering', positions)
+
+        self.assertEqual(tuple(OrderedModel.objects.values_list('id', 'the_ordering')),
+                         ((m1.id, 1), (m2.id, 2), (m3.id, 3)))
+    def test_fill_in_empties(self):
+        m1 = OrderedModel.objects.create(name='a')
+        m2 = OrderedModel.objects.create(name='b')
+        m3 = OrderedModel.objects.create(name='c')
+        m4 = OrderedModel.objects.create(name='d')
+
+        positions = { m1.id: 666, m2.id: 777 }
+        OrderedModel.objects.bulk_update_order('the_ordering', positions,
+                                               fill_in_empty=True, step=10)
+        self.assertEqual(tuple(OrderedModel.objects.values_list('id', 'the_ordering')),
+                         ((m1.id, 10), (m2.id, 20), (m3.id, 30), (m4.id, 40)))

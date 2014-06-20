@@ -1,21 +1,23 @@
 <header>
   <h3>Title</h3>
-  <input maxlength="80" class="note-title-input" type="text" value="<%= note.get('title') %>" />
+  <div data-error-target="title"></div>
+  <input maxlength="80" id="note-title" type="text" />
 </header>
 <section id="note-details">
   <div id="note-about">
     <div id="note-status">
       <strong>This note is </strong>
-      <select name="note-status">
-        <% note.possibleStatuses.forEach(function (status) { %>
-        <option <% if (status == note.get('status')) { %>selected="selected"<% } %>><%= status %></option>
-        <% }); %>
-      </select>
-    </strong></div>
-    <div id="note-related-topics"></div>
+      <select name="note-status"></select>
+    </div>
+    <div id="note-related-topics">
+      <span>Related topics</span>
+    </div>
   </div>
+
   <dl id="note-authorship">
+    <dt>Private</dt>
+    <dd><select id="note-private"></select></dd>
   </dl>
 </section>
-<section id="note-description"><%= note.get('content') %></section>
+<section id="note-description" data-error-target="content"><%= note.get('content') || '<div></div>' %></section>
 <section id="note-sections"></section>

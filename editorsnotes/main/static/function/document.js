@@ -67,7 +67,6 @@ $(document).ready(function() {
     },
     abort: function(self, message) {
       self.stop_polling(self);
-      console.log(message);
       $('#progress-message').text('Oops! Something broke. Please reload the page.').css('color', 'red');
     }
   };
@@ -139,22 +138,9 @@ $(document).ready(function() {
     });
   });
 
-  // If no hash is present in URL, load default tab into history
-  var url = $.param.fragment();
-  if ( url == '' ) {
-    window.location.replace(window.location.href + '#info');
-    url = $.param.fragment();
-  }
+  $('#tabs a').on('shown', function(e) {
+    var targetPanel = e.currentTarget.hash;
 
-  var tabs = $('#tabs a');
-  
-  // Initialize tabs & jquery-bbq
-  tabs.click(function(e) {
-    e.preventDefault();
-    var index = $(this).attr('href').match(/#(.+)-tab/)[1];
-    $.bbq.pushState(index, 2);
-  }).on('shown', function(e) {
-    var targetPanel = e.target.hash;
     if (targetPanel.match(/scans/)) {
       if ($('a.pushed').click().length == 0) {
         $('a.scan:first').click();
@@ -182,14 +168,4 @@ $(document).ready(function() {
       }
     }
   });
-
-  $(window).bind('hashchange', function(e) {
-    var index = $.bbq.getState();
-    $.each(index, function(key, value) {
-      var tabToOpen = tabs.filter('a[href*="' + key + '"]')
-      if ( tabToOpen.length > 0 ) {
-        tabToOpen.tab('show');
-      }
-    });
-  }).trigger('hashchange');
 });

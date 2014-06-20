@@ -1,7 +1,8 @@
 "use strict";
 
 var Backbone = require('../backbone')
-  , $ = require('jquery')
+  , $ = require('../jquery')
+  , Topic = require('../models/topic')
   , Autocompleter = require('../utils/autocomplete_widget')
   , RelatedTopicItemView
 
@@ -11,7 +12,7 @@ RelatedTopicItemView = Backbone.View.extend({
   },
   className: 'related-topic',
   render: function () {
-    this.$el.html('<a href="#" class="destroy"><i class="icon-minus-sign"></i></a>' + this.model.get('name'));
+    this.$el.html('<a href="#" class="destroy"><i class="fa fa-minus-circle"></i></a>' + this.model.get('preferred_name'));
   },
   destroy: function (e) { 
     var that = this;
@@ -25,19 +26,39 @@ RelatedTopicItemView = Backbone.View.extend({
 
 module.exports = Backbone.View.extend({
   events: {
-    'autocompleteselect': 'selectItem'
+    'autocompleteselect': 'selectItem',
+    'click .add-new-object': 'addItem'
   },
   className: 'related-topics-widget',
-  initialize: function (options) {
-    var autocompleter;
+  initialize: function () {
+    var autocompleter
+      , template = require('../templates/add_or_select_item.html')
+
     this.$topicList = $('<div class="related-topics-list">').appendTo(this.$el);
 
     this.listenTo(this.collection, 'add', this.addTopic);
     this.collection.forEach(this.addTopic, this);
 
-    this.$search = $('<input type="text">').prependTo(this.$el);
+    this.$search = $(template({ type: 'topic' }))
+      .prependTo(this.$el)
+      .filter('input')
+        .css('width', '350px');
+
     autocompleter = new Autocompleter(this.$search, this.collection.project.get('slug'), 'topics');
 
+  },
+  addItem: function (e) {
+    e.preventDefault();
+
+    var AddTopicView = require('./add_topic')
+      , addView = new AddTopicView({
+        model: new Topic({}, { project: this.collection.project }),
+        el: $('<div>').appendTo('body')
+      })
+
+    this.listenTo(addView.model, 'sync', this.collection.add.bind(this.collection));
+
+    addView.$el.modal();
   },
   addTopic: function (topic) {
     var view = new RelatedTopicItemView({ model: topic });
@@ -51,9 +72,9 @@ module.exports = Backbone.View.extend({
     if (!ui.item) return;
     event.preventDefault();
     event.target.value = '';
-    var topic = this.collection.add({
+    this.collection.add({
       url: ui.item.uri,
-      name: ui.item.value
+      preferred_name: ui.item.value
     });
   }
 });

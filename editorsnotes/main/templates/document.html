@@ -44,7 +44,6 @@
 
 {% block js %}
     <script type="text/javascript" src="{{ STATIC_URL }}function/lib/seadragon/seadragon-min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}function/lib/jquery/jquery.ellipsis.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}function/document.js"></script>
 {% endblock %}
 
@@ -70,21 +69,21 @@
     </header>
 
       <ul id="tabs" class="nav nav-tabs">
-        <li class="active"><a href="#info-tab">Info</a></li>
+        <li class="active"><a href="#info-tab" data-toggle="tab">Info</a></li>
 
         {% if document.has_parts %}
-        <li><a href="#parts-tab">Parts</a></li>
+        <li><a href="#parts-tab" data-toggle="tab">Parts</a></li>
         {% endif %}
 
         {% if scans %}
-        <li><a href="#scans-tab">Scans</a></li>
+        <li><a href="#scans-tab" data-toggle="tab">Scans</a></li>
         {% endif %}
 
         {% if document.transcript %}
-        <li><a href="#transcript-tab">Transcript</a></li>
+        <li><a href="#transcript-tab" data-toggle="tab">Transcript</a></li>
         {% endif %}
 
-        <li><a href="#notes-tab">Related Notes <span class="alt">&amp;</span> Queries ({{ notes|length }})</a></li>
+        <li><a href="#notes-tab" data-toggle="tab">Related Notes <span class="alt">&amp;</span> Queries ({{ notes|length }})</a></li>
       </ul>
 
       <div class="tab-content">

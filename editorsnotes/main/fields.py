@@ -79,6 +79,8 @@ class XHTMLField(models.Field):
     def get_prep_value(self, value):
         if value is None:
             return None
+        elif isinstance(value, basestring):
+            return value
         else:
             return etree.tostring(value)
     def value_to_string(self, obj):

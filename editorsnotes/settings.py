@@ -7,7 +7,7 @@ TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
 DATETIME_FORMAT = 'N j, Y, P'
 USE_L10N = False
-USE_I18N = False
+USE_I18N = True
 
 
 ########################
@@ -71,6 +71,7 @@ STATICFILES_DIRS = (
 )
 
 # Override these variables in settings_local.py if desired
+DEBUG = False
 try:
     from settings_local import STORAGE_PATH
 except ImportError:
@@ -159,5 +160,5 @@ except NameError:
     pass
 
 COMPRESS_PRECOMPILERS = (
-    ('text/less', LESSC_BINARY + ' {infile} {outfile}'),
+    ('text/less', LESSC_BINARY + (' --source-map-map-inline ' if DEBUG else '') + '{infile} {outfile}'),
 )

@@ -2,11 +2,14 @@ import datetime
 import json
 
 from django.db import models
+from django.utils.translation import ugettext as _
 
-import utils
+from . import utils
+from .fields import ZoteroField
+
 
 class ZoteroItem(models.Model):
-    zotero_data = models.TextField(blank=True, null=True)
+    zotero_data = ZoteroField(blank=True, null=True)
     zotero_link = models.OneToOneField('ZoteroLink', blank=True, null=True,
                                        related_name='zotero_item')
     class Meta:
@@ -14,20 +17,20 @@ class ZoteroItem(models.Model):
     def get_zotero_fields(self):
         if self.zotero_data is None:
             return ()
-        z = json.loads(self.zotero_data)
-        z['itemType'] = utils.type_map['readable'][z['itemType']]
+        zotero_data = json.loads(self.zotero_data)
+        zotero_data['itemType'] = _(zotero_data['itemType'])
         if self.zotero_link and self.zotero_link.date_information:
             date_parts = json.loads(self.zotero_link.date_information)
             for part in date_parts:
-                z[part] = date_parts[part]
-        if z['creators']:
-            names = z.pop('creators')
-            output = z.items()
+                zotero_data[part] = date_parts[part]
+        if zotero_data['creators']:
+            names = zotero_data.pop('creators')
+            output = zotero_data.items()
             for name in names:
                 output.append(
                     (name['creatorType'], utils.get_creator_name(name)) )
         else:
-            output = z.items()
+            output = zotero_data.items()
         return output
 
 class ZoteroLink(models.Model):
