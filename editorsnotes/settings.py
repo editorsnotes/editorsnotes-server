@@ -142,6 +142,7 @@ STATICFILES_FINDERS = (
 BROWSERID_CREATE_USER = 'editorsnotes.main.views.auth.create_invited_user'
 
 LESSC_BINARY = os.path.join(EN_PROJECT_PATH, 'node_modules', '.bin', 'lessc')
+COMPRESS_YUGLIFY_BINARY = os.path.join(EN_PROJECT_PATH, 'node_modules', '.bin', 'uglifyjs')
 
 REST_FRAMEWORK = {
     #'FILTER_BACKEND': 'editorsnotes.api.filters.HaystackFilterBackend',
@@ -159,6 +160,7 @@ try:
 except NameError:
     pass
 
+COMPRESS_JS_FILTERS = ['compressor.filters.yuglify.YUglifyJSFilter']
 COMPRESS_PRECOMPILERS = (
-    ('text/less', LESSC_BINARY + (' --source-map-map-inline ' if DEBUG else '') + '{infile} {outfile}'),
+    ('text/less', LESSC_BINARY + (' --source-map-map-inline ' if DEBUG else '') + ' {infile} {outfile}'),
 )

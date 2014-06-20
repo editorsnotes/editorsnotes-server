@@ -33,8 +33,13 @@
 
     {% compress js %}
       {% include "base_js_bundle.html" %}
-      {% if request.user.is_authenticated %}{% include "admin_js_bundle.html" %}{% endif %}
     {% endcompress %}
+
+    {% if request.user.is_authenticated %}
+    {% compress js %}
+    {% include "admin_js_bundle.html" %}
+    {% endcompress %}
+    {% endif %}
 
     <script type="text/javascript" src="https://login.persona.org/include.js"></script>
     <script type="text/javascript" src="{% static "function/lib/browserid.js" %}"></script>
