@@ -160,5 +160,5 @@ except NameError:
     pass
 
 COMPRESS_PRECOMPILERS = (
-    ('text/less', LESSC_BINARY + (' --source-map-map-inline ' if DEBUG else '') + '{infile} {outfile}'),
+    ('text/less', LESSC_BINARY + (' --source-map-map-inline ' if DEBUG else '') + ' {infile} {outfile}'),
 )
