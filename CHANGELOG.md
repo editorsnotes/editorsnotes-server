@@ -1,3 +1,7 @@
+v0.8.3
+=======
+  * Fix minification issues.
+
 v0.8.2
 =======
   * Fix some npm/browserify issues, especially for deployment.
