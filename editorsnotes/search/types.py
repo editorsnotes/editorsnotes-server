@@ -48,6 +48,7 @@ class DocumentTypeAdapter(object):
         mapping = {
             self.type_label : {
                 'properties': {
+                    'display_url': { 'type': 'string', 'index': 'not_analyzed' },
                     'display_title': {
                         'search_analyzer': 'analyzer_shingle',
                         'index_analyzer': 'analyzer_shingle',
@@ -93,6 +94,7 @@ class DocumentTypeAdapter(object):
         data = {
             'id': obj.id,
             'serialized': obj._rest_serialized,
+            'display_url': obj.get_absolute_url(),
             'display_title': obj.as_text()
         }
         return data

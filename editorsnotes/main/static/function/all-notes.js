@@ -108,7 +108,7 @@ $(function() {
 
   var $facets = $('#note-facets input');
   $facets.prop('checked', false);
-  $facets.live('click', function() {
+  $facets.on('click', function() {
     var $checked = $('#note-facets input:checked');
     var $sortingOptions = $('.sort-option');
     var queryString = '?filter=1'
@@ -145,13 +145,13 @@ $(function() {
   
   
   // Toggle faceting options
-  $('.facet-title').live('click', function() {
+  $('.facet-title').on('click', function() {
     $(this).find('i').toggleClass('fa-plus fa-minus');
     $('.facets').slideToggle('fast');
   })
 
   // Resort list of notes on click of sort options
-  $('.sort-option').live('click', function() {
+  $('.sort-option').on('click', function() {
     var $thisOption = $(this);
     var $otherOptions = $thisOption.siblings('.sort-option');
 

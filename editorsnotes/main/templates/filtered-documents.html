@@ -51,7 +51,7 @@
     <ul class="unstyled model-list" id="document-list">
     {% for document in documents %}
     <li class="document">
-      <a href="{{ document.url }}">{{ document.description|safe }}</a>
+      <a href="{{ document.display_url }}">{{ document.serialized.description|safe }}</a>
     </li>
     {% endfor %}
     </ul>

@@ -125,8 +125,7 @@ def all_notes(request, project_slug=None):
     status_facets = executed_query['facets']['status_facet']['terms']
     o['status_facets'] = status_facets
 
-    o['notes'] = [ n['_source']['serialized'] for n in
-                   executed_query['hits']['hits'] ]
+    o['notes'] = [n['_source'] for n in executed_query['hits']['hits']]
 
     return render_to_response(
         template, o, context_instance=RequestContext(request))
