@@ -80,7 +80,7 @@ module.exports = OrderedCollectionView.extend({
 
     $('.add-section', $addBar).draggable({
       axis: 'y',
-      distance: 2,
+      distance: 1,
       appendTo: $addBar.parent(),
       cursor: 'move',
       connectToSortable: that.$itemsEl,
@@ -100,6 +100,10 @@ module.exports = OrderedCollectionView.extend({
       },
       start: function () {
         threshold = $('.note-section-list').offset().top;
+        $(this).animate({ 'opacity': 0 }, 120);
+      },
+      stop: function () {
+        $(this).animate({ 'opacity': 1 }, 80);
       }
     });
   }
