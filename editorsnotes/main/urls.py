@@ -5,6 +5,7 @@ from django.conf.urls import patterns, url
 from views.topics import LegacyTopicRedirectView
 
 urlpatterns = patterns('editorsnotes.main.views.auth',
+    url(r'^feedback/$', 'all_feedback', name='all_feedback_view'),
     url(r'^projects/$', 'all_projects', name='all_projects_view'),
     url(r'^projects/(?P<project_slug>\w+)/$', 'project', name='project_view'),
 )

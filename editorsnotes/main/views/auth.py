@@ -4,7 +4,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django_browserid.views import Verify
@@ -12,7 +12,7 @@ import reversion
 
 from editorsnotes.search import activity_index
 from ..forms import UserFeedbackForm
-from ..models import User, Project, ProjectInvitation
+from ..models import User, Project, ProjectInvitation, UserFeedback
 
 @reversion.create_revision()
 def create_invited_user(email):
@@ -91,13 +91,19 @@ def user_feedback(request):
             obj.save()
             messages.add_message(request, messages.SUCCESS, 'Feedback submitted.')
             return HttpResponseRedirect(request.path)
-            return render_to_response(
-                template, o, context_instance=RequestContext(request))
     else:
         o['form'] = UserFeedbackForm()
     return render_to_response(
         template, o, context_instance=RequestContext(request))
 
+@login_required
+def all_feedback(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    feedback = UserFeedback.objects.select_related('user').order_by('-created')
+    return render_to_response(
+        'all_feedback.html', {'feedback': feedback},
+        context_instance=RequestContext(request))
 
 
 def project(request, project_slug):
