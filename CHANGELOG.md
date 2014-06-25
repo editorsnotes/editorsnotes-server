@@ -1,3 +1,7 @@
+master
+=======
+  * Allow draggable widgets to work on tablets
+
 v0.8.3
 =======
   * Fix minification issues.
