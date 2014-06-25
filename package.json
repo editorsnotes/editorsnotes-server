@@ -33,6 +33,7 @@
   },
   "browser": {
     "jquery-ui": "./editorsnotes_app/js/lib/jquery/jquery-ui-1.10.4.custom.js",
+    "jquery-ui-touch-punch": "./editorsnotes_app/js/lib/jquery/jquery.ui.touch-punch.js",
     "jquery-timeago": "./editorsnotes_app/js/lib/jquery/jquery.timeago.js",
     "jquery-bootstrap": "./editorsnotes_app/js/lib/jquery/bootstrap.min.js",
     "jquery-babbq": "./editorsnotes_app/js/lib/jquery/jquery.ba-bbq.min.js",
@@ -43,6 +44,9 @@
   },
   "browserify-shim": {
     "jquery-ui": {
+      "depends": "jquery"
+    },
+    "jquery-ui-touch-punch": {
       "depends": "jquery"
     },
     "jquery-timeago": {
