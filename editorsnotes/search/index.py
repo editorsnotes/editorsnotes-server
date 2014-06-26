@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from itertools import chain
 import json
+import re
 
 from django.conf import settings
 
@@ -129,6 +130,14 @@ class ENIndex(ElasticSearchIndex):
                               doc_type=doc_type.type_label, **kwargs)
 
     def search(self, query, highlight=False, **kwargs):
+        # Strip any backslashes
+        query = query.replace('\\', '')
+
+        SPECIAL_CHARS = re.compile('([+\-&|!(){}\[\]^~*?:/])')
+        query = re.sub(SPECIAL_CHARS, r'\\\1', query)
+
+        # Remove unbalanced quotations
+        query = re.sub('((?:"[^"]*?"[^"]*?)*?)"?([^"]*$)', r'\1\2', query)
 
         if isinstance(query, basestring):
             prepared_query = {
