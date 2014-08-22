@@ -25,6 +25,8 @@ class DocumentTypeAdapter(object):
         self.es = es
         self.index_name = index_name
 
+        self.dummy_request = self.make_dummy_request()
+
     def __unicode__(self):
         return self.model._meta.module_name
 
@@ -87,14 +89,14 @@ class DocumentTypeAdapter(object):
 
     def data_from_object(self, obj, request=None):
         if not hasattr(obj, '_rest_serialized'):
-            context = { 'request': request or self.make_dummy_request() }
+            context = { 'request': request or self.dummy_request }
             serializer = self.serializer(obj, context=context)
             data = json.loads(JSONRenderer().render(serializer.data))
             obj._rest_serialized = data
         data = {
             'id': obj.id,
             'serialized': obj._rest_serialized,
-            'display_url': obj.get_absolute_url(),
+            'display_url': self.dummy_request.build_absolute_uri(obj.get_absolute_url()),
             'display_title': obj.as_text()
         }
         return data

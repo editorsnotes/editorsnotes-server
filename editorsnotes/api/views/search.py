@@ -27,7 +27,7 @@ class SearchView(GenericAPIView):
                                       'fields']['display_title'][0 if
                                                                  'highlight' in
                                                                  doc else 0:None]),
-                        ('url', doc['fields']['serialized.url'])
+                        ('url', doc['fields']['display_url'])
                     )) for doc in result['hits']['hits']
                 ]
             }

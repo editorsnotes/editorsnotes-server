@@ -1,6 +1,7 @@
 from rest_framework.filters import BaseFilterBackend
 
 from editorsnotes.search import en_index
+from editorsnotes.search.utils import clean_query_string
 
 BASE_QUERY = {'query': {'filtered': {'query': {'match_all': {}}}}}
 
@@ -52,7 +53,7 @@ class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
             filters.append({'term': {'serialized.project.url':
                                      '/projects/{}/'.format(project)}})
 
-        term = params.get('autocomplete').lower().split()
+        term = clean_query_string(params.get('autocomplete').lower()).split()
 
         query['query']['filtered']['query'] = {
             'bool': { 'must': [], 'should': [] }
@@ -95,7 +96,7 @@ class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
             }
         })
 
-        query['fields'] = ['display_title', 'serialized.url']
+        query['fields'] = ['display_title', 'display_url']
 
         if filters:
             query['query']['filtered']['filter'] = { 'and': filters }

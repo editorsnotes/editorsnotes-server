@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from itertools import chain
 import json
+import re
 
 from django.conf import settings
 
@@ -11,6 +12,7 @@ from reversion.models import VERSION_ADD, VERSION_CHANGE, VERSION_DELETE
 from editorsnotes.main.models import Project, User
 
 from .types import DocumentTypeAdapter
+from .utils import clean_query_string
 
 class OrderedResponseElasticSearch(ElasticSearch):
     def _decode_response(self, response):
@@ -129,11 +131,10 @@ class ENIndex(ElasticSearchIndex):
                               doc_type=doc_type.type_label, **kwargs)
 
     def search(self, query, highlight=False, **kwargs):
-
         if isinstance(query, basestring):
             prepared_query = {
                 'query': {
-                    'query_string': { 'query': query }
+                    'query_string': { 'query': clean_query_string(query) }
                 }
             }
 
