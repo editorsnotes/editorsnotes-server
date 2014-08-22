@@ -96,7 +96,7 @@ class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
             }
         })
 
-        query['fields'] = ['display_title', 'serialized.url']
+        query['fields'] = ['display_title', 'display_url']
 
         if filters:
             query['query']['filtered']['filter'] = { 'and': filters }
