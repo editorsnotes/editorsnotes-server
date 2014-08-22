@@ -12,6 +12,7 @@ from reversion.models import VERSION_ADD, VERSION_CHANGE, VERSION_DELETE
 from editorsnotes.main.models import Project, User
 
 from .types import DocumentTypeAdapter
+from .utils import clean_query_string
 
 class OrderedResponseElasticSearch(ElasticSearch):
     def _decode_response(self, response):
@@ -130,19 +131,10 @@ class ENIndex(ElasticSearchIndex):
                               doc_type=doc_type.type_label, **kwargs)
 
     def search(self, query, highlight=False, **kwargs):
-        # Strip any backslashes
-        query = query.replace('\\', '')
-
-        SPECIAL_CHARS = re.compile('([+\-&|!(){}\[\]^~*?:/])')
-        query = re.sub(SPECIAL_CHARS, r'\\\1', query)
-
-        # Remove unbalanced quotations
-        query = re.sub('((?:"[^"]*?"[^"]*?)*?)"?([^"]*$)', r'\1\2', query)
-
         if isinstance(query, basestring):
             prepared_query = {
                 'query': {
-                    'query_string': { 'query': query }
+                    'query_string': { 'query': clean_query_string(query) }
                 }
             }
 
