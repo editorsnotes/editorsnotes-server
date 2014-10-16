@@ -3,15 +3,16 @@ from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from editorsnotes.main.models import Document, Scan
+from editorsnotes.main.models import Document, Scan, Transcript
 
 from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
                    ElasticSearchListMixin, ProjectSpecificMixin)
 from ..permissions import ProjectSpecificPermissions
-from ..serializers import DocumentSerializer, ScanSerializer
+from ..serializers import (DocumentSerializer, ScanSerializer,
+                           TranscriptSerializer)
 
 __all__ = ['DocumentList', 'DocumentDetail', 'DocumentConfirmDelete',
-           'ScanList', 'ScanDetail', 'NormalizeScanOrder']
+           'ScanList', 'ScanDetail', 'NormalizeScanOrder', 'Transcript']
 
 class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     model = Document
@@ -90,3 +91,15 @@ class ScanDetail(BaseDetailView):
         document_qs = Document.objects.prefetch_related('scans__creator')
         document = get_object_or_404(document_qs, id=document_id)
         return document.scans.filter(id=scan_id)
+
+class Transcript(BaseDetailView):
+    model = Transcript
+    serializer_class = TranscriptSerializer
+    def get_object(self, queryset=None):
+        transcript_qs = self.model.objects\
+                .select_related('document__project')\
+                .filter(
+                    document__id=self.kwargs.get('document_id'),
+                    document__project__slug=self.kwargs.get('project_slug')
+                )
+        return get_object_or_404(transcript_qs)

@@ -3,8 +3,9 @@ import json
 
 from lxml import etree
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Document, Citation, Scan
+from editorsnotes.main.models import Document, Citation, Scan, Transcript
 
 from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                    URLField, ProjectSlugField, HyperlinkedProjectItemField)
@@ -37,9 +38,10 @@ class ScanSerializer(serializers.ModelSerializer):
 
 class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                          serializers.ModelSerializer):
-    project = ProjectSlugField()
-    zotero_data = ZoteroField(required=False)
     url = URLField()
+    project = ProjectSlugField()
+    transcript = serializers.SerializerMethodField('get_transcript_url')
+    zotero_data = ZoteroField(required=False)
     scans = ScanSerializer(many=True, required=False, read_only=True)
     def get_validation_exclusions(self):
         # TODO: This can be removed in future versions of django rest framework.
@@ -49,10 +51,23 @@ class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
         exclusions = super(DocumentSerializer, self).get_validation_exclusions()
         exclusions.remove('zotero_data')
         return exclusions
+    def get_transcript_url(self, obj):
+        if not obj.has_transcript():
+            return None
+        return reverse('api:api-transcripts-detail',
+                       args=(obj.project.slug, obj.id),
+                       request=self.context.get('request', None))
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
-                  'scans', 'related_topics', 'zotero_data',)
+                  'scans', 'transcript', 'related_topics', 'zotero_data',)
+
+class TranscriptSerializer(serializers.ModelSerializer):
+    url = URLField(lookup_arg_attrs=('document.project.slug', 'document.id'))
+    document = HyperlinkedProjectItemField(
+        required=True, view_name='api:api-documents-detail')
+    class Meta:
+        model = Transcript
 
 class CitationSerializer(serializers.ModelSerializer):
     url = URLField('api:api-topic-citations-detail',

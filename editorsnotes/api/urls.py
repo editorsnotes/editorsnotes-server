@@ -30,6 +30,8 @@ project_specific_patterns = patterns('',
     url(r'^documents/(?P<document_id>\d+)/scans/$', views.ScanList.as_view(), name='api-scans-list'),
     url(r'^documents/(?P<document_id>\d+)/scans/(?P<scan_id>\d+)/$', views.ScanDetail.as_view(), name='api-scans-detail'),
     url(r'^documents/(?P<document_id>\d+)/scans/normalize_order/$', views.NormalizeScanOrder.as_view(), name='api-scans-normalize-order'),
+
+    url(r'^documents/(?P<document_id>\d+)/transcript/$', views.Transcript.as_view(), name='api-transcripts-detail'),
 )
 
 urlpatterns = patterns('',

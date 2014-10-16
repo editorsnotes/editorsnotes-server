@@ -1,3 +1,8 @@
+master
+=======
+  * Add transcript link to Document API serializer
+  * Add 'Add/Edit Transcript' button to Document editing view
+
 v0.8.4
 =======
   * Allow draggable widgets to work on tablets
