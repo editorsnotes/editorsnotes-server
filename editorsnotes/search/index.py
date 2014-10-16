@@ -197,4 +197,4 @@ class ActivityIndex(ElasticSearchIndex):
 
     def handle_edit(self, instance, version):
         self.es.index(self.name, 'activity',
-                      self.data_from_reversion_version(version))
+                      self.data_from_reversion_version(version), refresh=True)

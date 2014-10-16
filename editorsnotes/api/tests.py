@@ -103,6 +103,27 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         # Make sure a revision was created
         self.assertEqual(Revision.objects.count(), 1)
 
+        # Make sure an entry was added to the activity index
+        activity_response = self.client.get(reverse('api:api-project-activity',
+                                                         args=[self.project.slug]))
+        self.assertEqual(activity_response.status_code, 200)
+        self.assertEqual(len(activity_response.data['activity']), 1)
+
+        activity_data = activity_response.data['activity'][0]
+
+        expected = {
+            'user': 'barry',
+            'project': 'emma',
+            #'time': ???,
+            'type': topic_obj._meta.module_name,
+            'url': topic_obj.get_absolute_url(),
+            'title': topic_obj.as_text(),
+            'action': 'added'
+        }
+
+        activity_data.pop('time')
+        self.assertDictContainsSubset(activity_data, expected)
+
 
     def test_topic_api_create_bad_permissions(self):
         "Creating a topic in an outside project is NOT OK"
@@ -196,6 +217,25 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         # Make sure a revision was created upon update
         self.assertEqual(Revision.objects.count(), 1)
 
+        # Make sure an entry was added to the activity index
+        activity_response = self.client.get(reverse('api:api-project-activity',
+                                                         args=[self.project.slug]))
+        self.assertEqual(activity_response.status_code, 200)
+        activity_data = activity_response.data['activity'][0]
+
+        expected = {
+            'user': 'barry',
+            'project': 'emma',
+            #'time': ???,
+            'type': updated_topic_obj._meta.module_name,
+            'url': updated_topic_obj.get_absolute_url(),
+            'title': updated_topic_obj.as_text(),
+            'action': 'changed'
+        }
+
+        activity_data.pop('time')
+        self.assertDictContainsSubset(activity_data, expected)
+
     def test_topic_api_update_bad_permissions(self):
         "Updating a topic in an outside project is NOT OK"
         data = TEST_TOPIC.copy()
@@ -245,6 +285,25 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # Make sure a revision was created before delete
         self.assertEqual(Revision.objects.count(), 1)
+
+        # Make sure an entry was added to the activity index
+        activity_response = self.client.get(reverse('api:api-project-activity',
+                                                         args=[self.project.slug]))
+        self.assertEqual(activity_response.status_code, 200)
+        activity_data = activity_response.data['activity'][0]
+
+        expected = {
+            'user': 'barry',
+            'project': 'emma',
+            #'time': ???,
+            'type': topic_obj._meta.module_name,
+            'url': None,
+            'title': topic_obj.as_text(),
+            'action': 'deleted'
+        }
+
+        activity_data.pop('time')
+        self.assertDictContainsSubset(activity_data, expected)
 
     def test_topic_api_delete_bad_permissions(self):
         "Deleting a topic in an outside project is NOT OK"
