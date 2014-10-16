@@ -7,8 +7,10 @@ from django.conf import settings
 
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch.exceptions import InvalidJsonResponseError
+from rest_framework.renderers import JSONRenderer
 from reversion.models import VERSION_ADD, VERSION_CHANGE, VERSION_DELETE
 
+from editorsnotes.api.serializers import ActivitySerializer
 from editorsnotes.main.models import Project, User
 
 from .types import DocumentTypeAdapter
@@ -180,20 +182,10 @@ class ActivityIndex(ElasticSearchIndex):
         return [ hit['_source']['data'] for hit in search['hits']['hits'] ]
 
     def data_from_reversion_version(self, version):
-        url = version.object and version.object.get_absolute_url()
-        return {
-            'data': OrderedDict((
-                ('user', version.revision.user.username,),
-                ('project', version.revision.project_metadata.project.slug,),
-                ('time', version.revision.date_created,),
-                ('type', version.content_type.model,),
-                ('url', url),
-                ('title', version.object_repr,),
-                ('action', VERSION_ACTIONS[version.type],),
-            )),
-            'object_id': version.object_id_int,
-            'version_id': version.id
-        }
+        serializer = ActivitySerializer(version)
+        data = json.loads(JSONRenderer().render(serializer.data),
+                          object_pairs_hook=OrderedDict)
+        return { 'data': data }
 
     def handle_edit(self, instance, version):
         self.es.index(self.name, 'activity',
