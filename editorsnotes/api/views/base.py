@@ -15,7 +15,8 @@ from rest_framework.utils import formatting
 import reversion
 
 from editorsnotes.main.models import Project
-from editorsnotes.main.models.auth import RevisionProject
+from editorsnotes.main.models.auth import (RevisionProject, LogActivity,
+                                           ADDITION, CHANGE, DELETION)
 from editorsnotes.search import en_index
 
 from ..filters import (ElasticSearchFilterBackend,
@@ -159,11 +160,36 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
         if hasattr(obj.__class__, 'last_updater'):
             obj.last_updater = self.request.user
         super(BaseListAPIView, self).pre_save(obj)
+    def post_save(self, obj, created):
+        LogActivity.objects.create(
+            user=self.request.user,
+            project=self.request.project,
+            content_object=obj,
+            display_title=obj.as_text(),
+            action=ADDITION)
 
 @create_revision_on_methods('update', 'destroy')
 class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
+    def post_save(self, obj, created):
+        LogActivity.objects.create(
+            user=self.request.user,
+            project=self.request.project,
+            content_object=obj,
+            display_title=obj.as_text(),
+            action=CHANGE)
+    def pre_delete(self, obj):
+        self._deleted_id = obj.id
+    def post_delete(self, obj):
+        log_obj = LogActivity(
+            user=self.request.user,
+            project=self.request.project,
+            content_object=obj,
+            display_title=obj.as_text(),
+            action=DELETION)
+        log_obj.object_id = self._deleted_id
+        log_obj.save()
     def pre_save(self, obj):
         if hasattr(obj.__class__, 'last_updater'):
             obj.last_updater = self.request.user

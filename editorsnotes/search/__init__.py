@@ -1,8 +1,6 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from reversion import post_revision_commit
-
 from editorsnotes.main import models as main_models
 
 from .index import ENIndex, ActivityIndex
@@ -41,13 +39,9 @@ en_index.register(main_models.Document, adapter=DocumentAdapter)
 
 activity_index = ActivityIndex()
 
-@receiver(post_revision_commit)
-def update_activity_index(instances, revision, versions, **kwargs):
-    handled = [(instance, version) for (instance, version)
-               in zip(instances, versions)
-               if issubclass(instance.__class__, main_models.base.Administered)]
-    for instance, version in handled:
-        activity_index.handle_edit(instance, version)
+@receiver(post_save, sender=main_models.auth.LogActivity)
+def update_activity_index(sender, instance, created, **kwargs):
+    activity_index.handle_edit(instance)
 
 @receiver(post_save)
 def update_elastic_search_handler(sender, instance, created, **kwargs):

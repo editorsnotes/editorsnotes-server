@@ -1,14 +1,12 @@
 from collections import OrderedDict
 from itertools import chain
 import json
-import re
 
 from django.conf import settings
 
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch.exceptions import InvalidJsonResponseError
 from rest_framework.renderers import JSONRenderer
-from reversion.models import VERSION_ADD, VERSION_CHANGE, VERSION_DELETE
 
 from editorsnotes.api.serializers import ActivitySerializer
 from editorsnotes.main.models import Project, User
@@ -157,12 +155,6 @@ class ENIndex(ElasticSearchIndex):
 
         return self.es.search(prepared_query, index=self.name, **kwargs)
 
-VERSION_ACTIONS = {
-    VERSION_ADD: 'added',
-    VERSION_CHANGE: 'changed',
-    VERSION_DELETE: 'deleted'
-}
-
 class ActivityIndex(ElasticSearchIndex):
     def get_name(self):
         return settings.ELASTICSEARCH_PREFIX + '-activitylog'
@@ -181,12 +173,9 @@ class ActivityIndex(ElasticSearchIndex):
         search = self.es.search(query, index=self.name, size=size)
         return [ hit['_source']['data'] for hit in search['hits']['hits'] ]
 
-    def data_from_reversion_version(self, version):
-        serializer = ActivitySerializer(version)
+    def handle_edit(self, instance):
+        serializer = ActivitySerializer(instance)
         data = json.loads(JSONRenderer().render(serializer.data),
                           object_pairs_hook=OrderedDict)
-        return { 'data': data }
 
-    def handle_edit(self, instance, version):
-        self.es.index(self.name, 'activity',
-                      self.data_from_reversion_version(version), refresh=True)
+        self.es.index(self.name, 'activity', { 'data': data }, refresh=True)
