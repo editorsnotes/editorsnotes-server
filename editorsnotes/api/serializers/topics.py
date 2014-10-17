@@ -7,7 +7,7 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Topic, TopicNode
 
 from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
-                   ProjectSlugField, URLField)
+                   ProjectSlugField, URLField, TopicAssignmentField)
 from .documents import CitationSerializer
 
 class TopicNodeSerializer(serializers.ModelSerializer):
@@ -54,6 +54,7 @@ class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     alternate_names = AlternateNameField(slug_field='name', many=True)
     url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
     project = ProjectSlugField()
+    related_topics = TopicAssignmentField()
     citations = CitationSerializer(source='summary_cites', many=True, read_only=True)
     class Meta:
         model = Topic

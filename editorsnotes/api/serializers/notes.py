@@ -7,7 +7,7 @@ from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (ProjectSpecificItemMixin, RelatedTopicSerializerMixin,
                    URLField, ProjectSlugField, UpdatersField,
-                   HyperlinkedProjectItemField)
+                   HyperlinkedProjectItemField, TopicAssignmentField)
 
 
 class TextNSSerializer(serializers.ModelSerializer):
@@ -84,6 +84,7 @@ class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     project = ProjectSlugField()
     updaters = UpdatersField()
     status = NoteStatusField()
+    related_topics = TopicAssignmentField()
     sections = NoteSectionField(many=True)
     class Meta:
         model = Note
@@ -94,6 +95,7 @@ class MinimalNoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixi
                             serializers.ModelSerializer):
     status = NoteStatusField()
     url = URLField()
+    related_topics = TopicAssignmentField()
     class Meta:
         model = Note
         fields = ('id', 'url', 'title', 'related_topics', 'content', 'status',
