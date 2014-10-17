@@ -17,6 +17,7 @@ import reversion
 from editorsnotes.main.models import Project
 from editorsnotes.main.models.auth import (RevisionProject, LogActivity,
                                            ADDITION, CHANGE, DELETION)
+from editorsnotes.main.models.base import Administered
 from editorsnotes.search import en_index
 
 from ..filters import (ElasticSearchFilterBackend,
@@ -149,8 +150,23 @@ class DeleteConfirmAPIView(ProjectSpecificMixin, GenericAPIView):
             return formatting.markup_description(description)
         return description
 
+class LogActivityMixin(object):
+    def _should_log_activity(self, obj):
+        return isinstance(obj, Administered)
+    def make_log_activity(self, obj, action, commit=True):
+        log_obj = LogActivity(
+            user=self.request.user,
+            project=self.request.project,
+            content_object=obj,
+            display_title=obj.as_text(),
+            action=action)
+        if commit:
+            log_obj.save()
+        return log_obj
+
+
 @create_revision_on_methods('create')
-class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
+class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin, ListCreateAPIView):
     paginate_by = 50
     paginate_by_param = 'page_size'
     permission_classes = (ProjectSpecificPermissions,)
@@ -161,35 +177,23 @@ class BaseListAPIView(ProjectSpecificMixin, ListCreateAPIView):
             obj.last_updater = self.request.user
         super(BaseListAPIView, self).pre_save(obj)
     def post_save(self, obj, created):
-        LogActivity.objects.create(
-            user=self.request.user,
-            project=self.request.project,
-            content_object=obj,
-            display_title=obj.as_text(),
-            action=ADDITION)
+        if self._should_log_activity(obj):
+            self.make_log_activity(obj, ADDITION)
 
 @create_revision_on_methods('update', 'destroy')
-class BaseDetailView(ProjectSpecificMixin, RetrieveUpdateDestroyAPIView):
+class BaseDetailView(ProjectSpecificMixin, LogActivityMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
     def post_save(self, obj, created):
-        LogActivity.objects.create(
-            user=self.request.user,
-            project=self.request.project,
-            content_object=obj,
-            display_title=obj.as_text(),
-            action=CHANGE)
+        if self._should_log_activity(obj):
+            self.make_log_activity(obj, CHANGE)
     def pre_delete(self, obj):
         self._deleted_id = obj.id
     def post_delete(self, obj):
-        log_obj = LogActivity(
-            user=self.request.user,
-            project=self.request.project,
-            content_object=obj,
-            display_title=obj.as_text(),
-            action=DELETION)
-        log_obj.object_id = self._deleted_id
-        log_obj.save()
+        if self._should_log_activity(obj):
+            log_obj = self.make_log_activity(obj, DELETION, commit=False)
+            log_obj.object_id = self._deleted_id
+            log_obj.save()
     def pre_save(self, obj):
         if hasattr(obj.__class__, 'last_updater'):
             obj.last_updater = self.request.user

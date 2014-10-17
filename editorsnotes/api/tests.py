@@ -86,6 +86,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_topic_api_create(self):
         "Creating a topic within your own project is ok"
+
+        flush_es_indexes()
+
         response = self.client.post(
             reverse('api:api-topics-list', args=[self.project.slug]),
             json.dumps(TEST_TOPIC),
@@ -169,6 +172,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         then be retrievable with the API list view.
         """
         flush_es_indexes()
+
         topic_obj = self.create_test_topic()
 
         response = self.client.get(reverse('api:api-topics-list', args=[self.project.slug]))
