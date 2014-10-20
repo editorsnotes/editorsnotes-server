@@ -359,6 +359,21 @@ class LogActivity(models.Model):
     def is_deletion(self):
         return self.action == DELETION
 
+    def get_version(self):
+        if self.revision_metadata is None:
+            return None
+        return self.revision_metadata.revision.version_set\
+                .get(content_type_id=self.content_type_id,
+                     object_id=self.object_id)
+
+class RevisionLogActivity(models.Model):
+    revision = models.ForeignKey(reversion.models.Revision,
+                                 related_name='logactivity_metadata')
+    log_activity = models.OneToOneField(LogActivity, related_name='revision_metadata')
+    class Meta:
+        app_label = 'main'
+
+
 
 def activity_for(model, max_count=50):
     u'''

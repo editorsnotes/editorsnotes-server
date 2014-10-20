@@ -29,6 +29,7 @@ class Migration(DataMigration):
                 time=version.revision.date_created,
                 user_id=version.revision.user_id,
                 project_id=version.revision.project_metadata.project_id,
+                version=version,
                 content_type_id=version.content_type_id,
                 object_id=version.object_id,
                 display_title=version.object_repr,
@@ -185,7 +186,8 @@ class Migration(DataMigration):
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'project': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.Project']"}),
             'time': ('django.db.models.fields.DateTimeField', [], {}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']"})
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']"}),
+            'version': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['reversion.Version']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
         },
         'main.note': {
             'Meta': {'ordering': "['-last_updated']", 'object_name': 'Note'},

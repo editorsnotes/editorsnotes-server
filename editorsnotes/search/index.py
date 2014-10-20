@@ -178,4 +178,5 @@ class ActivityIndex(ElasticSearchIndex):
         data = json.loads(JSONRenderer().render(serializer.data),
                           object_pairs_hook=OrderedDict)
 
-        self.es.index(self.name, 'activity', { 'data': data }, refresh=True)
+        self.es.index(self.name, 'activity',{ 'id': instance.id, 'data': data },
+                      id='id', refresh=True)

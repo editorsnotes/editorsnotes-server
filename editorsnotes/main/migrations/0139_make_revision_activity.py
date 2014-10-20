@@ -6,18 +6,18 @@ from django.db import models
 
 class Migration(DataMigration):
 
-    needed_by = (
-        ('reversion', '0006_remove_delete_revisions'),
-    )
-
     def forwards(self, orm):
         "Write your forwards methods here."
         # Note: Don't use "from appname.models import ModelName". 
         # Use orm.ModelName to refer to models in this application,
         # and orm['appname.ModelName'] for models in other applications.
-        orm['reversion.Version'].objects.filter(type=2).delete()
-        orm['reversion.Revision'].objects.filter(version__isnull=True).delete()
+        qs = orm['main.logactivity'].objects.select_related('version.revision')
 
+        for obj in qs:
+            if obj.version:
+                orm['main.revisionlogactivity'].objects.create(
+                    log_activity=obj,
+                    revision=obj.version.revision)
 
     def backwards(self, orm):
         "Write your backwards methods here."
@@ -232,6 +232,12 @@ class Migration(DataMigration):
             'project': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'roles'", 'to': "orm['main.Project']"}),
             'role': ('django.db.models.fields.CharField', [], {'max_length': '40'})
         },
+        'main.revisionlogactivity': {
+            'Meta': {'object_name': 'RevisionLogActivity'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'log_activity': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'revision'", 'to': "orm['main.LogActivity']"}),
+            'revision': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'logactivity_metadata'", 'to': u"orm['reversion.Revision']"})
+        },
         'main.revisionproject': {
             'Meta': {'object_name': 'RevisionProject'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -341,8 +347,7 @@ class Migration(DataMigration):
             'object_id_int': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
             'object_repr': ('django.db.models.fields.TextField', [], {}),
             'revision': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['reversion.Revision']"}),
-            'serialized_data': ('django.db.models.fields.TextField', [], {}),
-            'type': ('django.db.models.fields.PositiveSmallIntegerField', [], {'db_index': 'True'})
+            'serialized_data': ('django.db.models.fields.TextField', [], {})
         }
     }
 

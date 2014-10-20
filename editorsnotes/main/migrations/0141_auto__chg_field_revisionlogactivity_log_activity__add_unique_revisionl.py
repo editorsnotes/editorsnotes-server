@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 from south.utils import datetime_utils as datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
 
-class Migration(DataMigration):
 
-    needed_by = (
-        ('reversion', '0006_remove_delete_revisions'),
-    )
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        "Write your forwards methods here."
-        # Note: Don't use "from appname.models import ModelName". 
-        # Use orm.ModelName to refer to models in this application,
-        # and orm['appname.ModelName'] for models in other applications.
-        orm['reversion.Version'].objects.filter(type=2).delete()
-        orm['reversion.Revision'].objects.filter(version__isnull=True).delete()
+
+        # Changing field 'RevisionLogActivity.log_activity'
+        db.alter_column(u'main_revisionlogactivity', 'log_activity_id', self.gf('django.db.models.fields.related.OneToOneField')(unique=True, to=orm['main.LogActivity']))
+        # Adding unique constraint on 'RevisionLogActivity', fields ['log_activity']
+        db.create_unique(u'main_revisionlogactivity', ['log_activity_id'])
 
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        # Removing unique constraint on 'RevisionLogActivity', fields ['log_activity']
+        db.delete_unique(u'main_revisionlogactivity', ['log_activity_id'])
+
+
+        # Changing field 'RevisionLogActivity.log_activity'
+        db.alter_column(u'main_revisionlogactivity', 'log_activity_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['main.LogActivity']))
 
     models = {
         u'auth.group': {
@@ -169,8 +170,7 @@ class Migration(DataMigration):
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'project': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.Project']"}),
             'time': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']"}),
-            'version': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['reversion.Version']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']"})
         },
         'main.note': {
             'Meta': {'ordering': "['-last_updated']", 'object_name': 'Note'},
@@ -231,6 +231,12 @@ class Migration(DataMigration):
             'is_super_role': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'project': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'roles'", 'to': "orm['main.Project']"}),
             'role': ('django.db.models.fields.CharField', [], {'max_length': '40'})
+        },
+        'main.revisionlogactivity': {
+            'Meta': {'object_name': 'RevisionLogActivity'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'log_activity': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'revision'", 'unique': 'True', 'to': "orm['main.LogActivity']"}),
+            'revision': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'logactivity_metadata'", 'to': u"orm['reversion.Revision']"})
         },
         'main.revisionproject': {
             'Meta': {'object_name': 'RevisionProject'},
@@ -331,20 +337,7 @@ class Migration(DataMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'manager_slug': ('django.db.models.fields.CharField', [], {'default': "u'default'", 'max_length': '200', 'db_index': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
-        },
-        u'reversion.version': {
-            'Meta': {'object_name': 'Version'},
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            'format': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'object_id': ('django.db.models.fields.TextField', [], {}),
-            'object_id_int': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
-            'object_repr': ('django.db.models.fields.TextField', [], {}),
-            'revision': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['reversion.Revision']"}),
-            'serialized_data': ('django.db.models.fields.TextField', [], {}),
-            'type': ('django.db.models.fields.PositiveSmallIntegerField', [], {'db_index': 'True'})
         }
     }
 
-    complete_apps = ['reversion', 'main']
-    symmetrical = True
+    complete_apps = ['main']

@@ -127,6 +127,12 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         activity_data.pop('time')
         self.assertDictContainsSubset(activity_data, expected)
 
+        # Make sure the activity entry corresponds to a reversion Version
+        activity_model = main_models.auth.LogActivity.objects.get()
+        version = activity_model.get_version()
+        self.assertEqual((activity_model.content_type_id, activity_model.object_id),
+                         (version.content_type_id, version.object_id_int))
+
 
     def test_topic_api_create_bad_permissions(self):
         "Creating a topic in an outside project is NOT OK"

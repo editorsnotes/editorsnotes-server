@@ -164,7 +164,8 @@ class Migration(SchemaMigration):
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'project': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.Project']"}),
             'time': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']"})
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']"}),
+            'version': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['reversion.Version']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
         },
         'main.note': {
             'Meta': {'ordering': "['-last_updated']", 'object_name': 'Note'},
@@ -325,6 +326,18 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'manager_slug': ('django.db.models.fields.CharField', [], {'default': "u'default'", 'max_length': '200', 'db_index': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['main.User']", 'null': 'True', 'blank': 'True'})
+        },
+        u'reversion.version': {
+            'Meta': {'object_name': 'Version'},
+            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
+            'format': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'object_id': ('django.db.models.fields.TextField', [], {}),
+            'object_id_int': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
+            'object_repr': ('django.db.models.fields.TextField', [], {}),
+            'revision': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['reversion.Revision']"}),
+            'serialized_data': ('django.db.models.fields.TextField', [], {}),
+            'type': ('django.db.models.fields.PositiveSmallIntegerField', [], {'db_index': 'True'})
         }
     }
 

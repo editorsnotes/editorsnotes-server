@@ -16,6 +16,7 @@ import reversion
 
 from editorsnotes.main.models import Project
 from editorsnotes.main.models.auth import (RevisionProject, LogActivity,
+                                           RevisionLogActivity,
                                            ADDITION, CHANGE, DELETION)
 from editorsnotes.main.models.base import Administered
 from editorsnotes.search import en_index
@@ -26,12 +27,22 @@ from ..permissions import ProjectSpecificPermissions
 
 
 def create_revision_on_methods(*methods):
+    """
+    Class decorator to specify that revisions should be made on class methods.
+
+    Project metadata will be attached based on the request object, and the
+    reversion model will be attached to a log obj attached to the view if it
+    exists.
+    """
     def make_revision_wrapper(fn):
         def wrapped(self, request, *args, **kwargs):
             with reversion.create_revision():
                 ret = fn(self, request, *args, **kwargs)
                 reversion.set_user(request.user)
                 reversion.add_meta(RevisionProject, project=request.project)
+                if getattr(self, 'log_obj', None):
+                    reversion.add_meta(RevisionLogActivity,
+                                       log_activity=self.log_obj)
             return ret
         return wrapped
     def klass_wrapper(klass):
@@ -43,6 +54,9 @@ def create_revision_on_methods(*methods):
     return klass_wrapper
 
 class ElasticSearchRetrieveMixin(RetrieveModelMixin):
+    """
+    Mixin that replaces the `retrieve` method with a query to Elasticsearch.
+    """
     def retrieve(self, request, *args, **kwargs):
 
         if not settings.ELASTICSEARCH_ENABLED:
@@ -54,6 +68,9 @@ class ElasticSearchRetrieveMixin(RetrieveModelMixin):
         return Response(data['_source']['serialized'])
 
 class ElasticSearchListMixin(ListModelMixin):
+    """
+    Mixin that replaces the `list` method with a query to Elasticsearch.
+    """
     def list(self, request, *args, **kwargs):
 
         if not settings.ELASTICSEARCH_ENABLED:
@@ -89,6 +106,15 @@ class ElasticSearchListMixin(ListModelMixin):
 
 
 class ProjectSpecificMixin(object):
+    """
+    Mixin for API views that populates project information in various places
+
+        1. Request object, based on presence of `project_slug` in request
+        kwargs.
+        2. Serializer context, under the `project` key.
+        3. As a queryset filter, if the model being filtered has a `project`
+        field.
+    """
     def initialize_request(self, request, *args, **kwargs):
         request = super(ProjectSpecificMixin, self)\
                 .initialize_request(request, *args, **kwargs)
@@ -162,6 +188,7 @@ class LogActivityMixin(object):
             action=action)
         if commit:
             log_obj.save()
+        self.log_obj = log_obj
         return log_obj
 
 
