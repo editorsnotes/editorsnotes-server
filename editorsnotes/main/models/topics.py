@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -137,9 +137,9 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
     project = models.ForeignKey('Project', related_name='topics')
     topic_node = models.ForeignKey(TopicNode, related_name='project_topics')
     preferred_name = models.CharField(max_length=200)
-    related_topics = generic.GenericRelation('TopicAssignment', related_name='assigned_to')
+    related_topics = GenericRelation('TopicAssignment', related_query_name='assigned_to')
     summary = fields.XHTMLField(blank=True, null=True)
-    summary_cites = generic.GenericRelation('Citation')
+    summary_cites = GenericRelation('Citation')
     deleted = models.BooleanField(default=False, editable=False)
     merged_into = models.ForeignKey('self', blank=True, null=True, editable=False)
     objects = TopicManager()
@@ -263,7 +263,7 @@ class TopicAssignment(CreationMetadata, ProjectPermissionsMixin):
                               related_name='assignments')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
     class Meta:
         app_label = 'main'
         unique_together = ('content_type', 'object_id', 'topic')

@@ -1,6 +1,5 @@
 from django.conf import settings
-from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models, transaction
 
 from licensing.models import License
@@ -35,7 +34,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1, default='1')
     is_private = models.BooleanField(default=False)
     license = models.ForeignKey(License, blank=True, null=True)
-    related_topics = generic.GenericRelation('TopicAssignment')
+    related_topics = GenericRelation('TopicAssignment')
     sections_counter = models.PositiveIntegerField(default=0)
     class Meta:
         app_label = 'main'
@@ -65,7 +64,7 @@ class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
     note = models.ForeignKey(Note, related_name='sections')
     note_section_id = models.PositiveIntegerField(blank=True, null=True)
     ordering = models.PositiveIntegerField(blank=True, null=True)
-    related_topics = generic.GenericRelation('TopicAssignment')
+    related_topics = GenericRelation('TopicAssignment')
     objects = NoteSectionManager()
     class Meta:
         app_label = 'main'
