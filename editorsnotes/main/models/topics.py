@@ -276,7 +276,7 @@ class TopicAssignment(CreationMetadata, ProjectPermissionsMixin):
     def __unicode__(self):
         return u'{} --> {}: {}'.format(
             self.topic.preferred_name,
-            self.content_object._meta.module_name,
+            self.content_object._meta.model_name,
             self.content_object)
     def get_affiliation(self):
         return self.topic.project

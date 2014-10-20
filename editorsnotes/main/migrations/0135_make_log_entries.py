@@ -14,7 +14,7 @@ class Migration(DataMigration):
         from editorsnotes.main.models.base import Administered
 
         administered_models = list(
-            m._meta.module_name for m in models.get_models()
+            m._meta.model_name for m in models.get_models()
             if issubclass(m, Administered))
 
         version_qs = orm['reversion.Version'].objects\

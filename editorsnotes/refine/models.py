@@ -10,7 +10,7 @@ class BaseCluster(models.Model):
     message = models.TextField(blank=True, null=True)
     @models.permalink
     def get_absolute_url(self):
-        return ('%s_view' % self._meta.module_name, [str(self.id)])
+        return ('%s_view' % self._meta.model_name, [str(self.id)])
     class Meta:
         abstract = True
 

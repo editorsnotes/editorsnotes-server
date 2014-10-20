@@ -12,7 +12,7 @@ class DocumentTypeAdapter(object):
     def __init__(self, es, index_name, model=None, highlight_fields=None,
                  display_field=None):
         self.model = model or self.get_model()
-        self.type_label = getattr(self, 'type_label', self.model._meta.module_name)
+        self.type_label = getattr(self, 'type_label', self.model._meta.model_name)
         self.serializer = self.get_serializer()
 
         self.display_field = getattr(self, 'display_field', display_field)
@@ -28,7 +28,7 @@ class DocumentTypeAdapter(object):
         self.dummy_request = self.make_dummy_request()
 
     def __unicode__(self):
-        return self.model._meta.module_name
+        return self.model._meta.model_name
 
     def get_model(self):
         try:

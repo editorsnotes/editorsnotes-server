@@ -26,20 +26,20 @@ class LastUpdateMetadata(CreationMetadata):
 class Administered():
     def get_admin_url(self):
         return urlresolvers.reverse(
-            'admin:main_%s_change' % self._meta.module_name,
+            'admin:main_%s_change' % self._meta.model_name,
             args=(self.get_affiliation().slug, self.id,))
 
 class URLAccessible():
     @models.permalink
     def get_absolute_url(self):
-        return ('%s_view' % self._meta.module_name, [str(self.id)])
+        return ('%s_view' % self._meta.model_name, [str(self.id)])
     def __unicode__(self):
         return utils.truncate(self.as_text())
     def as_text(self):
-        raise Exception('Must implement %s.as_text()' % self._meta.module_name)
+        raise Exception('Must implement %s.as_text()' % self._meta.model_name)
     def as_html(self):
         return '<span class="%s">%s</span>' % (
-            self._meta.module_name, conditional_escape(self.as_text()))
+            self._meta.model_name, conditional_escape(self.as_text()))
 
 class OrderingManager(models.Manager):
     """

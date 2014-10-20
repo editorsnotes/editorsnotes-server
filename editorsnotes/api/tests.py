@@ -118,7 +118,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
             'user': 'barry',
             'project': 'emma',
             #'time': ???,
-            'type': topic_obj._meta.module_name,
+            'type': topic_obj._meta.model_name,
             'url': topic_obj.get_absolute_url(),
             'title': topic_obj.as_text(),
             'action': 'added'
@@ -237,7 +237,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
             'user': 'barry',
             'project': 'emma',
             #'time': ???,
-            'type': updated_topic_obj._meta.module_name,
+            'type': updated_topic_obj._meta.model_name,
             'url': updated_topic_obj.get_absolute_url(),
             'title': updated_topic_obj.as_text(),
             'action': 'changed'
@@ -303,7 +303,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
             'user': 'barry',
             'project': 'emma',
             #'time': ???,
-            'type': topic_obj._meta.module_name,
+            'type': topic_obj._meta.model_name,
             'url': None,
             'title': topic_obj.as_text(),
             'action': 'deleted'

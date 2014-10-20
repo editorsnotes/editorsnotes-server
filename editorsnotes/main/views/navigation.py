@@ -26,7 +26,7 @@ def browse(request):
     max_count = 6
     o = {}
     for model in [TopicNode, Note, Document]:
-        model_name = model._meta.module_name
+        model_name = model._meta.model_name
         listname = '%s_list' % model_name
         query_set = model.objects.order_by('-last_updated')
 
