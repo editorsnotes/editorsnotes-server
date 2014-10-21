@@ -1,3 +1,13 @@
+v0.9.0
+=======
+  * Upgrade to Django 1.7
+  * Refactor application loading based on changes in 1.7
+
+***NOTE: Because of the upgrade to Django 1.7, this version of Editors' Notes
+uses Django's internal migrations framework instead of that provided by the
+South module. To upgrade to v0.9.0 from an older version of Editors' Notes, you
+must first deploy v0.8.6 and apply all of the old South migrations.***
+
 v0.8.6
 =======
   * Add LogActivity model to keep track of users' actions outside of reversion
