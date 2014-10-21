@@ -41,6 +41,3 @@ class ZoteroField(models.TextField):
                 cleaned_data[key] = data.get(key, default_val) or default_val
             cleaned_value = json.dumps(cleaned_data)
         return cleaned_value
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ['^editorsnotes\.djotero\.fields\.ZoteroField'])

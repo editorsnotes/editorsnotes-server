@@ -20,9 +20,6 @@ DATABASES = {
         # The rest of the DB configuration is done in settings_local.py
     }
 }
-SOUTH_DATABASE_ADAPTERS = {
-    'default': 'south.db.postgresql_psycopg2'
-}
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
