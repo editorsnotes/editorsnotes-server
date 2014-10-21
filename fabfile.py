@@ -50,9 +50,7 @@ def sync_database():
     new_installation = len(get_db_tables()) == 0
 
     with lcd(PROJ_ROOT):
-        local('{python} manage.py syncdb --noinput'.format(**env))
         create_cache_tables()
-        local('{python} manage.py migrate reversion --noinput'.format(**env))
         local('{python} manage.py migrate --noinput'.format(**env))
 
     if new_installation:
