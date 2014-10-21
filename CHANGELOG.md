@@ -1,3 +1,9 @@
+v0.8.5
+=======
+  * Add transcript link to Document API serializer
+  * Add 'Add/Edit Transcript' button to Document editing view
+  * Hide Note and Attachment fields from Zotero editing form
+
 v0.8.4
 =======
   * Allow draggable widgets to work on tablets

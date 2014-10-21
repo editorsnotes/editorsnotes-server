@@ -126,19 +126,19 @@ class BootstrappedBackboneView(ProjectSpecificMixin, BreadcrumbMixin, TemplateVi
             context['bootstrap'] = 'null';
         return context
 
-class BaseAdminView(ProcessInlineFormsetsView, ProjectSpecificMixin,
-                    ModelFormMixin, BreadcrumbMixin, TemplateResponseMixin):
+class BaseAdminView(ProjectSpecificMixin, BreadcrumbMixin, ModelFormMixin,
+                    TemplateResponseMixin, ProcessInlineFormsetsView):
     def get_form_kwargs(self):
         kwargs = super(ModelFormMixin, self).get_form_kwargs()
         if hasattr(self, 'object') and self.object:
             kwargs.update({'instance': self.object})
         else:
-            has_project_field = all([
-                hasattr(self.model, 'project'),
-                hasattr(self.model.project, 'field'),
-                hasattr(self.model.project.field, 'related'),
-                self.model.project.field.related.parent_model == Project
-            ])
+            has_project_field = (
+                hasattr(self.model, 'project')
+                and hasattr(self.model.project, 'field')
+                and hasattr(self.model.project.field, 'related')
+                and self.model.project.field.related.parent_model == Project
+            )
             if has_project_field:
                 # Then create an instance with the project already set
                 instance = self.model(project=self.project)

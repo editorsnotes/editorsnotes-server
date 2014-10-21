@@ -85,3 +85,12 @@ class TranscriptAdminView(BaseAdminView):
             a = transcript.content.cssselect('a.footnote[href$="%s"]' % stamp)[0]
             a.attrib['href'] = footnote.get_absolute_url()
             transcript.save()
+    def get_breadcrumb(self):
+        breadcrumbs = (
+            (self.document.project.name, self.document.project.get_absolute_url()),
+            ('Documents', reverse('all_documents_view',
+                               kwargs={'project_slug': self.project.slug})),
+            (self.document.as_text(), self.document.get_absolute_url()),
+            ('Edit transcript', None)
+        )
+        return breadcrumbs

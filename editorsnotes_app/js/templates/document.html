@@ -27,3 +27,12 @@
 </div>
 
 <div class="edit-section" id="document-scans"></div>
+
+<% if (!doc.isNew()) { %>
+<div class="edit-section">
+  <h3>Transcript</h3>
+  <% var transcript_url = doc.get('url').replace('/api/', '/') + 'transcript/edit/'; %>
+  <% var transcript_action = doc.get('transcript') ? 'Edit' : 'Add'; %>
+  <a target="_blank" class="btn" href="<%= transcript_url %>"><%= transcript_action %> transcript</a>
+</div>
+<% } %>

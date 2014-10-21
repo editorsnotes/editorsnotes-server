@@ -8,7 +8,7 @@
       <h5><%= i18n.translate(val).fetch() %></h5>
       <input type="hidden" value="<%= val %>" />
     </div>
-    <% } else if (key === 'tags') { %>
+    <% } else if (key === 'tags' || key === 'attachments' || key === 'notes') { %>
       <% _(val).forEach(function (tag) { %>
     <div class="zotero-entry" data-zotero-key="<%= key %>[]">
       <input type="hidden" value="<%= tag.value %>" />
