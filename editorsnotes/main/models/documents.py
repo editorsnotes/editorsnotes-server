@@ -33,8 +33,8 @@ __all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink',
 class DocumentManager(models.Manager):
     use_for_related_fields = True
     # Include whether or not documents have scans/transcripts in default query.
-    def get_query_set(self):
-        return super(DocumentManager, self).get_query_set()\
+    def get_queryset(self):
+        return super(DocumentManager, self).get_queryset()\
             .select_related('_transcript', 'zotero_link', 'project')\
             .extra(select = { 'link_count': '''SELECT COUNT(*) 
 FROM main_documentlink WHERE main_documentlink.document_id = main_document.id''',
@@ -217,8 +217,8 @@ reversion.register(Document)
 
 class TranscriptManager(models.Manager):
     # Include related document in default query.
-    def get_query_set(self):
-        return super(TranscriptManager, self).get_query_set()\
+    def get_queryset(self):
+        return super(TranscriptManager, self).get_queryset()\
             .select_related('document')
 
 class Transcript(LastUpdateMetadata, Administered, URLAccessible, ProjectPermissionsMixin):
