@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django_browserid.views import Verify
 import reversion
 
-from editorsnotes.search import activity_index
+from editorsnotes.search import get_index
 from ..forms import UserFeedbackForm
 from ..models import User, Project, ProjectInvitation, UserFeedback
 
@@ -65,6 +65,7 @@ def user(request, username=None):
     o['user'] = user
 
 
+    activity_index = get_index('activity')
     o['activities'] = activity_index.get_activity_for(user)
 
     # FIX
@@ -109,6 +110,7 @@ def all_feedback(request):
 def project(request, project_slug):
     o = {}
     o['project'] = get_object_or_404(Project, slug=project_slug)
+    activity_index = get_index('activity')
     o['activities'] = activity_index.get_activity_for(o['project'])
 
     if request.user.is_authenticated():

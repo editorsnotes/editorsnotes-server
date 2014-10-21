@@ -14,7 +14,7 @@ class Command(BaseCommand):
         activity_index.create()
 
         administered_models = list(
-            m._meta.module_name for m in models.get_models()
+            m._meta.model_name for m in models.get_models()
             if issubclass(m, Administered))
 
         qs = Version.objects\

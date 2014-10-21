@@ -12,7 +12,7 @@ from django.template import RequestContext
 
 from PIL import Image, ImageDraw, ImageFont
 
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 
 from ..forms import FeedbackForm
 from ..models import Document, Note, Project, TopicNode
@@ -26,7 +26,7 @@ def browse(request):
     max_count = 6
     o = {}
     for model in [TopicNode, Note, Document]:
-        model_name = model._meta.module_name
+        model_name = model._meta.model_name
         listname = '%s_list' % model_name
         query_set = model.objects.order_by('-last_updated')
 
@@ -42,6 +42,7 @@ ignored_punctuation = '!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 def search(request):
 
     q = request.GET.get('q', {'query': {'match_all': {}}})
+    en_index = get_index('main')
     results = en_index.search(q, highlight=True, size=50)
     
     o = {
@@ -71,7 +72,7 @@ def about_test(request):
 
     request.session['test_answer'] = result
 
-    response = HttpResponse(mimetype="image/png")
+    response = HttpResponse(content_type="image/png")
     img.save(response, 'PNG')
 
     return response

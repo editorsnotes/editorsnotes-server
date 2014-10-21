@@ -4,7 +4,7 @@ from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from editorsnotes.main.models import Project, User
-from editorsnotes.search import activity_index
+from editorsnotes.search import get_index
 
 from ..serializers.projects import ProjectSerializer
 
@@ -44,7 +44,7 @@ class ActivityView(GenericAPIView):
         return obj
     def get(self, request, format=None, **kwargs):
         obj = self.get_object(**kwargs)
-        data = activity_index.get_activity_for(obj)
+        data = get_index('activity').get_activity_for(obj)
         return Response({ 'activity': data })
 
 

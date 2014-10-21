@@ -11,9 +11,12 @@ from django.test import TransactionTestCase
 from reversion.models import Revision
 
 from editorsnotes.main import models as main_models
-from editorsnotes.search import en_index, activity_index
+from editorsnotes.search import get_index
 
 def flush_es_indexes():
+    en_index = get_index('main')
+    activity_index = get_index('activity')
+
     if en_index.exists():
         en_index.delete()
     en_index.create()
@@ -23,6 +26,8 @@ def flush_es_indexes():
     activity_index.create()
 
 def delete_es_indexes():
+    en_index = get_index('main')
+    activity_index = get_index('activity')
     if en_index.exists():
         en_index.delete()
     if activity_index.exists():
@@ -86,6 +91,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_topic_api_create(self):
         "Creating a topic within your own project is ok"
+
+        flush_es_indexes()
+
         response = self.client.post(
             reverse('api:api-topics-list', args=[self.project.slug]),
             json.dumps(TEST_TOPIC),
@@ -102,6 +110,33 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # Make sure a revision was created
         self.assertEqual(Revision.objects.count(), 1)
+
+        # Make sure an entry was added to the activity index
+        activity_response = self.client.get(reverse('api:api-project-activity',
+                                                         args=[self.project.slug]))
+        self.assertEqual(activity_response.status_code, 200)
+        self.assertEqual(len(activity_response.data['activity']), 1)
+
+        activity_data = activity_response.data['activity'][0]
+
+        expected = {
+            'user': 'barry',
+            'project': 'emma',
+            #'time': ???,
+            'type': topic_obj._meta.model_name,
+            'url': topic_obj.get_absolute_url(),
+            'title': topic_obj.as_text(),
+            'action': 'added'
+        }
+
+        activity_data.pop('time')
+        self.assertDictContainsSubset(activity_data, expected)
+
+        # Make sure the activity entry corresponds to a reversion Version
+        activity_model = main_models.auth.LogActivity.objects.get()
+        version = activity_model.get_version()
+        self.assertEqual((activity_model.content_type_id, activity_model.object_id),
+                         (version.content_type_id, version.object_id_int))
 
 
     def test_topic_api_create_bad_permissions(self):
@@ -148,6 +183,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         then be retrievable with the API list view.
         """
         flush_es_indexes()
+
         topic_obj = self.create_test_topic()
 
         response = self.client.get(reverse('api:api-topics-list', args=[self.project.slug]))
@@ -196,6 +232,25 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         # Make sure a revision was created upon update
         self.assertEqual(Revision.objects.count(), 1)
 
+        # Make sure an entry was added to the activity index
+        activity_response = self.client.get(reverse('api:api-project-activity',
+                                                         args=[self.project.slug]))
+        self.assertEqual(activity_response.status_code, 200)
+        activity_data = activity_response.data['activity'][0]
+
+        expected = {
+            'user': 'barry',
+            'project': 'emma',
+            #'time': ???,
+            'type': updated_topic_obj._meta.model_name,
+            'url': updated_topic_obj.get_absolute_url(),
+            'title': updated_topic_obj.as_text(),
+            'action': 'changed'
+        }
+
+        activity_data.pop('time')
+        self.assertDictContainsSubset(activity_data, expected)
+
     def test_topic_api_update_bad_permissions(self):
         "Updating a topic in an outside project is NOT OK"
         data = TEST_TOPIC.copy()
@@ -243,8 +298,24 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(main_models.Topic.objects.count(), 0)
         self.assertEqual(main_models.TopicNode.objects.count(), 1)
 
-        # Make sure a revision was created before delete
-        self.assertEqual(Revision.objects.count(), 1)
+        # Make sure an entry was added to the activity index
+        activity_response = self.client.get(reverse('api:api-project-activity',
+                                                         args=[self.project.slug]))
+        self.assertEqual(activity_response.status_code, 200)
+        activity_data = activity_response.data['activity'][0]
+
+        expected = {
+            'user': 'barry',
+            'project': 'emma',
+            #'time': ???,
+            'type': topic_obj._meta.model_name,
+            'url': None,
+            'title': topic_obj.as_text(),
+            'action': 'deleted'
+        }
+
+        activity_data.pop('time')
+        self.assertDictContainsSubset(activity_data, expected)
 
     def test_topic_api_delete_bad_permissions(self):
         "Deleting a topic in an outside project is NOT OK"
@@ -429,9 +500,6 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(main_models.Document.objects.filter(id=document_obj.id).count(), 0)
-
-        # Make sure a revision was created before delete
-        self.assertEqual(Revision.objects.count(), 1)
 
     def test_document_api_delete_bad_permissions(self):
         "Deleting a document in an outside project is NOT OK"
@@ -638,9 +706,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(main_models.Note.objects.filter(id=note_obj.id).count(), 0)
 
-        # Make sure a revision was created upon delete
-        self.assertEqual(Revision.objects.count(), 1)
-
     def test_note_api_delete_bad_permissions(self):
         "Deleting a note in an outside project is NOT OK"
         note_obj = self.create_test_note()
@@ -820,7 +885,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(note_obj.sections.count(), 0)
-        self.assertEqual(Revision.objects.count(), 1)
 
     def test_note_api_delete_note_section_bad_permissions(self):
         "Deleting a note section in an outside project is NOT OK"

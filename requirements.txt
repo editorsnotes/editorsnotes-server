@@ -1,12 +1,15 @@
 # Django-specific packages
-Django==1.5.1
-South==0.7.6
-django-browserid==0.7.1
+Django==1.7
+
+# Django 6 ok
 django_compressor==1.4
-django-model-utils==2.0.3
-django-reversion==1.7
 django-licensing==0.2.4
 djangorestframework==2.3.13
+django-model-utils==2.0.3
+django-reversion==1.8.4
+
+# ???
+django-browserid==0.7.1
 
 pyelasticsearch==0.6
 BeautifulSoup<4.0
@@ -20,7 +23,7 @@ pytz==2012h
 refine-client==0.2.1
 smartypants==1.6.0.3
 
-ipython==0.13.1
+ipython==2.3.0
 
 webtest==2.0.14
 django-webtest==1.7.6

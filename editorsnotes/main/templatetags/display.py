@@ -23,7 +23,7 @@ def as_html(tree):
 def as_link(obj, fragment=''):
     return mark_safe(
         '<a class="model-link %s-link" href="%s%s">%s</a>' % (
-            obj._meta.module_name, 
+            obj._meta.model_name,
             obj.get_absolute_url(), fragment, 
             obj.as_html()))
 

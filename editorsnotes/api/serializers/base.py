@@ -104,24 +104,6 @@ class TopicAssignmentField(RelatedField):
         into[field_name] = data.get(field_name, [])
 
 class RelatedTopicSerializerMixin(object):
-    def get_default_fields(self):
-        self.field_mapping
-        ret = super(RelatedTopicSerializerMixin, self).get_default_fields()
-        opts = self.opts.model._meta
-        topic_fields = [ f for f in opts.many_to_many
-                         if f.related.parent_model == TopicAssignment ]
-
-        # There should only be one, probably, but iterate just in case?
-        if len(topic_fields):
-            for model_field in topic_fields:
-                self.field_mapping[model_field.__class__] = TopicAssignmentField
-                ret[model_field.name] = self.get_field(model_field)
-                if model_field.name in self.opts.read_only_fields:
-                    ret[model_field.name].read_only = True
-                else:
-                    ret[model_field.name].read_only = False
-        return ret
-
     def save_related_topics(self, obj, topics):
         """
         Given an array of names, make sure obj is related to those topics.

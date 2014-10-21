@@ -90,6 +90,3 @@ class XHTMLField(models.Field):
         defaults = {'widget': XHTMLWidget}
         defaults.update(kwargs)
         return super(XHTMLField, self).formfield(**defaults)
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ['^editorsnotes\.main\.fields\.XHTMLField'])

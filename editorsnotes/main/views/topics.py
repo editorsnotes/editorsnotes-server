@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.views.generic.base import RedirectView
 
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 
 from .. import utils
 from ..models import (
@@ -52,6 +52,7 @@ def topic(request, project_slug, topic_node_id):
     topic_query = {'query': {'term': {'serialized.related_topics.id': topic.id }}}
     topic_query['size'] = 1000
 
+    en_index = get_index('main')
     model_searches = ( en_index.search_model(model, topic_query) for model in
                        (Document, Note, Topic) )
     documents, notes, topics = (

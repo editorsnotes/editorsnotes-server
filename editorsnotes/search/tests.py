@@ -3,10 +3,11 @@
 from pyelasticsearch import ElasticHttpError
 
 from ..api.tests import ClearContentTypesTransactionTestCase
-from . import en_index
+from . import get_index
 
 class SearchTestCase(ClearContentTypesTransactionTestCase):
     def setUp(self):
+        en_index = get_index('main')
         if en_index.exists():
             en_index.delete()
         en_index.create()
@@ -15,6 +16,7 @@ class SearchTestCase(ClearContentTypesTransactionTestCase):
         es_special_chars = list('+\-&|!(){}[]^~*?:/\\"')
         es_special_chars += ['""', '{}', '"phrase""']
 
+        en_index = get_index('main')
         for query in es_special_chars:
             try:
                 en_index.search(query)

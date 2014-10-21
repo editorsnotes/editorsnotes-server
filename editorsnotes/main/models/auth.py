@@ -325,6 +325,56 @@ class RevisionProject(models.Model):
     class Meta:
         app_label = 'main'
 
+ADDITION = 0
+CHANGE = 1
+DELETION = 2
+
+class LogActivity(models.Model):
+    """
+    Like django.contrib.admin.models.LogEntry, but with URL and project
+    """
+    time = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    project = models.ForeignKey(Project)
+
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey()
+
+    display_title = models.CharField(max_length=300)
+
+    action = models.IntegerField()
+    message = models.TextField(blank=True, null=True)
+
+    class Meta:
+        app_label = 'main'
+        ordering = ('-time',)
+
+    def is_addition(self):
+        return self.action == ADDITION
+
+    def is_change(self):
+        return self.action == CHANGE
+
+    def is_deletion(self):
+        return self.action == DELETION
+
+    def get_version(self):
+        if self.revision_metadata is None:
+            return None
+        return self.revision_metadata.revision.version_set\
+                .get(content_type_id=self.content_type_id,
+                     object_id=self.object_id)
+
+class RevisionLogActivity(models.Model):
+    revision = models.ForeignKey(reversion.models.Revision,
+                                 related_name='logactivity_metadata')
+    log_activity = models.OneToOneField(LogActivity, related_name='revision_metadata')
+    class Meta:
+        app_label = 'main'
+
+
+
 def activity_for(model, max_count=50):
     u'''
     Return recent activity for a user or project.

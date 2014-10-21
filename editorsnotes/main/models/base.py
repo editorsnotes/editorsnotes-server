@@ -23,23 +23,23 @@ class LastUpdateMetadata(CreationMetadata):
     class Meta:
         abstract = True
 
-class Administered():
+class Administered(object):
     def get_admin_url(self):
         return urlresolvers.reverse(
-            'admin:main_%s_change' % self._meta.module_name,
+            'admin:main_%s_change' % self._meta.model_name,
             args=(self.get_affiliation().slug, self.id,))
 
-class URLAccessible():
+class URLAccessible(object):
     @models.permalink
     def get_absolute_url(self):
-        return ('%s_view' % self._meta.module_name, [str(self.id)])
+        return ('%s_view' % self._meta.model_name, [str(self.id)])
     def __unicode__(self):
         return utils.truncate(self.as_text())
     def as_text(self):
-        raise Exception('Must implement %s.as_text()' % self._meta.module_name)
+        raise Exception('Must implement %s.as_text()' % self._meta.model_name)
     def as_html(self):
         return '<span class="%s">%s</span>' % (
-            self._meta.module_name, conditional_escape(self.as_text()))
+            self._meta.model_name, conditional_escape(self.as_text()))
 
 class OrderingManager(models.Manager):
     """
@@ -105,7 +105,7 @@ class OrderingManager(models.Manager):
         if not all((isinstance(p, numbers.Number) for p in positions.values())):
             raise ValueError('All position values must be numbers.')
         positions_dict = OrderingManager.normalize_position_dict(positions_dict, step)
-        collection_ids = self.get_query_set().values_list('id', flat=True)
+        collection_ids = self.get_queryset().values_list('id', flat=True)
         missing_ids = set(collection_ids) - set(positions_dict.keys()) 
         if len(missing_ids):
             if not fill_in_empty:
@@ -121,7 +121,7 @@ class OrderingManager(models.Manager):
     def normalize_ordering_values(self, ordering_field, fill_in_empty=False,
                                 step=1):
         self._ensure_integer_field(ordering_field)
-        positions_by_id = self.get_query_set()\
+        positions_by_id = self.get_queryset()\
                 .filter(**{ ordering_field + '__isnull': False })\
                 .values_list('id', ordering_field)
         self.bulk_update_order(ordering_field, dict(positions_by_id), fill_in_empty, step)

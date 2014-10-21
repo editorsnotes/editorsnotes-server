@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.test.simple import DjangoTestSuiteRunner
+from editorsnotes.search import get_index
 
 from pyelasticsearch.exceptions import IndexAlreadyExistsError
 
@@ -11,7 +12,8 @@ class CustomTestSuiteRunner(DjangoTestSuiteRunner):
         test_index_prefix = settings.ELASTICSEARCH_PREFIX + '-test'
         settings.ELASTICSEARCH_PREFIX = test_index_prefix
 
-        from editorsnotes.search import en_index, activity_index
+        en_index = get_index('main')
+        activity_index = get_index('activity')
 
         en_index.name = en_index.get_name()
         activity_index.name = activity_index.get_name()
@@ -31,7 +33,6 @@ class CustomTestSuiteRunner(DjangoTestSuiteRunner):
     def teardown_test_environment(self, **kwargs):
         super(CustomTestSuiteRunner, self).teardown_test_environment(**kwargs)
 
-        from editorsnotes.search import en_index, activity_index
-        en_index.delete()
-        activity_index.delete()
+        get_index('main').delete()
+        get_index('activity').delete()
 

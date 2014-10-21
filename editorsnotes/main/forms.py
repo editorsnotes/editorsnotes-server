@@ -19,3 +19,4 @@ class FeedbackForm(forms.Form):
 class UserFeedbackForm(forms.models.ModelForm):
     class Meta:
         model = UserFeedback
+        fields = '__all__'

@@ -51,7 +51,7 @@ def get_combined_article(topics):
 
     return etree.fromstring(article) if article else None
 
-@transaction.commit_on_success
+@transaction.atomic
 def merge_topics(topics, user):
     """
     Combine multiple topics into one. First argument is either a list or a

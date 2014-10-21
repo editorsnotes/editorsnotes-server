@@ -8,7 +8,7 @@ from hashlib import md5
 from itertools import chain
 import unicodedata
 
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
@@ -33,8 +33,8 @@ __all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink',
 class DocumentManager(models.Manager):
     use_for_related_fields = True
     # Include whether or not documents have scans/transcripts in default query.
-    def get_query_set(self):
-        return super(DocumentManager, self).get_query_set()\
+    def get_queryset(self):
+        return super(DocumentManager, self).get_queryset()\
             .select_related('_transcript', 'zotero_link', 'project')\
             .extra(select = { 'link_count': '''SELECT COUNT(*) 
 FROM main_documentlink WHERE main_documentlink.document_id = main_document.id''',
@@ -64,7 +64,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
     collection = models.ForeignKey('self', related_name='parts', blank=True, null=True)
     ordering = models.CharField(max_length=32, editable=False)
     language = models.CharField(max_length=32, default='English')
-    related_topics = generic.GenericRelation('TopicAssignment')
+    related_topics = GenericRelation('TopicAssignment')
     objects = DocumentManager()
     edtf_date = models.TextField(blank=True, null=True)
     class Meta:
@@ -217,8 +217,8 @@ reversion.register(Document)
 
 class TranscriptManager(models.Manager):
     # Include related document in default query.
-    def get_query_set(self):
-        return super(TranscriptManager, self).get_query_set()\
+    def get_queryset(self):
+        return super(TranscriptManager, self).get_queryset()\
             .select_related('document')
 
 class Transcript(LastUpdateMetadata, Administered, URLAccessible, ProjectPermissionsMixin):
@@ -372,7 +372,7 @@ class Citation(LastUpdateMetadata, ProjectPermissionsMixin):
     notes = fields.XHTMLField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
 
     objects = CitationManager()
 

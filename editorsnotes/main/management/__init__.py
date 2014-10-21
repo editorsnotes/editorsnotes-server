@@ -20,10 +20,10 @@ def _get_project_specific_permissions(model, is_concretely_inherited=False):
     auto_model_perms = _get_all_permissions(model._meta, ct)
 
     ignored_model_perms = IGNORED_PERMISSIONS.get(
-        '{}.{}'.format(model._meta.app_label, model._meta.module_name), ())
+        '{}.{}'.format(model._meta.app_label, model._meta.model_name), ())
     if is_concretely_inherited:
         ignored_model_perms += tuple(
-            '{}_{}'.format(action, model._meta.module_name)
+            '{}_{}'.format(action, model._meta.model_name)
             for action in ('add', 'change', 'delete'))
 
     return [perm for perm in Permission.objects.filter(content_type=ct)

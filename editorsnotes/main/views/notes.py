@@ -5,7 +5,7 @@ from django.template import RequestContext
 
 import reversion
 
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 
 from ..models import Note, Project
 
@@ -110,6 +110,7 @@ def all_notes(request, project_slug=None):
         query['query']['filtered']['filter'] = { 'and': filters }
 
     # Execute built query
+    en_index = get_index('main')
     executed_query = en_index.search_model(Note, query)
 
     # This is gibberish that can be improved, but it lets us use the old xapian

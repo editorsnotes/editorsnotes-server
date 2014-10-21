@@ -39,7 +39,7 @@ class ProcessInlineFormsetsView(View):
         fs = {}
         if hasattr(self, 'formset_classes'):
             for formset in self.formset_classes:
-                prefix = formset.model._meta.module_name
+                prefix = formset.model._meta.model_name
 
                 fs_kwargs = self.get_form_kwargs()
                 fs_kwargs.pop('initial', 0)
@@ -171,7 +171,7 @@ class BaseAdminView(ProjectSpecificMixin, BreadcrumbMixin, ModelFormMixin,
 
             # Set reversion metadata
             reversion.set_user(self.request.user)
-            reversion.set_comment('%sed %s.' % (action, self.object._meta.module_name))
+            reversion.set_comment('%sed %s.' % (action, self.object._meta.model_name))
             reversion.add_meta(RevisionProject, project=self.project)
 
             self.save_formsets(formsets)

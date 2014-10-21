@@ -8,7 +8,8 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Document, Citation, Scan, Transcript
 
 from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
-                   URLField, ProjectSlugField, HyperlinkedProjectItemField)
+                   URLField, ProjectSlugField, HyperlinkedProjectItemField,
+                   TopicAssignmentField)
 
 class ZoteroField(serializers.WritableField):
     def to_native(self, zotero_data):
@@ -42,6 +43,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
     project = ProjectSlugField()
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
+    related_topics = TopicAssignmentField()
     scans = ScanSerializer(many=True, required=False, read_only=True)
     def get_validation_exclusions(self):
         # TODO: This can be removed in future versions of django rest framework.
