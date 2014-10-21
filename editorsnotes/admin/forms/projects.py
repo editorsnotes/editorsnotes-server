@@ -194,7 +194,7 @@ class ProjectCreationForm(ModelForm):
                                       help_text='Join project after creation?')
     class Meta:
         model = Project
-        fields = ('join_project',)
+        fields = ('name', 'slug', 'image', 'description', 'default_license', 'join_project',)
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
         super(ProjectCreationForm, self).__init__(*args, **kwargs)
