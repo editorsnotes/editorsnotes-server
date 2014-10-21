@@ -19,7 +19,7 @@ from editorsnotes.main.models.auth import (RevisionProject, LogActivity,
                                            RevisionLogActivity,
                                            ADDITION, CHANGE, DELETION)
 from editorsnotes.main.models.base import Administered
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 
 from ..filters import (ElasticSearchFilterBackend,
                        ElasticSearchAutocompleteFilterBackend)
@@ -64,6 +64,7 @@ class ElasticSearchRetrieveMixin(RetrieveModelMixin):
 
         # Still need to get the object to check for perms
         self.object = self.get_object()
+        en_index = get_index('main')
         data = en_index.data_for_object(self.object)
         return Response(data['_source']['serialized'])
 

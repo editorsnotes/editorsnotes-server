@@ -11,9 +11,12 @@ from django.test import TransactionTestCase
 from reversion.models import Revision
 
 from editorsnotes.main import models as main_models
-from editorsnotes.search import en_index, activity_index
+from editorsnotes.search import get_index
 
 def flush_es_indexes():
+    en_index = get_index('main')
+    activity_index = get_index('activity')
+
     if en_index.exists():
         en_index.delete()
     en_index.create()
@@ -23,6 +26,8 @@ def flush_es_indexes():
     activity_index.create()
 
 def delete_es_indexes():
+    en_index = get_index('main')
+    activity_index = get_index('activity')
     if en_index.exists():
         en_index.delete()
     if activity_index.exists():

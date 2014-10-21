@@ -1,6 +1,6 @@
 from rest_framework.filters import BaseFilterBackend
 
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 from editorsnotes.search.utils import clean_query_string
 
 BASE_QUERY = {'query': {'filtered': {'query': {'match_all': {}}}}}
@@ -40,6 +40,7 @@ class ElasticSearchFilterBackend(BaseFilterBackend):
         if filters:
             query['query']['filtered']['filter'] = { 'and': filters }
 
+        en_index = get_index('main')
         return en_index.search_model(view.model, query)
 
 class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):

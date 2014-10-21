@@ -12,7 +12,7 @@ from django.template import RequestContext
 
 from PIL import Image, ImageDraw, ImageFont
 
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 
 from ..forms import FeedbackForm
 from ..models import Document, Note, Project, TopicNode
@@ -42,6 +42,7 @@ ignored_punctuation = '!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 def search(request):
 
     q = request.GET.get('q', {'query': {'match_all': {}}})
+    en_index = get_index('main')
     results = en_index.search(q, highlight=True, size=50)
     
     o = {

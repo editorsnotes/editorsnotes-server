@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from editorsnotes.djotero.utils import as_readable
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 
 from ..models import Document, Footnote, Transcript, Topic, CitationNS, Project
 
@@ -118,6 +118,7 @@ def all_documents(request, project_slug=None):
     if filters:
         query['query']['filtered']['filter'] = { 'and': filters }
 
+    en_index = get_index('main')
     executed_query = en_index.search_model(Document, query)
 
     o['facets'] = {}

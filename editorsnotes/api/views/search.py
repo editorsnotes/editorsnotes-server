@@ -4,7 +4,7 @@ from collections import OrderedDict
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from editorsnotes.search import en_index
+from editorsnotes.search import get_index
 
 from ..filters import ElasticSearchAutocompleteFilterBackend
 
@@ -48,6 +48,7 @@ class SearchView(GenericAPIView):
         if not query['query']:
             query = {'query': {'match_all': {}}}
 
+        en_index = get_index('main')
         es_query = en_index.es.search(query, index=en_index.name)
 
         hits = []

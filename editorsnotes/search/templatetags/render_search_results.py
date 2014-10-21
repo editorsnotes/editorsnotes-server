@@ -1,6 +1,6 @@
 from django import template
 
-from .. import en_index
+from .. import get_index
 
 register = template.Library()
 
@@ -13,6 +13,7 @@ TEMPLATE = u"""
 """
 
 def get_doc_type(label):
+    en_index = get_index('main')
     dt, = [dt for _, dt in en_index.document_types.items()
            if dt.type_label == label]
     return dt
