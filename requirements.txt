@@ -23,7 +23,7 @@ pytz==2012h
 refine-client==0.2.1
 smartypants==1.6.0.3
 
-ipython==0.13.1
+ipython==2.3.0
 
 webtest==2.0.14
 django-webtest==1.7.6
