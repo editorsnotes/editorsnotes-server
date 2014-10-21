@@ -72,7 +72,7 @@ def about_test(request):
 
     request.session['test_answer'] = result
 
-    response = HttpResponse(mimetype="image/png")
+    response = HttpResponse(content_type="image/png")
     img.save(response, 'PNG')
 
     return response
