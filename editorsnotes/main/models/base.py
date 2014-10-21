@@ -23,13 +23,13 @@ class LastUpdateMetadata(CreationMetadata):
     class Meta:
         abstract = True
 
-class Administered():
+class Administered(object):
     def get_admin_url(self):
         return urlresolvers.reverse(
             'admin:main_%s_change' % self._meta.model_name,
             args=(self.get_affiliation().slug, self.id,))
 
-class URLAccessible():
+class URLAccessible(object):
     @models.permalink
     def get_absolute_url(self):
         return ('%s_view' % self._meta.model_name, [str(self.id)])

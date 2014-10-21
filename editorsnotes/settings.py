@@ -120,7 +120,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'reversion',
-    'south',
     'compressor',
     'licensing',
     'rest_framework',
