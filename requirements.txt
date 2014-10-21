@@ -4,7 +4,7 @@ Django==1.7
 # Django 6 ok
 django_compressor==1.4
 django-licensing==0.2.4
-djangorestframework==2.4
+djangorestframework==2.3.13
 django-model-utils==2.0.3
 django-reversion==1.8.4
 
