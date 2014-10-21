@@ -1,3 +1,10 @@
+v0.8.6
+=======
+  * Add LogActivity model to keep track of users' actions outside of reversion
+  * Add tests for activity logging
+  * Upgrade to Django 1.6
+  * Upgrade to Reversion 1.8.4
+
 v0.8.5
 =======
   * Add transcript link to Document API serializer
