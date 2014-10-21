@@ -19,3 +19,4 @@ class FeedbackForm(forms.Form):
 class UserFeedbackForm(forms.models.ModelForm):
     class Meta:
         model = UserFeedback
+        fields = ('name', 'email', 'purpose', 'message')
