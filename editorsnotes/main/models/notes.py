@@ -90,7 +90,7 @@ class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
                 return cls.get_accessor_name()
         else:
             raise Exception('Could not find note section subclass')
-    @transaction.commit_on_success
+    @transaction.atomic
     def save(self, *args, **kwargs):
         if not self.id:
             n = self.note

@@ -40,7 +40,7 @@ class Command(LabelCommand):
         else:
             raise CommandError('unknown XML schema: %s' % root)
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def handle_filemaker(self, root, **options):
 
         # Prefix to append to import IDs.

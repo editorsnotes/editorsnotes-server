@@ -90,7 +90,7 @@ class Command(LabelCommand):
         self.stderr.write(
             '\nRefine process successful. %s total clusters created\n\n' % str(cluster_count))
         
-    @transaction.commit_on_success
+    @transaction.atomic
     def write_clusters(self, model_name, cluster_list):
         new_cluster_count = 0
         skipped_count = 0

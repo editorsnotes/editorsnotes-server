@@ -36,7 +36,7 @@ class Command(BaseCommand):
 
         self.create_project(project_name, project_slug, users)
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def create_project(self, name, slug, users):
         with reversion.create_revision():
             project = Project.objects.create(name=name, slug=slug)

@@ -190,7 +190,7 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
                             'node {}.'.format(self.topic_node)]
             })
             
-    @transaction.commit_on_success
+    @transaction.atomic
     def merge_into(self, target):
         """
         Merge all connections from this container into another.
