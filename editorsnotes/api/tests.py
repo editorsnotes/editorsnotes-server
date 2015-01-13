@@ -112,6 +112,11 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(Revision.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
+
+        # Make sure a revision was created
+        self.assertEqual(Revision.objects.count(), 1)
+
+        # Make sure an entry was added to the activity index
         activity_response = self.client.get(reverse('api:api-project-activity',
                                                          args=[self.project.slug]))
         self.assertEqual(activity_response.status_code, 200)
