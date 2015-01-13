@@ -6,7 +6,7 @@ from editorsnotes.main.models import (Note, TextNS, CitationNS, NoteReferenceNS,
                                       Document)
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
-from .base import (ProjectSpecificItemMixin, RelatedTopicSerializerMixin,
+from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, UpdatersField,
                    HyperlinkedProjectItemField, TopicAssignmentField)
 
@@ -80,10 +80,10 @@ class NoteStatusField(serializers.WritableField):
                                               'open, closed, or hibernating.')
         return status_choice[0]
 
-class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+class NoteSerializer(RelatedTopicSerializerMixin,
                      serializers.ModelSerializer):
     url = URLField()
-    project = ProjectSlugField()
+    project = ProjectSlugField(default=CurrentProjectDefault())
     updaters = UpdatersField()
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
@@ -93,10 +93,11 @@ class NoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
         fields = ('id', 'title', 'url', 'project', 'is_private', 'last_updated',
                   'updaters', 'related_topics', 'content', 'status', 'sections',)
 
-class MinimalNoteSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+class MinimalNoteSerializer(RelatedTopicSerializerMixin,
                             serializers.ModelSerializer):
     status = NoteStatusField()
     url = URLField()
+    project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField()
     class Meta:
         model = Note

@@ -10,6 +10,16 @@ def nested_getattr(obj, attr_string):
         obj = getattr(obj, attr)
     return obj
 
+class CurrentProjectDefault:
+    def set_context(self, serializer_field):
+        self.project = serializer_field.context['request'].project
+
+    def __call__(self):
+        return self.project
+
+    def __repr__(self):
+        return u'%s()' % self.__class__.__name__
+
 class URLField(Field):
     """
     An identity URL field.
@@ -51,28 +61,6 @@ class HyperlinkedProjectItemField(HyperlinkedRelatedField):
                 format=self.format or self.context.get('format', None))
         except NoReverseMatch:
             raise Exception('Could not resolve URL for document.')
-
-class ProjectSpecificItemMixin(object):
-    """
-    Sets a restored instance's `project` attribute based on the serializer's
-    context.
-    """
-    def __init__(self, *args, **kwargs):
-        super(ProjectSpecificItemMixin, self).__init__(*args, **kwargs)
-        if self.object is None and 'project' not in self.context:
-            # FIXME: is this the best error to raise?
-            raise ValueError(
-                'Unbound instances of {0} must be instantiated with a context '
-                'object containing a project, e.g.: '
-                '{0}(context={{\'project\': project_instance}})'.format(
-                    self.__class__.__name__))
-    def restore_object(self, attrs, instance=None):
-        instance = super(ProjectSpecificItemMixin, self).restore_object(attrs, instance)
-        if not instance.pk:
-            instance.project = self.context['project']
-        elif 'project' in self.context and instance.project != self.context['project']:
-            raise ValueError('Can\'t change project from serializer.')
-        return instance
 
 class UpdatersField(Field):
     read_only = True

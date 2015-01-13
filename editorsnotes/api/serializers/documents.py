@@ -7,7 +7,7 @@ from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Document, Citation, Scan, Transcript
 
-from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, HyperlinkedProjectItemField,
                    TopicAssignmentField)
 
@@ -37,10 +37,10 @@ class ScanSerializer(serializers.ModelSerializer):
         fields = ('id', 'image', 'image_thumbnail', 'ordering', 'created',
                   'creator',)
 
-class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
     url = URLField()
-    project = ProjectSlugField()
+    project = ProjectSlugField(default=CurrentProjectDefault())
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
     related_topics = TopicAssignmentField()
