@@ -2,7 +2,8 @@ from lxml import etree
 
 from rest_framework import serializers
 
-from editorsnotes.main.models import Note, TextNS, CitationNS, NoteReferenceNS
+from editorsnotes.main.models import (Note, TextNS, CitationNS, NoteReferenceNS,
+                                      Document)
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (ProjectSpecificItemMixin, RelatedTopicSerializerMixin,
@@ -11,18 +12,19 @@ from .base import (ProjectSpecificItemMixin, RelatedTopicSerializerMixin,
 
 
 class TextNSSerializer(serializers.ModelSerializer):
-    section_id = serializers.Field(source='note_section_id')
-    section_type = serializers.Field(source='section_type_label')
+    section_id = serializers.ReadOnlyField(source='note_section_id')
+    section_type = serializers.ReadOnlyField(source='section_type_label')
     class Meta:
         model = TextNS
         fields = ('section_id', 'section_type', 'ordering', 'content',)
 
 class CitationNSSerializer(serializers.ModelSerializer):
-    section_id = serializers.Field(source='note_section_id')
-    note_id = serializers.Field(source='note_id')
-    section_type = serializers.Field(source='section_type_label')
-    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail')
-    document_description = serializers.SerializerMethodField('get_document_description')
+    section_id = serializers.ReadOnlyField(source='note_section_id')
+    #note_id = serializers.ReadOnlyField(source='note_id')
+    section_type = serializers.ReadOnlyField(source='section_type_label')
+    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
+                                           queryset=Document.objects.all())
+    document_description = serializers.SerializerMethodField()
     class Meta:
         model = CitationNS
         fields = ('section_id', 'section_type', 'ordering',
@@ -31,16 +33,16 @@ class CitationNSSerializer(serializers.ModelSerializer):
         return etree.tostring(obj.document.description)
 
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
-    section_id = serializers.Field(source='note_section_id')
-    section_type = serializers.Field(source='section_type_label')
-    note_reference = HyperlinkedProjectItemField(view_name='api:api-notes-detail')
-    note_reference_title = serializers.SerializerMethodField(
-        'get_referenced_note_title')
+    section_id = serializers.ReadOnlyField(source='note_section_id')
+    section_type = serializers.ReadOnlyField(source='section_type_label')
+    note_reference = HyperlinkedProjectItemField(view_name='api:api-notes-detail',
+                                                 queryset=Note.objects.all())
+    note_reference_title = serializers.SerializerMethodField()
     class Meta:
         model = NoteReferenceNS
         fields = ('section_id', 'section_type', 'ordering',
                   'note_reference', 'note_reference_title', 'content',)
-    def get_referenced_note_title(self, obj):
+    def get_note_reference_title(self, obj):
         return obj.note_reference.title
 
 def _serializer_from_section_type(section_type):

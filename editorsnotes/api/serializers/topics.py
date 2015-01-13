@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from rest_framework import serializers
-from rest_framework.fields import Field
+from rest_framework.fields import ReadOnlyField
 from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Topic, TopicNode
@@ -11,7 +11,7 @@ from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
 from .documents import CitationSerializer
 
 class TopicNodeSerializer(serializers.ModelSerializer):
-    name = Field(source='_preferred_name')
+    name = ReadOnlyField(source='_preferred_name')
     url = URLField('api:api-topic-nodes-detail', ('id',))
     alternate_forms = serializers.SerializerMethodField('get_alternate_forms')
     project_topics = serializers.SerializerMethodField('get_project_value')
@@ -49,9 +49,9 @@ class AlternateNameField(serializers.SlugRelatedField):
 
 class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
                       serializers.ModelSerializer):
-    topic_node_id = Field(source='topic_node.id')
-    type = Field(source='topic_node.type')
-    alternate_names = AlternateNameField(slug_field='name', many=True)
+    topic_node_id = ReadOnlyField(source='topic_node.id')
+    type = ReadOnlyField(source='topic_node.type')
+    alternate_names = AlternateNameField()
     url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
     project = ProjectSlugField()
     related_topics = TopicAssignmentField()

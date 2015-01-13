@@ -29,7 +29,7 @@ class HyperLinkedImageField(serializers.ImageField):
         return ret
 
 class ScanSerializer(serializers.ModelSerializer):
-    creator = serializers.Field('creator.username')
+    creator = serializers.ReadOnlyField(source='creator.username')
     image = HyperLinkedImageField()
     image_thumbnail = HyperLinkedImageField(read_only=True)
     class Meta:
@@ -66,15 +66,18 @@ class DocumentSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
 
 class TranscriptSerializer(serializers.ModelSerializer):
     url = URLField(lookup_arg_attrs=('document.project.slug', 'document.id'))
-    document = HyperlinkedProjectItemField(
-        required=True, view_name='api:api-documents-detail')
+    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
+                                           queryset=Document.objects,
+                                           required=True)
     class Meta:
         model = Transcript
 
 class CitationSerializer(serializers.ModelSerializer):
     url = URLField('api:api-topic-citations-detail',
                    ('content_object.project.slug', 'content_object.topic_node_id', 'id'))
-    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail')
+    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
+                                           queryset=Document.objects,
+                                           required=True)
     document_description = serializers.SerializerMethodField('get_document_description')
     class Meta:
         model = Citation
