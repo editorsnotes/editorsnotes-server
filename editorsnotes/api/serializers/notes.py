@@ -9,6 +9,7 @@ from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, UpdatersField,
                    HyperlinkedProjectItemField, TopicAssignmentField)
+from ..validators import UniqueToProjectValidator
 
 
 class TextNSSerializer(serializers.ModelSerializer):
@@ -93,6 +94,9 @@ class NoteSerializer(RelatedTopicSerializerMixin,
         model = Note
         fields = ('id', 'title', 'url', 'project', 'is_private', 'last_updated',
                   'updaters', 'related_topics', 'content', 'status', 'sections',)
+        validators = [
+            UniqueToProjectValidator('title')
+        ]
 
 class MinimalNoteSerializer(RelatedTopicSerializerMixin,
                             serializers.ModelSerializer):
@@ -102,5 +106,8 @@ class MinimalNoteSerializer(RelatedTopicSerializerMixin,
     related_topics = TopicAssignmentField()
     class Meta:
         model = Note
-        fields = ('id', 'url', 'title', 'related_topics', 'content', 'status',
-                  'is_private',)
+        fields = ('id', 'title', 'url', 'project', 'related_topics', 'content',
+                  'status', 'is_private',)
+        validators = [
+            UniqueToProjectValidator('title')
+        ]

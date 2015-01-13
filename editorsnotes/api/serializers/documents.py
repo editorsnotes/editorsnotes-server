@@ -4,8 +4,10 @@ import json
 from lxml import etree
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+from rest_framework.validators import UniqueValidator
 
 from editorsnotes.main.models import Document, Citation, Scan, Transcript
+from editorsnotes.main.utils import remove_stray_brs
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, HyperlinkedProjectItemField,
@@ -36,6 +38,25 @@ class ScanSerializer(serializers.ModelSerializer):
         fields = ('id', 'image', 'image_thumbnail', 'ordering', 'created',
                   'creator',)
 
+class UniqueDocumentDescriptionValidator:
+    message = u'Document with this description already exists.'
+    def set_context(self, serializer):
+        self.instance = getattr(self, 'instance', None)
+    def __call__(self, attrs):
+        if self.instance is not None:
+            description = attrs.get('description', self.instance.description)
+        else:
+            description = attrs['description']
+
+        project = attrs['project']
+        qs = Document.objects.filter(
+            description_digest=Document.hash_description(description),
+            project=project)
+        if self.instance is not None:
+            qs = qs.exclude(id=self.instance.id)
+        if qs.exists():
+            raise serializers.ValidationError({ 'description': [self.message] })
+
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
     url = URLField()
@@ -44,24 +65,26 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
     zotero_data = ZoteroField(required=False)
     related_topics = TopicAssignmentField()
     scans = ScanSerializer(many=True, required=False, read_only=True)
-    def get_validation_exclusions(self):
-        # TODO: This can be removed in future versions of django rest framework.
-        # It's necessary because for the time being, DRF excludes non-required
-        # fields from validation (not something I find particularly useful, but
-        # they must've had their reasons...)
-        exclusions = super(DocumentSerializer, self).get_validation_exclusions()
-        exclusions.remove('zotero_data')
-        return exclusions
+    class Meta:
+        model = Document
+        fields = ('id', 'description', 'url', 'project', 'last_updated',
+                  'scans', 'transcript', 'related_topics', 'zotero_data',)
+        validators = [
+            UniqueDocumentDescriptionValidator()
+        ]
     def get_transcript_url(self, obj):
         if not obj.has_transcript():
             return None
         return reverse('api:api-transcripts-detail',
                        args=(obj.project.slug, obj.id),
                        request=self.context.get('request', None))
-    class Meta:
-        model = Document
-        fields = ('id', 'description', 'url', 'project', 'last_updated',
-                  'scans', 'transcript', 'related_topics', 'zotero_data',)
+    def validate_description(self, value):
+        description_stripped = Document.strip_description(value)
+        if not description_stripped:
+            raise serializer.ValidationError('Field required.')
+        remove_stray_brs(value)
+        return value
+
 
 class TranscriptSerializer(serializers.ModelSerializer):
     url = URLField(lookup_arg_attrs=('document.project.slug', 'document.id'))

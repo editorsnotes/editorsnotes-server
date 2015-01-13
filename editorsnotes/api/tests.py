@@ -610,7 +610,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['title'],
-                         [u'Note with this Title already exists.'])
+                         [u'Note with this title already exists.'])
 
     def test_note_api_list(self):
         """

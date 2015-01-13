@@ -9,6 +9,7 @@ from editorsnotes.main.models import Topic, TopicNode, AlternateName
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    ProjectSlugField, URLField, TopicAssignmentField)
 from .documents import CitationSerializer
+from ..validators import UniqueToProjectValidator
 
 class TopicNodeSerializer(serializers.ModelSerializer):
     name = ReadOnlyField(source='_preferred_name')
@@ -66,6 +67,9 @@ class TopicSerializer(RelatedTopicSerializerMixin,
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
                   'alternate_names', 'related_topics', 'project',
                   'last_updated', 'summary', 'citations')
+        validators = [
+            UniqueToProjectValidator('preferred_name')
+        ]
     def create(self, validated_data):
         topic_node_id = self.context.get('topic_node_id', None)
         if topic_node_id is None and 'view' in self.context:
