@@ -42,11 +42,11 @@ class NormalizeSectionOrder(ProjectSpecificMixin, APIView):
         ])
 
 class NoteList(ElasticSearchListMixin, BaseListAPIView):
-    model = Note
+    queryset = Note.objects.all()
     serializer_class = MinimalNoteSerializer
 
 class NoteDetail(BaseDetailView):
-    model = Note
+    queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permissions = {
         'GET': ('main.view_private_note',),
@@ -65,19 +65,19 @@ class NoteDetail(BaseDetailView):
                 'create_revision': True
             })
         if serializer.is_valid():
-            serializer.object.note = self.get_object()
-            serializer.object.creator = request.user
-            serializer.object.last_updater = request.user
             with reversion.create_revision():
-                serializer.save()
+                serializer.save(note=self.get_object(),
+                                creator=request.user,
+                                last_updater=request.user)
                 reversion.set_user(request.user)
                 reversion.add_meta(RevisionProject, project=request.project)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+        # FIXME: Both of these should uses the JSONRenderer instead of directly
+        # returning serializer.data
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 class NoteSectionDetail(BaseDetailView):
-    model = NoteSection
+    queryset = NoteSection.objects.all()
     permissions = {
         'GET': ('main.view_private_note',),
         'HEAD': ('main.view_private_note',),
@@ -99,11 +99,11 @@ class NoteSectionDetail(BaseDetailView):
         self.model = qs[0].__class__
         return qs
     def get_serializer_class(self):
-        section_type = getattr(self.object, 'section_type_label')
+        section_type = getattr(self.get_object(), 'section_type_label')
         return _serializer_from_section_type(section_type)
 
 class NoteConfirmDelete(DeleteConfirmAPIView):
-    model = Note
+    queryset = Note.objects.all()
     permissions = {
         'GET': ('main.delete_note',),
         'HEAD': ('main.delete_note',)
