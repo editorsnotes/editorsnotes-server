@@ -58,21 +58,22 @@ def _serializer_from_section_type(section_type):
     return serializer
 
 class NoteSectionField(serializers.RelatedField):
-    def field_to_native(self, note, field_name):
-        qs = note.sections.all().select_subclasses()\
+    def get_attribute(self, obj):
+        return obj.sections.all().select_subclasses()\
                 .select_related('citationns__document__project',
                                 'notereferencens__note__project')
-        return [self.to_native(section) for section in qs.all()]
-    def to_native(self, section):
+    def to_representation(self, value):
+        return [self._serialize_section(section) for section in value]
+    def _serialize_section(self, section):
         serializer_class = _serializer_from_section_type(
             section.section_type_label)
         serializer = serializer_class(section, context=self.context)
         return serializer.data
 
-class NoteStatusField(serializers.WritableField):
-    def field_to_native(self, obj, field_name):
+class NoteStatusField(serializers.ReadOnlyField):
+    def get_attribute(self, obj):
         return obj.get_status_display().lower() if obj else 'open'
-    def from_native(self, data):
+    def to_internal_value(self, data):
         status_choice = [ val for val, label in NOTE_STATUS_CHOICES
                           if label.lower() == data.lower() ]
         if not len(status_choice):
@@ -87,7 +88,7 @@ class NoteSerializer(RelatedTopicSerializerMixin,
     updaters = UpdatersField()
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
-    sections = NoteSectionField(many=True)
+    sections = NoteSectionField(read_only=True)
     class Meta:
         model = Note
         fields = ('id', 'title', 'url', 'project', 'is_private', 'last_updated',

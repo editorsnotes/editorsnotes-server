@@ -11,12 +11,11 @@ from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, HyperlinkedProjectItemField,
                    TopicAssignmentField)
 
-class ZoteroField(serializers.WritableField):
-    def to_native(self, zotero_data):
-        return zotero_data and json.loads(zotero_data,
-                                          object_pairs_hook=OrderedDict)
-    def from_native(self, data):
-        return data and json.dumps(data)
+class ZoteroField(serializers.Field):
+    def to_representation(self, value):
+        return value and json.loads(value, object_pairs_hook=OrderedDict)
+    def to_internal_value(self, data):
+        return json.dumps(data)
 
 class HyperLinkedImageField(serializers.ImageField):
     def to_native(self, value):
