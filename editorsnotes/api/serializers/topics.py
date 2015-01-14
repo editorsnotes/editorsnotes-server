@@ -57,7 +57,7 @@ class TopicSerializer(RelatedTopicSerializerMixin,
                       serializers.ModelSerializer):
     topic_node_id = ReadOnlyField(source='topic_node.id')
     type = ReadOnlyField(source='topic_node.type')
-    alternate_names = AlternateNameField()
+    alternate_names = AlternateNameField(required=False)
     url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
