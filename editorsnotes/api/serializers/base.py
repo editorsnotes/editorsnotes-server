@@ -2,7 +2,7 @@ from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
 from rest_framework.relations import (HyperlinkedRelatedField, RelatedField,
                                       get_attribute)
 from rest_framework.reverse import reverse
-from rest_framework.serializers import ReadOnlyField
+from rest_framework.serializers import ReadOnlyField, ModelSerializer
 
 from editorsnotes.main.models import Topic, TopicAssignment, Project
 
@@ -77,6 +77,12 @@ class UpdatersField(ReadOnlyField):
     def to_representation(self, value):
         return [u.username for u in value]
 
+class MinimalTopicSerializer(ModelSerializer):
+    url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
+    class Meta:
+        model = Topic
+        fields = ('id', 'topic_node_id', 'preferred_name', 'url',)
+
 class TopicAssignmentField(RelatedField):
     default_error_messages = {
         'no_match': 'No topic matches this URL.',
@@ -89,16 +95,12 @@ class TopicAssignmentField(RelatedField):
     def get_attribute(self, obj):
         return [ta.topic for ta in obj.related_topics.all()]
     def to_representation(self, topics):
-        return [ self._format_topic(topic) for topic in topics ]
+        return [ MinimalTopicSerializer(topic, context=self.context).data
+                 for topic in topics ]
     def to_internal_value(self, data):
         if self.read_only:
             return
         return [self._topic_from_url(url) for url in data]
-    def _format_topic(self, topic):
-        url = reverse('api:api-topics-detail',
-                      args=(topic.project.slug, topic.id),
-                      request=self.context['request'])
-        return { 'url': url, 'preferred_name': topic.preferred_name }
     def _topic_from_url(self, url):
         try:
             match = resolve(url)

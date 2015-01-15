@@ -616,7 +616,12 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         url_for = lambda topic: response.wsgi_request\
                 .build_absolute_uri('/api' + topic.get_absolute_url())
         self.assertEqual(response.data['related_topics'], [
-            { 'url': url_for(topic), 'preferred_name': topic.preferred_name }
+            {
+                'id': topic.id,
+                'topic_node_id': topic.topic_node_id,
+                'url': url_for(topic),
+                'preferred_name': topic.preferred_name
+            }
             for topic in related_topics
         ])
 

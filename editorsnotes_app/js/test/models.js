@@ -81,9 +81,9 @@ describe('Related topics mixin', function () {
 
   it('Should set an object\'s related_topics attribute', function () {
     var obj = new TestModel({}, { project: dummyProject });
-    obj.relatedTopics.add({ 'preferred_name': 'Emma Goldman' });
+    obj.relatedTopics.add({ id: 2109, topic_node_id: 1919, preferred_name: 'Emma Goldman' });
     assert.equal(obj.get('related_topics').length, 1);
-    assert.equal(obj.get('related_topics')[0], 'Emma Goldman');
+    assert.equal(obj.get('related_topics')[0], '/api/projects/emma/topics/1919/');
   });
 
   it('Should not update a related_topics attribute for duplicate topics', function () {
