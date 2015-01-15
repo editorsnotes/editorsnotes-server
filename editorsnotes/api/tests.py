@@ -64,7 +64,7 @@ def create_test_document(**kwargs):
     data = TEST_DOCUMENT.copy()
     data['zotero_data'] = json.dumps(data['zotero_data'])
     data.update(kwargs)
-    return Document.objects.create(**kwargs)
+    return main_models.Document.objects.create(**kwargs)
 
 TEST_NOTE = {
     'title': u'Is testing good?',
@@ -75,7 +75,7 @@ TEST_NOTE = {
 def create_test_note(**kwargs):
     data = TEST_NOTE.copy()
     data.update(kwargs)
-    return Note.objects.create(**kwargs)
+    return main_models.Note.objects.create(**kwargs)
 
 
 BAD_PERMISSION_MESSAGE = u'You do not have permission to perform this action.'
@@ -421,7 +421,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_duplicate_name_fails(self):
         "Creating a document with a duplicate name is NOT OK"
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         response = self.client.post(
@@ -440,7 +440,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         anyone.
         """
         flush_es_indexes()
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         response = self.client.get(reverse('api:api-documents-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
@@ -465,7 +465,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update(self):
         "Updating a document in your own project is ok"
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         data['description'] = (u'<div>Draper, Theodore. <em>Roots of American '
@@ -487,7 +487,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update_bad_permissions(self):
         "Updating a document in another project is NOT OK"
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -504,7 +504,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update_logged_out(self):
         "Updating a document when logged out is NOT OK"
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         data = TEST_DOCUMENT.copy()
@@ -519,7 +519,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete(self):
         "Deleting a document in your own project is ok"
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         response = self.client.delete(
             reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
@@ -530,7 +530,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete_bad_permissions(self):
         "Deleting a document in an outside project is NOT OK"
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -543,7 +543,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete_logged_out(self):
         "Deleting a document while logged out is NOT OK"
-        document_obj = self.create_test_document(
+        document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         response = self.client.delete(
