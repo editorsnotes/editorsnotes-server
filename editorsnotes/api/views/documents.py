@@ -15,15 +15,15 @@ __all__ = ['DocumentList', 'DocumentDetail', 'DocumentConfirmDelete',
            'ScanList', 'ScanDetail', 'NormalizeScanOrder', 'Transcript']
 
 class DocumentList(ElasticSearchListMixin, BaseListAPIView):
-    model = Document
+    queryset = Document.objects.all()
     serializer_class = DocumentSerializer
 
 class DocumentDetail(BaseDetailView):
-    model = Document
+    queryset = Document.objects.all()
     serializer_class = DocumentSerializer
 
 class DocumentConfirmDelete(DeleteConfirmAPIView):
-    model = Document
+    queryset = Document.objects.all()
     permissions = {
         'GET': ('main.delete_document',),
         'HEAD': ('main.delete_document',)
@@ -93,10 +93,10 @@ class ScanDetail(BaseDetailView):
         return document.scans.filter(id=scan_id)
 
 class Transcript(BaseDetailView):
-    model = Transcript
+    queryset = Transcript.objects.all()
     serializer_class = TranscriptSerializer
     def get_object(self, queryset=None):
-        transcript_qs = self.model.objects\
+        transcript_qs = self.get_queryset()\
                 .select_related('document__project')\
                 .filter(
                     document__id=self.kwargs.get('document_id'),

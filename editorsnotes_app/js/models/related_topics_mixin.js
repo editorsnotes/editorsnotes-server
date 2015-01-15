@@ -14,10 +14,8 @@ module.exports = {
       this.refreshRelatedTopics();
     },
     refreshRelatedTopics: function () {
-      var topicNames = this.relatedTopics.map(function (t) {
-        return t.get('preferred_name')
-      });
-      this.set('related_topics', topicNames);
+      var topicURLs = this.relatedTopics.map(function (t) { return t.url() });
+      this.set('related_topics', topicURLs);
     },
     parse: function (response) {
       if (response.related_topics) {

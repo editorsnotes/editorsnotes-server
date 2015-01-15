@@ -41,7 +41,7 @@ class ElasticSearchFilterBackend(BaseFilterBackend):
             query['query']['filtered']['filter'] = { 'and': filters }
 
         en_index = get_index('main')
-        return en_index.search_model(view.model, query)
+        return en_index.search_model(view.queryset.model, query)
 
 class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -109,8 +109,8 @@ class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
                 'post_tags': ['&lt;/strong&gt;']
             }
 
-        if hasattr(view, 'model') and view.model is not None:
-            return en_index.search_model(view.model, query)
+        if hasattr(view, 'queryset') and view.queryset is not None:
+            return en_index.search_model(view.queryset.model, query)
         else:
             # Should boost notes most of all
             return en_index.search(query)

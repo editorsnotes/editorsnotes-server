@@ -33,7 +33,6 @@ def delete_es_indexes():
     if activity_index.exists():
         activity_index.delete()
 
-
 TEST_TOPIC = {
     'preferred_name': u'Patrick Golden',
     'alternate_names': [u'big guy', u'stretch'],
@@ -41,6 +40,14 @@ TEST_TOPIC = {
     'related_topics': [],
     'summary': u'<p>A writer of tests</p>'
 }
+def create_test_topic(**kwargs):
+    data = TEST_TOPIC.copy()
+    data.update(kwargs)
+    data.pop('alternate_names', None)
+    data.pop('related_topics', None)
+    node, topic = main_models.Topic.objects.create_along_with_node(**data)
+    return topic
+
 
 TEST_DOCUMENT = {
     'description': u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>',
@@ -55,16 +62,29 @@ TEST_DOCUMENT = {
         ]
     }
 }
+def create_test_document(**kwargs):
+    data = TEST_DOCUMENT.copy()
+    data['zotero_data'] = json.dumps(data['zotero_data'])
+    data.pop('related_topics', None)
+    data.update(kwargs)
+    return main_models.Document.objects.create(**data)
 
 TEST_NOTE = {
     'title': u'Is testing good?',
-    'related_topics': [u'Testing', u'Django'],
+    'related_topics': [],
     'content': u'<p>We need to figure out if it\'s worth it to write tests.</p>',
     'status': 'open'
 }
+def create_test_note(**kwargs):
+    data = TEST_NOTE.copy()
+    data.pop('related_topics', None)
+    data.update(kwargs)
+    return main_models.Note.objects.create(**data)
+
 
 BAD_PERMISSION_MESSAGE = u'You do not have permission to perform this action.'
 NO_AUTHENTICATION_MESSAGE = u'Authentication credentials were not provided.'
+
 
 class ClearContentTypesTransactionTestCase(TransactionTestCase):
     """
@@ -107,6 +127,11 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data.get('id'), topic_obj.id)
         self.assertEqual(etree.tostring(topic_obj.summary),
                          response.data.get('summary'))
+
+        # Make sure a revision was created
+        self.assertEqual(Revision.objects.count(), 1)
+
+        # Make sure an entry was added to the activity index
 
         # Make sure a revision was created
         self.assertEqual(Revision.objects.count(), 1)
@@ -165,7 +190,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_duplicate_name_fails(self):
         "Creating a topic with an existing name is NOT OK"
         data = TEST_TOPIC.copy()
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
 
         # Posting the same data should raise a 400 error
         response = self.client.post(
@@ -184,7 +209,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         """
         flush_es_indexes()
 
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
 
         response = self.client.get(reverse('api:api-topics-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
@@ -211,7 +236,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_update(self):
         "Updating a topic in your own project is great"
         data = TEST_TOPIC.copy()
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
 
         # Update the topic with new data.
         data['summary'] = u'<p>A writer of great tests.</p>'
@@ -254,7 +279,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_update_bad_permissions(self):
         "Updating a topic in an outside project is NOT OK"
         data = TEST_TOPIC.copy()
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
 
         data['preferred_name'] = u'Patrick Garbage'
         data['summary'] = u'<p>such a piece of garbage LOL</p>'
@@ -273,7 +298,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_update_logged_out(self):
         "Updating a topic when not logged in is NOT OK"
         data = TEST_TOPIC.copy()
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
 
         self.client.logout()
         response = self.client.put(
@@ -286,7 +311,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_topic_api_delete(self):
         "Deleting a topic in your own project is ok"
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
 
         # Delete the topic
         self.assertEqual(main_models.Topic.objects.count(), 1)
@@ -319,7 +344,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_topic_api_delete_bad_permissions(self):
         "Deleting a topic in an outside project is NOT OK"
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
         self.client.logout()
         self.client.login(username='esther', password='esther')
 
@@ -331,7 +356,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
 
     def test_topic_api_delete_logged_out(self):
-        topic_obj = self.create_test_topic()
+        topic_obj = create_test_topic(user=self.user, project=self.project)
         self.client.logout()
         response = self.client.delete(
             reverse('api:api-topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
@@ -400,7 +425,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_duplicate_name_fails(self):
         "Creating a document with a duplicate name is NOT OK"
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         response = self.client.post(
             reverse('api:api-documents-list', args=[self.project.slug]),
@@ -418,7 +444,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         anyone.
         """
         flush_es_indexes()
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         response = self.client.get(reverse('api:api-documents-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
 
@@ -442,7 +469,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update(self):
         "Updating a document in your own project is ok"
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         data['description'] = (u'<div>Draper, Theodore. <em>Roots of American '
                                'Communism</em>. New York: Viking Press, 1957.</div>')
@@ -463,7 +491,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update_bad_permissions(self):
         "Updating a document in another project is NOT OK"
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         self.client.login(username='esther', password='esther')
 
@@ -479,7 +508,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update_logged_out(self):
         "Updating a document when logged out is NOT OK"
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         data = TEST_DOCUMENT.copy()
         data['description'] = u'a stupid book!!!!!!!!!!!!!!!!!!!!'
@@ -493,7 +523,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete(self):
         "Deleting a document in your own project is ok"
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         response = self.client.delete(
             reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
             content_type='application/json'
@@ -503,7 +534,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete_bad_permissions(self):
         "Deleting a document in an outside project is NOT OK"
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         self.client.login(username='esther', password='esther')
         response = self.client.delete(
@@ -515,7 +547,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete_logged_out(self):
         "Deleting a document while logged out is NOT OK"
-        document_obj = self.create_test_document()
+        document_obj = create_test_document(
+            project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         response = self.client.delete(
             reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
@@ -555,6 +588,20 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
     def test_note_api_create(self):
         "Creating a note within your own project is ok"
         data = TEST_NOTE.copy()
+
+        related_topics = [
+            create_test_topic(preferred_name='Testing',
+                              project=self.project,
+                              user=self.user),
+            create_test_topic(preferred_name='Django',
+                              project=self.project,
+                              user=self.user)
+        ]
+
+        data['related_topics'] = [
+            '/api' + topic.get_absolute_url() for topic in related_topics
+        ]
+
         response = self.client.post(
             reverse('api:api-notes-list', args=[self.project.slug]),
             json.dumps(data),
@@ -567,9 +614,20 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['status'], data['status'])
         self.assertEqual(response.data['content'], data['content'])
-
         self.assertEqual(response.data['title'], new_note_obj.title)
         self.assertEqual(response.data['content'], etree.tostring(new_note_obj.content))
+
+        url_for = lambda topic: response.wsgi_request\
+                .build_absolute_uri('/api' + topic.get_absolute_url())
+        self.assertEqual(response.data['related_topics'], [
+            {
+                'id': topic.id,
+                'topic_node_id': topic.topic_node_id,
+                'url': url_for(topic),
+                'preferred_name': topic.preferred_name
+            }
+            for topic in related_topics
+        ])
 
         # Make sure a revision was created upon create
         self.assertEqual(Revision.objects.count(), 1)
@@ -610,7 +668,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['title'],
-                         [u'Note with this Title already exists.'])
+                         [u'Note with this title already exists.'])
 
     def test_note_api_list(self):
         """

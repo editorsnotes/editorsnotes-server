@@ -11,11 +11,11 @@ VERSION_ACTIONS = {
 
 # TODO: make these fields nested, maybe
 class ActivitySerializer(serializers.ModelSerializer):
-    user = serializers.Field(source='user.username')
-    project = serializers.Field(source='project.slug')
-    type = serializers.Field(source='content_type.model')
+    user = serializers.ReadOnlyField(source='user.username')
+    project = serializers.ReadOnlyField(source='project.slug')
+    type = serializers.ReadOnlyField(source='content_type.model')
     url = serializers.SerializerMethodField('get_object_url')
-    title = serializers.Field(source='display_title')
+    title = serializers.ReadOnlyField(source='display_title')
     action = serializers.SerializerMethodField('get_action_repr')
     class Meta:
         model = LogActivity

@@ -101,16 +101,6 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         return ('document_view', [str(self.project.slug), str(self.id)])
     def get_affiliation(self):
         return self.project
-    def clean_fields(self, exclude=None):
-        super(Document, self).clean_fields(exclude)
-        if exclude and 'description' in exclude:
-            return
-        description_stripped = Document.strip_description(self.description)
-        if not len(description_stripped):
-            raise ValidationError({'description': [u'Field required.']})
-
-        # Remove <br/> tags which have nothing before nor after them 
-        utils.remove_stray_brs(self.description)
     @property
     def transcript(self):
         try:

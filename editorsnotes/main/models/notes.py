@@ -27,7 +27,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     so it may have hyperlinks and all the other features that XHTML
     enables.
     """
-    title = models.CharField(max_length='80', unique=True)
+    title = models.CharField(max_length='80')
     content = fields.XHTMLField()
     project = models.ForeignKey('Project', related_name='notes')
     assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, null=True)
@@ -41,6 +41,9 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         ordering = ['-last_updated']  
         permissions = (
             (u'view_private_note', u'Can view notes private to a project.'),
+        )
+        unique_together = (
+            ('title', 'project'),
         )
     def as_text(self):
         return self.title

@@ -11,7 +11,7 @@ from rest_framework.mixins import RetrieveModelMixin, ListModelMixin
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.utils import formatting
+from rest_framework.utils import formatting, model_meta
 import reversion
 
 from editorsnotes.main.models import Project
@@ -78,7 +78,7 @@ class ElasticSearchListMixin(ListModelMixin):
             return super(ElasticSearchListMixin, self).list(request, *args, **kwargs)
 
         if 'autocomplete' in request.QUERY_PARAMS:
-            self.filter_backend = ElasticSearchAutocompleteFilterBackend
+            self.filter_backends += (ElasticSearchAutocompleteFilterBackend,)
             result = self.filter_queryset(None)
             data = {
                 'count': result['hits']['total'],
@@ -94,7 +94,7 @@ class ElasticSearchListMixin(ListModelMixin):
                 r['url'] = doc['fields']['serialized.url']
                 data['results'].append(r)
         else:
-            self.filter_backend = ElasticSearchFilterBackend
+            self.filter_backends += (ElasticSearchFilterBackend,)
             result = self.filter_queryset(None)
             data = {
                 'count': result['hits']['total'],
@@ -122,10 +122,14 @@ class ProjectSpecificMixin(object):
         request._request.project = Project.objects.get(
             slug=kwargs.pop('project_slug'))
         return request
-    def get_serializer_context(self):
-        context = super(ProjectSpecificMixin, self).get_serializer_context()
-        context['project'] = self.request.project
-        return context
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.request.project,
+                        creator=self.request.user,
+                        last_updater=self.request.user)
+    def perform_update(self, serializer):
+        serializer.save(last_updater=self.request.user)
+
     def get_queryset(self):
         qs = super(ProjectSpecificMixin, self).get_queryset()
         if hasattr(qs.model, 'project'):
@@ -199,33 +203,39 @@ class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin, ListCreateAPIView)
     paginate_by_param = 'page_size'
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
-    def pre_save(self, obj):
-        obj.creator = self.request.user
-        if hasattr(obj.__class__, 'last_updater'):
-            obj.last_updater = self.request.user
-        super(BaseListAPIView, self).pre_save(obj)
-    def post_save(self, obj, created):
-        if self._should_log_activity(obj):
-            self.make_log_activity(obj, ADDITION)
+    def perform_create(self, serializer):
+        ModelClass = serializer.Meta.model
+        field_info = model_meta.get_field_info(ModelClass)
+        kwargs = {}
+        kwargs['creator'] = self.request.user
+        if 'last_updater' in field_info.relations:
+            kwargs['last_updater'] = self.request.user
+        if 'project' in field_info.relations:
+            kwargs['project'] = self.request.project
+        instance = serializer.save(**kwargs)
+        if self._should_log_activity(instance):
+            self.make_log_activity(instance, ADDITION)
 
 @create_revision_on_methods('update', 'destroy')
 class BaseDetailView(ProjectSpecificMixin, LogActivityMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
-    def post_save(self, obj, created):
-        if self._should_log_activity(obj):
-            self.make_log_activity(obj, CHANGE)
-    def pre_delete(self, obj):
-        self._deleted_id = obj.id
-    def post_delete(self, obj):
-        if self._should_log_activity(obj):
-            log_obj = self.make_log_activity(obj, DELETION, commit=False)
-            log_obj.object_id = self._deleted_id
+    def perform_update(self, serializer):
+        ModelClass = serializer.Meta.model
+        field_info = model_meta.get_field_info(ModelClass)
+        kwargs = {}
+        if 'last_updater' in field_info.relations:
+            kwargs['last_updater'] = self.request.user
+        instance = serializer.save(**kwargs)
+        if self._should_log_activity(instance):
+            self.make_log_activity(instance, CHANGE)
+    def perform_destroy(self, instance):
+        deleted_id = instance.id
+        instance.delete()
+        if self._should_log_activity(instance):
+            log_obj = self.make_log_activity(instance, DELETION, commit=False)
+            log_obj.object_id = deleted_id
             log_obj.save()
-    def pre_save(self, obj):
-        if hasattr(obj.__class__, 'last_updater'):
-            obj.last_updater = self.request.user
-        super(BaseDetailView, self).pre_save(obj)
 
 @api_view(('GET',))
 def root(request):

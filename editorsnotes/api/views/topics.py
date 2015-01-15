@@ -58,19 +58,19 @@ class NormalizeCitationOrder(ProjectSpecificMixin, APIView):
 class TopicNodeList(ListAPIView):
     paginate_by = 50
     paginate_by_param = 'page_size'
-    model = TopicNode
+    queryset = TopicNode.objects.all()
     serializer_class = TopicNodeSerializer
 
 class TopicNodeDetail(RetrieveAPIView):
-    model = TopicNode
+    queryset = TopicNode.objects.all()
     serializer_class = TopicNodeSerializer
 
 class TopicList(ElasticSearchListMixin, BaseListAPIView):
-    model = Topic
+    queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
-    model = Topic
+    queryset = Topic.objects.all()
     permissions = {
         'GET': ('main.delete_topic',),
         'HEAD': ('main.delete_topic',)
@@ -84,7 +84,7 @@ class TopicConfirmDelete(DeleteConfirmAPIView):
 
 @create_revision_on_methods('create')
 class TopicDetail(BaseDetailView, CreateModelMixin):
-    model = Topic
+    queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     def get_object(self, queryset=None):
         # TODO: Make sure permissions are in fact checked
@@ -104,7 +104,7 @@ class CitationMixin(object):
         return Citation.objects.get_for_object(topic)
 
 class TopicCitationList(CitationMixin, BaseListAPIView):
-    model = Citation
+    queryset = Citation.objects.all()
     serializer_class = CitationSerializer
     def pre_save(self, obj):
         obj.content_type = ContentType.objects.get_for_model(Topic)
@@ -112,7 +112,7 @@ class TopicCitationList(CitationMixin, BaseListAPIView):
         super(TopicCitationList, self).pre_save(obj)
 
 class TopicCitationDetail(CitationMixin, BaseDetailView):
-    model = Citation
+    queryset = Citation.objects.all()
     serializer_class = CitationSerializer
     def get_object(self, queryset=None):
         qs = self.get_queryset()

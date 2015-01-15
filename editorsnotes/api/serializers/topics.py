@@ -1,17 +1,18 @@
 from collections import OrderedDict
 
 from rest_framework import serializers
-from rest_framework.fields import Field
+from rest_framework.fields import ReadOnlyField
 from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Topic, TopicNode
+from editorsnotes.main.models import Topic, TopicNode, AlternateName
 
-from .base import (RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    ProjectSlugField, URLField, TopicAssignmentField)
 from .documents import CitationSerializer
+from ..validators import UniqueToProjectValidator
 
 class TopicNodeSerializer(serializers.ModelSerializer):
-    name = Field(source='_preferred_name')
+    name = ReadOnlyField(source='_preferred_name')
     url = URLField('api:api-topic-nodes-detail', ('id',))
     alternate_forms = serializers.SerializerMethodField('get_alternate_forms')
     project_topics = serializers.SerializerMethodField('get_project_value')
@@ -41,47 +42,63 @@ class TopicNodeSerializer(serializers.ModelSerializer):
                                   request=self.context['request']))))
             for topic in obj.project_topics.select_related('project')]
 
-class AlternateNameField(serializers.SlugRelatedField):
-    def field_from_native(self, data, files, field_name, into):
-        if self.read_only:
-            return
-        into[field_name] = data.get(field_name, [])
+class AlternateNameField(serializers.Field):
+    def to_representation(self, value):
+        return value.values_list('name', flat=True)
+    def to_internal_value(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError('Alternate names must be a list')
+        if not all([1 <= len(name) <= 200 for name in value]):
+            raise serializers.ValidationError('Alternate names must be between '
+                                              '1 and 200 characters.')
+        return value
 
-class TopicSerializer(RelatedTopicSerializerMixin, ProjectSpecificItemMixin,
+class TopicSerializer(RelatedTopicSerializerMixin,
                       serializers.ModelSerializer):
-    topic_node_id = Field(source='topic_node.id')
-    type = Field(source='topic_node.type')
-    alternate_names = AlternateNameField(slug_field='name', many=True)
+    topic_node_id = ReadOnlyField(source='topic_node.id')
+    type = ReadOnlyField(source='topic_node.type')
+    alternate_names = AlternateNameField(required=False)
     url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
-    project = ProjectSlugField()
-    related_topics = TopicAssignmentField()
+    project = ProjectSlugField(default=CurrentProjectDefault())
+    related_topics = TopicAssignmentField(required=False)
     citations = CitationSerializer(source='summary_cites', many=True, read_only=True)
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
                   'alternate_names', 'related_topics', 'project',
                   'last_updated', 'summary', 'citations')
-    def save_object(self, obj, **kwargs):
-        if not obj.id:
-            topic_node_id = self.context.get('topic_node_id', None)
-            if topic_node_id is None and 'view' in self.context:
-                topic_node_id = self.context['view'].kwargs.get(
-                    'topic_node_id', None)
-            if topic_node_id is None:
-                topic_node = TopicNode.objects.create(
-                    _preferred_name=obj.preferred_name,
-                    creator_id=obj.creator_id,
-                    last_updater_id=obj.creator_id)
-                topic_node_id = topic_node.id
-            obj.topic_node_id = topic_node_id
-        alternate_names = obj._related_data.pop('alternate_names')
-        super(TopicSerializer, self).save_object(obj, **kwargs)
-        self.save_alternate_names(obj, alternate_names)
+        validators = [
+            UniqueToProjectValidator('preferred_name')
+        ]
+    def create(self, validated_data):
+        topic_node_id = self.context.get('topic_node_id', None)
+        if topic_node_id is None and 'view' in self.context:
+            topic_node_id = self.context['view'].kwargs.get(
+                'topic_node_id', None)
+        if topic_node_id is None:
+            topic_node = TopicNode.objects.create(
+                _preferred_name=validated_data['preferred_name'],
+                creator=validated_data['creator'],
+                last_updater=validated_data['last_updater'])
+            topic_node_id = topic_node.id
+        validated_data['topic_node_id'] = topic_node_id
+        alternate_names = validated_data.pop('alternate_names', None)
+        instance = super(TopicSerializer, self).create(validated_data)
+        self.save_alternate_names(instance, alternate_names)
+        return instance
+    def update(self, instance, validated_data):
+        alternate_names = validated_data.pop('alternate_names', None)
+        instance = super(TopicSerializer, self).update(instance, validated_data)
+        self.save_alternate_names(instance, alternate_names)
+        return instance
+
     def save_alternate_names(self, obj, alternate_names):
+        if alternate_names is None:
+            return
         to_create = set(alternate_names)
         to_delete = []
 
-        queryset = self.fields['alternate_names'].queryset or []
+        queryset = obj.alternate_names.all()
         for alternate_name_obj in queryset:
             name = alternate_name_obj.name
             if name in alternate_names:
