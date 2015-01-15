@@ -1,4 +1,4 @@
-from django.core.urlresolvers import NoReverseMatch
+from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
 from rest_framework.relations import (HyperlinkedRelatedField, RelatedField,
                                       get_attribute)
 from rest_framework.reverse import reverse
@@ -78,59 +78,64 @@ class UpdatersField(ReadOnlyField):
         return [u.username for u in value]
 
 class TopicAssignmentField(RelatedField):
+    default_error_messages = {
+        'no_match': 'No topic matches this URL.',
+        'outside_project': 'Related topics must be within the same project.',
+        'bad_path': 'This URL is not a topic API url.'
+    }
     def __init__(self, *args, **kwargs):
-        # FIXME always override?
-        kwargs['queryset'] = TopicAssignment.objects.all()
+        kwargs['queryset'] = Topic.objects.all()
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
-        self.many = True
-    def _format_topic_assignment(self, ta):
-        url = reverse('api:api-topics-detail',
-                      args=(ta.topic.project.slug, ta.topic.id),
-                      request=self.context['request'])
-        return {
-            'id': ta.topic.id,
-            'preferred_name': ta.topic.preferred_name,
-            'url': url
-        }
     def get_attribute(self, obj):
-        return obj.related_topics.all() if hasattr(obj, 'related_topics') else []
-    def to_representation(self, value):
-        return [self._format_topic_assignment(ta) for ta in value]
+        return [ta.topic for ta in obj.related_topics.all()]
+    def to_representation(self, topics):
+        return [ self._format_topic(topic) for topic in topics ]
     def to_internal_value(self, data):
         if self.read_only:
             return
-        # FIXME
-        return []
-    def field_from_native(self, data, files, field_name, into):
-        if self.read_only:
-            return
-        into[field_name] = data.get(field_name, [])
+        return [self._topic_from_url(url) for url in data]
+    def _format_topic(self, topic):
+        url = reverse('api:api-topics-detail',
+                      args=(topic.project.slug, topic.id),
+                      request=self.context['request'])
+        return { 'url': url, 'preferred_name': topic.preferred_name }
+    def _topic_from_url(self, url):
+        try:
+            match = resolve(url)
+        except Resolver404:
+            self.fail('no_match')
+
+        if match.view_name != 'api:api-topics-detail':
+            self.fail('bad_path')
+
+        current_project = self.context['request'].project
+        lookup_project_slug = match.kwargs.pop('project_slug')
+        if lookup_project_slug != current_project.slug:
+            self.fail('outside_project')
+
+        return self.get_queryset().get(project=current_project, **match.kwargs)
 
 class RelatedTopicSerializerMixin(object):
     def save_related_topics(self, obj, topics):
         """
         Given an array of names, make sure obj is related to those topics.
         """
-        to_create = topics[:]
-        to_delete = []
+        rel_topics = obj.related_topics.select_related('topic').all()
 
-        for assignment in obj.related_topics.select_related('topic').all():
-            topic_name = assignment.topic.preferred_name
-            if topic_name in topics:
-                to_create.remove(topic_name)
-            else:
-                to_delete.append(assignment)
+        new_topics = set(topics)
+        existing_topics = { ta.topic for ta in rel_topics }
 
-        for assignment in to_delete:
-            assignment.delete()
+        to_create = new_topics.difference(existing_topics)
+        to_delete = existing_topics.difference(new_topics)
 
-        user = self.context['request'].user
-        project = self.context['request'].project
+        # Delete unused topic assignments
+        rel_topics.filter(topic__in=to_delete).delete()
 
-        for topic_name in to_create:
-            topic = Topic.objects.get_or_create_by_name(
-                topic_name, project, user)
-            obj.related_topics.create(topic=topic, creator_id=user.id)
+        # Create new topic assignments
+        for topic in to_create:
+            obj.related_topics.create(
+                topic=topic, creator_id=self.context['request'].user.id)
+
     def create(self, validated_data):
         topics = validated_data.pop('related_topics', None)
         obj = super(RelatedTopicSerializerMixin, self).create(validated_data)
@@ -143,12 +148,3 @@ class RelatedTopicSerializerMixin(object):
         if topics is not None:
             self.save_related_topics(instance, topics)
         return instance
-
-    # FIXME
-    def ___save_object(self, obj, **kwargs):
-        # Need to change to allow partial updates, etc.
-        topics = []
-        if getattr(obj, '_m2m_data', None):
-            topics = obj._m2m_data.pop('related_topics')
-        super(RelatedTopicSerializerMixin, self).save_object(obj, **kwargs)
-        self.save_related_topics(obj, topics)

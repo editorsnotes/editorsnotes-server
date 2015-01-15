@@ -584,6 +584,20 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
     def test_note_api_create(self):
         "Creating a note within your own project is ok"
         data = TEST_NOTE.copy()
+
+        related_topics = [
+            create_test_topic(preferred_name='Testing',
+                              project=self.project,
+                              user=self.user),
+            create_test_topic(preferred_name='Django',
+                              project=self.project,
+                              user=self.user)
+        ]
+
+        data['related_topics'] = [
+            '/api' + topic.get_absolute_url() for topic in related_topics
+        ]
+
         response = self.client.post(
             reverse('api:api-notes-list', args=[self.project.slug]),
             json.dumps(data),
@@ -596,9 +610,15 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['status'], data['status'])
         self.assertEqual(response.data['content'], data['content'])
-
         self.assertEqual(response.data['title'], new_note_obj.title)
         self.assertEqual(response.data['content'], etree.tostring(new_note_obj.content))
+
+        url_for = lambda topic: response.wsgi_request\
+                .build_absolute_uri('/api' + topic.get_absolute_url())
+        self.assertEqual(response.data['related_topics'], [
+            { 'url': url_for(topic), 'preferred_name': topic.preferred_name }
+            for topic in related_topics
+        ])
 
         # Make sure a revision was created upon create
         self.assertEqual(Revision.objects.count(), 1)
