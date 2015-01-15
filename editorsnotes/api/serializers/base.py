@@ -2,7 +2,7 @@ from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
 from rest_framework.relations import (HyperlinkedRelatedField, RelatedField,
                                       get_attribute)
 from rest_framework.reverse import reverse
-from rest_framework.serializers import ReadOnlyField, ModelSerializer
+from rest_framework.serializers import ReadOnlyField, ModelSerializer, SerializerMethodField
 
 from editorsnotes.main.models import Topic, TopicAssignment, Project
 
@@ -79,9 +79,12 @@ class UpdatersField(ReadOnlyField):
 
 class MinimalTopicSerializer(ModelSerializer):
     url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
+    topic_node_id = SerializerMethodField()
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'url',)
+    def get_topic_node_id(self, obj):
+        return obj.topic_node_id
 
 class TopicAssignmentField(RelatedField):
     default_error_messages = {

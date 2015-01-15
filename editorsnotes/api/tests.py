@@ -43,7 +43,9 @@ TEST_TOPIC = {
 def create_test_topic(**kwargs):
     data = TEST_TOPIC.copy()
     data.update(kwargs)
-    node, topic = main_models.Topic.objects.create_along_with_node(**kwargs)
+    data.pop('alternate_names', None)
+    data.pop('related_topics', None)
+    node, topic = main_models.Topic.objects.create_along_with_node(**data)
     return topic
 
 
@@ -63,19 +65,21 @@ TEST_DOCUMENT = {
 def create_test_document(**kwargs):
     data = TEST_DOCUMENT.copy()
     data['zotero_data'] = json.dumps(data['zotero_data'])
+    data.pop('related_topics', None)
     data.update(kwargs)
-    return main_models.Document.objects.create(**kwargs)
+    return main_models.Document.objects.create(**data)
 
 TEST_NOTE = {
     'title': u'Is testing good?',
-    'related_topics': [u'Testing', u'Django'],
+    'related_topics': [],
     'content': u'<p>We need to figure out if it\'s worth it to write tests.</p>',
     'status': 'open'
 }
 def create_test_note(**kwargs):
     data = TEST_NOTE.copy()
+    data.pop('related_topics', None)
     data.update(kwargs)
-    return main_models.Note.objects.create(**kwargs)
+    return main_models.Note.objects.create(**data)
 
 
 BAD_PERMISSION_MESSAGE = u'You do not have permission to perform this action.'

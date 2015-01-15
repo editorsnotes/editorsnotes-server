@@ -84,7 +84,7 @@ reversion.register(TopicNode)
 #################################
 
 class TopicManager(models.Manager):
-    def create_along_with_node(self, preferred_name, project, user, topic_type=None,
+    def create_along_with_node(self, preferred_name, project, user, type=None,
                                **kwargs):
         """
         Create a new topic node and a container with the given name.
@@ -94,7 +94,7 @@ class TopicManager(models.Manager):
         topic_node = TopicNode.objects.create(_preferred_name=preferred_name,
                                               creator=user,
                                               last_updater=user,
-                                              type=topic_type)
+                                              type=type)
         return topic_node, self.create(topic_node_id=topic_node.id,
                                        project_id=project.id,
                                        preferred_name=preferred_name,
