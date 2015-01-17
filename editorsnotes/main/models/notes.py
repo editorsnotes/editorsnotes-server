@@ -55,6 +55,9 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     def has_topic(self, project_topic):
         return project_topic.id in \
                 self.related_topics.values_list('topic_id', flat=True)
+    def get_sections_with_subclasses(self):
+        # TODO also select_related
+        return self.sections.select_subclasses()
 
 class NoteSectionManager(InheritanceManagerMixin, OrderingManager):
     pass
