@@ -1,3 +1,8 @@
+master
+========
+  * Upgrade to Django REST framework 3
+  * `related_topics` fields in API resources should now be links, not names
+
 v0.9.0
 =======
   * Upgrade to Django 1.7
