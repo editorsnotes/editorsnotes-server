@@ -183,10 +183,11 @@ class ActivityIndex(ElasticSearchIndex):
         search = self.es.search(query, index=self.name)
         return [ hit['_source']['data'] for hit in search['hits']['hits'] ]
 
-    def handle_edit(self, instance):
+    def handle_edit(self, instance, refresh=True):
         serializer = ActivitySerializer(instance)
         data = json.loads(JSONRenderer().render(serializer.data),
                           object_pairs_hook=OrderedDict)
 
-        self.es.index(self.name, 'activity',{ 'id': instance.id, 'data': data },
-                      id='id', refresh=True)
+        self.es.index(self.name, 'activity',
+                      { 'id': instance.id, 'data': data },
+                      refresh=refresh)
