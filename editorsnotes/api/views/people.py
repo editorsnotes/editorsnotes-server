@@ -11,11 +11,11 @@ from ..serializers.projects import ProjectSerializer
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail']
 
 class ProjectList(ListAPIView):
-    model = Project
+    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
 class ProjectDetail(RetrieveAPIView):
-    model = Project
+    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     def get_object(self):
         qs = self.get_queryset()
