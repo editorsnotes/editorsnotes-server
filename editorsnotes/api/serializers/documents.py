@@ -100,7 +100,7 @@ class CitationSerializer(serializers.ModelSerializer):
     document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
                                            queryset=Document.objects,
                                            required=True)
-    document_description = serializers.SerializerMethodField('get_document_description')
+    document_description = serializers.SerializerMethodField()
     class Meta:
         model = Citation
         fields = ('id', 'url', 'ordering', 'document', 'document_description', 'notes')
