@@ -33,7 +33,7 @@ class TopicNodeSerializer(serializers.ModelSerializer):
     def get_project_value(self, obj):
         return [OrderedDict((
             ('project_name', topic.project.name),
-            ('project_url', reverse('api:api-project-detail',
+            ('project_url', reverse('api:api-projects-detail',
                             args=(topic.project.slug,),
                             request=self.context['request'])),
             ('preferred_name', topic.preferred_name),

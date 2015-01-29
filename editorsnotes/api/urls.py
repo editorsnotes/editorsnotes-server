@@ -5,8 +5,8 @@ import views
 
 project_specific_patterns = patterns('',
     ### Project (general) ###
-    url(r'^$', views.ProjectDetail.as_view(), name='api-project-detail'),
-    url(r'^activity/$', views.ActivityView.as_view(), name='api-project-activity'),
+    url(r'^$', views.ProjectDetail.as_view(), name='api-projects-detail'),
+    url(r'^activity/$', views.ActivityView.as_view(), name='api-projects-activity'),
 
     ### Topics ###
     url(r'^topics/$', views.TopicList.as_view(), name='api-topics-list'),
