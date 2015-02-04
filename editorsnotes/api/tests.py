@@ -73,7 +73,8 @@ TEST_NOTE = {
     'title': u'Is testing good?',
     'related_topics': [],
     'content': u'<p>We need to figure out if it\'s worth it to write tests.</p>',
-    'status': 'open'
+    'status': 'open',
+    'sections': []
 }
 def create_test_note(**kwargs):
     data = TEST_NOTE.copy()
@@ -797,180 +798,63 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             description="New document", project=self.project,
             creator=self.user, last_updater=self.user)
 
-        return {
-            'text': {
+        return [
+            {
                 'section_type': 'text',
                 'content': 'this is the start'
             },
-            'citation': {
+            {
                 'section_type': 'citation',
                 'document': '/api' + document_obj.get_absolute_url(),
                 'content': 'A fascinating article.'
             },
-            'note_reference': {
+            {
                 'section_type': 'note_reference',
                 'note_reference': '/api' + another_note_obj.get_absolute_url(),
                 'content': 'See also this note.'
             }
-        }
+        ]
 
-    def test_note_api_create_note_section(self):
-        "Adding new note sections to a note in your own project is ok"
-        note_obj = self.create_test_note()
-        test_section_data = self.make_section_data()
+    def test_note_api_create_note_sections(self):
+        "Create a test note with multiple sections"
+        # First create a note with multiple sections
+        data = TEST_NOTE.copy()
+        data.update({ 'sections': self.make_section_data() })
 
         response = self.client.post(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
-            json.dumps(test_section_data['text']),
+            reverse('api:api-notes-list', args=[self.project.slug]),
+            json.dumps(data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Revision.objects.count(), 1)
+        self.assertEqual(len(response.data['sections']), 3)
 
-        response = self.client.post(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
-            json.dumps(test_section_data['citation']),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Revision.objects.count(), 2)
+        # Update one of the sections
+        data.update({ 'sections': response.data['sections'] })
+        data['sections'][0]['content'] = 'This is an updated section'
 
-        response = self.client.post(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
-            json.dumps(test_section_data['note_reference']),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Revision.objects.count(), 3)
-
-        response = self.client.post(
-            reverse('api:api-notes-normalize-section-order',
-                    args=[self.project.slug, note_obj.id]),
-            json.dumps({}),
-            content_type='application/json'
-        )
-        self.assertEqual(tuple(note_obj.sections.values_list('ordering', flat=True)),
-                         (100, 200, 300))
-
-    def test_note_api_create_note_section_bad_permissions(self):
-        "Adding a new note section in an outside project is NOT OK"
-        note_obj = self.create_test_note()
-
-        self.client.logout()
-        self.client.login(username='esther', password='esther')
-
-        response = self.client.post(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
-            json.dumps({ 'does it even matter?': 'no' }),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
-
-    def test_note_api_create_note_section_logged_out(self):
-        "Adding a new note section while logged out is NOT OK"
-        note_obj = self.create_test_note()
-
-        self.client.logout()
-
-        response = self.client.post(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
-            json.dumps({ 'does it even matter?': 'no' }),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data['detail'], NO_AUTHENTICATION_MESSAGE)
-
-
-    def test_note_api_update_note_section(self):
-        "Updating a note section in your own project is ok"
-        note_obj = self.create_test_note_with_section()
-        note_section_url = reverse('api:api-notes-section-detail',
-                                   args=[self.project.slug, 
-                                         note_obj.id,
-                                         note_obj.sections.get().note_section_id])
         response = self.client.put(
-            note_section_url,
-            json.dumps({ 'section_type': 'text', 'content': 'different content' }),
+            reverse('api:api-notes-detail', args=[self.project.slug,
+                                                  response.data['id']]),
+            json.dumps(data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Revision.objects.count(), 1)
+        self.assertEqual(Revision.objects.count(), 2)
+        self.assertEqual(len(response.data['sections']), 3)
+        self.assertEqual(response.data['sections'][0]['content'],
+                         '<div>This is an updated section</div>')
 
-    def test_note_api_update_note_section_bad_permissions(self):
-        "Updating a note section in an outside project is NOT OK"
-        note_obj = self.create_test_note_with_section()
-        note_section_url = reverse('api:api-notes-section-detail',
-                                   args=[self.project.slug, 
-                                         note_obj.id,
-                                         note_obj.sections.get().note_section_id])
-        self.client.logout()
-        self.client.login(username='esther', password='esther')
+        # Delete all the sections
+        data.update({ 'sections': [] })
         response = self.client.put(
-            note_section_url,
-            json.dumps({ 'section_type': 'text', 'content': 'different content' }),
+            reverse('api:api-notes-detail', args=[self.project.slug,
+                                                  response.data['id']]),
+            json.dumps(data),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
-
-    def test_note_api_update_note_section_logged_out(self):
-        "Updating a note section while logged out is NOT OK"
-        note_obj = self.create_test_note_with_section()
-        note_section_url = reverse('api:api-notes-section-detail',
-                                   args=[self.project.slug, 
-                                         note_obj.id,
-                                         note_obj.sections.get().note_section_id])
-        self.client.logout()
-        response = self.client.put(
-            note_section_url,
-            json.dumps({ 'section_type': 'text', 'content': 'different content' }),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data['detail'], NO_AUTHENTICATION_MESSAGE)
-
-    def test_note_api_delete_note_section(self):
-        "Deleting a note section in your own project is ok"
-        note_obj = self.create_test_note_with_section()
-        note_section_url = reverse('api:api-notes-section-detail',
-                                   args=[self.project.slug, 
-                                         note_obj.id,
-                                         note_obj.sections.get().note_section_id])
-        response = self.client.delete(
-            note_section_url,
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 204)
-        self.assertEqual(note_obj.sections.count(), 0)
-
-    def test_note_api_delete_note_section_bad_permissions(self):
-        "Deleting a note section in an outside project is NOT OK"
-        note_obj = self.create_test_note_with_section()
-        note_section_url = reverse('api:api-notes-section-detail',
-                                   args=[self.project.slug, 
-                                         note_obj.id,
-                                         note_obj.sections.get().note_section_id])
-        self.client.logout()
-        self.client.login(username='esther', password='esther')
-        response = self.client.delete(
-            note_section_url,
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
-
-    def test_note_api_delete_note_section_logged_out(self):
-        "Deleting a note section while logged out is NOT OK"
-        note_obj = self.create_test_note_with_section()
-        note_section_url = reverse('api:api-notes-section-detail',
-                                   args=[self.project.slug, 
-                                         note_obj.id,
-                                         note_obj.sections.get().note_section_id])
-        self.client.logout()
-        response = self.client.delete(
-            note_section_url,
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data['detail'], NO_AUTHENTICATION_MESSAGE)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Revision.objects.count(), 3)
+        self.assertEqual(len(response.data['sections']), 0)
+        self.assertEqual(main_models.NoteSection.objects.count(), 0)
