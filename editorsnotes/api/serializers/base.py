@@ -51,7 +51,7 @@ class ProjectSlugField(ReadOnlyField):
     def get_attribute(self, obj):
         return obj.get_affiliation()
     def to_representation(self, value):
-        url = reverse('api:api-project-detail', args=(value.slug,),
+        url = reverse('api:api-projects-detail', args=(value.slug,),
                       request=self.context['request'])
         return { 'name': value.name, 'url': url }
 

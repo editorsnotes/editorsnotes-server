@@ -138,7 +138,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(Revision.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
-        activity_response = self.client.get(reverse('api:api-project-activity',
+        activity_response = self.client.get(reverse('api:api-projects-activity',
                                                          args=[self.project.slug]))
         self.assertEqual(activity_response.status_code, 200)
         self.assertEqual(len(activity_response.data['activity']), 1)
@@ -259,7 +259,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(Revision.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
-        activity_response = self.client.get(reverse('api:api-project-activity',
+        activity_response = self.client.get(reverse('api:api-projects-activity',
                                                          args=[self.project.slug]))
         self.assertEqual(activity_response.status_code, 200)
         activity_data = activity_response.data['activity'][0]
@@ -325,7 +325,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(main_models.TopicNode.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
-        activity_response = self.client.get(reverse('api:api-project-activity',
+        activity_response = self.client.get(reverse('api:api-projects-activity',
                                                          args=[self.project.slug]))
         self.assertEqual(activity_response.status_code, 200)
         activity_data = activity_response.data['activity'][0]

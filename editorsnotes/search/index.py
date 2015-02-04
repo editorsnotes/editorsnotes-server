@@ -158,25 +158,36 @@ class ENIndex(ElasticSearchIndex):
 class ActivityIndex(ElasticSearchIndex):
     def get_name(self):
         return settings.ELASTICSEARCH_PREFIX + '-activitylog'
-    def get_activity_for(self, entity, size=25, **kwargs):
-        query = {
-            'query': {},
-            'sort': {'data.time': { 'order': 'desc', 'ignore_unmapped': True }}
-        }
+    def get_activity_for(self, entity, es_query=None, size=25):
+        query = es_query or {}
+        if not 'size' in query:
+            query['size'] = size
+        if not 'sort' in query:
+            query['sort'] = {
+                'data.time': { 'order': 'desc', 'ignore_unmapped': True }
+            }
+        if not 'query' in query:
+            query['query'] = {'filtered': {'filter': {'bool': { 'must': []}}}}
+
         if isinstance(entity, User):
-            query['query']['match'] = { 'data.user': entity.username }
+            query['query']['filtered']['filter']['bool']['must'].append({
+                'term': { 'data.user': entity.username }
+            })
         elif isinstance(entity, Project):
-            query['query']['match'] = { 'data.project': entity.slug }
+            query['query']['filtered']['filter']['bool']['must'].append({
+                'term': { 'data.project': entity.slug }
+            })
         else:
             raise ValueError('Must pass either project or user')
-        query.update(kwargs)
-        search = self.es.search(query, index=self.name, size=size)
+
+        search = self.es.search(query, index=self.name)
         return [ hit['_source']['data'] for hit in search['hits']['hits'] ]
 
-    def handle_edit(self, instance):
+    def handle_edit(self, instance, refresh=True):
         serializer = ActivitySerializer(instance)
         data = json.loads(JSONRenderer().render(serializer.data),
                           object_pairs_hook=OrderedDict)
 
-        self.es.index(self.name, 'activity',{ 'id': instance.id, 'data': data },
-                      id='id', refresh=True)
+        self.es.index(self.name, 'activity',
+                      { 'id': instance.id, 'data': data },
+                      refresh=refresh)

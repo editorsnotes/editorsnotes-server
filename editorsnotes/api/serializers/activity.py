@@ -21,6 +21,9 @@ class ActivitySerializer(serializers.ModelSerializer):
         model = LogActivity
         fields = ('user', 'project', 'time', 'type', 'url', 'title', 'action',)
     def get_object_url(self, obj):
-        return None if obj.action == DELETION else obj.content_object.get_absolute_url()
+        if obj.action == DELETION or obj.content_object is None:
+            return None
+        else:
+            return obj.content_object.get_absolute_url()
     def get_action_repr(self, version_obj):
         return VERSION_ACTIONS[version_obj.action]

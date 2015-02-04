@@ -11,16 +11,24 @@ from ..serializers.projects import ProjectSerializer
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail']
 
 class ProjectList(ListAPIView):
-    model = Project
+    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
 class ProjectDetail(RetrieveAPIView):
-    model = Project
+    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     def get_object(self):
         qs = self.get_queryset()
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
         return project
+
+def parse_int(val, default=25, maximum=100):
+    if not isinstance(val, int):
+        try:
+            val = int(val)
+        except ValueError:
+            val = default
+    return val if val <= maximum else maximum
 
 class ActivityView(GenericAPIView):
     """
@@ -28,12 +36,30 @@ class ActivityView(GenericAPIView):
 
     Takes the following arguments:
 
-    * number (int)
+    * count (int)
     * start (int)
     * type ("note", "topic", "document", "transcript", "footnote")
     * action ("add", "change", "delete")
     * order ('asc' or 'desc')
     """
+    TYPES = ['note', 'topic', 'document', 'transcript', 'footnote']
+    ACTIONS = ['added', 'changed', 'deleted']
+    def get_es_query(self):
+        q = {'query': {'filtered': {'filter': {'bool': { 'must': []}}}}}
+        params = self.request.QUERY_PARAMS
+        if 'count' in params:
+            q['size'] = parse_int(params['count'])
+        if 'start' in params:
+            q['from'] = parse_int(params['start'])
+        if 'type' in params and params['type'] in self.TYPES:
+            q['query']['filtered']['filter']['bool']['must'].append({
+                'term': { 'data.type': params['type'] }
+            })
+        if 'action' in params and params['action'] in self.ACTIONS:
+            q['query']['filtered']['filter']['bool']['must'].append({
+                'term': { 'data.action': params['action'] }
+            })
+        return q
     def get_object(self, username=None, project_slug=None):
         if username is not None:
             obj = get_object_or_404(User, username=username)
@@ -44,7 +70,6 @@ class ActivityView(GenericAPIView):
         return obj
     def get(self, request, format=None, **kwargs):
         obj = self.get_object(**kwargs)
-        data = get_index('activity').get_activity_for(obj)
+        es_query = self.get_es_query()
+        data = get_index('activity').get_activity_for(obj, es_query)
         return Response({ 'activity': data })
-
-
