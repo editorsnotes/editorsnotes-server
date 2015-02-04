@@ -1,5 +1,10 @@
 master
+=======
+
+v0.10.1
 ========
+  * Add more information to Project API resource
+  * Fix bugs in activity index
 
 v0.10.0
 ========
