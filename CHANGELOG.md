@@ -1,5 +1,8 @@
 master
 ========
+
+v0.10.0
+========
   * Upgrade to Django REST framework 3
   * `sections` field in Note API resource is now a writeable multi-valued
     field. This is in contrast to the previous approach, where note sections
