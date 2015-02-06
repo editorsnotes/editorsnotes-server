@@ -32,7 +32,7 @@ module.exports = OrderedCollectionView.extend({
     }
   },
   makeItemView: function (section) {
-    var SectionView = require('./note_section')[section.get('section_type')];
+    var SectionView = require('./edit_note_section')[section.get('section_type')];
     return new SectionView({ model: section });
   },
   handleAddSectionButton: function (e) {

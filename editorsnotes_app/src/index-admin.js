@@ -54,7 +54,7 @@ AdminRouter = Backbone.Router.extend({
 
   editDocument: function (project, id) {
     var Document = require('./models/document')
-      , DocumentView = require('./views/document')
+      , DocumentView = require('./views/edit_document')
       , view
 
     view = this.makeModelView(Document, DocumentView, project, id);
@@ -63,7 +63,7 @@ AdminRouter = Backbone.Router.extend({
 
   editNote: function (project, id) {
     var Note = require('./models/note')
-      , NoteView = require('./views/note')
+      , NoteView = require('./views/edit_note')
       , view
 
     view = this.makeModelView(Note, NoteView, project, id);
@@ -72,7 +72,7 @@ AdminRouter = Backbone.Router.extend({
 
   editTopic: function (project, id) {
     var Topic = require('./models/topic')
-      , TopicView = require('./views/topic')
+      , TopicView = require('./views/edit_topic')
       , view
 
     view = this.makeModelView(Topic, TopicView, project, id);

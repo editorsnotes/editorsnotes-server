@@ -5,7 +5,7 @@ var _ = require('underscore')
   , Backbone = require('../backbone')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
-  , CitationsView = require('./citations')
+  , CitationsView = require('./edit_topic_citations')
   , SaveItemMixin = require('./generic/save_item_mixin')
   , HandleErrorMixin = require('./generic/handle_error_mixin')
   , TopicView
