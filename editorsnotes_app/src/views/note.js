@@ -53,10 +53,8 @@ NoteView = module.exports = Backbone.View.extend({
 
     this.$el.empty().html(template({ note: that.model }));
 
-    if (!this.model.isNew()) {
-      this.sectionListView.setElement( that.$('#note-sections') );
-      this.sectionListView.render()
-    }
+    this.sectionListView.setElement( that.$('#note-sections') );
+    this.sectionListView.render()
 
     this.topicListView.$el.appendTo( that.$('#note-related-topics') );
     this.$('#note-description > :first-child').editText();

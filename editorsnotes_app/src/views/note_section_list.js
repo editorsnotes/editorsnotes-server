@@ -4,13 +4,6 @@ var OrderedCollectionView = require('./generic/ordered_collection_base')
   , $ = require('../jquery')
 
 module.exports = OrderedCollectionView.extend({
-  initialize: function () {
-    $('body').addClass('editing');
-    OrderedCollectionView.prototype.initialize.apply(this, arguments);
-    if (this.collection.needsNormalization()) {
-      this.collection.normalizeOrderingValues();
-    }
-  },
   render: function () {
     var that = this
       , template = require('../templates/note_section_list.html');
@@ -29,6 +22,8 @@ module.exports = OrderedCollectionView.extend({
     });
     this.initDrag();
     this.initStickyBar();
+
+    $('body').addClass('editing');
   },
 
   onAddItemView: function (view) {
