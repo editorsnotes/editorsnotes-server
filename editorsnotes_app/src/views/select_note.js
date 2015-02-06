@@ -15,7 +15,7 @@ module.exports = SelectItemView.extend({
 
   addItem: function (e) {
     var that = this
-      , AddNoteView = require('./add_note')
+      , AddNoteView = require('./generic/make_modal_view')('note')
       , addView = new AddNoteView({
         model: new Note({}, { project: this.project }),
         el: $('<div>').appendTo('body')

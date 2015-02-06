@@ -14,7 +14,7 @@ module.exports =  SelectItemView.extend({
 
   addItem: function (e) {
     var that = this
-      , AddDocumentView = require('./add_document')
+      , AddDocumentView = require('./generic/make_modal_view')('document')
       , addView = new AddDocumentView({ model: new Document({}, { project: this.project }) });
 
     e.preventDefault();

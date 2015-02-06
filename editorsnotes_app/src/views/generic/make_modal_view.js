@@ -1,9 +1,7 @@
 "use strict";
 
 /*
- * Base view for all views adding items in a modal
- *
- * Must create saveItem method
+ * Function that returns a modal editing view for topics, notes, or documents.
  *
  * options:
  *    height
@@ -12,8 +10,23 @@
  */
 
 var $ = require('../../jquery')
+  , Cocktail = require('backbone.cocktail')
+  , AddItemMixin
+  , viewsByType = {
+    'topic': require('../topic'),
+    'document': require('../document'),
+    'note': require('../note')
+  }
 
-module.exports = {
+module.exports = function (type) {
+  var View = viewsByType[type];
+
+  if (!View) throw new Error('Cannot render modal for type: ' + type);
+
+  return Cocktail.mixin(View.extend({}), AddItemMixin, { itemType: type });
+}
+
+AddItemMixin = {
   events: {
     'ajaxStart': 'showLoader',
     'ajaxStop': 'hideLoader',
@@ -21,10 +34,17 @@ module.exports = {
     'shown': 'setModalSize',
     'click .btn-save-item': 'saveItem'
   },
-  renderModal: function () {
+
+  initialize: function () {
+    this.$('.save-row').remove();
+  },
+
+  render: function () {
     var that = this
       , template = require('../../templates/add_item_modal.html')
       , widget
+
+    debugger;
 
     widget = template({ type: that.itemType });
 
@@ -35,6 +55,11 @@ module.exports = {
       .append( $(widget).filter('.modal-footer') );
 
     this.$loader = this.$('.loader-icon');
+  },
+
+  saveItem: function (e) {
+    e.preventDefault();
+    this.model.save().then(this.$el.modal.bind(this.$el, 'hide'));
   },
 
   showLoader: function () { this.$loader.show() },

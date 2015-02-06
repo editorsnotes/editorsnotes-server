@@ -50,7 +50,7 @@ module.exports = Backbone.View.extend({
   addItem: function (e) {
     e.preventDefault();
 
-    var AddTopicView = require('./add_topic')
+    var AddTopicView = require('./generic/make_modal_view')('topic')
       , addView = new AddTopicView({
         model: new Topic({}, { project: this.collection.project }),
         el: $('<div>').appendTo('body')
