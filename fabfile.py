@@ -141,8 +141,6 @@ def watch_static():
                 return
 
             local('{python} manage.py collectstatic --noinput -v0'.format(**env))
-            local('touch -c editorsnotes_app/js/index-admin.js')
-            local('touch -c editorsnotes_app/js/index-base.js')
             self.last_collected = datetime.datetime.now()
 
     event_handler = ChangeHandler()
@@ -153,7 +151,7 @@ def watch_static():
         recursive=True)
     observer.schedule(
         event_handler,
-        os.path.join(PROJ_ROOT, 'editorsnotes_app', 'js'),
+        os.path.join(PROJ_ROOT, 'editorsnotes_app', 'src'),
         recursive=True)
     observer.start()
 
