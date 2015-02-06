@@ -10,6 +10,7 @@
     "globalstrict": true,
     "globals": {
         "module": false,
-        "require": false
+        "require": false,
+        "window": false
     }
 }

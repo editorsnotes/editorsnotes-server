@@ -2,31 +2,14 @@
 
 var Backbone = require('./backbone')
   , $ = require('./jquery')
-  , Editor = require('./utils/text_editor')
   , Project = require('./models/project')
   , AdminRouter
 
 $(document).ready(function () {
-  var admin = new AdminRouter();
+  initFeedback();
+  initEditors();
 
-  var feedbackHtml = (
-    '<div class="feedback-prompt">' +
-      '<span class="feedback-label">Feedback</span>' +
-      '<i class="fa fa-plus"></i>' +
-    '</div>');
-
-  var $feedback = $(feedbackHtml)
-    .appendTo('body')
-    .on('click', function () {
-      var FeedbackView = require('./views/feedback')
-        , view = new FeedbackView({ purpose: 'Feedback' });
-
-      view.$el.on('shown', function () { $feedback.hide() });
-      view.$el.on('hidden', function () { $feedback.show() });
-    });
-
-  // pushState doesn't actually matter here because we just use normal anchor
-  // tags for page transitions (ie this is not a single page app (..yet?))
+  window.EditorsNotes.admin = new AdminRouter();
   Backbone.history.start({ pushState: true });
 });
 
@@ -51,8 +34,8 @@ AdminRouter = Backbone.Router.extend({
     var instance
       , project
 
-    if (global.EditorsNotes.bootstrap) { 
-      instance = new Model(global.EditorsNotes.bootstrap, { parse: true });
+    if (window.EditorsNotes.bootstrap) {
+      instance = new Model(window.EditorsNotes.bootstrap, { parse: true });
     } else if (id) {
       // TODO (or don't)
     } else {
@@ -95,29 +78,21 @@ AdminRouter = Backbone.Router.extend({
     view = this.makeModelView(Topic, TopicView, project, id);
     this.changeView(view);
   }
-  
+
 });
 
-$.fn.editText = function (method) {
-  var editor = this.data('editor');
+// Add a button for feedback
+function initFeedback() {
+  var FeedbackView = require('./views/feedback_hint')
+    , feedbackHint = new FeedbackView()
 
-  if (this.length !== 1) $.error('One at a time :(');
-
-  if ( typeof(method) === 'object' || !method  ) {
-    if (editor) return this;
-    return this.data('editor', new Editor(this, method || {}));
-  } else if ( !editor ) {
-    $.error('Must initialize editor first.');
-  } else if ( Editor.prototype[method] ) {
-    return editor[method].apply(editor, Array.prototype.slice.call(arguments, 1));
-  } else {
-    $.error('No such method: ' + method);
-  }
+  feedbackHint.$el.appendTo('body');
 }
 
-$(document).ready(function () {
-  // Initialize text editors
+// Initialize text editors for textareas with the magic word in the class name
+// TODO: remove?
+function initEditors() {
   $('textarea.xhtml-textarea:visible').each(function (idx, textarea) {
     $(textarea).editText();
   });
-});
+}
