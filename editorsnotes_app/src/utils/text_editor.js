@@ -1,7 +1,6 @@
 "use strict";
 
 var _ = require('underscore')
-  , $ = require('../jquery')
   , wysihtml5 = require('wysihtml5')
   , toolbarTemplate = require('../templates/wysihtml5_toolbar.html')
   , defaults
@@ -26,11 +25,12 @@ wysihtml5Opts = {
 }
 
 function Editor( $el, opts ){
-  var that = this;
+  var that = this
+    , $ = require('../jquery')
 
   $el = $el instanceof $ ? $el : $($el);
 
-  if ($el.length !== 1 || $el[0].nodeType !== global.document.ELEMENT_NODE) {
+  if ($el.length !== 1 || $el[0].nodeType !== window.document.ELEMENT_NODE) {
     throw new Error('Must pass exactly one element.')
   }
 
@@ -60,6 +60,7 @@ function Editor( $el, opts ){
 
 Editor.prototype.init = function () {
   var that = this
+    , $ = require('../jquery')
     , content
 
   if ('initialValue' in this.options && this.options.initialValue !== null) {
