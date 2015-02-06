@@ -2,7 +2,7 @@
 
 var Backbone = require('../../backbone')
   , _ = require('underscore')
-  , $ = require('jquery')
+  , $ = require('../../jquery')
 
 // "ordering" field is hardcoded. It could be made generic.
 

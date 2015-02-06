@@ -1,14 +1,14 @@
 "use strict";
 
 var _ = require('underscore')
-  , $ = require('../jquery')
-  , Backbone = require('../backbone')
+  , $ = require('../../jquery')
+  , Backbone = require('../../backbone')
   , Cocktail = require('backbone.cocktail')
-  , RelatedTopicsView = require('./related_topics')
-  , ZoteroDataView = require('./edit_zotero')
-  , ScanListView = require('./edit_scan_list')
-  , SaveItemMixin = require('./generic/save_item_mixin')
-  , HandleErrorMixin = require('./generic/handle_error_mixin')
+  , RelatedTopicsView = require('../widgets/related_topics')
+  , ZoteroDataView = require('./zotero')
+  , ScanListView = require('./scan_list')
+  , SaveItemMixin = require('../generic/save_item_mixin')
+  , HandleErrorMixin = require('../generic/handle_error_mixin')
   , DocumentView
 
 module.exports = DocumentView = Backbone.View.extend({
@@ -45,7 +45,7 @@ module.exports = DocumentView = Backbone.View.extend({
 
   render: function () {
     var that = this
-      , template = require('../templates/document.html')
+      , template = require('./templates/document.html')
 
     this.$el.html( template({ doc: that.model }));
     this.topicListView.$el.appendTo( that.$('#document-related-topics') );

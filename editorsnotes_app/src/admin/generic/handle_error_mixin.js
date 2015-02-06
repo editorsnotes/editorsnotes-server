@@ -19,7 +19,7 @@ module.exports = {
     }
   },
   _handleError: function (modelOrCollection, resp) {
-    var template = require('../../templates/error_message.html')
+    var template = require('./templates/error_message.html')
       , miscErrors = {}
 
     _.forEach(resp.responseJSON, function (errors, key) {

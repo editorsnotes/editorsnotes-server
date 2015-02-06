@@ -1,13 +1,13 @@
 "use strict";
 
 var _ = require('underscore')
-  , $ = require('../jquery')
-  , Backbone = require('../backbone')
+  , $ = require('../../jquery')
+  , Backbone = require('../../backbone')
   , Cocktail = require('backbone.cocktail')
-  , RelatedTopicsView = require('./related_topics')
-  , CitationsView = require('./edit_topic_citations')
-  , SaveItemMixin = require('./generic/save_item_mixin')
-  , HandleErrorMixin = require('./generic/handle_error_mixin')
+  , RelatedTopicsView = require('../widgets/related_topics')
+  , CitationsView = require('./topic_citations')
+  , SaveItemMixin = require('../generic/save_item_mixin')
+  , HandleErrorMixin = require('../generic/handle_error_mixin')
   , TopicView
 
 module.exports = TopicView = Backbone.View.extend({
@@ -30,7 +30,7 @@ module.exports = TopicView = Backbone.View.extend({
 
   render: function () {
     var that = this
-      , template = require('../templates/topic.html')
+      , template = require('./templates/topic.html')
 
     this.$el.html( template({ topic: that.model, _: _ }));
     this.$('#topic-summary > :first-child').editText();

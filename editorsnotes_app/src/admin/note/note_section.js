@@ -1,7 +1,7 @@
 "use strict";
 
-var Backbone = require('../backbone')
-  , $ = require('../jquery')
+var Backbone = require('../../backbone')
+  , $ = require('../../jquery')
   , NoteSectionView
   , CitationSectionView
   , NoteReferenceSectionView
@@ -28,7 +28,7 @@ NoteSectionView = Backbone.View.extend({
   render: function () {
     var that = this
       , sectionType = this.model.get('section_type')
-      , template = require('../templates/note_section')[sectionType]
+      , template = require('./templates/note_section')[sectionType]
 
     this.$el.html( template({ns: that.model.toJSON()}) );
     if (this.afterRender) this.afterRender();
@@ -97,7 +97,7 @@ CitationSectionView = NoteSectionView.extend({
   afterRender: function () {
     var that = this
       , project = this.model.project || this.model.collection.project
-      , SelectDocumentView = require('./select_document')
+      , SelectDocumentView = require('../widgets/select_document')
       , documentSelect = new SelectDocumentView({ project: project })
       , $documentContainer
 
@@ -119,7 +119,7 @@ CitationSectionView = NoteSectionView.extend({
 NoteReferenceSectionView = NoteSectionView.extend({
   afterRender: function () {
     var that = this
-      , SelectNoteView = require('./select_note')
+      , SelectNoteView = require('../widgets/select_note')
       , noteSelect = new SelectNoteView({ project: this.model.project })
       , $noteContainer
 

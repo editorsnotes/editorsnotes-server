@@ -1,6 +1,6 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var Backbone = require('../../../backbone')
 
 module.exports = Backbone.View.extend({
   $modal: null,
@@ -21,7 +21,7 @@ module.exports = Backbone.View.extend({
   },
   handleClick: function (e) {
     var that = this
-      , FeedbackModalView = require('./feedback')
+      , FeedbackModalView = require('./modal')
       , modalView = new FeedbackModalView({ purpose: 'Feedback' })
 
     e.preventDefault();

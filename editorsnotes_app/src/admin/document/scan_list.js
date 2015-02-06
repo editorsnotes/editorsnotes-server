@@ -1,6 +1,6 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var Backbone = require('../../backbone')
   , _ = require('underscore')
 
 module.exports = Backbone.View.extend({
@@ -22,7 +22,7 @@ module.exports = Backbone.View.extend({
   },
   render: function () {
     var that = this
-      , template = require('../templates/scans.html')
+      , template = require('./templates/scans.html')
 
     this.$el.html( template({ scans: that.collection }) );
     this.$dropTarget = this.$('#scan-drop');

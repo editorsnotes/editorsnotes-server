@@ -1,13 +1,13 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var Backbone = require('../../backbone')
   , Cocktail = require('backbone.cocktail')
   , _ = require('underscore')
-  , i18n = require('../utils/i18n').main
-  , NoteSectionListView = require('./edit_note_section_list')
-  , RelatedTopicsView = require('./related_topics')
-  , SaveItemMixin = require('./generic/save_item_mixin')
-  , HandleErrorMixin = require('./generic/handle_error_mixin')
+  , i18n = require('../../utils/i18n').main
+  , NoteSectionListView = require('./note_section_list')
+  , RelatedTopicsView = require('../widgets/related_topics')
+  , SaveItemMixin = require('../generic/save_item_mixin')
+  , HandleErrorMixin = require('../generic/handle_error_mixin')
   , NoteView
 
 NoteView = module.exports = Backbone.View.extend({
@@ -49,7 +49,7 @@ NoteView = module.exports = Backbone.View.extend({
 
   render: function () {
     var that = this
-      , template = require('../templates/note.html')
+      , template = require('./templates/note.html')
 
     this.$el.empty().html(template({ note: that.model }));
 

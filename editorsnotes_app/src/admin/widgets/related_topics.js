@@ -1,9 +1,9 @@
 "use strict";
 
-var Backbone = require('../backbone')
-  , $ = require('../jquery')
-  , Topic = require('../models/topic')
-  , Autocompleter = require('../utils/autocomplete_widget')
+var Backbone = require('../../backbone')
+  , $ = require('../../jquery')
+  , Topic = require('../../models/topic')
+  , Autocompleter = require('../../utils/autocomplete_widget')
   , RelatedTopicItemView
 
 RelatedTopicItemView = Backbone.View.extend({
@@ -32,7 +32,7 @@ module.exports = Backbone.View.extend({
   className: 'related-topics-widget',
   initialize: function () {
     var autocompleter
-      , template = require('../templates/add_or_select_item.html')
+      , template = require('../generic/templates/add_or_select_item.html')
 
     this.$topicList = $('<div class="related-topics-list">').appendTo(this.$el);
 
@@ -50,7 +50,7 @@ module.exports = Backbone.View.extend({
   addItem: function (e) {
     e.preventDefault();
 
-    var AddTopicView = require('./generic/make_modal_view')('topic')
+    var AddTopicView = require('../generic/make_modal_view')('topic')
       , addView = new AddTopicView({
         model: new Topic({}, { project: this.collection.project }),
         el: $('<div>').appendTo('body')

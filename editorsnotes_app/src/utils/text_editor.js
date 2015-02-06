@@ -2,7 +2,7 @@
 
 var _ = require('underscore')
   , wysihtml5 = require('wysihtml5')
-  , toolbarTemplate = require('../templates/wysihtml5_toolbar.html')
+  , toolbarTemplate = require('./templates/wysihtml5_toolbar.html')
   , defaults
   , wysihtml5Opts
 

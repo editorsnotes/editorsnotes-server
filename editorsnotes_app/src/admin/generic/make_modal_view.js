@@ -41,7 +41,7 @@ AddItemMixin = {
 
   render: function () {
     var that = this
-      , template = require('../../templates/add_item_modal.html')
+      , template = require('./templates/add_item_modal.html')
       , widget
 
     debugger;

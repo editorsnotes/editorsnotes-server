@@ -1,8 +1,8 @@
 "use strict";
 
 var _ = require('underscore')
-  , $ = require('../jquery')
-  , Backbone = require('../backbone')
+  , $ = require('../../../jquery')
+  , Backbone = require('../../../backbone')
   , FEEDBACK_URL = '/accounts/profile/feedback/'
 
 module.exports = Backbone.View.extend({
@@ -17,7 +17,7 @@ module.exports = Backbone.View.extend({
   },
   render: function () {
     var that = this
-      , template = require('../templates/feedback_modal.html');
+      , template = require('./templates/feedback_modal.html');
 
     $.get(FEEDBACK_URL).done(function (form) {
       that.$el

@@ -10,7 +10,7 @@ module.exports = {
     
   },
   render: function () {
-    var template = require('../../templates/save_row.html');
+    var template = require('./templates/save_row.html');
     this.$el.append(template({ model: this.model }));
   },
   toggleLoaders: function (state) {
@@ -43,7 +43,7 @@ module.exports = {
   },
   defaultDelete: function () {
     var that = this
-      , template = require('../../templates/confirm_delete.html')
+      , template = require('./templates/confirm_delete.html')
       , promise = $.get(this.model.url() + 'confirm_delete/')
 
     promise.done(function (data) {

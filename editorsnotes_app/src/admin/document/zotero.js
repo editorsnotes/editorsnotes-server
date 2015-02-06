@@ -1,11 +1,11 @@
 "use strict";
 
-var Backbone = require('../backbone')
+var Backbone = require('../../backbone')
   , _ = require('underscore')
-  , $ = require('../jquery')
-  , CitationEngine = require('../utils/citation_generator')
-  , zoteroToCsl = require('../utils/zotero_to_csl')
-  , i18n = require('../utils/i18n')
+  , $ = require('../../jquery')
+  , CitationEngine = require('../../utils/citation_generator')
+  , zoteroToCsl = require('../../utils/zotero_to_csl')
+  , i18n = require('../../utils/i18n')
 
 function fetchItemTypes() {
   return $.getJSON('/api/metadata/documents/item_types/');
@@ -45,7 +45,7 @@ module.exports = Backbone.View.extend({
   },
 
   renderItemTypeSelect: function (itemTypes) {
-    var template = require('../templates/zotero_item_type_select.html');
+    var template = require('./templates/zotero_item_type_select.html');
     this.$el.html(template({ _: _, itemTypes: itemTypes }));
     this.$('select').prop('selectedIndex', -1);
     this.trigger('rendered');
@@ -53,7 +53,7 @@ module.exports = Backbone.View.extend({
 
   renderZoteroData: function (zoteroItem) {
     var that = this
-      , template = require('../templates/zotero_item.html')
+      , template = require('./templates/zotero_item.html')
 
     fetchCreatorTypes(zoteroItem.itemType).done(function (creatorTypes) {
       that.$el.html(template({

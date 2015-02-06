@@ -1,8 +1,8 @@
 "use strict";
 
-var $ = require('../jquery')
-  , SelectItemView = require('./generic/select_item_base')
-  , Note = require('../models/note')
+var $ = require('../../jquery')
+  , SelectItemView = require('../generic/select_item_base')
+  , Note = require('../../models/note')
 
 module.exports = SelectItemView.extend({
   type: 'note',
@@ -15,7 +15,7 @@ module.exports = SelectItemView.extend({
 
   addItem: function (e) {
     var that = this
-      , AddNoteView = require('./generic/make_modal_view')('note')
+      , AddNoteView = require('../generic/make_modal_view')('note')
       , addView = new AddNoteView({
         model: new Note({}, { project: this.project }),
         el: $('<div>').appendTo('body')
