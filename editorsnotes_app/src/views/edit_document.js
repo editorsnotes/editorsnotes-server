@@ -6,7 +6,7 @@ var _ = require('underscore')
   , Cocktail = require('backbone.cocktail')
   , RelatedTopicsView = require('./related_topics')
   , ZoteroDataView = require('./edit_zotero')
-  , ScanListView = require('./scan_list')
+  , ScanListView = require('./edit_scan_list')
   , SaveItemMixin = require('./generic/save_item_mixin')
   , HandleErrorMixin = require('./generic/handle_error_mixin')
   , DocumentView
