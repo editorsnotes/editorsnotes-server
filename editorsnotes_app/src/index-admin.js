@@ -54,7 +54,7 @@ AdminRouter = Backbone.Router.extend({
 
   editDocument: function (project, id) {
     var Document = require('./models/document')
-      , DocumentView = require('./admin/document')
+      , DocumentView = require('./admin_views/document')
       , view
 
     view = this.makeModelView(Document, DocumentView, project, id);
@@ -63,7 +63,7 @@ AdminRouter = Backbone.Router.extend({
 
   editNote: function (project, id) {
     var Note = require('./models/note')
-      , NoteView = require('./admin/note')
+      , NoteView = require('./admin_views/note')
       , view
 
     view = this.makeModelView(Note, NoteView, project, id);
@@ -72,7 +72,7 @@ AdminRouter = Backbone.Router.extend({
 
   editTopic: function (project, id) {
     var Topic = require('./models/topic')
-      , TopicView = require('./admin/topic')
+      , TopicView = require('./admin_views/topic')
       , view
 
     view = this.makeModelView(Topic, TopicView, project, id);
@@ -83,7 +83,7 @@ AdminRouter = Backbone.Router.extend({
 
 // Add a button for feedback
 function initFeedback() {
-  var FeedbackView = require('./admin/widgets/feedback')
+  var FeedbackView = require('./admin_views/widgets/feedback')
     , feedbackHint = new FeedbackView()
 
   feedbackHint.$el.appendTo('body');
