@@ -33,10 +33,22 @@ class ScanSerializer(serializers.ModelSerializer):
     creator = serializers.ReadOnlyField(source='creator.username')
     image = HyperLinkedImageField()
     image_thumbnail = HyperLinkedImageField(read_only=True)
+    height = serializers.SerializerMethodField()
+    width = serializers.SerializerMethodField()
     class Meta:
         model = Scan
-        fields = ('id', 'image', 'image_thumbnail', 'ordering', 'created',
-                  'creator',)
+        fields = ('id', 'image', 'image_thumbnail', 'height', 'width',
+                  'ordering', 'created', 'creator',)
+    def get_height(self, obj):
+        try:
+            return obj.image.height
+        except IOError:
+            return None
+    def get_width(self, obj):
+        try:
+            return obj.image.width
+        except IOError:
+            return None
 
 class UniqueDocumentDescriptionValidator:
     message = u'Document with this description already exists.'

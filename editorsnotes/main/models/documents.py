@@ -286,7 +286,7 @@ reversion.register(Footnote)
 
 class Scan(CreationMetadata, ProjectPermissionsMixin):
     u"""
-    A scanned image of (part of) a dcument.
+    A scanned image of (part of) a document.
     """
     document = models.ForeignKey(Document, related_name='scans')
     image = models.ImageField(upload_to='scans/%Y/%m')

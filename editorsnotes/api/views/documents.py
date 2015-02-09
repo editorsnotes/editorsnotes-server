@@ -70,10 +70,9 @@ class ScanList(BaseListAPIView):
         return document
     def get_queryset(self):
         return self.get_document().scans.all()
-    def pre_save(self, obj):
-        super(ScanList, self).pre_save(obj)
-        obj.document = self.get_document()
-        return obj
+    def perform_create(self, serializer):
+        serializer.save(creator=self.request.user,
+                        document_id=self.kwargs.get('document_id'))
 
 
 class ScanDetail(BaseDetailView):
