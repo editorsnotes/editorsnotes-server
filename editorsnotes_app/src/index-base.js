@@ -1,13 +1,15 @@
 "use strict";
 
 var $ = require('./jquery')
-  , Backbone = require('./backbone')
+  , Backbone = window.Backbone = require('./backbone')
   , BaseRouter
 
 $(document).ready(function () {
   initTimeago();
   initTooltips();
   initAutocomplete();
+
+  window.EditorsNotes.base = new BaseRouter();
 });
 
 BaseRouter = Backbone.Router.extend({

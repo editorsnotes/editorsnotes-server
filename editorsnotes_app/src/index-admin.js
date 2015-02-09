@@ -10,7 +10,6 @@ $(document).ready(function () {
   initEditors();
 
   window.EditorsNotes.admin = new AdminRouter();
-  Backbone.history.start({ pushState: true });
 });
 
 AdminRouter = Backbone.Router.extend({
