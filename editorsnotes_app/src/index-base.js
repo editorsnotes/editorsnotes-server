@@ -13,7 +13,15 @@ $(document).ready(function () {
 });
 
 BaseRouter = Backbone.Router.extend({
-  routes: {}
+  routes: {
+    'projects/:project/documents/:document/': 'showDocument'
+  },
+  showDocument: function () {
+    var ScansView = require('./base_views/scans')
+      , Document = require('./models/document')
+      , dokument = new Document(EditorsNotes.bootstrap, { parse: true })
+      , view = new ScansView({ el: '#scans', model: dokument })
+  }
 });
 
 // Initialize timeago

@@ -7,6 +7,7 @@
     "backbone.cocktail": "^0.5.10",
     "backbone.stickit": "^0.8.0",
     "jquery": "^1.11.0",
+    "leaflet": "^0.7.3",
     "underscore": "^1.7.0",
     "underscore-contrib": "^0.3.0"
   },
@@ -60,8 +61,7 @@
       "depends": "jquery"
     },
     "wysihtml5": "wysihtml5",
-    "citeproc": "global:CSL",
-    "seadragon": "global:seadragon"
+    "citeproc": "global:CSL"
   },
   "testling": {
     "harness": "mocha",

@@ -1,7 +1,7 @@
 <ul class="breadcrumb-top">
   {% for label, url in breadcrumb %}
     {% if forloop.last %}
-    <li class="active">{{ label }}</li>
+    <li class="active">{{ label|truncatechars:40 }}</li>
     {% else %}
     <li>
       <a href="{{ url }}">{{ label }}</a>

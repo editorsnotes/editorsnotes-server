@@ -26,6 +26,8 @@ function makeorderedSave(origSave) {
       dfd = save();
       if (needsNormalization) dfd.then(normalize).done(refresh);
     }
+
+    return dfd.promise();
   }
 }
 

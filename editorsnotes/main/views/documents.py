@@ -5,17 +5,19 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 
+from rest_framework.renderers import JSONRenderer
+
 from editorsnotes.djotero.utils import as_readable
 from editorsnotes.search import get_index
 
 from ..models import Document, Footnote, Transcript, Topic, CitationNS, Project
+from editorsnotes.api.serializers import DocumentSerializer
 
 def document(request, project_slug, document_id):
     o = {}
 
     qs = Document.objects.select_related('project')
-    o['document'] = get_object_or_404(Document, id=document_id,
-                                      project__slug=project_slug)
+    o['document'] = get_object_or_404(Document, id=document_id, project__slug=project_slug)
 
     o['breadcrumb'] = (
         (o['document'].project.name, o['document'].project.get_absolute_url()),
@@ -23,6 +25,9 @@ def document(request, project_slug, document_id):
                               kwargs={'project_slug': o['document'].project.slug})),
         (o['document'].as_text(), None)
     )
+
+    serializer = DocumentSerializer(instance=o['document'], context={ 'request': request })
+    o['data'] = JSONRenderer().render(serializer.data)
 
     o['topics'] = (
         [ ta.topic for ta in o['document'].related_topics.all() ] +
