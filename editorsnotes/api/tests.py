@@ -614,7 +614,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         ]
 
         data['related_topics'] = [
-            '/api' + topic.get_absolute_url() for topic in related_topics
+            topic.get_absolute_url() for topic in related_topics
         ]
 
         response = self.client.post(
@@ -633,7 +633,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['content'], etree.tostring(new_note_obj.content))
 
         url_for = lambda topic: response.wsgi_request\
-                .build_absolute_uri('/api' + topic.get_absolute_url())
+                .build_absolute_uri(topic.get_absolute_url())
         self.assertEqual(response.data['related_topics'], [
             {
                 'id': topic.id,
@@ -831,12 +831,12 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             },
             {
                 'section_type': 'citation',
-                'document': '/api' + document_obj.get_absolute_url(),
+                'document': document_obj.get_absolute_url(),
                 'content': 'A fascinating article.'
             },
             {
                 'section_type': 'note_reference',
-                'note_reference': '/api' + another_note_obj.get_absolute_url(),
+                'note_reference': another_note_obj.get_absolute_url(),
                 'content': 'See also this note.'
             }
         ]

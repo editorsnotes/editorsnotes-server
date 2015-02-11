@@ -74,8 +74,7 @@ class UniqueDocumentDescriptionValidator:
 class CitationSerializer(serializers.Serializer):
     item_type = serializers.SerializerMethodField()
     item_name = serializers.SerializerMethodField()
-    api_url = serializers.SerializerMethodField()
-    display_url = serializers.SerializerMethodField()
+    item_url = serializers.SerializerMethodField()
     content = serializers.SerializerMethodField()
     created = serializers.CharField()
     last_updated = serializers.CharField()
@@ -89,7 +88,7 @@ class CitationSerializer(serializers.Serializer):
             return obj.content_object.preferred_name
         elif isinstance(obj, CitationNS):
             return obj.note.title
-    def get_api_url(self, obj):
+    def get_item_url(self, obj):
         request = self.context['request']
         project = request.project \
                 if hasattr(request, 'project') \
@@ -105,9 +104,6 @@ class CitationSerializer(serializers.Serializer):
                 'pk': obj.note_id
             })
         return url
-    def get_display_url(self, obj):
-        api_url = self.get_api_url(obj)
-        return api_url.replace('/api/', '/')
     def get_content(self, obj):
         if isinstance(obj, Citation):
             return obj.notes and etree.tostring(obj.notes)
