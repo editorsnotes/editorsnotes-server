@@ -103,13 +103,14 @@ class NoteStatusField(serializers.ReadOnlyField):
                                               'open, closed, or hibernating.')
         return status_choice[0]
 
-# TODO: license, fuller repr of updaters
+# TODO: change license, fuller repr of updaters
 class NoteSerializer(RelatedTopicSerializerMixin,
                      serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
-    license = LicenseSerializer(source='get_license')
-    updaters = MinimalUserSerializer(many=True, source='get_all_updaters')
+    license = LicenseSerializer(read_only=True, source='get_license')
+    updaters = MinimalUserSerializer(read_only=True, many=True,
+                                     source='get_all_updaters')
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
     sections = NoteSectionField(many=True, source='get_sections_with_subclasses')
