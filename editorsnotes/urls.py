@@ -37,15 +37,15 @@ urlpatterns += patterns('',
     url(r'^projects/add/', 'editorsnotes.admin.views.projects.add_project', name='add_project_view'),
 )
 
+# API
+urlpatterns += patterns('',
+    url(r'^', include('editorsnotes.api.urls', namespace='api', app_name='api')),
+    url(r'^api/metadata/topics/types/$', 'editorsnotes.api.views.topics.topic_types'),
+)
+
 # Main model patterns
 urlpatterns += patterns('',
     url(r'^', include('editorsnotes.main.urls')),
-)
-
-# API
-urlpatterns += patterns('',
-    url(r'^api/', include('editorsnotes.api.urls', namespace='api', app_name='api')),
-    url(r'^api/metadata/topics/types/$', 'editorsnotes.api.views.topics.topic_types'),
 )
 
 

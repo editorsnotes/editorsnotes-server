@@ -25,24 +25,28 @@ class URLField(ReadOnlyField):
     """
     An identity URL field.
 
-    lookup_arg_attrs should be an iterable of strings that will be applied to
-    the object to get the lookup args.
+    lookup_kwarg_attrs should be a dictionary of strings whose values will be
+    applied to the object to get the lookup args.
     """
     read_only = True
-    def __init__(self, view_name=None, lookup_arg_attrs=None):
+    def __init__(self, view_name=None, lookup_kwarg_attrs=None):
         self.view_name = view_name
-        self.lookup_args = lookup_arg_attrs or ('project.slug', 'id')
+        self.lookup_kwargs = lookup_kwarg_attrs or {
+            'project_slug': 'project.slug',
+            'pk': 'id'
+        }
         super(URLField, self).__init__()
     def _get_default_view_name(self, obj):
-        return 'api:api-{}-detail'.format(obj.__class__._meta.verbose_name_plural[:])
-    def _get_lookup_args(self, obj):
-        return tuple(nested_getattr(obj, attr) for attr in self.lookup_args)
+        return 'api:{}-detail'.format(obj.__class__._meta.verbose_name_plural[:])
+    def _get_lookup_kwargs(self, obj):
+        return dict((k, nested_getattr(obj, v))
+                    for k, v in self.lookup_kwargs.items())
     def get_attribute(self, obj):
         return obj
     def to_representation(self, value):
         view = self.view_name or self._get_default_view_name(value)
-        args = self._get_lookup_args(value)
-        return reverse(view, args=args, request=self.context['request'])
+        kwargs = self._get_lookup_kwargs(value)
+        return reverse(view, kwargs=kwargs, request=self.context['request'])
 
 class ProjectSlugField(ReadOnlyField):
     def __init__(self, *args, **kwargs):
@@ -51,8 +55,9 @@ class ProjectSlugField(ReadOnlyField):
     def get_attribute(self, obj):
         return obj.get_affiliation()
     def to_representation(self, value):
-        url = reverse('api:api-projects-detail', args=(value.slug,),
-                      request=self.context['request'])
+        url = reverse('api:projects-detail',
+                      request=self.context['request'],
+                      kwargs={'project_slug': value.slug })
         return { 'name': value.name, 'url': url }
 
 class HyperlinkedProjectItemField(HyperlinkedRelatedField):
@@ -64,7 +69,8 @@ class HyperlinkedProjectItemField(HyperlinkedRelatedField):
         """
         try:
             return reverse(
-                self.view_name, args=[value.project.slug, value.id],
+                self.view_name, kwargs={'project_slug': value.project.slug,
+                                        'pk': value.id},
                 request=self.context.get('request', None),
                 format=self.format or self.context.get('format', None))
         except NoReverseMatch:
@@ -78,7 +84,8 @@ class UpdatersField(ReadOnlyField):
         return [u.username for u in value]
 
 class MinimalTopicSerializer(ModelSerializer):
-    url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
+    url = URLField(lookup_kwarg_attrs={'project_slug': 'project.slug',
+                                     'topic_node_id': 'topic_node_id'})
     topic_node_id = SerializerMethodField()
     class Meta:
         model = Topic
@@ -110,7 +117,7 @@ class TopicAssignmentField(RelatedField):
         except Resolver404:
             self.fail('no_match')
 
-        if match.view_name != 'api:api-topics-detail':
+        if match.view_name != 'api:topics-detail':
             self.fail('bad_path')
 
         current_project = self.context['request'].project

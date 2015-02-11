@@ -13,7 +13,7 @@ from ..validators import UniqueToProjectValidator
 
 class TopicNodeSerializer(serializers.ModelSerializer):
     name = ReadOnlyField(source='_preferred_name')
-    url = URLField('api:api-topic-nodes-detail', ('id',))
+    url = URLField('api:topic-nodes-detail', ('id',))
     alternate_forms = serializers.SerializerMethodField('get_alternate_forms')
     project_topics = serializers.SerializerMethodField('get_project_value')
     class Meta:
@@ -33,12 +33,13 @@ class TopicNodeSerializer(serializers.ModelSerializer):
     def get_project_value(self, obj):
         return [OrderedDict((
             ('project_name', topic.project.name),
-            ('project_url', reverse('api:api-projects-detail',
-                            args=(topic.project.slug,),
-                            request=self.context['request'])),
+            ('project_url', reverse('api:projects-detail',
+                                    kwargs={ 'project_slug': topic.project.slug },
+                                    request=self.context['request'])),
             ('preferred_name', topic.preferred_name),
-            ('url', reverse('api:api-topics-detail',
-                                  args=(topic.project.slug, obj.id),
+            ('url', reverse('api:topics-detail',
+                            kwargs={'project_slug': topic.project.slug,
+                                    'pk': obj.id},
                                   request=self.context['request']))))
             for topic in obj.project_topics.select_related('project')]
 
@@ -58,7 +59,10 @@ class TopicSerializer(RelatedTopicSerializerMixin,
     topic_node_id = ReadOnlyField(source='topic_node.id')
     type = ReadOnlyField(source='topic_node.type')
     alternate_names = AlternateNameField(required=False)
-    url = URLField(lookup_arg_attrs=('project.slug', 'topic_node_id'))
+    url = URLField(lookup_kwarg_attrs={
+        'project_slug': 'project.slug',
+        'topic_node_id': 'topic_node_id'
+    })
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
     citations = CitationSerializer(source='summary_cites', many=True, read_only=True)

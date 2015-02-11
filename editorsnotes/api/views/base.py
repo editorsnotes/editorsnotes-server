@@ -1,6 +1,7 @@
 from collections import Counter, OrderedDict
 
 from django.conf import settings
+from django.core.urlresolvers import resolve, reverse
 from django.db.models.deletion import Collector
 from django.utils.text import force_text
 
@@ -24,6 +25,7 @@ from editorsnotes.search import get_index
 from ..filters import (ElasticSearchFilterBackend,
                        ElasticSearchAutocompleteFilterBackend)
 from ..permissions import ProjectSpecificPermissions
+from ..renderers import HTMLRedirectRenderer
 
 
 def create_revision_on_methods(*methods):
@@ -196,9 +198,18 @@ class LogActivityMixin(object):
         self.log_obj = log_obj
         return log_obj
 
+class HTMLRedirectMixin(object):
+    def get(self, request, format=None, **kwargs):
+        if isinstance(request.accepted_renderer, HTMLRedirectRenderer):
+            regular_path = request.path.replace('.html', '')
+            func, args, kwargs = resolve(regular_path, urlconf='editorsnotes.main.urls')
+            return func(request, **kwargs)
+        return super(HTMLRedirectMixin, self).get(request, format, **kwargs)
+
 
 @create_revision_on_methods('create')
-class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin, ListCreateAPIView):
+class BaseListAPIView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
+                      ListCreateAPIView):
     paginate_by = 50
     paginate_by_param = 'page_size'
     permission_classes = (ProjectSpecificPermissions,)
@@ -217,7 +228,8 @@ class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin, ListCreateAPIView)
             self.make_log_activity(instance, ADDITION)
 
 @create_revision_on_methods('update', 'destroy')
-class BaseDetailView(ProjectSpecificMixin, LogActivityMixin, RetrieveUpdateDestroyAPIView):
+class BaseDetailView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
+                     RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
     def perform_update(self, serializer):
@@ -241,9 +253,9 @@ class BaseDetailView(ProjectSpecificMixin, LogActivityMixin, RetrieveUpdateDestr
 def root(request):
     return Response({
         'auth-token': reverse('api:obtain-auth-token', request=request),
-        'topics': reverse('api:api-topic-nodes-list', request=request),
-        'projects': reverse('api:api-projects-list', request=request),
-        'search': reverse('api:api-search', request=request)
-        #'notes': reverse('api:api-notes-list'),
-        #'documents': reverse('api:api-documents-list')
+        'topics': reverse('api:topic-nodes-list', request=request),
+        'projects': reverse('api:projects-list', request=request),
+        'search': reverse('api:search', request=request)
+        #'notes': reverse('api:notes-list'),
+        #'documents': reverse('api:documents-list')
     })

@@ -22,7 +22,7 @@ class TextNSSerializer(serializers.ModelSerializer):
 class CitationNSSerializer(serializers.ModelSerializer):
     section_id = serializers.ReadOnlyField(source='note_section_id')
     section_type = serializers.ReadOnlyField(source='section_type_label')
-    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
+    document = HyperlinkedProjectItemField(view_name='api:documents-detail',
                                            queryset=Document.objects.all())
     document_description = serializers.SerializerMethodField()
     class Meta:
@@ -35,7 +35,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
     section_id = serializers.ReadOnlyField(source='note_section_id')
     section_type = serializers.ReadOnlyField(source='section_type_label')
-    note_reference = HyperlinkedProjectItemField(view_name='api:api-notes-detail',
+    note_reference = HyperlinkedProjectItemField(view_name='api:notes-detail',
                                                  queryset=Note.objects.all())
     note_reference_title = serializers.SerializerMethodField()
     class Meta:

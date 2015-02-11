@@ -93,14 +93,16 @@ class CitationSerializer(serializers.Serializer):
                 if hasattr(request, 'project') \
                 else self.context['project']
         if isinstance(obj, Citation):
-            api_url = reverse('api:api-topics-detail',
-                              args=(project.slug, obj.content_object.topic_node_id),
-                              request=request)
+            url = reverse('api:topics-detail', request=request, kwargs={
+                'project_slug': project.slug,
+                'topic_node_id': obj.content_object.topic_node_id
+            })
         elif isinstance(obj, CitationNS):
-            api_url = reverse('api:api-notes-detail',
-                              args=(project.slug, obj.note_id),
-                              request=request)
-        return api_url
+            url = reverse('api:notes-detail', request=request, kwargs={
+                'project_slug': project.slug,
+                'pk': obj.note_id
+            })
+        return url
     def get_display_url(self, obj):
         api_url = self.get_api_url(obj)
         return api_url.replace('/api/', '/')
@@ -130,9 +132,12 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
     def get_transcript_url(self, obj):
         if not obj.has_transcript():
             return None
-        return reverse('api:api-transcripts-detail',
-                       args=(obj.project.slug, obj.id),
-                       request=self.context.get('request', None))
+        return reverse('api:transcripts-detail',
+                       request=self.context.get('request', None),
+                       kwargs = {
+                           'project_slug': obj.project.slug,
+                           'document_id': obj.id
+                       })
     def validate_description(self, value):
         description_stripped = Document.strip_description(value)
         if not description_stripped:
@@ -142,17 +147,20 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
 
 
 class TranscriptSerializer(serializers.ModelSerializer):
-    url = URLField(lookup_arg_attrs=('document.project.slug', 'document.id'))
-    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
+    url = URLField(lookup_kwarg_attrs={
+        'project_slug': 'document.project.slug',
+        'document_id': 'document.id'
+    })
+    document = HyperlinkedProjectItemField(view_name='api:documents-detail',
                                            queryset=Document.objects,
                                            required=True)
     class Meta:
         model = Transcript
 
 class CitationSerializer(serializers.ModelSerializer):
-    url = URLField('api:api-topic-citations-detail',
+    url = URLField('api:topic-citations-detail',
                    ('content_object.project.slug', 'content_object.topic_node_id', 'id'))
-    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
+    document = HyperlinkedProjectItemField(view_name='api:documents-detail',
                                            queryset=Document.objects,
                                            required=True)
     document_description = serializers.SerializerMethodField()

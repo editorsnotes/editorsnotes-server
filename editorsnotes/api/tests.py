@@ -116,7 +116,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         flush_es_indexes()
 
         response = self.client.post(
-            reverse('api:api-topics-list', args=[self.project.slug]),
+            reverse('api:topics-list', args=[self.project.slug]),
             json.dumps(TEST_TOPIC),
             content_type='application/json'
         )
@@ -138,7 +138,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(Revision.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
-        activity_response = self.client.get(reverse('api:api-projects-activity',
+        activity_response = self.client.get(reverse('api:projects-activity',
                                                          args=[self.project.slug]))
         self.assertEqual(activity_response.status_code, 200)
         self.assertEqual(len(activity_response.data['activity']), 1)
@@ -170,7 +170,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         self.client.login(username='esther', password='esther')
         response = self.client.post(
-            reverse('api:api-topics-list', args=[self.project.slug]),
+            reverse('api:topics-list', args=[self.project.slug]),
             json.dumps(TEST_TOPIC),
             content_type='application/json'
         )
@@ -181,7 +181,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         "Creating a topic while logged out is NOT OK"
         self.client.logout()
         response = self.client.post(
-            reverse('api:api-topics-list', args=[self.project.slug]),
+            reverse('api:topics-list', args=[self.project.slug]),
             json.dumps(TEST_TOPIC),
             content_type='application/json'
         )
@@ -195,7 +195,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # Posting the same data should raise a 400 error
         response = self.client.post(
-            reverse('api:api-topics-list', args=[self.project.slug]),
+            reverse('api:topics-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -212,7 +212,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         topic_obj = create_test_topic(user=self.user, project=self.project)
 
-        response = self.client.get(reverse('api:api-topics-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:topics-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
 
@@ -227,11 +227,11 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         "Other projects' topic lists should be viewable, too. Even if logged out"
         self.client.logout()
         self.client.login(username='esther', password='esther')
-        response = self.client.get(reverse('api:api-topics-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:topics-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
 
         self.client.logout()
-        response = self.client.get(reverse('api:api-topics-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:topics-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
 
     def test_topic_api_update(self):
@@ -243,7 +243,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         data['summary'] = u'<p>A writer of great tests.</p>'
 
         response = self.client.put(
-            reverse('api:api-topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
+            reverse('api:topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -259,7 +259,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(Revision.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
-        activity_response = self.client.get(reverse('api:api-projects-activity',
+        activity_response = self.client.get(reverse('api:projects-activity',
                                                          args=[self.project.slug]))
         self.assertEqual(activity_response.status_code, 200)
         activity_data = activity_response.data['activity'][0]
@@ -289,7 +289,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.login(username='esther', password='esther')
 
         response = self.client.put(
-            reverse('api:api-topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
+            reverse('api:topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -303,7 +303,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.client.logout()
         response = self.client.put(
-            reverse('api:api-topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
+            reverse('api:topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -317,7 +317,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         # Delete the topic
         self.assertEqual(main_models.Topic.objects.count(), 1)
         response = self.client.delete(
-            reverse('api:api-topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
+            reverse('api:topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
@@ -325,7 +325,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(main_models.TopicNode.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
-        activity_response = self.client.get(reverse('api:api-projects-activity',
+        activity_response = self.client.get(reverse('api:projects-activity',
                                                          args=[self.project.slug]))
         self.assertEqual(activity_response.status_code, 200)
         activity_data = activity_response.data['activity'][0]
@@ -350,7 +350,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.login(username='esther', password='esther')
 
         response = self.client.delete(
-            reverse('api:api-topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
+            reverse('api:topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -360,7 +360,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = create_test_topic(user=self.user, project=self.project)
         self.client.logout()
         response = self.client.delete(
-            reverse('api:api-topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
+            reverse('api:topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -386,7 +386,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         "Creating a document in your own project is ok"
         data = TEST_DOCUMENT.copy()
         response = self.client.post(
-            reverse('api:api-documents-list', args=[self.project.slug]),
+            reverse('api:documents-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -405,7 +405,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         self.client.login(username='esther', password='esther')
         response = self.client.post(
-            reverse('api:api-documents-list', args=[self.project.slug]),
+            reverse('api:documents-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -417,7 +417,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_DOCUMENT.copy()
         self.client.logout()
         response = self.client.post(
-            reverse('api:api-documents-list', args=[self.project.slug]),
+            reverse('api:documents-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -430,7 +430,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
             project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         response = self.client.post(
-            reverse('api:api-documents-list', args=[self.project.slug]),
+            reverse('api:documents-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -447,7 +447,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         flush_es_indexes()
         document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
-        response = self.client.get(reverse('api:api-documents-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:documents-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(response.data['count'], 1)
@@ -459,12 +459,12 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
-        response = self.client.get(reverse('api:api-documents-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:documents-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, original_response_content)
 
         self.client.logout()
-        response = self.client.get(reverse('api:api-documents-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:documents-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, original_response_content)
 
@@ -476,7 +476,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         data['description'] = (u'<div>Draper, Theodore. <em>Roots of American '
                                'Communism</em>. New York: Viking Press, 1957.</div>')
         response = self.client.put(
-            reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
+            reverse('api:documents-detail', args=[self.project.slug, document_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -500,7 +500,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_DOCUMENT.copy()
         data['description'] = u'a stupid book!!!!!!!'
         response = self.client.put(
-            reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
+            reverse('api:documents-detail', args=[self.project.slug, document_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -515,7 +515,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_DOCUMENT.copy()
         data['description'] = u'a stupid book!!!!!!!!!!!!!!!!!!!!'
         response = self.client.put(
-            reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
+            reverse('api:documents-detail', args=[self.project.slug, document_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -527,7 +527,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         document_obj = create_test_document(
             project=self.project, creator=self.user, last_updater=self.user)
         response = self.client.delete(
-            reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
+            reverse('api:documents-detail', args=[self.project.slug, document_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
@@ -540,7 +540,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         self.client.login(username='esther', password='esther')
         response = self.client.delete(
-            reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
+            reverse('api:documents-detail', args=[self.project.slug, document_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -552,7 +552,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         response = self.client.delete(
-            reverse('api:api-documents-detail', args=[self.project.slug, document_obj.id]),
+            reverse('api:documents-detail', args=[self.project.slug, document_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -604,7 +604,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         ]
 
         response = self.client.post(
-            reverse('api:api-notes-list', args=[self.project.slug]),
+            reverse('api:notes-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -639,7 +639,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         self.client.login(username='esther', password='esther')
         response = self.client.post(
-            reverse('api:api-notes-list', args=[self.project.slug]),
+            reverse('api:notes-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -651,7 +651,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_NOTE.copy()
         self.client.logout()
         response = self.client.post(
-            reverse('api:api-notes-list', args=[self.project.slug]),
+            reverse('api:notes-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -663,7 +663,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.create_test_note()
         data = TEST_NOTE.copy()
         response = self.client.post(
-            reverse('api:api-notes-list', args=[self.project.slug]),
+            reverse('api:notes-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -678,7 +678,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         """
         flush_es_indexes()
         note_obj = self.create_test_note()
-        response = self.client.get(reverse('api:api-notes-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:notes-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(response.data['count'], 1)
@@ -689,12 +689,12 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
-        response = self.client.get(reverse('api:api-notes-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:notes-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, original_response_content)
 
         self.client.logout()
-        response = self.client.get(reverse('api:api-notes-list', args=[self.project.slug]))
+        response = self.client.get(reverse('api:notes-list', args=[self.project.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, original_response_content)
 
@@ -705,7 +705,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data['title'] = u'Тестовать'
 
         response = self.client.put(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -727,7 +727,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_NOTE.copy()
         data['title'] = u'Нет!!!!!!'
         response = self.client.put(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -736,7 +736,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
 
         note_obj.is_private = True
         response = self.client.get(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id])
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id])
         )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
@@ -748,7 +748,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_NOTE.copy()
         data['title'] = u'Нет!!!!!!'
         response = self.client.put(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -759,7 +759,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         "Deleting a note in your own project is ok"
         note_obj = self.create_test_note()
         response = self.client.delete(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
@@ -771,7 +771,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         self.client.login(username='esther', password='esther')
         response = self.client.delete(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -782,7 +782,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         note_obj = self.create_test_note()
         self.client.logout()
         response = self.client.delete(
-            reverse('api:api-notes-detail', args=[self.project.slug, note_obj.id]),
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -822,7 +822,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data.update({ 'sections': self.make_section_data() })
 
         response = self.client.post(
-            reverse('api:api-notes-list', args=[self.project.slug]),
+            reverse('api:notes-list', args=[self.project.slug]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -835,7 +835,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data['sections'][0]['content'] = 'This is an updated section'
 
         response = self.client.put(
-            reverse('api:api-notes-detail', args=[self.project.slug,
+            reverse('api:notes-detail', args=[self.project.slug,
                                                   response.data['id']]),
             json.dumps(data),
             content_type='application/json'
@@ -849,7 +849,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         # Delete all the sections
         data.update({ 'sections': [] })
         response = self.client.put(
-            reverse('api:api-notes-detail', args=[self.project.slug,
+            reverse('api:notes-detail', args=[self.project.slug,
                                                   response.data['id']]),
             json.dumps(data),
             content_type='application/json'
