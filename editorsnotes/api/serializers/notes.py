@@ -1,5 +1,6 @@
 from lxml import etree, html
 
+from licensing.models import License
 from rest_framework import serializers
 
 from editorsnotes.main.models import (Note, TextNS, CitationNS, NoteReferenceNS,
@@ -49,6 +50,12 @@ class NoteReferenceNSSerializer(serializers.ModelSerializer):
     def get_note_reference_title(self, obj):
         return obj.note_reference.title
 
+class LicenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = License
+        fields = ('url', 'name', 'symbols',)
+
+
 def _serializer_from_section_type(section_type):
     if section_type == 'citation':
         serializer = CitationNSSerializer
@@ -97,13 +104,14 @@ class NoteSerializer(RelatedTopicSerializerMixin,
                      serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
+    license = LicenseSerializer(source='get_license')
     updaters = MinimalUserSerializer(many=True, source='get_all_updaters')
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
     sections = NoteSectionField(many=True, source='get_sections_with_subclasses')
     class Meta:
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'is_private', 'last_updated',
+        fields = ('id', 'title', 'url', 'project', 'license', 'is_private', 'last_updated',
                   'updaters', 'related_topics', 'content', 'status', 'sections',)
         validators = [
             UniqueToProjectValidator('title')

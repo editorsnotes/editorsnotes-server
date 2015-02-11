@@ -20,7 +20,7 @@ urlpatterns += patterns('',
     url(r'^accounts/profile/$', 'editorsnotes.main.views.auth.user'),
     url(r'^accounts/profile/feedback/$', 'editorsnotes.main.views.auth.user_feedback', name='user_feedback_view'),
     url(r'^accounts/browserid/$', CustomBrowserIDVerify.as_view(), name='browserid_verify'),
-    url(r'^user/(?P<username>[\w@\+\.\-]+)/$', 'editorsnotes.main.views.auth.user', name='user_view'),
+    url(r'^users/(?P<username>[\w@\+\.\-]+)/$', 'editorsnotes.main.views.auth.user', name='user_view'),
 )
 
 # Base patterns

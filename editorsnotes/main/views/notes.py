@@ -3,8 +3,11 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 
+from rest_framework.renderers import JSONRenderer
+
 import reversion
 
+from editorsnotes.api.serializers import NoteSerializer
 from editorsnotes.search import get_index
 
 from ..models import Note, Project
@@ -30,19 +33,16 @@ def note(request, note_id, project_slug):
         (note.title, None),
     )
 
-    o['note'] = note
-    o['license'] = note.license or note.project.default_license
-    o['history'] = reversion.get_unique_for_object(note)
-    o['topics'] = [ta.topic for ta in o['note'].related_topics.all()]
-    o['sections'] = note.sections\
-            .order_by('ordering', 'note_section_id')\
-            .all()\
-            .select_subclasses()\
-            .select_related('citationns__document__project',
-                            'notereferencens__note_reference__project')
+    serializer = NoteSerializer(instance=note, context={
+        'request': request,
+        'project': note.project
+    })
+    o['item'] = serializer.data
+
+    #o['history'] = reversion.get_unique_for_object(note)
     o['can_edit'] = (
         request.user.is_authenticated() and
-        request.user.has_project_perm(o['note'].project, 'main.change_note'))
+        request.user.has_project_perm(note.project, 'main.change_note'))
 
 
     return render_to_response(

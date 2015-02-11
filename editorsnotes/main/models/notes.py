@@ -52,6 +52,8 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return ('note_view', [self.project.slug, self.id])
     def get_affiliation(self):
         return self.project
+    def get_license(self):
+        return self.license or self.project.default_license
     def has_topic(self, project_topic):
         return project_topic.id in \
                 self.related_topics.values_list('topic_id', flat=True)
