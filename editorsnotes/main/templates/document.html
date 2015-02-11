@@ -114,9 +114,9 @@
     </div>
 
       <section id="notes">
-        <h2>Citations</h2>
+        <h2>Cited by</h2>
         <ul>
-        {% for citation in item.citations %}
+        {% for citation in item.cited_by %}
           <li>
           {{ citation.item_type|title }}:
           <a href="{{ citation.display_url }}">{{ citation.item_name }}</a>
