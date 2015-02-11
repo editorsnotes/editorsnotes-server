@@ -52,14 +52,14 @@
 {% block content %}
 
     <header>
-      <div id="document-description">{{ document.as_html|typogrify }}</div>
+      <div id="document-description">{{ item.description|typogrify }}</div>
 
     </header>
 
       <section id="info">
         <div id="zotero">
-          {% if zotero_data %}
-            {% include "zotero_item.html" %}
+          {% if item.zotero_data %}
+            {% include "zotero_item.html" with zotero_data=item.zotero_data %}
           {% else %}
           <p>This document has no connected Zotero data.</p>
           {% endif %}
@@ -98,11 +98,11 @@
     <div>
       <h2>Related topics</h2>
       <div class="related-topics">
-        {% if topics %}
+        {% if item.related_topics %}
         <ul>
-          {% for topic in topics %}
+          {% for topic in item.related_topics %}
           <li>
-            <a href="{{ topic.get_absolute_url }}">
+            <a href="{{ topic.url }}">
               {{ topic.preferred_name }}
             </a>
           </li>
@@ -114,31 +114,18 @@
     </div>
 
       <section id="notes">
-        <h2>Related notes</h2>
-      {% if notes %}
-        {% for note, topics in notes %}
-        <div id="note-{{ note.id }}" class="related-note">
-          <div class="note-link">
-            <a href="{{ note.get_absolute_url }}">{{ note.title}}</a>
-          </div>
-          <div class="note-last-modified">
-            <span class="quiet">Last modified: </span><span>{{ note.last_updated|date:"F j, Y" }}</span>
-          </div>
-          {% if topics %}
-          <div class="note-topics">
-            <span class="quiet">Related topics: </span>
-            <ul class="topic-list unstyled">
-              {% for topic in topics %}
-                <li>{{ topic|as_link }}</a>{% if not forloop.last %} | {% endif %}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-        </div>
+        <h2>Citations</h2>
+        <ul>
+        {% for citation in item.citations %}
+          <li>
+          {{ citation.item_type|title }}:
+          <a href="{{ citation.display_url }}">{{ citation.item_name }}</a>
+          {% if citation.content %}<p>{{ citation.content|safe }}</p>{% endif %}
+          </li>
+        {% empty %}
+          <p>This topic has not been cited.</p>
         {% endfor %}
-      {% else %}
-      <p>There are no notes related to this document.</p>
-      {% endif %}
+        </ul>
       </section>
 
       {% if document.has_parts %}
@@ -156,24 +143,11 @@
       </section>
       {% endif %}
 
-      {% if scans %}
+      {% if item.scans %}
       <script type="text/javascript">
-      EditorsNotes.bootstrap = {{ data|safe }};
+      EditorsNotes.bootstrap = {{ bootstrap_data|safe }};
       </script>
       <section id="scans">
-        <h2>Scans</h2>
-        <div id="scanlist-container">
-          <ul id="scan-list">
-            {% for scan in scans %}
-            <li>
-              <a class="scan btn"
-                href="http://{{ domain }}{{ scan.image.url }}">
-                {{ forloop.counter }}
-              </a>
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
       </section>
       {% endif %}
 

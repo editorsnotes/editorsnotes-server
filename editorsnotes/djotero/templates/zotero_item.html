@@ -1,25 +1,34 @@
-{% load djotero_display %}
+{% load djotero_display i18n %}
 
 <div id="zotero-information">
   <table class="table table-striped table-condensed table-bordered">
-    {% for item in zotero_data %}
-      <tr class="{% cycle 'odd' 'even' %}">
+    {% for k, v in zotero_data.items %}
+      {% if k == 'tags' %}
+      {% elif k == 'notes' %}
+      {% elif k == 'creators' %}
+        {% for creator in v %}
+          <tr>
+            <td class="zotero-key">
+              <span>{% trans creator.creatorType %}</span>
+            </td>
+            <td>
+              {% if creator.firstName %}
+              {{ creator.firstName }} {{ creator.lastName }}
+              {% else %}
+              {{ creator.name }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      {% elif v %}
+      <tr>
         <td class="zotero-key">
-          <span>{{ item.label }}</span>
+          <span>{% trans k %}</span>
         </td>
-        <td>{{ item.value|safe|escape }}</td>
+        <td>{% if k == 'itemType' %}{% trans v %}{% else %}{{ v }}{% endif %}</td>
       </tr>
+      {% endif %}
     {% endfor %}
   </table>
-  <div style="display: none;">
-  {% if zotero_date_information %}
-    Date associated with this record:<br/>
-    {% for key, value in zotero_date_information|date_as_text %}
-       {{ value }}
-    {% endfor %}
-  {% else %}
-    <p>No date associated with this record.</p>
-  {% endif %}
-  </div>
 </div>
 

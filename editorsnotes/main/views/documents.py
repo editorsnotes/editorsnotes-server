@@ -26,27 +26,31 @@ def document(request, project_slug, document_id):
         (o['document'].as_text(), None)
     )
 
-    serializer = DocumentSerializer(instance=o['document'], context={ 'request': request })
-    o['data'] = JSONRenderer().render(serializer.data)
+    serializer = DocumentSerializer(instance=o['document'], context={
+        'request': request,
+        'project': o['document'].project
+    })
+    o['bootstrap_data'] = JSONRenderer().render(serializer.data)
+    o['item'] = serializer.data
 
-    o['topics'] = (
-        [ ta.topic for ta in o['document'].related_topics.all() ] +
-        [ c.content_object for c in o['document'].citations.filter(
-                content_type=ContentType.objects.get_for_model(Topic)) ])
-    o['scans'] = o['document'].scans.all()
-    o['domain'] = Site.objects.get_current().domain
+    #o['topics'] = (
+    #    [ ta.topic for ta in o['document'].related_topics.all() ] +
+    #    [ c.content_object for c in o['document'].citations.filter(
+    #            content_type=ContentType.objects.get_for_model(Topic)) ])
+    #o['scans'] = o['document'].scans.all()
+    #o['domain'] = Site.objects.get_current().domain
 
-    notes = [ns.note for ns in CitationNS.objects\
-            .select_related('note')\
-            .filter(document=o['document'])]
-    note_topics = [ [ ta.topic for ta in n.related_topics.all() ] for n in notes ]
-    o['notes'] = zip(notes, note_topics)
+    #notes = [ns.note for ns in CitationNS.objects\
+    #        .select_related('note')\
+    #        .filter(document=o['document'])]
+    #note_topics = [ [ ta.topic for ta in n.related_topics.all() ] for n in notes ]
+    #o['notes'] = zip(notes, note_topics)
 
-    if o['document'].zotero_data:
-        o['zotero_data'] = as_readable(o['document'].zotero_data)
-        if o['document'].zotero_link:
-            o['zotero_url'] = o['document'].zotero_link.zotero_url
-            o['zotero_date_information'] = o['document'].zotero_link.date_information
+    #if o['document'].zotero_data:
+    #    o['zotero_data'] = as_readable(o['document'].zotero_data)
+    #    if o['document'].zotero_link:
+    #        o['zotero_url'] = o['document'].zotero_link.zotero_url
+    #        o['zotero_date_information'] = o['document'].zotero_link.date_information
     return render_to_response(
         'document.html', o, context_instance=RequestContext(request))
 
