@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework.validators import UniqueValidator
 
-from editorsnotes.main.models import Document, Citation, Scan, Transcript
+from editorsnotes.main.models import Document, Citation, Scan, Transcript, CitationNS
 from editorsnotes.main.utils import remove_stray_brs
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
@@ -69,18 +69,61 @@ class UniqueDocumentDescriptionValidator:
         if qs.exists():
             raise serializers.ValidationError({ 'description': [self.message] })
 
+class CitationSerializer(serializers.Serializer):
+    item_type = serializers.SerializerMethodField()
+    item_name = serializers.SerializerMethodField()
+    api_url = serializers.SerializerMethodField()
+    display_url = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
+    created = serializers.CharField()
+    last_updated = serializers.CharField()
+    def get_item_type(self, obj):
+        if isinstance(obj, Citation):
+            return 'topic'
+        elif isinstance(obj, CitationNS):
+            return 'note'
+    def get_item_name(self, obj):
+        if isinstance(obj, Citation):
+            return obj.content_object.preferred_name
+        elif isinstance(obj, CitationNS):
+            return obj.note.title
+    def get_api_url(self, obj):
+        request = self.context['request']
+        project = request.project \
+                if hasattr(request, 'project') \
+                else self.context['project']
+        if isinstance(obj, Citation):
+            api_url = reverse('api:api-topics-detail',
+                              args=(project.slug, obj.content_object.topic_node_id),
+                              request=request)
+        elif isinstance(obj, CitationNS):
+            api_url = reverse('api:api-notes-detail',
+                              args=(project.slug, obj.note_id),
+                              request=request)
+        return api_url
+    def get_display_url(self, obj):
+        api_url = self.get_api_url(obj)
+        return api_url.replace('/api/', '/')
+    def get_content(self, obj):
+        if isinstance(obj, Citation):
+            return obj.notes and etree.tostring(obj.notes)
+        elif isinstance(obj, CitationNS):
+            return obj.content and etree.tostring(obj.content)
+
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     transcript = serializers.SerializerMethodField('get_transcript_url')
+    cited_by = CitationSerializer(source='get_citations', read_only=True, many=True)
     zotero_data = ZoteroField(required=False)
     related_topics = TopicAssignmentField()
     scans = ScanSerializer(many=True, required=False, read_only=True)
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
-                  'scans', 'transcript', 'related_topics', 'zotero_data',)
+                  'cited_by', 'scans', 'transcript', 'related_topics',
+                  'zotero_data',)
         validators = [
             UniqueDocumentDescriptionValidator()
         ]
