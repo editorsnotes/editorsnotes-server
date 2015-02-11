@@ -27,7 +27,7 @@ module.exports = {
     var targetModel = this.element.attr('search-target') || this.element.data('targetModel')
       , query = {'q': request.term}
       , projectSlug = this.element.data('projectSlug')
-      , url = '/api/'
+      , url = '/'
 
     if (projectSlug) {
       url += ('projects/' + projectSlug + '/');
@@ -39,7 +39,7 @@ module.exports = {
         response($.map(data.results, reprForModel(targetModel)));
       });
     } else {
-      $.getJSON('/api/search/', { 'autocomplete': request.term }, function (data) {
+      $.getJSON('/search/', { 'autocomplete': request.term }, function (data) {
         response($.map(data.results, function (item) {
           var val = item.title
             , type = item.type.slice(0,1).toUpperCase() + item.type.slice(1)

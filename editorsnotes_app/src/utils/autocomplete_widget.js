@@ -31,7 +31,7 @@ function ModelCompleter(el, project, model, opts) {
   this.project = project;
   this.model = model;
   this.$el = $el;
-  this.url = '/api/projects/' + project + '/' + model + '/';
+  this.url = '/projects/' + project + '/' + model + '/';
   this.opts = opts;
 
   this.enable();

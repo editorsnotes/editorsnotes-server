@@ -7,7 +7,7 @@ module.exports = Backbone.Model.extend({
     // If a slug was not explictly passed to the project instance, try to
     // derive it from the current URL
     var slug = (attributes && attributes.slug) || (function (pathname) {
-      var match = pathname.match(/^\/(?:api\/)?projects\/([^\/]+)/)
+      var match = pathname.match(/^\/projects\/([^\/]+)/)
       return match && match[1];
     })(document.location.pathname);
 
@@ -19,6 +19,6 @@ module.exports = Backbone.Model.extend({
     this.set('slug', slug);
   },
 
-  url: function () { return '/api/projects/' + this.get('slug') + '/'; }
+  url: function () { return '/projects/' + this.get('slug') + '/'; }
 
 });
