@@ -760,10 +760,10 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         note_obj.is_private = True
+        note_obj.save()
         response = self.client.get(
-            reverse('api:notes-detail', args=[self.project.slug, note_obj.id],
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
                     HTTP_ACCEPT='application/json')
-        )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
 
