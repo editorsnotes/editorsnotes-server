@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Project
+from editorsnotes.main.models import Project, User
 from editorsnotes.search import get_index
 
 from .base import URLField
+
+__all__ = ['ProjectSerializer', 'MinimalUserSerializer']
 
 def count_for(project, doc_type):
     index = get_index('main')
@@ -16,14 +18,14 @@ def count_for(project, doc_type):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    url = URLField('api:api-projects-detail', ('slug',))
+    url = URLField('api:projects-detail', {'project_slug': 'slug'})
     notes = serializers.SerializerMethodField()
-    notes_url = URLField('api:api-notes-list', ('slug',))
+    notes_url = URLField('api:notes-list', {'project_slug': 'slug'})
     topics = serializers.SerializerMethodField()
-    topics_url = URLField('api:api-topics-list', ('slug',))
+    topics_url = URLField('api:topics-list', {'project_slug': 'slug'})
     documents = serializers.SerializerMethodField()
-    documents_url = URLField('api:api-documents-list', ('slug',))
-    activity_url = URLField('api:api-projects-activity', ('slug',))
+    documents_url = URLField('api:documents-list', {'project_slug': 'slug'})
+    activity_url = URLField('api:projects-activity', {'project_slug': 'slug'})
     class Meta:
         model = Project
         fields = ('slug', 'url', 'name', 'description', 'notes', 'notes_url',
@@ -34,3 +36,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         return count_for(obj, 'topic')
     def get_documents(self, obj):
         return count_for(obj, 'document')
+
+class MinimalUserSerializer(serializers.ModelSerializer):
+    url = URLField('api:users-detail', {'username': 'username'})
+    class Meta:
+        model = User
+        fields = ('url', 'display_name')

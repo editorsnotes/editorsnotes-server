@@ -6,21 +6,27 @@ from rest_framework.response import Response
 from editorsnotes.main.models import Project, User
 from editorsnotes.search import get_index
 
-from ..serializers.projects import ProjectSerializer
+from ..serializers import ProjectSerializer, MinimalUserSerializer
+from .base import HTMLRedirectMixin
 
-__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail']
+__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail']
 
-class ProjectList(ListAPIView):
+class ProjectList(HTMLRedirectMixin, ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-class ProjectDetail(RetrieveAPIView):
+class ProjectDetail(HTMLRedirectMixin, RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     def get_object(self):
         qs = self.get_queryset()
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
         return project
+
+class UserDetail(HTMLRedirectMixin, RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = MinimalUserSerializer
+    lookup_field = 'username'
 
 def parse_int(val, default=25, maximum=100):
     if not isinstance(val, int):

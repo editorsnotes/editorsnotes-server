@@ -13,6 +13,8 @@ from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, HyperlinkedProjectItemField,
                    TopicAssignmentField)
 
+__all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
+
 class ZoteroField(serializers.Field):
     def to_representation(self, value):
         return value and json.loads(value, object_pairs_hook=OrderedDict)

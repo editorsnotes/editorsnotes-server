@@ -11,6 +11,10 @@ from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
 from .documents import CitationSerializer
 from ..validators import UniqueToProjectValidator
 
+
+__all__ = ['TopicSerializer', 'TopicNodeSerializer']
+
+
 class TopicNodeSerializer(serializers.ModelSerializer):
     name = ReadOnlyField(source='_preferred_name')
     url = URLField('api:topic-nodes-detail', ('id',))

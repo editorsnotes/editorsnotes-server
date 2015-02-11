@@ -9,7 +9,11 @@ from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, UpdatersField,
                    HyperlinkedProjectItemField, TopicAssignmentField)
+from .auth import MinimalUserSerializer
 from ..validators import UniqueToProjectValidator
+
+
+__all__ = ['NoteSerializer']
 
 
 class TextNSSerializer(serializers.ModelSerializer):
@@ -88,11 +92,12 @@ class NoteStatusField(serializers.ReadOnlyField):
                                               'open, closed, or hibernating.')
         return status_choice[0]
 
+# TODO: license, fuller repr of updaters
 class NoteSerializer(RelatedTopicSerializerMixin,
                      serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
-    updaters = UpdatersField()
+    updaters = MinimalUserSerializer(many=True, source='get_all_updaters')
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
     sections = NoteSectionField(many=True, source='get_sections_with_subclasses')
