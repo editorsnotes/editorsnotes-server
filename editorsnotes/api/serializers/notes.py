@@ -87,6 +87,10 @@ class NoteSectionField(serializers.RelatedField):
                 serializer.validated_data['section_id'] = data['section_id']
             serializer.validated_data['section_type'] = section_type
             return serializer.validated_data
+        else:
+            # TODO: This kind of error is unhelpfully/confusingly rendered. It
+            # would be better if we could add an index somehow
+            raise serializers.ValidationError(serializer.errors)
 
 class NoteStatusField(serializers.ReadOnlyField):
     def get_attribute(self, obj):
