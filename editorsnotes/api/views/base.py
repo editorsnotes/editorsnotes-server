@@ -201,7 +201,7 @@ class LogActivityMixin(object):
 class HTMLRedirectMixin(object):
     def get(self, request, format=None, **kwargs):
         if isinstance(request.accepted_renderer, HTMLRedirectRenderer):
-            regular_path = request.path.replace('.html', '')
+            regular_path = request.path.replace('.html', '/')
             func, args, kwargs = resolve(regular_path, urlconf='editorsnotes.main.urls')
             return func(request, **kwargs)
         return super(HTMLRedirectMixin, self).get(request, format, **kwargs)
