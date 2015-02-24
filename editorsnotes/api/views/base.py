@@ -17,7 +17,7 @@ from rest_framework.reverse import reverse
 from rest_framework.utils import formatting, model_meta
 import reversion
 
-from editorsnotes.main.models import Project
+from editorsnotes.main.models import Project, Note, Topic, Document
 from editorsnotes.main.models.auth import (RevisionProject, LogActivity,
                                            RevisionLogActivity,
                                            ADDITION, CHANGE, DELETION)
@@ -301,3 +301,28 @@ def root(request, format=None):
         #'notes': reverse('api:notes-list'),
         #'documents': reverse('api:documents-list')
     })
+
+def search_model(Model, query):
+    query = query.to_dict()
+    query['fields'] = ['display_title', 'display_url']
+    results = get_index('main').search_model(Model, query)
+    return [
+        {
+            'title': result['fields']['display_title'][0],
+            'url': result['fields']['display_url'][0]
+        }
+        for result in results['hits']['hits']
+    ]
+
+@api_view(['GET'])
+def browse(request, format=None):
+    es_query = Search().sort('-serialized.last_updated')[:10]
+    ret = OrderedDict()
+
+    ret['topics'] = search_model(Topic, es_query)
+    ret['documents'] = search_model(Document, es_query)
+    ret['notes'] = search_model(Note, es_query.filter(
+        'term', **{ 'serialized.is_private': 'false' }
+    ))
+
+    return Response(ret)

@@ -54,6 +54,7 @@ project_specific_patterns = format_patterns(project_specific_patterns)
 
 urlpatterns = patterns('',
     url(r'^/$', views.base.root, name='root'),
+    url(r'^browse/$', views.base.browse, name='browse'),
     url(r'^auth-token/$', 'rest_framework.authtoken.views.obtain_auth_token', name='obtain-auth-token'),
     url(r'^search/$', views.SearchView.as_view(), name='search'),
     url(r'^topics/$', views.TopicNodeList.as_view(), name='topic-nodes-list'),
