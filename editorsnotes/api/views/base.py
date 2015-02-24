@@ -292,7 +292,7 @@ class BaseDetailView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
             log_obj.save()
 
 @api_view(('GET',))
-def root(request):
+def root(request, format=None):
     return Response({
         'auth-token': reverse('api:obtain-auth-token', request=request),
         'topics': reverse('api:topic-nodes-list', request=request),
