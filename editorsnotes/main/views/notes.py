@@ -8,6 +8,7 @@ from rest_framework.renderers import JSONRenderer
 import reversion
 
 from editorsnotes.api.serializers import NoteSerializer
+from editorsnotes.api.views import NoteList
 from editorsnotes.search import get_index
 
 from ..models import Note, Project
@@ -52,6 +53,8 @@ def all_notes(request, project_slug=None):
     o = {}
     template = 'all-notes.html'
     if project_slug is not None:
+        resp = NoteList.as_view()(request, project_slug=project_slug, format='json')
+        o['data'] = resp.data
         project = get_object_or_404(Project, slug=project_slug)
         o['project'] = project
         o['breadcrumb'] = (
