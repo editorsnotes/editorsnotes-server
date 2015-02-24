@@ -11,6 +11,7 @@ django-reversion==1.8.4
 # ???
 django-browserid==0.7.1
 
+elasticsearch-dsl=0.0.3
 pyelasticsearch==0.6
 BeautifulSoup<4.0
 lxml==3.0.2

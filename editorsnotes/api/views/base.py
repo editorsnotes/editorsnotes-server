@@ -1,10 +1,12 @@
 from collections import Counter, OrderedDict
+from urllib import urlencode
 
 from django.conf import settings
 from django.core.urlresolvers import resolve, reverse
 from django.db.models.deletion import Collector
 from django.utils.text import force_text
 
+from elasticsearch_dsl import Search
 from rest_framework.decorators import api_view
 from rest_framework.generics import (
     GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView)
@@ -75,9 +77,21 @@ class ElasticSearchListMixin(ListModelMixin):
     Mixin that replaces the `list` method with a query to Elasticsearch.
     """
     def list(self, request, *args, **kwargs):
+        start = request.QUERY_PARAMS.get('start', '0')
+        count = request.QUERY_PARAMS.get('count', '25')
 
-        if not settings.ELASTICSEARCH_ENABLED:
-            return super(ElasticSearchListMixin, self).list(request, *args, **kwargs)
+        start = int(start) if start.isdigit() else 0
+        if start < 0:
+            start = 0
+
+        count = int(count) if count.isdigit() else 25
+        if count > 100:
+            count = 100
+        elif count < 1:
+            count = 1
+
+        self.page_start = start
+        self.page_count = count
 
         if 'autocomplete' in request.QUERY_PARAMS:
             self.filter_backends += (ElasticSearchAutocompleteFilterBackend,)
@@ -98,13 +112,41 @@ class ElasticSearchListMixin(ListModelMixin):
         else:
             self.filter_backends += (ElasticSearchFilterBackend,)
             result = self.filter_queryset(None)
-            data = {
-                'count': result['hits']['total'],
-                'next': None,
-                'previous': None,
-                'results': [ doc['_source']['serialized'] for doc in
-                             result['hits']['hits'] ]
-            }
+
+            this_count = len(result['hits']['hits'])
+            total = result['hits']['total']
+
+            if start + count < total:
+                params = request.QUERY_PARAMS.dict().copy()
+                params.update({ 'start': start + count })
+                next_url = request.build_absolute_uri(request.path + '?' +
+                                                      urlencode(params))
+            else:
+                next_url = None
+
+            if start > 0:
+                params = request.QUERY_PARAMS.dict().copy()
+                if start - count > 0:
+                    params.update({ 'start': start - count })
+                else:
+                    params.pop('start', None)
+                prev_url = request.build_absolute_uri(request.path + '?' +
+                                                      urlencode(params))
+            else:
+                prev_url = None
+
+            params = request.QUERY_PARAMS.dict()
+            params.update({ 'start': start, 'count': count })
+            params = urlencode(params)
+
+            data = OrderedDict((
+                ('count', this_count),
+                ('total', total),
+                ('next', next_url),
+                ('previous', prev_url),
+                ('results', [ doc['_source']['serialized'] for doc in
+                             result['hits']['hits'] ])
+            ))
         return Response(data)
 
 

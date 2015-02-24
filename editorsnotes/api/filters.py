@@ -1,3 +1,4 @@
+from elasticsearch_dsl import Search, Q
 from rest_framework.filters import BaseFilterBackend
 
 from editorsnotes.search import get_index
@@ -7,41 +8,38 @@ BASE_QUERY = {'query': {'filtered': {'query': {'match_all': {}}}}}
 
 class ElasticSearchFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        query = BASE_QUERY.copy()
-        filters = []
+        query = Search()
 
         params = request.QUERY_PARAMS
 
+        start = view.page_start
+        count = view.page_count
+
         if hasattr(request, 'project') or 'project' in params:
-            project = params.get('project', request.project.name)
-            filters.append({ 'term': { 'serialized.project.name': project }})
+            project_name = request.project.name \
+                    if hasattr(request, 'project') \
+                    else params['project']
+            query = query.filter('term', **{ 'serialized.project.name': project_name })
 
         if 'updater' in params:
             filters.append({ 'term': { 'serialized.updater.username':
                                        params.get('updater') }})
 
         if 'q' in params:
-            q = params.get('q')
-            query['query']['filtered']['query'] = {
-                'match': {
-                    'display_title': {
-                        'query': q,
-                        'operator': 'and',
-                        'fuzziness': '0.3'
-                    }
-                }
-            }
-            query['highlight'] = {
-                'fields': {'_all': {}},
+            query = query.query('match', display_title={
+                'query': params.get('q'),
+                'operator': 'and',
+                'fuzziness': '0.3'
+            })
+            query = query.highlight('_all').highlight_options({
                 'pre_tags': ['&lt;strong&gt;'],
                 'post_tags': ['&lt;/strong&gt;']
-            }
+            })
 
-        if filters:
-            query['query']['filtered']['filter'] = { 'and': filters }
-
+        query = query.sort('-last_updated')
+        query = query[start:start+count]
         en_index = get_index('main')
-        return en_index.search_model(view.queryset.model, query)
+        return en_index.search_model(view.queryset.model, query.to_dict())
 
 class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
