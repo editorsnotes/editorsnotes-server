@@ -90,9 +90,9 @@ class CitationSerializer(serializers.Serializer):
             return obj.note.title
     def get_item_url(self, obj):
         request = self.context['request']
-        project = request.project \
-                if hasattr(request, 'project') \
-                else self.context['project']
+        project = getattr(request, 'project', None) \
+                or self.context.get('project', None) \
+                or obj.get_affiliation()
         if isinstance(obj, Citation):
             url = reverse('api:topics-detail', request=request, kwargs={
                 'project_slug': project.slug,
@@ -106,9 +106,9 @@ class CitationSerializer(serializers.Serializer):
         return url
     def get_content(self, obj):
         if isinstance(obj, Citation):
-            return obj.notes and etree.tostring(obj.notes)
+            return obj.has_notes() and etree.tostring(obj.notes)
         elif isinstance(obj, CitationNS):
-            return obj.content and etree.tostring(obj.content)
+            return obj.has_content() and etree.tostring(obj.content)
 
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
@@ -156,8 +156,11 @@ class TranscriptSerializer(serializers.ModelSerializer):
         model = Transcript
 
 class CitationSerializer(serializers.ModelSerializer):
-    url = URLField('api:topic-citations-detail',
-                   ('content_object.project.slug', 'content_object.topic_node_id', 'id'))
+    url = URLField('api:topic-citations-detail', {
+        'project_slug': 'content_object.project.slug',
+        'topic_node_id': 'content_object.topic_node_id',
+        'citation_id': 'id'
+    })
     document = HyperlinkedProjectItemField(view_name='api:documents-detail',
                                            queryset=Document.objects,
                                            required=True)
