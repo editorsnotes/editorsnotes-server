@@ -1,15 +1,17 @@
 from django.shortcuts import get_object_or_404
 
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from editorsnotes.main.models import Project, User
 from editorsnotes.search import get_index
 
-from ..serializers import ProjectSerializer, MinimalUserSerializer
+from ..serializers import ProjectSerializer, MinimalUserSerializer, UserSerializer
 from .base import HTMLRedirectMixin
 
-__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail']
+__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
+           'SelfUserDetail']
 
 class ProjectList(HTMLRedirectMixin, ListAPIView):
     queryset = Project.objects.all()
@@ -27,6 +29,13 @@ class UserDetail(HTMLRedirectMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = MinimalUserSerializer
     lookup_field = 'username'
+
+class SelfUserDetail(RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
+    def get_object(self):
+        return self.request.user
 
 def parse_int(val, default=25, maximum=100):
     if not isinstance(val, int):
