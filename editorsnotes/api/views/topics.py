@@ -15,7 +15,10 @@ from editorsnotes.main.models.topics import TYPE_CHOICES
 
 from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
                    ElasticSearchListMixin, ProjectSpecificMixin,
-                   ProjectSpecificPermissions, create_revision_on_methods)
+                   ProjectSpecificPermissions, create_revision_on_methods,
+                   LinkerMixin)
+from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
+                       DeleteProjectObjectLinker)
 from ..serializers.topics import TopicSerializer, TopicNodeSerializer
 from ..serializers.documents import CitationSerializer
 
@@ -65,9 +68,10 @@ class TopicNodeDetail(RetrieveAPIView):
     queryset = TopicNode.objects.all()
     serializer_class = TopicNodeSerializer
 
-class TopicList(ElasticSearchListMixin, BaseListAPIView):
+class TopicList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
+    linker_classes = (AddProjectObjectLinker,)
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
     queryset = Topic.objects.all()
@@ -86,6 +90,7 @@ class TopicConfirmDelete(DeleteConfirmAPIView):
 class TopicDetail(BaseDetailView, CreateModelMixin):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
+    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
     def get_object(self, queryset=None):
         # TODO: Make sure permissions are in fact checked
         filtered_queryset = self.filter_queryset(self.get_queryset())
