@@ -6,40 +6,37 @@ from editorsnotes.search.utils import clean_query_string
 
 BASE_QUERY = {'query': {'filtered': {'query': {'match_all': {}}}}}
 
+# Filters should expect that the `queryset` parameter will be an instance of an
+# elasticsearch_dsl.Search class. They should return another instance of that
+# class which has any relevant changes applied.
+
 class ElasticSearchFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        query = Search()
-
-        params = request.QUERY_PARAMS
-
-        start = view.page_start
-        count = view.page_count
+        params = request.query_params
+        search = queryset
 
         if hasattr(request, 'project') or 'project' in params:
             project_name = request.project.name \
                     if hasattr(request, 'project') \
                     else params['project']
-            query = query.filter('term', **{ 'serialized.project.name': project_name })
+            search = search.filter('term', **{ 'serialized.project.name': project_name })
 
         if 'updater' in params:
-            filters.append({ 'term': { 'serialized.updater.username':
-                                       params.get('updater') }})
+            search = search.filter('term', **{ 'serialized.updater.usernmae': params.get('updater') })
 
         if 'q' in params:
-            query = query.query('match', display_title={
+            search = search.query('match', display_title={
                 'query': params.get('q'),
                 'operator': 'and',
                 'fuzziness': '0.3'
             })
-            query = query.highlight('_all').highlight_options({
+            search = search.highlight('_all').highlight_options({
                 'pre_tags': ['&lt;strong&gt;'],
                 'post_tags': ['&lt;/strong&gt;']
             })
 
-        query = query.sort('-last_updated')
-        query = query[start:start+count]
-        en_index = get_index('main')
-        return en_index.search_model(view.queryset.model, query.to_dict())
+        search = search.sort('-last_updated')
+        return search
 
 class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):

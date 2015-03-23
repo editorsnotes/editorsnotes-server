@@ -600,6 +600,53 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             last_updater=self.user)
         return note
 
+    def test_note_api_list_links(self):
+        """
+        Note resources should have hyperlinks to edit the note if the
+        authenticated user has the right permissions.
+        """
+        response = self.client.get(
+            reverse('api:notes-list', args=[self.project.slug]),
+            HTTP_ACCEPT='application/json')
+
+        add_link = filter(lambda link: link['rel'] == 'add',
+                          response.data.get('_links'))
+        self.assertEqual(len(add_link), 1)
+
+        self.client.logout()
+        self.client.login(username='esther', password='esther')
+        response = self.client.get(
+            reverse('api:notes-list', args=[self.project.slug]),
+            HTTP_ACCEPT='application/json')
+        add_link = filter(lambda link: link['rel'] == 'add',
+                          response.data.get('_links'))
+        self.assertEqual(len(add_link), 0)
+    def test_note_api_detail_links(self):
+        """
+        Note resources should have hyperlinks to edit the note if the
+        authenticated user has the right permissions.
+        """
+        note_obj = self.create_test_note()
+
+        response = self.client.get(
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
+            HTTP_ACCEPT='application/json')
+
+        edit_link = filter(lambda link: link['rel'] == 'edit', response.data.get('_links'))
+        delete_link = filter(lambda link: link['rel'] == 'delete', response.data.get('_links'))
+        self.assertEqual(len(edit_link), 1)
+        self.assertEqual(len(delete_link), 1)
+
+        self.client.logout()
+        self.client.login(username='esther', password='esther')
+        response = self.client.get(
+            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
+            HTTP_ACCEPT='application/json')
+        edit_link = filter(lambda link: link['rel'] == 'edit', response.data.get('_links'))
+        delete_link = filter(lambda link: link['rel'] == 'delete', response.data.get('_links'))
+        self.assertEqual(len(edit_link), 0)
+        self.assertEqual(len(delete_link), 0)
+
     def test_note_api_create(self):
         "Creating a note within your own project is ok"
         data = TEST_NOTE.copy()

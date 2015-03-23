@@ -107,7 +107,6 @@ class NoteStatusField(serializers.ReadOnlyField):
 # TODO: change license, fuller repr of updaters
 class NoteSerializer(RelatedTopicSerializerMixin,
                      serializers.ModelSerializer):
-    _permissions = serializers.SerializerMethodField('get_permissions')
     url = URLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     license = LicenseSerializer(read_only=True, source='get_license')
@@ -118,23 +117,12 @@ class NoteSerializer(RelatedTopicSerializerMixin,
     sections = NoteSectionField(many=True, source='get_sections_with_subclasses')
     class Meta:
         model = Note
-        fields = ('_permissions', 'id', 'title', 'url', 'project', 'license', 'is_private', 'last_updated',
+        fields = ('id', 'title', 'url', 'project', 'license', 'is_private', 'last_updated',
                   'updaters', 'related_topics', 'content', 'status', 'sections',)
         validators = [
             UniqueToProjectValidator('title')
         ]
-    def get_permissions(self, obj):
-        user = getattr(self.context['request'], 'user', None)
-        if not user or not user.is_authenticated():
-            return []
-        project = self.context['request'].project
-        role = project.get_role_for(user)
-        if not role:
-            return []
-        note_ct = ContentType.objects.get_for_model(Note)
-        note_section_ct = ContentType.objects.get_for_model(NoteSection)
-        perms = role.get_permissions().filter(content_type__in=[note_ct, note_section_ct])
-        return [perm.codename for perm in perms]
+
     # TODO Make sure all section IDs are valid?
     def _create_note_section(self, note, data):
         section_type = data.pop('section_type')

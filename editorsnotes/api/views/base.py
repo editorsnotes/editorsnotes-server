@@ -1,8 +1,7 @@
 from collections import Counter, OrderedDict
-from urllib import urlencode
 
 from django.conf import settings
-from django.core.urlresolvers import resolve, reverse
+from django.core.urlresolvers import resolve
 from django.db.models.deletion import Collector
 from django.utils.text import force_text
 
@@ -10,7 +9,7 @@ from elasticsearch_dsl import Search
 from rest_framework.decorators import api_view
 from rest_framework.generics import (
     GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView)
-from rest_framework.mixins import RetrieveModelMixin, ListModelMixin
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -26,6 +25,7 @@ from editorsnotes.search import get_index
 
 from ..filters import (ElasticSearchFilterBackend,
                        ElasticSearchAutocompleteFilterBackend)
+from ..pagination import ESLimitOffsetPagination
 from ..permissions import ProjectSpecificPermissions
 from ..renderers import HTMLRedirectRenderer
 
@@ -72,27 +72,64 @@ class ElasticSearchRetrieveMixin(RetrieveModelMixin):
         data = en_index.data_for_object(self.object)
         return Response(data['_source']['serialized'])
 
-class ElasticSearchListMixin(ListModelMixin):
+class LinkerMixin(object):
+    def __init__(self, *args, **kwargs):
+        super(LinkerMixin, self).__init__(*args, **kwargs)
+        self._links = []
+    def add_link(self, rel, href, method='GET'):
+        self._links.append(OrderedDict([
+            ('rel', rel),
+            ('href', href),
+            ('method', method)
+        ]))
+    def add_links(self):
+        linkers = [linker() for linker in getattr(self, 'linker_classes', [])]
+        for linker in linkers:
+            links = linker.get_links(self.request, self)
+            for link in links:
+                self.add_link(**link)
+    def get_links(self):
+        return self._links
+
+
+class ElasticSearchListMixin(object):
     """
     Mixin that replaces the `list` method with a query to Elasticsearch.
     """
+    pagination_class = ESLimitOffsetPagination
+    filter_backends = (ElasticSearchFilterBackend,)
+    def get_queryset(self):
+        model = self.queryset.model
+        index = get_index('main')
+        return index.base_search_for_model(model)
+
     def list(self, request, *args, **kwargs):
-        start = request.QUERY_PARAMS.get('start', '0')
-        count = request.QUERY_PARAMS.get('count', '25')
+        """
 
-        start = int(start) if start.isdigit() else 0
-        if start < 0:
-            start = 0
+        Filter backends must expect that the 'queryset' argument will be an
+        instance of an elasticsearch-dsl search query, not a django QuerySet
+        """
+        search_query = self.filter_queryset(self.get_queryset())
+        search_results = self.paginate_queryset(search_query)
 
-        count = int(count) if count.isdigit() else 25
-        if count > 100:
-            count = 100
-        elif count < 1:
-            count = 1
+        prev_link = self.paginator.get_previous_link()
+        if prev_link:
+            self.add_link('prev', prev_link)
 
-        self.page_start = start
-        self.page_count = count
+        next_link = self.paginator.get_next_link()
+        if next_link:
+            self.add_link('next', next_link)
 
+
+        self.add_links()
+
+        return Response(OrderedDict([
+            ('_links', self.get_links()),
+            ('count', self.paginator.count),
+            ('results', [result['_source']['serialized'] for result in search_results])
+        ]))
+
+    def ____________list(self, request, *args, **kwargs):
         if 'autocomplete' in request.QUERY_PARAMS:
             self.filter_backends += (ElasticSearchAutocompleteFilterBackend,)
             result = self.filter_queryset(None)
@@ -109,46 +146,6 @@ class ElasticSearchListMixin(ListModelMixin):
                     doc['fields']['display_title'])
                 r['url'] = doc['fields']['serialized.url']
                 data['results'].append(r)
-        else:
-            self.filter_backends += (ElasticSearchFilterBackend,)
-            result = self.filter_queryset(None)
-
-            this_count = len(result['hits']['hits'])
-            total = result['hits']['total']
-
-            if start + count < total:
-                params = request.QUERY_PARAMS.dict().copy()
-                params.update({ 'start': start + count })
-                next_url = request.build_absolute_uri(request.path + '?' +
-                                                      urlencode(params))
-            else:
-                next_url = None
-
-            if start > 0:
-                params = request.QUERY_PARAMS.dict().copy()
-                if start - count > 0:
-                    params.update({ 'start': start - count })
-                else:
-                    params.pop('start', None)
-                prev_url = request.build_absolute_uri(request.path + '?' +
-                                                      urlencode(params))
-            else:
-                prev_url = None
-
-            params = request.QUERY_PARAMS.dict()
-            params.update({ 'start': start, 'count': count })
-            params = urlencode(params)
-
-            data = OrderedDict((
-                ('count', this_count),
-                ('total', total),
-                ('next', next_url),
-                ('previous', prev_url),
-                ('results', [ doc['_source']['serialized'] for doc in
-                             result['hits']['hits'] ])
-            ))
-        return Response(data)
-
 
 class ProjectSpecificMixin(object):
     """
@@ -271,9 +268,20 @@ class BaseListAPIView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
 
 @create_revision_on_methods('update', 'destroy')
 class BaseDetailView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
-                     RetrieveUpdateDestroyAPIView):
+                     LinkerMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        self.object = instance
+        self.add_links()
+
+        data = OrderedDict([('_links', self.get_links())])
+        data.update(serializer.data)
+
+        return Response(data)
     def perform_update(self, serializer):
         ModelClass = serializer.Meta.model
         field_info = model_meta.get_field_info(ModelClass)

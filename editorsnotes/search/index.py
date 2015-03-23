@@ -4,6 +4,7 @@ import json
 
 from django.conf import settings
 
+from elasticsearch_dsl import Search
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch.exceptions import InvalidJsonResponseError
 from rest_framework.renderers import JSONRenderer
@@ -22,6 +23,24 @@ class OrderedResponseElasticSearch(ElasticSearch):
         except ValueError:
             raise InvalidJsonResponseError(response)
         return json_response
+    def search(self, *args, **kwargs):
+        try:
+            return super(OrderedResponseElasticSearch, self).search(*args, **kwargs)
+        except TypeError as e:
+            if 'body' in kwargs:
+                kwargs['query'] = kwargs.pop('body')
+                return super(OrderedResponseElasticSearch, self).search(*args, **kwargs)
+            else:
+                raise e
+    def count(self, *args, **kwargs):
+        try:
+            return super(OrderedResponseElasticSearch, self).count(*args, **kwargs)
+        except TypeError as e:
+            if 'body' in kwargs:
+                kwargs['query'] = kwargs.pop('body')
+                return super(OrderedResponseElasticSearch, self).count(*args, **kwargs)
+            else:
+                raise e
 
 class ElasticSearchIndex(object):
     def __init__(self):
@@ -130,6 +149,11 @@ class ENIndex(ElasticSearchIndex):
         return self.es.search(query, index=self.name,
                               doc_type=doc_type.type_label, **kwargs)
 
+    def base_search_for_model(self, model):
+        doc_type = self.document_types.get(model)
+        return Search(using=self.es, index=self.name,
+                      doc_type=doc_type.type_label)
+
     def search(self, query, highlight=False, **kwargs):
         if isinstance(query, basestring):
             prepared_query = {
@@ -154,6 +178,7 @@ class ENIndex(ElasticSearchIndex):
                 prepared_query['highlight']['fields'][field_name] = {}
 
         return self.es.search(prepared_query, index=self.name, **kwargs)
+
 
 class ActivityIndex(ElasticSearchIndex):
     def get_name(self):
