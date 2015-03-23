@@ -58,6 +58,7 @@ class DocumentTypeAdapter(object):
                     },
                     'serialized': {
                         'properties': {
+                            'last_updated': { 'type': 'date' },
                             'project': {
                                 'properties': {
                                     'name': {'type': 'string', 'index': 'not_analyzed'},
