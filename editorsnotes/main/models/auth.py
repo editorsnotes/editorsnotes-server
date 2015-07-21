@@ -50,23 +50,30 @@ class User(AbstractUser, URLAccessible):
                 display_name = '%s %s' % (self.first_name, self.last_name)
         return display_name
     display_name = property(_get_display_name)
+
     @models.permalink
     def get_absolute_url(self):
         return ('user_view', [str(self.username)])
+
     def as_text(self):
         return self.display_name
+
     def belongs_to(self, project):
         return project.get_role_for(self) is not None
+
     def get_affiliated_projects(self):
         return Project.objects.filter(roles__group__user=self)
+
     def get_affiliated_projects_with_roles(self):
         roles = ProjectRole.objects.filter(group__user=self)
         return [(role.project, role) for role in roles]
+
     def _get_project_role(self, project):
         role_attr = '_{}_role_cache'
         if not hasattr(self, role_attr):
             setattr(self, role_attr, project.get_role_for(self))
         return getattr(self, role_attr)
+
     def _get_project_permissions(self, project):
         """
         Get all of a user's permissions within a project.
@@ -86,11 +93,13 @@ class User(AbstractUser, URLAccessible):
             perm_list = role.get_permissions()
         return set(['{}.{}'.format(perm.content_type.app_label, perm.codename)
                     for perm in perm_list])
+
     def get_project_permissions(self, project):
         perms_attr = '_{}_permissions_cache'.format(project.slug)
         if not hasattr(self, perms_attr):
             setattr(self, perms_attr, self._get_project_permissions(project))
         return getattr(self, perms_attr)
+
     def has_project_perm(self, project, perm):
         """
         Returns whether a user has a permission within a project.
@@ -101,8 +110,10 @@ class User(AbstractUser, URLAccessible):
         if self.is_superuser:
             return True
         return perm in self.get_project_permissions(project)
+
     def has_project_perms(self, project, perm_list):
         return all(self.has_project_perm(project, p) for p in perm_list)
+
     @staticmethod
     def get_activity_for(user, max_count=50):
         return activity_for(user, max_count=50)
@@ -114,11 +125,13 @@ PURPOSE_CHOICES = (
     (9, 'Other')
 )
 
+
 class UserFeedback(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     purpose = models.IntegerField(choices=PURPOSE_CHOICES)
     message = models.TextField()
+
     class Meta:
         app_label = 'main'
 
@@ -130,11 +143,12 @@ class UpdatersMixin(object):
     def get_all_updaters(self):
         ct = ContentType.objects.get_for_model(self.__class__)
         qs = reversion.models.Revision.objects\
-                .select_related('user', 'version')\
-                .filter(version__content_type_id=ct.id,
-                        version__object_id_int=self.id)
+            .select_related('user', 'version')\
+            .filter(version__content_type_id=ct.id,
+                    version__object_id_int=self.id)
         user_counter = Counter([revision.user for revision in qs])
         return [user for user, count in user_counter.most_common()]
+
 
 class ProjectPermissionsMixin(object):
     """
@@ -149,48 +163,69 @@ class ProjectPermissionsMixin(object):
     """
     def get_affiliation(self):
         raise NotImplementedError(
-            'Must define get_affiliation method which returns the project for this model.')
+            'Must define get_affiliation method which returns the project for'
+            ' this model.'
+        )
+
 
 class ProjectManager(models.Manager):
     def for_user(self, user):
         return self.select_related('roles__group__user')\
-                .filter(roles__group__user=user)
+            .filter(roles__group__user=user)
+
 
 class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     name = models.CharField(max_length='80')
-    slug = models.SlugField(help_text='Used for project-specific URLs and groups', unique=True)
-    image = models.ImageField(upload_to='project_images', blank=True, null=True)
+    slug = models.SlugField(
+        help_text='Used for project-specific URLs and groups',
+        unique=True
+    )
+    image = models.ImageField(
+        upload_to='project_images',
+        blank=True,
+        null=True
+    )
     description = fields.XHTMLField(blank=True, null=True)
     default_license = models.ForeignKey(License, default=1)
     objects = ProjectManager()
+
     class Meta:
         app_label = 'main'
         permissions = (
             (u'view_project_roster', u'Can view project roster.'),
             (u'change_project_roster', u'Can edit project roster.'),
         )
+
     @models.permalink
     def get_absolute_url(self):
         return ('project_view', [self.slug])
+
     def get_affiliation(self):
         return self
+
     def as_text(self):
         return self.name
+
     def has_description(self):
         return self.description is not None
+
     @property
     def members(self):
         role_groups = self.roles.values_list('group_id', flat=True)
         return User.objects.filter(groups__in=role_groups)
+
     def members_by_role(self):
         roles = ProjectRole.objects.for_project(self).select_related('user')
-        return
+        return roles
+
     def get_role_for(self, user):
         qs = self.roles.filter(group__user=user)
         return qs.get() if qs.exists() else None
+
     @staticmethod
     def get_activity_for(project, max_count=50):
         return activity_for(project, max_count=max_count)
+
 
 @receiver(models.signals.post_save, sender=Project)
 def create_editor_role(sender, instance, created, **kwargs):
@@ -202,6 +237,7 @@ def create_editor_role(sender, instance, created, **kwargs):
         instance.roles.get_or_create_by_name('Editor', is_super_role=True)
     return
 
+
 ##################################
 # Supporting models for projects #
 ##################################
@@ -211,12 +247,15 @@ def called_from_project(func):
     """
     def wrapped(self, *args, **kwargs):
         if not isinstance(getattr(self, 'instance', None), Project):
-            raise AttributeError('Method only accessible via a project instance.')
+            raise AttributeError('Method only accessible via a project '
+                                 'instance.')
         return func(self, *args, **kwargs)
     return wrapped
 
+
 class ProjectRoleManager(models.Manager):
     use_for_related_field = True
+
     def create_project_role(self, project, role, **kwargs):
         """
         Create a project role & related group by the role name.
@@ -225,14 +264,17 @@ class ProjectRoleManager(models.Manager):
         role_group = Group.objects.create(name=group_name)
         return self.create(project=project, role=role, group=role_group,
                            **kwargs)
+
     def for_project(self, project):
         return self.filter(project=project)
+
     @called_from_project
     def get_or_create_by_name(self, role, **kwargs):
         """
         Get or create a project role by role name. Only callable from Projects.
 
-        kwargs are only used in creating a project; lookup is by role name only.
+        kwargs are only used in creating a project; lookup is by role name
+        only.
         """
         project = self.instance
         try:
@@ -240,6 +282,7 @@ class ProjectRoleManager(models.Manager):
         except ProjectRole.DoesNotExist:
             role = self.create_project_role(project, role, **kwargs)
         return role
+
     @called_from_project
     def clear_for_user(self, user):
         """
@@ -249,12 +292,14 @@ class ProjectRoleManager(models.Manager):
         assigned_groups = user.groups.filter(id__in=project_group_ids)
         user.groups.remove(*assigned_groups)
         return
+
     @called_from_project
     def get_for_user(self, user):
         qs = self.for_project(self.instance)\
-                .select_related()\
-                .filter(group__user=user)
+            .select_related()\
+            .filter(group__user=user)
         return qs.get() if qs.exists() else None
+
 
 class ProjectRole(models.Model):
     """
@@ -267,50 +312,63 @@ class ProjectRole(models.Model):
     A "super_role" role will have all permissions possible inside a project.
     Other roles can have permissions assigned through the project group.
 
-    Roles should be typically be created and accessed through project instances,
-    e.g. `project.roles.get_or_create_by_name('editor')`
+    Roles should be typically be created and accessed through project
+    instances, e.g. `project.roles.get_or_create_by_name('editor')`
     """
     project = models.ForeignKey(Project, related_name='roles')
     is_super_role = models.BooleanField(default=False)
     role = models.CharField(max_length=40)
     group = models.OneToOneField(Group)
     objects = ProjectRoleManager()
+
     class Meta:
         app_label = 'main'
         unique_together = ('project', 'role',)
+
     def __unicode__(self):
         return u'{} - {}'.format(self.project.name, self.role)
+
     def _get_valid_permissions(self):
         if not hasattr(self, '_valid_permissions_cache'):
             self._valid_permissions_cache = get_all_project_permissions()
         return self._valid_permissions_cache
+
     def delete(self, *args, **kwargs):
         group = self.group
         ret = super(ProjectRole, self).delete(*args, **kwargs)
         group.delete()
         return ret
+
     def get_permissions(self):
         if self.is_super_role:
             return self._get_valid_permissions()
         else:
             return set(self.group.permissions.all())
+
     def add_permissions(self, *perms):
         for perm in perms:
             if perm not in self._get_valid_permissions():
                 raise ValueError(
-                    '{} is not a valid project-specific permission.'.format(perm))
+                    '{} is not a valid project-specific permission.'.format(
+                        perm
+                    )
+                )
             self.group.permissions.add(perm)
         return
+
     def remove_permissions(self, *perms):
         for perm in perms:
             self.group.permissions.remove(perm)
         return
+
     def clear_permissions(self):
         self.group.permissions.clear()
         return
+
     @property
     def users(self):
         return self.group.user_set
+
 
 class ProjectInvitation(CreationMetadata):
     class Meta:
@@ -318,8 +376,10 @@ class ProjectInvitation(CreationMetadata):
     project = models.ForeignKey(Project)
     email = models.EmailField()
     project_role = models.ForeignKey(ProjectRole)
+
     def __unicode__(self):
         return '{} ({})'.format(self.email, self.project.name)
+
 
 class FeaturedItem(CreationMetadata, ProjectPermissionsMixin):
     class Meta:
@@ -328,23 +388,31 @@ class FeaturedItem(CreationMetadata, ProjectPermissionsMixin):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
+
     def __unicode__(self):
-        return u'(%s)-- %s' % (self.project.slug, self.content_object.__repr__())
+        return u'({})-- {}'.format(
+            self.project.slug,
+            self.content_object.__repr__()
+        )
+
     def get_affiliation(self):
         return self.project
+
 
 class RevisionProject(models.Model):
     revision = models.OneToOneField(reversion.models.Revision,
                                     related_name='project_metadata')
     project = models.ForeignKey(Project)
-    # If a project is deleted, so is this. Should this be changed? Should we not
-    # allow projects to be deleted?
+
+    # If a project is deleted, so is this. Should this be changed? Should we
+    # not allow projects to be deleted?
     class Meta:
         app_label = 'main'
 
 ADDITION = 0
 CHANGE = 1
 DELETION = 2
+
 
 class LogActivity(models.Model):
     """
@@ -380,16 +448,18 @@ class LogActivity(models.Model):
         if self.revision_metadata is None:
             return None
         return self.revision_metadata.revision.version_set\
-                .get(content_type_id=self.content_type_id,
-                     object_id=self.object_id)
+            .get(content_type_id=self.content_type_id,
+                 object_id=self.object_id)
+
 
 class RevisionLogActivity(models.Model):
-    revision = models.ForeignKey(reversion.models.Revision,
-                                 related_name='logactivity_metadata')
-    log_activity = models.OneToOneField(LogActivity, related_name='revision_metadata')
+    revision = models.ForeignKey(
+        reversion.models.Revision, related_name='logactivity_metadata')
+    log_activity = models.OneToOneField(
+        LogActivity, related_name='revision_metadata')
+
     class Meta:
         app_label = 'main'
-
 
 
 def activity_for(model, max_count=50):
