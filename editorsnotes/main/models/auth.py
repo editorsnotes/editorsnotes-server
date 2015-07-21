@@ -3,7 +3,7 @@
 from collections import Counter
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser, Group, BaseUserManager
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -19,11 +19,28 @@ from base import URLAccessible, CreationMetadata
 __all__ = ['User', 'UserFeedback', 'Project', 'ProjectRole',
            'ProjectInvitation', 'FeaturedItem']
 
+
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None):
+        if not email:
+            raise ValueError('Email address is required')
+
+        user = self.model(username=username, email=email)
+        user.set_password(password)
+        user.save()
+
+        return user
+
+
 class User(AbstractUser, URLAccessible):
     zotero_key = models.CharField(max_length='24', blank=True, null=True)
     zotero_uid = models.CharField(max_length='6', blank=True, null=True)
+
+    objects = UserManager()
+
     class Meta:
         app_label = 'main'
+
     def _get_display_name(self):
         "Returns the full name if available, or the username if not."
         display_name = self.username
