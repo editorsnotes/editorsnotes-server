@@ -466,6 +466,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                          etree.tostring(document_obj.description))
 
         original_response_content = response.content
+        orig_links = original_response_content.pop('_links')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -473,6 +474,10 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
+
+        new_links_1 = response.content.pop('_links')
+        self.assertNotEqual(orig_links, new_links_1)
+
         self.assertEqual(response.content, original_response_content)
 
         self.client.logout()
@@ -480,6 +485,10 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
+
+        new_links_2 = response.content.pop('_links')
+        self.assertEqual(new_links_1, new_links_2)
+        self.assertNotEqual(orig_links, new_links_2)
         self.assertEqual(response.content, original_response_content)
 
     def test_document_api_update(self):
@@ -749,6 +758,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['results'][0]['title'], note_obj.title)
 
         original_response_content = response.content
+        orig_links = original_response_content.pop('_links')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -756,6 +766,10 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
+
+        new_links_1 = response.content.pop('_links')
+        self.assertNotEqual(orig_links, new_links_1)
+
         self.assertEqual(response.content, original_response_content)
 
         self.client.logout()
@@ -763,6 +777,11 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
+
+        new_links_2 = response.content.pop('_links')
+        self.assertEqual(new_links_1, new_links_2)
+        self.assertNotEqual(orig_links, new_links_2)
+
         self.assertEqual(response.content, original_response_content)
 
     def test_note_api_update(self):
