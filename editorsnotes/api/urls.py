@@ -10,15 +10,19 @@ def format_patterns(urlpatterns):
     suffixes = ['json', 'html', 'api']
     ret = []
     for urlpattern in urlpatterns:
-        if isinstance(urlpattern, RegexURLPattern) and urlpattern.regex.pattern.endswith('/$'):
-            regex = urlpattern.regex.pattern[:-2]
-            view = urlpattern._callback or urlpattern._callback_str
-            kwargs = urlpattern.default_args
-            name = urlpattern.name
+        if isinstance(urlpattern, RegexURLPattern):
+            pattern = urlpattern.regex.pattern
+            is_empty = pattern == '^$'
 
-            stripped_url = url(regex, view, kwargs, name)
+            if is_empty or pattern.endswith('/$'):
+                regex = '^' if is_empty else urlpattern.regex.pattern[:-2]
+                view = urlpattern._callback or urlpattern._callback_str
+                kwargs = urlpattern.default_args
+                name = urlpattern.name
 
-            ret.append(format_suffix_patterns([stripped_url], True, suffixes)[0])
+                stripped_url = url(regex, view, kwargs, name)
+
+                ret.append(format_suffix_patterns([stripped_url], True, suffixes)[0])
         ret.append(urlpattern)
     return ret
 
@@ -53,7 +57,7 @@ project_specific_patterns = patterns('',
 project_specific_patterns = format_patterns(project_specific_patterns)
 
 urlpatterns = patterns('',
-    url(r'^/$', views.base.root, name='root'),
+    url(r'^$', views.base.root, name='root'),
     url(r'^browse/$', views.base.browse, name='browse'),
     url(r'^auth-token/$', 'rest_framework.authtoken.views.obtain_auth_token', name='obtain-auth-token'),
     url(r'^search/$', views.SearchView.as_view(), name='search'),

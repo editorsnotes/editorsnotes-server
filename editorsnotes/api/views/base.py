@@ -301,6 +301,9 @@ class BaseDetailView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
 
 @api_view(('GET',))
 def root(request, format=None):
+    if isinstance(request.accepted_renderer, HTMLRedirectRenderer):
+        func, args, kwargs = resolve('/', urlconf='editorsnotes.other_urls')
+        return func(request, **kwargs)
     return Response({
         'auth-token': reverse('api:obtain-auth-token', request=request),
         'topics': reverse('api:topic-nodes-list', request=request),
@@ -324,6 +327,9 @@ def search_model(Model, query):
 
 @api_view(['GET'])
 def browse(request, format=None):
+    if isinstance(request.accepted_renderer, HTMLRedirectRenderer):
+        func, args, kwargs = resolve('/browse/', urlconf='editorsnotes.main.urls')
+        return func(request, **kwargs)
     es_query = Search().sort('-serialized.last_updated')[:10]
     ret = OrderedDict()
 
