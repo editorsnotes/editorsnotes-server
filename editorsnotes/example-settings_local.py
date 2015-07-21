@@ -66,11 +66,6 @@ MANAGERS = ADMINS
 # Optional variables #
 ######################
 
-# Set the following variables to connect to an instance of Open Refine and
-# enable clustering topics and documents.
-GOOGLE_REFINE_HOST = '127.0.0.1'
-GOOGLE_REFINE_PORT = '3333'
-
 # Set the following to be able to write all Zotero data to a central library.
 ZOTERO_API_KEY = ''
 ZOTERO_LIBRARY = ''

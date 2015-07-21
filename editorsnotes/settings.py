@@ -123,7 +123,6 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'editorsnotes.main',
     'editorsnotes.djotero',
-    #'editorsnotes.refine',
     'editorsnotes.admin',
     'editorsnotes.api',
     'editorsnotes.search',

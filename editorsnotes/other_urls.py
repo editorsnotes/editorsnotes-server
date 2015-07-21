@@ -56,7 +56,3 @@ urlpatterns += patterns('editorsnotes.djotero.views',
     url(r'^api/metadata/documents/item_type_creators/$', 'item_type_creators', name='item_type_creators_view'),
     url(r'^api/document/archives/$', 'api_archives', name='api_archives_view'),
 )
-#urlpatterns += patterns('editorsnotes.refine.views',
-#    url(r'^topics/clusters/$', 'show_topic_clusters', name='show_topic_clusters_view'),
-#    url(r'^topics/merge/(?P<cluster_id>\d+)/$', 'merge_topic_cluster', name='merge_topic_cluster_view'),
-#)
