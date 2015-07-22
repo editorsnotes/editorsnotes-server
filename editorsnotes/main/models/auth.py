@@ -53,7 +53,7 @@ class User(AbstractUser, URLAccessible):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('user_view', [str(self.username)])
+        return ('api:users-detail', [str(self.username)])
 
     def as_text(self):
         return self.display_name
@@ -198,7 +198,7 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('project_view', [self.slug])
+        return ('api:project-detail', [self.slug])
 
     def get_affiliation(self):
         return self

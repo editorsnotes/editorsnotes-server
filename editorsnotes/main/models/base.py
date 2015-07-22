@@ -32,7 +32,7 @@ class Administered(object):
 class URLAccessible(object):
     @models.permalink
     def get_absolute_url(self):
-        return ('%s_view' % self._meta.model_name, [str(self.id)])
+        return ('api:{}s-detail'.format(self._meta.model_name), [str(self.id)])
     def __unicode__(self):
         return utils.truncate(self.as_text())
     def as_text(self):

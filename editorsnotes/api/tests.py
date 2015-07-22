@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.test import TransactionTestCase
 
+from django_nose import FastFixtureTestCase
 from reversion.models import Revision
 
 from editorsnotes.main import models as main_models
@@ -40,7 +41,7 @@ TEST_TOPIC = {
     'related_topics': [],
     'summary': u'<p>A writer of tests</p>'
 }
-def create_test_topic(**kwargs):
+def create_topic(**kwargs):
     data = TEST_TOPIC.copy()
     data.update(kwargs)
     data.pop('alternate_names', None)
@@ -62,12 +63,13 @@ TEST_DOCUMENT = {
         ]
     }
 }
-def create_test_document(**kwargs):
+def create_document(**kwargs):
     data = TEST_DOCUMENT.copy()
     data['zotero_data'] = json.dumps(data['zotero_data'])
     data.pop('related_topics', None)
     data.update(kwargs)
     return main_models.Document.objects.create(**data)
+ 
 
 TEST_NOTE = {
     'title': u'Is testing good?',
@@ -76,18 +78,13 @@ TEST_NOTE = {
     'status': 'open',
     'sections': []
 }
-def create_test_note(**kwargs):
-    data = TEST_NOTE.copy()
-    data.pop('related_topics', None)
-    data.update(kwargs)
-    return main_models.Note.objects.create(**data)
 
 
 BAD_PERMISSION_MESSAGE = u'You do not have permission to perform this action.'
 NO_AUTHENTICATION_MESSAGE = u'Authentication credentials were not provided.'
 
 
-class ClearContentTypesTransactionTestCase(TransactionTestCase):
+class ClearContentTypesTransactionTestCase(FastFixtureTestCase):
     """
     See https://code.djangoproject.com/ticket/10827
     """
@@ -192,7 +189,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_duplicate_name_fails(self):
         "Creating a topic with an existing name is NOT OK"
         data = TEST_TOPIC.copy()
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
 
         # Posting the same data should raise a 400 error
         response = self.client.post(
@@ -211,7 +208,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         """
         flush_es_indexes()
 
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
 
         response = self.client.get(reverse('api:topics-list',
                                            args=[self.project.slug]),
@@ -244,7 +241,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_update(self):
         "Updating a topic in your own project is great"
         data = TEST_TOPIC.copy()
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
 
         # Update the topic with new data.
         data['summary'] = u'<p>A writer of great tests.</p>'
@@ -288,7 +285,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_update_bad_permissions(self):
         "Updating a topic in an outside project is NOT OK"
         data = TEST_TOPIC.copy()
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
 
         data['preferred_name'] = u'Patrick Garbage'
         data['summary'] = u'<p>such a piece of garbage LOL</p>'
@@ -307,7 +304,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_update_logged_out(self):
         "Updating a topic when not logged in is NOT OK"
         data = TEST_TOPIC.copy()
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
 
         self.client.logout()
         response = self.client.put(
@@ -320,7 +317,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_topic_api_delete(self):
         "Deleting a topic in your own project is ok"
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
 
         # Delete the topic
         self.assertEqual(main_models.Topic.objects.count(), 1)
@@ -354,7 +351,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_topic_api_delete_bad_permissions(self):
         "Deleting a topic in an outside project is NOT OK"
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
         self.client.logout()
         self.client.login(username='esther', password='esther')
 
@@ -366,7 +363,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['detail'], BAD_PERMISSION_MESSAGE)
 
     def test_topic_api_delete_logged_out(self):
-        topic_obj = create_test_topic(user=self.user, project=self.project)
+        topic_obj = create_topic(user=self.user, project=self.project)
         self.client.logout()
         response = self.client.delete(
             reverse('api:topics-detail', args=[self.project.slug, topic_obj.topic_node_id]),
@@ -435,7 +432,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_duplicate_name_fails(self):
         "Creating a document with a duplicate name is NOT OK"
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         response = self.client.post(
@@ -454,7 +451,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         anyone.
         """
         flush_es_indexes()
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         response = self.client.get(reverse('api:documents-list', args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
@@ -465,7 +462,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['results'][0]['description'],
                          etree.tostring(document_obj.description))
 
-        original_response_content = response.content
+        original_response_content = response.data
         orig_links = original_response_content.pop('_links')
 
         self.client.logout()
@@ -475,10 +472,13 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        new_links_1 = response.content.pop('_links')
+        new_links_1 = response.data.pop('_links')
         self.assertNotEqual(orig_links, new_links_1)
 
-        self.assertEqual(response.content, original_response_content)
+        self.assertEqual(
+            response.data,
+            original_response_content
+        )
 
         self.client.logout()
         response = self.client.get(reverse('api:documents-list',
@@ -486,14 +486,14 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        new_links_2 = response.content.pop('_links')
+        new_links_2 = response.data.pop('_links')
         self.assertEqual(new_links_1, new_links_2)
         self.assertNotEqual(orig_links, new_links_2)
-        self.assertEqual(response.content, original_response_content)
+        self.assertEqual(response.data, original_response_content)
 
     def test_document_api_update(self):
         "Updating a document in your own project is ok"
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         data['description'] = (u'<div>Draper, Theodore. <em>Roots of American '
@@ -515,7 +515,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update_bad_permissions(self):
         "Updating a document in another project is NOT OK"
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -532,7 +532,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_update_logged_out(self):
         "Updating a document when logged out is NOT OK"
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         data = TEST_DOCUMENT.copy()
@@ -547,7 +547,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete(self):
         "Deleting a document in your own project is ok"
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         response = self.client.delete(
             reverse('api:documents-detail', args=[self.project.slug, document_obj.id]),
@@ -558,7 +558,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete_bad_permissions(self):
         "Deleting a document in an outside project is NOT OK"
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -571,7 +571,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
     def test_document_api_delete_logged_out(self):
         "Deleting a document while logged out is NOT OK"
-        document_obj = create_test_document(
+        document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         response = self.client.delete(
@@ -661,10 +661,10 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_NOTE.copy()
 
         related_topics = [
-            create_test_topic(preferred_name='Testing',
+            create_topic(preferred_name='Testing',
                               project=self.project,
                               user=self.user),
-            create_test_topic(preferred_name='Django',
+            create_topic(preferred_name='Django',
                               project=self.project,
                               user=self.user)
         ]
@@ -757,7 +757,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['results'][0]['id'], note_obj.id)
         self.assertEqual(response.data['results'][0]['title'], note_obj.title)
 
-        original_response_content = response.content
+        original_response_content = response.data
         orig_links = original_response_content.pop('_links')
 
         self.client.logout()
@@ -767,10 +767,10 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        new_links_1 = response.content.pop('_links')
+        new_links_1 = response.data.pop('_links')
         self.assertNotEqual(orig_links, new_links_1)
 
-        self.assertEqual(response.content, original_response_content)
+        self.assertEqual(response.data, original_response_content)
 
         self.client.logout()
         response = self.client.get(reverse('api:notes-list',
@@ -778,11 +778,11 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        new_links_2 = response.content.pop('_links')
+        new_links_2 = response.data.pop('_links')
         self.assertEqual(new_links_1, new_links_2)
         self.assertNotEqual(orig_links, new_links_2)
 
-        self.assertEqual(response.content, original_response_content)
+        self.assertEqual(response.data, original_response_content)
 
     def test_note_api_update(self):
         "Updating a note in your own project is ok"
