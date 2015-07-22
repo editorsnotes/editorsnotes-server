@@ -121,7 +121,6 @@ def watch_static():
         abort(red('Install Watchdog python package to watch filesystem files.'))
 
     EXTS = ['.js', '.css', '.less']
-    browserify_template_pattern = re.compile('.*/editorsnotes_app/js/templates/.*html$')
 
     class ChangeHandler(FileSystemEventHandler):
         def __init__(self, *args, **kwargs):
@@ -129,12 +128,6 @@ def watch_static():
             self.last_collected = datetime.datetime.now()
         def on_any_event(self, event):
             if event.is_directory:
-                return
-            is_match = any((
-                os.path.splitext(event.src_path)[-1].lower() in EXTS,
-                browserify_template_pattern.match(event.src_path)
-            ))
-            if not is_match:
                 return
             now = datetime.datetime.now()
             if (datetime.datetime.now() - self.last_collected).total_seconds() < 1:
@@ -156,7 +149,6 @@ def watch_static():
     observer.start()
 
     print green('\nWatching *.js, *.css, and *.less files for changes.\n')
-    watchify_proc = subprocess.Popen([env.python, 'manage.py', 'compile_browserify', '--watch'])
 
     try:
         while True:
@@ -202,7 +194,6 @@ def symlink_packages():
 def collect_static():
     with lcd(PROJ_ROOT):
         local('{python} manage.py collectstatic --noinput -v0'.format(**env))
-        local('{python} manage.py compile_browserify'.format(**env))
 
 def generate_secret_key():
     SECRET_CHARS = 'abcdefghijklmnopqrstuvwxyz1234567890-=!@#$$%^&&*()_+'
