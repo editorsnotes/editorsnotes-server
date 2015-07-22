@@ -7,7 +7,7 @@ import views
 
 def format_patterns(urlpatterns):
     "If a URL pattern ends in a slash, it should be able to be rendered as different types"
-    suffixes = ['json', 'html', 'api']
+    suffixes = ['json', 'api']
     ret = []
     for urlpattern in urlpatterns:
         if isinstance(urlpattern, RegexURLPattern):

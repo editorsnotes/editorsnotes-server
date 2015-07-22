@@ -49,7 +49,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return self.title
     @models.permalink
     def get_absolute_url(self):
-        return ('note_view', [self.project.slug, self.id])
+        return ('api:notes-detail', [self.project.slug, self.id])
     def get_affiliation(self):
         return self.project
     def get_license(self):

@@ -8,16 +8,15 @@ from editorsnotes.main.models import Project, User
 from editorsnotes.search import get_index
 
 from ..serializers import ProjectSerializer, MinimalUserSerializer, UserSerializer
-from .base import HTMLRedirectMixin
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
            'SelfUserDetail']
 
-class ProjectList(HTMLRedirectMixin, ListAPIView):
+class ProjectList(ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-class ProjectDetail(HTMLRedirectMixin, RetrieveAPIView):
+class ProjectDetail(RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     def get_object(self):
@@ -25,7 +24,7 @@ class ProjectDetail(HTMLRedirectMixin, RetrieveAPIView):
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
         return project
 
-class UserDetail(HTMLRedirectMixin, RetrieveAPIView):
+class UserDetail(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = MinimalUserSerializer
     lookup_field = 'username'

@@ -237,17 +237,8 @@ class LogActivityMixin(object):
         self.log_obj = log_obj
         return log_obj
 
-class HTMLRedirectMixin(object):
-    def get(self, request, format=None, **kwargs):
-        if isinstance(request.accepted_renderer, HTMLRedirectRenderer):
-            regular_path = request.path.replace('.html', '/')
-            func, args, kwargs = resolve(regular_path, urlconf='editorsnotes.main.urls')
-            return func(request, **kwargs)
-        return super(HTMLRedirectMixin, self).get(request, format, **kwargs)
-
-
 @create_revision_on_methods('create')
-class BaseListAPIView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
+class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin,
                       ListCreateAPIView):
     paginate_by = 50
     paginate_by_param = 'page_size'
@@ -267,7 +258,7 @@ class BaseListAPIView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
             self.make_log_activity(instance, ADDITION)
 
 @create_revision_on_methods('update', 'destroy')
-class BaseDetailView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
+class BaseDetailView(ProjectSpecificMixin, LogActivityMixin,
                      LinkerMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
@@ -301,9 +292,6 @@ class BaseDetailView(HTMLRedirectMixin, ProjectSpecificMixin, LogActivityMixin,
 
 @api_view(('GET',))
 def root(request, format=None):
-    if isinstance(request.accepted_renderer, HTMLRedirectRenderer):
-        func, args, kwargs = resolve('/', urlconf='editorsnotes.other_urls')
-        return func(request, **kwargs)
     return Response({
         'auth-token': reverse('api:obtain-auth-token', request=request),
         'topics': reverse('api:topic-nodes-list', request=request),
@@ -327,9 +315,6 @@ def search_model(Model, query):
 
 @api_view(['GET'])
 def browse(request, format=None):
-    if isinstance(request.accepted_renderer, HTMLRedirectRenderer):
-        func, args, kwargs = resolve('/browse/', urlconf='editorsnotes.main.urls')
-        return func(request, **kwargs)
     es_query = Search().sort('-serialized.last_updated')[:10]
     ret = OrderedDict()
 
