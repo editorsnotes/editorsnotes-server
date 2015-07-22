@@ -93,14 +93,17 @@ BAD_PERMISSION_MESSAGE = u'You do not have permission to perform this action.'
 NO_AUTHENTICATION_MESSAGE = u'Authentication credentials were not provided.'
 
 
-class ClearContentTypesTransactionTestCase(FastFixtureTestCase):
+class ClearContentTypesMixin(object):
     """
     See https://code.djangoproject.com/ticket/10827
     """
     def _pre_setup(self, *args, **kwargs):
         ContentType.objects.clear_cache()
-        super(ClearContentTypesTransactionTestCase, self)\
+        super(ClearContentTypesMixin, self)\
             ._pre_setup(*args, **kwargs)
+
+class ClearContentTypesTransactionTestCase(ClearContentTypesMixin, FastFixtureTestCase):
+    pass
 
 
 class TopicAPITestCase(ClearContentTypesTransactionTestCase):

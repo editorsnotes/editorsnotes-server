@@ -6,6 +6,8 @@ from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.db import models, transaction, IntegrityError
 from django.test import TestCase, TransactionTestCase
+
+from django_nose import FastFixtureTestCase
 from lxml import etree, html
 
 import models as main_models
@@ -196,11 +198,13 @@ class DocumentTestCase(TestCase):
         self.assertEqual(updated_document.transcript, transcript)
 
 
-class NoteTransactionTestCase(TransactionTestCase):
+class NoteTransactionTestCase(FastFixtureTestCase):
     fixtures = ['projects.json']
+
     def setUp(self):
         self.project = main_models.Project.objects.get(slug='emma')
         self.user = self.project.members.all()[0]
+
     def testAssignTopicTwice(self):
         note = main_models.Note.objects.create(
             title='test note',
@@ -210,10 +214,10 @@ class NoteTransactionTestCase(TransactionTestCase):
             u'Example', self.project, self.user)
         note.related_topics.create(topic=topic, creator=self.user)
 
-        self.assertRaises(IntegrityError,
-                          note.related_topics.create,
-                          topic=topic, creator=self.user)
-        transaction.rollback()
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+              note.related_topics.create(topic=topic, creator=self.user)
+
         note.delete()
         topic.delete()
 
