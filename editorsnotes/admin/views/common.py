@@ -7,8 +7,7 @@ from django.views.generic.edit import ModelFormMixin
 from rest_framework.renderers import JSONRenderer
 import reversion
 
-from editorsnotes.main.models import Project
-from editorsnotes.main.models.auth import RevisionProject
+from editorsnotes.auth.models import Project, RevisionProject
 
 VIEW_ERROR_MSG = 'You do not have permission to view {}.'
 CHANGE_ERROR_MSG = 'You do not have permission to change {}.'

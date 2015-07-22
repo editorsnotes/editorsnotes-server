@@ -5,7 +5,7 @@ from django.db import transaction
 
 import reversion
 
-from editorsnotes.main.models import Project, User
+from editorsnotes.auth.models import Project, User
 
 class Command(BaseCommand):
     args = '"<project_name>" <project_slug>'

@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 from django_nose import FastFixtureTestCase
 from reversion.models import Revision
 
+from editorsnotes.auth.models import Project, User, LogActivity
 from editorsnotes.main import models as main_models
 from editorsnotes.search import get_index
 
@@ -110,8 +111,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.user = main_models.User.objects.get(username='barry')
-        self.project = main_models.Project.objects.get(slug='emma')
+        self.user = User.objects.get(username='barry')
+        self.project = Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
 
     def create_test_topic(self):
@@ -171,7 +172,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertDictContainsSubset(activity_data, expected)
 
         # Make sure the activity entry corresponds to a reversion Version
-        activity_model = main_models.auth.LogActivity.objects.get()
+        activity_model = LogActivity.objects.get()
         version = activity_model.get_version()
         self.assertEqual(
             (activity_model.content_type_id, activity_model.object_id),
@@ -400,8 +401,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.user = main_models.User.objects.get(username='barry')
-        self.project = main_models.Project.objects.get(slug='emma')
+        self.user = User.objects.get(username='barry')
+        self.project = Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
 
     def create_test_document(self):
@@ -622,8 +623,8 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.user = main_models.User.objects.get(username='barry')
-        self.project = main_models.Project.objects.get(slug='emma')
+        self.user = User.objects.get(username='barry')
+        self.project = Project.objects.get(slug='emma')
         self.client.login(username='barry', password='barry')
 
     def create_test_note(self):

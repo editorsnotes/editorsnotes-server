@@ -20,10 +20,10 @@ from lxml import etree, html
 from PIL import Image
 import reversion
 
+from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
-from auth import ProjectPermissionsMixin, UpdatersMixin
 from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
                   Administered, OrderingManager)
 

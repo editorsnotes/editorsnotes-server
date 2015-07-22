@@ -16,10 +16,11 @@ from rest_framework.reverse import reverse
 from rest_framework.utils import formatting, model_meta
 import reversion
 
-from editorsnotes.main.models import Project, Note, Topic, Document
-from editorsnotes.main.models.auth import (RevisionProject, LogActivity,
-                                           RevisionLogActivity,
-                                           ADDITION, CHANGE, DELETION)
+from editorsnotes.auth.models import (
+    Project, RevisionProject, LogActivity, RevisionLogActivity,
+    ADDITION, CHANGE, DELETION)
+
+from editorsnotes.main.models import Note, Topic, Document
 from editorsnotes.main.models.base import Administered
 from editorsnotes.search import get_index
 

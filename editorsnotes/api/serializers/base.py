@@ -4,7 +4,8 @@ from rest_framework.relations import (HyperlinkedRelatedField, RelatedField,
 from rest_framework.reverse import reverse
 from rest_framework.serializers import ReadOnlyField, ModelSerializer, SerializerMethodField
 
-from editorsnotes.main.models import Topic, TopicAssignment, Project
+from editorsnotes.auth.models import Project
+from editorsnotes.main.models import Topic, TopicAssignment
 
 def nested_getattr(obj, attr_string):
     for attr in attr_string.split('.'):

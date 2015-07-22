@@ -10,6 +10,8 @@ from django.test import TestCase, TransactionTestCase
 from django_nose import FastFixtureTestCase
 from lxml import etree, html
 
+from editorsnotes.auth.models import Project, User, ProjectInvitation
+
 import models as main_models
 import utils
 from views.auth import create_invited_user
@@ -99,7 +101,7 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual('<div><p/></div>', etree.tostring(test3))
 
 def create_test_user():
-    user = main_models.User(username='testuser', is_staff=True, is_superuser=True)
+    user = User(username='testuser', is_staff=True, is_superuser=True)
     user.set_password('testuser')
     user.save()
     return user
@@ -107,7 +109,7 @@ def create_test_user():
 class NoteTestCase(TestCase):
     fixtures = ['projects.json']
     def setUp(self):
-        self.project = main_models.Project.objects.get(slug='emma')
+        self.project = Project.objects.get(slug='emma')
         self.user = self.project.members.all()[0]
     def testStripStyleElementsFromContent(self):
         note = main_models.Note.objects.create(
@@ -148,7 +150,7 @@ class NoteTestCase(TestCase):
 class DocumentTestCase(TestCase):
     fixtures = ['projects.json']
     def setUp(self):
-        self.project = main_models.Project.objects.get(slug='emma')
+        self.project = Project.objects.get(slug='emma')
         self.user = self.project.members.all()[0]
         self.document_kwargs = {
             'description': u'<div>My Disillusionment in Russia</div>',
@@ -202,7 +204,7 @@ class NoteTransactionTestCase(FastFixtureTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.project = main_models.Project.objects.get(slug='emma')
+        self.project = Project.objects.get(slug='emma')
         self.user = self.project.members.all()[0]
 
     def testAssignTopicTwice(self):
@@ -227,7 +229,7 @@ class NewUserTestCase(TestCase):
     def test_create_new_user(self):
         new_user_email = 'fakeperson@example.com'
 
-        test_project = main_models.Project.objects.create(
+        test_project = Project.objects.create(
             name='Editors\' Notes\' Idiot Brigade',
             slug='ENIB',
         )
@@ -236,7 +238,7 @@ class NewUserTestCase(TestCase):
         # We haven't invited this person yet, so this shouldn't make an account
         self.assertEqual(create_invited_user(new_user_email), None)
         
-        main_models.ProjectInvitation.objects.create(
+        ProjectInvitation.objects.create(
             project=test_project,
             email=new_user_email,
             project_role=test_role,
@@ -244,16 +246,16 @@ class NewUserTestCase(TestCase):
         )
         new_user = create_invited_user(new_user_email)
 
-        self.assertTrue(isinstance(new_user, main_models.User))
-        self.assertEqual(main_models.ProjectInvitation.objects.count(), 0)
+        self.assertTrue(isinstance(new_user, User))
+        self.assertEqual(ProjectInvitation.objects.count(), 0)
         self.assertEqual(new_user.username, 'fakeperson')
 
 class ProjectTopicTestCase(TestCase):
     fixtures = ['projects.json']
     def setUp(self):
-        self.project = main_models.Project.objects.get(slug='emma')
+        self.project = Project.objects.get(slug='emma')
         self.user = self.project.members.all()[0]
-        self.project2 = main_models.Project.objects.get(slug='sanger')
+        self.project2 = Project.objects.get(slug='sanger')
         self.user2 = self.project2.members.all()[0]
 
     def test_create_project_topic(self):
@@ -288,10 +290,10 @@ class ProjectTopicTestCase(TestCase):
 class ProjectSpecificPermissionsTestCase(TestCase):
     fixtures = ['projects.json']
     def setUp(self):
-        self.project = main_models.Project.objects.create(
+        self.project = Project.objects.create(
             name='Alexander Berkman Papers Project',
             slug='abpp')
-        self.user = main_models.auth.User.objects.create(
+        self.user = User.objects.create(
             username='jd',
             first_name='John',
             last_name='Doe',
@@ -317,7 +319,7 @@ class ProjectSpecificPermissionsTestCase(TestCase):
         self.assertFalse(self.user.has_project_perm(self.project, 'made up permission'))
 
     def test_other_project_perms(self):
-        egp = main_models.Project.objects.get(slug='emma')
+        egp = Project.objects.get(slug='emma')
 
         # User is not a member of this project, so shouldn't have any permissions
         self.assertEqual(egp.roles.get_for_user(self.user), None)
@@ -327,7 +329,7 @@ class ProjectSpecificPermissionsTestCase(TestCase):
     def test_limited_role(self):
         # Make a role with only one permission & make sure users of that role
         # can only do that.
-        researcher = main_models.User.objects.create(username='a_researcher')
+        researcher = User.objects.create(username='a_researcher')
         new_role = self.project.roles.get_or_create_by_name('Researcher')
         note_perm = Permission.objects.get_by_natural_key('change_note', 'main', 'note')
 

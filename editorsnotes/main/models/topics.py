@@ -7,8 +7,9 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 import reversion
 
+from editorsnotes.auth.models import Project, ProjectPermissionsMixin
+
 from .. import fields, utils
-from auth import Project, ProjectPermissionsMixin
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
 

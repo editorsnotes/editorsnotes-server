@@ -10,7 +10,7 @@ from pyelasticsearch.exceptions import InvalidJsonResponseError
 from rest_framework.renderers import JSONRenderer
 
 from editorsnotes.api.serializers import ActivitySerializer
-from editorsnotes.main.models import Project, User
+from editorsnotes.auth.models import Project, User
 
 from .types import DocumentTypeAdapter
 from .utils import clean_query_string

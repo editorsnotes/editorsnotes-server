@@ -4,7 +4,7 @@ from django.forms.models import (
     BaseModelFormSet, ModelForm, modelformset_factory, ValidationError)
 
 from editorsnotes.main.management import get_all_project_permissions
-from editorsnotes.main.models import (
+from editorsnotes.auth.models import (
     User, Project, ProjectInvitation, ProjectRole)
 
 class ProjectRoleField(forms.ModelChoiceField):

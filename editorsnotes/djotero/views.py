@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 
-from editorsnotes.main.models.auth import User
+from editorsnotes.auth.models import User
 
 from .models import CachedArchive
 from . import utils

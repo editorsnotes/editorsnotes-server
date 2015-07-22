@@ -4,7 +4,7 @@ from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from editorsnotes.main.models import Project, User
+from editorsnotes.auth.models import Project, User
 from editorsnotes.search import get_index
 
 from ..serializers import ProjectSerializer, MinimalUserSerializer, UserSerializer

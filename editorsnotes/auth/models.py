@@ -12,12 +12,23 @@ from django.dispatch import receiver
 import reversion
 from licensing.models import License
 
-from .. import fields
-from ..management import get_all_project_permissions
-from base import URLAccessible, CreationMetadata
+from editorsnotes.main import fields
+from editorsnotes.main.management import get_all_project_permissions
+from editorsnotes.main.models.base import URLAccessible, CreationMetadata
 
-__all__ = ['User', 'UserFeedback', 'Project', 'ProjectRole',
-           'ProjectInvitation', 'FeaturedItem']
+__all__ = [
+    'User',
+    'UserFeedback',
+    'Project',
+    'ProjectRole',
+    'ProjectInvitation',
+    'FeaturedItem',
+    'LogActivity',
+    'RevisionLogActivity',
+
+    'UpdatersMixin',
+    'ProjectPermissionsMixin'
+]
 
 
 class UserManager(BaseUserManager):

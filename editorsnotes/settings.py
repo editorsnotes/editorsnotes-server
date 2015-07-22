@@ -123,6 +123,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'django_nose',
     'editorsnotes.main',
+    'editorsnotes.auth',
     'editorsnotes.djotero',
     'editorsnotes.admin',
     'editorsnotes.api',

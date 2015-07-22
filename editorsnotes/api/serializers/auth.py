@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Project, User, FeaturedItem, ProjectRole
+from editorsnotes.auth.models import Project, User, FeaturedItem, ProjectRole
 from editorsnotes.search import get_index
 
 from .base import URLField

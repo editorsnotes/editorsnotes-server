@@ -7,8 +7,8 @@ from lxml import etree
 from model_utils.managers import InheritanceManagerMixin
 import reversion
 
+from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from .. import fields
-from auth import ProjectPermissionsMixin, UpdatersMixin
 from base import (Administered, LastUpdateMetadata, URLAccessible,
                   OrderingManager)
 
