@@ -18,6 +18,7 @@ build/*
 lib/*
 local
 local/*
+man/*
 include/*
 share/*
 src/*

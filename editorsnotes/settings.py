@@ -121,6 +121,7 @@ INSTALLED_APPS = (
     'licensing',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_nose',
     'editorsnotes.main',
     'editorsnotes.djotero',
     'editorsnotes.admin',
