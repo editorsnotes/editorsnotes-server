@@ -24,13 +24,8 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'zotero_cache'
-    },
-    'compress': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'compress_cache'
     }
 }
-COMPRESS_CACHE_BACKEND = 'compress'
 SOUTH_TESTS_MIGRATE = False
 
 
@@ -59,13 +54,6 @@ EN_PROJECT_PATH = os.path.abspath(os.path.join(
     os.path.normpath(os.path.dirname(__file__)),
     os.path.pardir
 ))
-
-TEMPLATE_DIRS = (
-    os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'templates'),
-)
-STATICFILES_DIRS = (
-    os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'static'),
-)
 
 # Override these variables in settings_local.py if desired
 DEBUG = False
@@ -117,7 +105,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'reversion',
-    'compressor',
     'licensing',
     'rest_framework',
     'rest_framework.authtoken',
@@ -133,15 +120,10 @@ INSTALLED_APPS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
 )
 BROWSERID_CREATE_USER = 'editorsnotes.main.views.auth.create_invited_user'
 
-LESSC_BINARY = os.path.join(EN_PROJECT_PATH, 'node_modules', '.bin', 'lessc')
-COMPRESS_YUGLIFY_BINARY = os.path.join(EN_PROJECT_PATH, 'node_modules', '.bin', 'uglifyjs')
-
 REST_FRAMEWORK = {
-    #'FILTER_BACKEND': 'editorsnotes.api.filters.HaystackFilterBackend',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication'
@@ -160,8 +142,3 @@ try:
     INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
 except NameError:
     pass
-
-COMPRESS_JS_FILTERS = ['compressor.filters.yuglify.YUglifyJSFilter']
-COMPRESS_PRECOMPILERS = (
-    ('text/less', LESSC_BINARY + (' --source-map-map-inline ' if DEBUG else '') + ' {infile} {outfile}'),
-)
