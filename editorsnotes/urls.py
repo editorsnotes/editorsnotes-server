@@ -11,6 +11,11 @@ urlpatterns = patterns('',
     url(r'^api/metadata/topics/types/$', 'editorsnotes.api.views.topics.topic_types'),
 )
 
+# Auth
+urlpatterns += patterns('',
+    url(r'^auth/', include('editorsnotes.auth.urls', namespace='auth', app_name='auth')),
+)
+
 # The rest
 urlpatterns += patterns('',
     url(r'^', include('editorsnotes.other_urls')),

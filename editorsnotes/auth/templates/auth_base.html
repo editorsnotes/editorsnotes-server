@@ -1,0 +1,17 @@
+{% load staticfiles %}
+
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="{% static "admin_compiled.css" %}">
+  </head>
+  <body>
+    <nav class="flex flex-center bg-darken-1 border-bottom px3 py2">
+      <div class="h3"><a href="/auth/">Editors' Notes</a></div>
+    </nav>
+    <div class="px3">
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+
+</html>

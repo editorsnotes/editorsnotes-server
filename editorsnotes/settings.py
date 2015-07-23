@@ -55,6 +55,10 @@ EN_PROJECT_PATH = os.path.abspath(os.path.join(
     os.path.pardir
 ))
 
+STATICFILES_DIRS = (
+    os.path.join(EN_PROJECT_PATH, 'editorsnotes', 'static'),
+)
+
 # Override these variables in settings_local.py if desired
 DEBUG = False
 try:

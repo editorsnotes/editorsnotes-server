@@ -99,7 +99,7 @@ def make_settings():
 
 @task
 def create_cache_tables():
-    caches = ['zotero_cache', 'compress_cache']
+    caches = ['zotero_cache']
     tables = get_db_tables()
     for cache in caches:
         if "'{}'".format(cache) in tables:
@@ -107,56 +107,22 @@ def create_cache_tables():
         with lcd(PROJ_ROOT):
             local('{python} manage.py createcachetable {cache}'.format(cache=cache, **env))
 
+
+ADMIN_CSS_IN = './editorsnotes/auth/static/admin.css'
+ADMIN_CSS_OUT = './static/admin_compiled.css'
+ADMIN_CSS_OUT_DEV = ADMIN_CSS_IN.replace('.css', '_compiled.css')
+
 @task
-def watch_static():
-    """
-    Collect static files as they are modified.
+def compile_admin_css():
+    with lcd(PROJ_ROOT):
+        local('./node_modules/.bin/cssnext {} {}'.format(
+            ADMIN_CSS_IN, ADMIN_CSS_OUT))
 
-    Reacts to changes of *.css, *.js, and *.less files.
-    """
-    try:
-        from watchdog.events import FileSystemEventHandler
-        from watchdog.observers import Observer
-    except ImportError:
-        abort(red('Install Watchdog python package to watch filesystem files.'))
-
-    EXTS = ['.js', '.css', '.less']
-
-    class ChangeHandler(FileSystemEventHandler):
-        def __init__(self, *args, **kwargs):
-            super(ChangeHandler, self).__init__(*args, **kwargs)
-            self.last_collected = datetime.datetime.now()
-        def on_any_event(self, event):
-            if event.is_directory:
-                return
-            now = datetime.datetime.now()
-            if (datetime.datetime.now() - self.last_collected).total_seconds() < 1:
-                return
-
-            local('{python} manage.py collectstatic --noinput -v0'.format(**env))
-            self.last_collected = datetime.datetime.now()
-
-    event_handler = ChangeHandler()
-    observer = Observer()
-    observer.schedule(
-        event_handler,
-        os.path.join(PROJ_ROOT, 'editorsnotes'),
-        recursive=True)
-    observer.schedule(
-        event_handler,
-        os.path.join(PROJ_ROOT, 'editorsnotes_app', 'src'),
-        recursive=True)
-    observer.start()
-
-    print green('\nWatching *.js, *.css, and *.less files for changes.\n')
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-        watchify_proc.terminate()
-    observer.join()
+@task
+def watch_admin_css():
+    with lcd(PROJ_ROOT):
+        local('./node_modules/.bin/cssnext --watch --verbose {} {}'.format(
+            ADMIN_CSS_IN, ADMIN_CSS_OUT_DEV))
 
 def get_db_tables():
     tables = local('{python} manage.py inspectdb | '
@@ -173,23 +139,6 @@ def install_node_packages():
     "Install requirements from NPM."
     with lcd(PROJ_ROOT):
         local('npm install')
-
-def symlink_packages():
-    "Symlink python packages not installed with pip"
-    missing = []
-    requirements = (req.rstrip().replace('# symlink: ', '')
-                    for req in open('requirements.txt', 'r')
-                    if req.startswith('# symlink: '))
-    for req in requirements:
-        try:
-            module = importlib.import_module(req)
-        except ImportError:
-            missing.append(req)
-            continue
-        with lcd(os.path.join(PROJ_ROOT, 'lib', 'python2.7', 'site-packages')):
-            local('ln -f -s {}'.format(os.path.dirname(module.__file__)))
-    if missing:
-        abort('Missing python packages: {}'.format(', '.join(missing)))
 
 def collect_static():
     with lcd(PROJ_ROOT):
