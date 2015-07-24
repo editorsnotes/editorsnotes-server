@@ -44,6 +44,8 @@ AUTHENTICATION_BACKENDS = (
     'django_browserid.auth.BrowserIDBackend',
 )
 
+LOGIN_REDIRECT_URL = '/auth/'
+
 
 #################
 # Path settings #
@@ -112,6 +114,7 @@ INSTALLED_APPS = (
     'licensing',
     'rest_framework',
     'rest_framework.authtoken',
+    'widget_tweaks',
     'django_nose',
     'editorsnotes.main',
     'editorsnotes.auth',
