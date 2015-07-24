@@ -14,7 +14,7 @@ def home(request):
 def create_account(request):
     "Make a request to create an account."
     return render_to_response(
-        'sign_up.html', context_instance=RequestContext(request))
+        'create_account.html', context_instance=RequestContext(request))
 
 
 def activate(request):
