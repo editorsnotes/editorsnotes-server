@@ -6,10 +6,15 @@
     <link rel="stylesheet" href="{% static "admin_compiled.css" %}">
   </head>
   <body>
-    <nav class="flex flex-center bg-darken-1 border-bottom px3 py2">
-      <div class="h3"><a href="/auth/">Editors' Notes</a></div>
+    <nav class="bg-darken-1 border-bottom px3 py2">
+      <div class="container flex flex-center flex-justify">
+        <div class="h3"><a href="/auth/">Editors' Notes</a></div>
+        {% if request.user and request.user.is_authenticated %}
+        <div>Signed in as {{ request.user }} (<a href="{% url 'auth:signout' %}">Sign out</a>)</div>
+        {% endif %}
+      </div>
     </nav>
-    <div class="px3">
+    <div class="container px3">
       {% block content %}{% endblock %}
     </div>
   </body>
