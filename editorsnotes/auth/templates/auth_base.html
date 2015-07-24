@@ -10,7 +10,9 @@
       <div class="container flex flex-center flex-justify">
         <div class="h3"><a href="/auth/">Editors' Notes</a></div>
         {% if request.user and request.user.is_authenticated %}
-        <div>Signed in as {{ request.user }} (<a href="{% url 'auth:signout' %}">Sign out</a>)</div>
+          <div>Signed in as {{ request.user }} (<a href="{% url 'auth:signout' %}">Sign out</a>)</div>
+        {% else %}
+          <div><a href="{% url 'auth:signin' %}">Sign in</a></div>
         {% endif %}
       </div>
     </nav>
