@@ -1,0 +1,11 @@
+{% if errors|length or error%}
+  <div class="mb2 p2 bg-red rounded">
+    {% if error %}
+      <div>{{ error }}</div>
+    {% else %}
+      {% for error in errors %}
+      <div>{{ error }}</div>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endif %}
