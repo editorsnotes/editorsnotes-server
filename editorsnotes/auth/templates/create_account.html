@@ -1,5 +1,35 @@
 {% extends "auth_base.html" %}
 
+{% load widget_tweaks %}
+
 {% block content %}
 <h1>Create account</h1>
+
+<form method="POST">
+  {% csrf_token %}
+
+  {{ form.username.label_tag }}
+  {% include "field_errors.html" with errors=form.username.errors %}
+  {{ form.username|add_class:"field block" }}
+  <p class="muted">{{ form.username.help_text }}</p>
+
+  {{ form.email.label_tag }}
+  {% include "field_errors.html" with errors=form.email.errors %}
+  {{ form.email|add_class:"field block" }}
+
+  {{ form.non_field_errors }}
+  <div class="mt3 mb3">
+    {{ form.password1.label_tag }}
+    {% include "field_errors.html" with errors=form.password1.errors %}
+    {{ form.password1|add_class:"field block" }}
+
+    {{ form.password2.label_tag }}
+    {% include "field_errors.html" with errors=form.password2.errors %}
+    {{ form.password2|add_class:"field block" }}
+    <p class="muted">{{ form.password2.help_text }}</p>
+  </div>
+
+  <input type="submit" class="btn btn-primary" value="Create account" />
+</div>
+
 {% endblock %}
