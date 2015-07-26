@@ -71,9 +71,29 @@ def activate_account(request, uidb64=None, token=None):
 
 @login_required
 def user_home(request):
-    "View/change name, email, and other details for current user."
+    "View/change name and other details for current user."
     return render_to_response(
-        'user_home.html', context_instance=RequestContext(request))
+        'user_home.html',
+        { 'page': 'profile' },
+        RequestContext(request))
+
+
+@login_required
+def user_account_settings(request):
+    "View/change username, password, email"
+    return render_to_response(
+        'user_account_settings.html',
+        { 'page': 'account' },
+        RequestContext(request))
+
+
+@login_required
+def user_project_settings(request):
+    "Add new project for user"
+    return render_to_response(
+        'user_project_settings.html',
+        { 'page': 'projects' },
+        RequestContext(request))
 
 
 @login_required

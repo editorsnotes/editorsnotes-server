@@ -1,0 +1,26 @@
+{% extends "auth_base.html" %}
+
+{% block content %}
+<div class="clearfix">
+  <div class="md-col md-col-3">
+    <h2>Settings</h2>
+    <ul class="list-reset">
+      <li class="p1 {% if page == 'profile' %}bg-darken-1{% endif %}">
+        <a href="{% url "auth:user_home" %}">Profile</a>
+      </li>
+      <li class="p1 {% if page == 'account' %}bg-darken-1{% endif %}">
+        <a href="{% url "auth:user_account_settings" %}">Account</a>
+      </li>
+      <li class="p1 {% if page == 'projects' %}bg-darken-1{% endif %}">
+        <a href="{% url "auth:user_project_settings" %}">Projects</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="md-col md-col-9">
+    {% block setting_content %}
+    {% endblock %}
+  </div>
+</div>
+
+{% endblock %}
