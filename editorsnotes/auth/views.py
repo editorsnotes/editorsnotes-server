@@ -2,12 +2,12 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import Http404
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.template import RequestContext
 from django.utils.http import urlsafe_base64_decode
 
 from .forms import ENUserCreationForm, UserProfileForm, ProjectForm
-from .models import User
+from .models import User, Project
 from .utils import send_activation_email
 
 
@@ -111,8 +111,7 @@ def user_project_settings(request):
 
             # Add the user to the editor role
             project.roles.get().group.user_set.add(request.user)
-
-            form = ProjectForm()
+            return redirect('auth:user_project_settings')
     else:
         form = ProjectForm()
     return render_to_response(
@@ -125,7 +124,12 @@ def user_project_settings(request):
 
 
 @login_required
-def project_home(request, project_slug):
+def project_settings(request, project_slug):
     "View/change project name, slug, and roster."
+    project = get_object_or_404(Project, slug=project_slug)
     return render_to_response(
-        'project_home.html', context_instance=RequestContext(request))
+        'project_settings.html',
+        {
+            'project': project
+        },
+        RequestContext(request))

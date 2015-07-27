@@ -31,7 +31,7 @@ urlpatterns = patterns('',
     url(r'^account/projects/$', views.user_project_settings, name='user_project_settings'),
 
     # Projects
-    url(r'^projects/(?P<project_slug>\w+)$', views.project_home, name='project_home'),
+    url(r'^account/projects/(?P<project_slug>\w+)$', views.project_settings, name='project_settings'),
 
     # Account creation things
     url(r'^account/create$', views.create_account, name='create_account'),

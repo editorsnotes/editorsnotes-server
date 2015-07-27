@@ -8,7 +8,11 @@
 <section>
   <h3>Current projects</h3>
   {% for project, role in user.get_affiliated_projects_with_roles %}
-    <div>{{ role }}: {{ project }}</div>
+    <div>
+      <a href="{% url "auth:project_settings" project.slug %}">
+        {{ project.name }}
+      </a> ({{ role.role }})
+    </div>
   {% empty %}
     <p>None</p>
   {% endfor %}
