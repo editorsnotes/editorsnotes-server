@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.utils.http import urlsafe_base64_decode
 
-from .forms import ENUserCreationForm
+from .forms import ENUserCreationForm, UserProfileForm
 from .models import User
 from .utils import send_activation_email
 
@@ -73,9 +73,22 @@ def activate_account(request, uidb64=None, token=None):
 @login_required
 def user_home(request):
     "View/change name and other details for current user."
+    successful_change = False
+
+    if request.method == 'POST':
+        form = UserProfileForm(data=request.POST, instance=request.user)
+        if form.is_valid():
+            successful_change = True
+            form.save()
+    else:
+        form = UserProfileForm(instance=request.user)
     return render_to_response(
         'user_home.html',
-        { 'page': 'profile' },
+        {
+            'page': 'profile',
+            'form': form,
+            'successful_change': successful_change
+        },
         RequestContext(request))
 
 

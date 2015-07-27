@@ -9,7 +9,7 @@ class ENUserCreationForm(UserCreationForm):
         self.fields['email'].required = True
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name',)
+        fields = ('username', 'email',)
     def clean_username(self):
         # Since User.username is unique, this check is redundant,
         # but it sets a nicer error message than the ORM. See #13147.
@@ -28,3 +28,8 @@ class ENAuthenticationForm(AuthenticationForm):
         if not user.is_active:
             if user.confirmed:
                 raise forms.ValidationError('This account is inactive.')
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name',)
