@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from .models import User
 
@@ -22,3 +22,9 @@ class ENUserCreationForm(UserCreationForm):
             self.error_messages['duplicate_username'],
             code='duplicate_username',
         )
+
+class ENAuthenticationForm(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            if user.confirmed:
+                raise forms.ValidationError('This account is inactive.')

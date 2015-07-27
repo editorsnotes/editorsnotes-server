@@ -35,6 +35,12 @@ class User(AbstractUser, URLAccessible):
     zotero_key = models.CharField(max_length='24', blank=True, null=True)
     zotero_uid = models.CharField(max_length='6', blank=True, null=True)
 
+    # Has gone through the email verification rigmarole. I'm keeping this
+    # separate from is_active because they are semantically different. Django
+    # suggests that is_active should be used as a way to make someone's account
+    # "inactive" without deleting it (which would ruin foreign keys, etc.)
+    confirmed = models.BooleanField(default=False)
+
     class Meta:
         app_label = 'main'
 

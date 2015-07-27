@@ -28,7 +28,7 @@ def create_account(request):
         form = ENUserCreationForm(data=request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False
+            user.is_active = user.confirmed = False
             user.save()
 
             send_activation_email(request, user)
@@ -61,8 +61,9 @@ def activate_account(request, uidb64=None, token=None):
         if user.is_active:
             raise Http404()
         user.is_active = True
-        user.save()
+        user.confirmed = True
         user.backend = 'django.contrib.auth.backends.ModelBackend'
+        user.save()
         login(request, user)
         return redirect('auth:user_home')
 

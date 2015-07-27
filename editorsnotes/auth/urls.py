@@ -4,12 +4,16 @@ from django.conf.urls import patterns, url
 from django.contrib.auth import views as auth_views
 
 import views
+from .forms import ENAuthenticationForm
 
 urlpatterns = patterns('',
     url(r'^$', views.home, name='home'),
 
     # Django builtins
-    url(r'^signin$', auth_views.login, name='signin'),
+    url(r'^signin$',
+        auth_views.login,
+        { 'authentication_form': ENAuthenticationForm },
+        name='signin'),
     url(r'^signout$', auth_views.logout, name='signout'),
     url(r'^account/password_change$', auth_views.password_change, name='password_change', kwargs={
         'post_change_redirect': 'auth:account',
