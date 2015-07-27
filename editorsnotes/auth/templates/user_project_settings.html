@@ -1,5 +1,39 @@
 {% extends "user_settings_base.html" %}
 
+{% load widget_tweaks %}
+
 {% block setting_content %}
 <h2>Projects</h2>
+
+<section>
+  <h3>Current projects</h3>
+  {% for project, role in user.get_affiliated_projects_with_roles %}
+    <div>{{ role }}: {{ project }}</div>
+  {% empty %}
+    <p>None</p>
+  {% endfor %}
+</section>
+
+<section>
+  <h3>Project invitations</h3>
+</section>
+
+<section>
+  <h3>Create new project</h3>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    {% for field in form %}
+      {{ field.label_tag }}
+      {% include "field_errors.html" with errors=field.errors %}
+      <div class="mb1">
+        {{ field|add_class:"field block" }}
+        <p class="muted">{{ field.help_text }}</p>
+      </div>
+    {% endfor %}
+
+    <input type="submit" class="btn btn-primary" value="Add projet" />
+  </form>
+</section>
 {% endblock %}

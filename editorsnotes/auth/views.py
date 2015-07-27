@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.utils.http import urlsafe_base64_decode
 
-from .forms import ENUserCreationForm, UserProfileForm
+from .forms import ENUserCreationForm, UserProfileForm, ProjectForm
 from .models import User
 from .utils import send_activation_email
 
@@ -104,9 +104,23 @@ def user_account_settings(request):
 @login_required
 def user_project_settings(request):
     "Add new project for user"
+    if request.method == 'POST':
+        form = ProjectForm(data=request.POST)
+        if form.is_valid():
+            project = form.save()
+
+            # Add the user to the editor role
+            project.roles.get().group.user_set.add(request.user)
+
+            form = ProjectForm()
+    else:
+        form = ProjectForm()
     return render_to_response(
         'user_project_settings.html',
-        { 'page': 'projects' },
+        {
+            'page': 'projects',
+            'form': form
+        },
         RequestContext(request))
 
 

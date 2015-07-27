@@ -180,7 +180,10 @@ class ProjectManager(models.Manager):
 class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
     name = models.CharField(max_length='80')
     slug = models.SlugField(
-        help_text='Used for project-specific URLs and groups',
+        help_text=(
+            'Used for project-specific URLs and groups. '
+            'Valid characters: letters, numbers, or _-'
+        ),
         unique=True
     )
     image = models.ImageField(
@@ -189,7 +192,14 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
         null=True
     )
     description = fields.XHTMLField(blank=True, null=True)
-    default_license = models.ForeignKey(License, default=1)
+    default_license = models.ForeignKey(
+        License,
+        default=1,
+        help_text=(
+            'Default license for project notes. '
+            'Licenses can also be set on a note-by-note basis.'
+        )
+    )
     objects = ProjectManager()
 
     class Meta:
