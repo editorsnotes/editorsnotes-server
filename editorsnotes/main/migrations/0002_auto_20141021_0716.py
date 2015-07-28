@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import editorsnotes.djotero.fields
-import editorsnotes.main.models.auth
+import editorsnotes.auth.models
 import editorsnotes.main.models.base
 from django.conf import settings
 import editorsnotes.main.fields
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             ],
             options={
             },
-            bases=(models.Model, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='Citation',
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['ordering'],
             },
-            bases=(models.Model, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='Document',
@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['ordering', 'import_id'],
             },
-            bases=(editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.main.models.auth.ProjectPermissionsMixin, editorsnotes.main.models.auth.UpdatersMixin, models.Model),
+            bases=(editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.auth.models.ProjectPermissionsMixin, editorsnotes.auth.models.UpdatersMixin, models.Model),
         ),
         migrations.CreateModel(
             name='DocumentLink',
@@ -111,7 +111,7 @@ class Migration(migrations.Migration):
             ],
             options={
             },
-            bases=(models.Model, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='Footnote',
@@ -125,7 +125,7 @@ class Migration(migrations.Migration):
             ],
             options={
             },
-            bases=(models.Model, editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='LegacyTopic',
@@ -175,7 +175,7 @@ class Migration(migrations.Migration):
                 'ordering': ['-last_updated'],
                 'permissions': (('view_private_note', 'Can view notes private to a project.'),),
             },
-            bases=(models.Model, editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.main.models.auth.ProjectPermissionsMixin, editorsnotes.main.models.auth.UpdatersMixin),
+            bases=(models.Model, editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.auth.models.ProjectPermissionsMixin, editorsnotes.auth.models.UpdatersMixin),
         ),
         migrations.CreateModel(
             name='NoteSection',
@@ -190,7 +190,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['ordering', '-note_section_id'],
             },
-            bases=(models.Model, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='NoteReferenceNS',
@@ -226,7 +226,7 @@ class Migration(migrations.Migration):
             options={
                 'permissions': (('view_project_roster', 'Can view project roster.'), ('change_project_roster', 'Can edit project roster.')),
             },
-            bases=(models.Model, editorsnotes.main.models.base.URLAccessible, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.main.models.base.URLAccessible, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='ProjectInvitation',
@@ -290,7 +290,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['ordering', '-created'],
             },
-            bases=(models.Model, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='TextNS',
@@ -318,7 +318,7 @@ class Migration(migrations.Migration):
             ],
             options={
             },
-            bases=(models.Model, editorsnotes.main.models.base.URLAccessible, editorsnotes.main.models.auth.ProjectPermissionsMixin, editorsnotes.main.models.base.Administered),
+            bases=(models.Model, editorsnotes.main.models.base.URLAccessible, editorsnotes.auth.models.ProjectPermissionsMixin, editorsnotes.main.models.base.Administered),
         ),
         migrations.CreateModel(
             name='TopicAssignment',
@@ -332,7 +332,7 @@ class Migration(migrations.Migration):
             ],
             options={
             },
-            bases=(models.Model, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='TopicNode',
@@ -364,7 +364,7 @@ class Migration(migrations.Migration):
             ],
             options={
             },
-            bases=(models.Model, editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.main.models.auth.ProjectPermissionsMixin),
+            bases=(models.Model, editorsnotes.main.models.base.Administered, editorsnotes.main.models.base.URLAccessible, editorsnotes.auth.models.ProjectPermissionsMixin),
         ),
         migrations.CreateModel(
             name='UserFeedback',

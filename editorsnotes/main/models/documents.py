@@ -20,10 +20,10 @@ from lxml import etree, html
 from PIL import Image
 import reversion
 
+from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
-from auth import ProjectPermissionsMixin, UpdatersMixin
 from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
                   Administered, OrderingManager)
 
@@ -98,7 +98,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
             })
     @models.permalink
     def get_absolute_url(self):
-        return ('document_view', [str(self.project.slug), str(self.id)])
+        return ('api:documents-detail', [str(self.project.slug), str(self.id)])
     def get_affiliation(self):
         return self.project
     @property
@@ -162,25 +162,17 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
             # Topics relate to the note citing this doc
             chain(*[n.related_topics.all() for n in notes])
         ))}
-    def get_metadata(self):
-        metadata = {}
-        for md in self.metadata.all():
-            metadata[md.key] = json.loads(md.value)
-        return metadata
-    def set_metadata(self, metadata, user):
-        changed = False
-        for k,v in metadata.iteritems():
-            value = json.dumps(v)
-            md, created = self.metadata.get_or_create(
-                key=k, defaults={ 'value': value, 'creator': user })
-            if created:
-                changed = True
-            elif not md.value == value:
-                md.value = value
-                md.save()
-                changed = True
-        return changed
-        
+
+    def get_citations(self):
+        from editorsnotes.main.models import CitationNS
+        from editorsnotes.main.models import Citation
+
+        note_sections = CitationNS.objects.filter(document_id=self.id)
+        citations = Citation.objects.filter(document_id=self.id)
+
+        return sorted(chain(note_sections, citations),
+                      key=lambda obj: obj.last_updated)
+
     def as_html(self):
         if self.zotero_data is not None:
             data_attributes = ''.join(
@@ -286,7 +278,7 @@ reversion.register(Footnote)
 
 class Scan(CreationMetadata, ProjectPermissionsMixin):
     u"""
-    A scanned image of (part of) a dcument.
+    A scanned image of (part of) a document.
     """
     document = models.ForeignKey(Document, related_name='scans')
     image = models.ImageField(upload_to='scans/%Y/%m')

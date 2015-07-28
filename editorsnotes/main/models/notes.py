@@ -7,8 +7,8 @@ from lxml import etree
 from model_utils.managers import InheritanceManagerMixin
 import reversion
 
+from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from .. import fields
-from auth import ProjectPermissionsMixin, UpdatersMixin
 from base import (Administered, LastUpdateMetadata, URLAccessible,
                   OrderingManager)
 
@@ -49,9 +49,11 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return self.title
     @models.permalink
     def get_absolute_url(self):
-        return ('note_view', [self.project.slug, self.id])
+        return ('api:notes-detail', [self.project.slug, self.id])
     def get_affiliation(self):
         return self.project
+    def get_license(self):
+        return self.license or self.project.default_license
     def has_topic(self, project_topic):
         return project_topic.id in \
                 self.related_topics.values_list('topic_id', flat=True)

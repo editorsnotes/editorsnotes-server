@@ -1,5 +1,5 @@
-from documents import DocumentSerializer, ScanSerializer, TranscriptSerializer
-from topics import TopicSerializer
-from notes import NoteSerializer
-from activity import ActivitySerializer
-from projects import ProjectSerializer
+from documents import *
+from topics import *
+from notes import *
+from activity import *
+from auth import *

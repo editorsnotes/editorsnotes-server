@@ -6,7 +6,9 @@ from rest_framework.views import APIView
 from editorsnotes.main.models import Document, Scan, Transcript
 
 from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
-                   ElasticSearchListMixin, ProjectSpecificMixin)
+                   ElasticSearchListMixin, ProjectSpecificMixin, LinkerMixin)
+from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
+                       DeleteProjectObjectLinker)
 from ..permissions import ProjectSpecificPermissions
 from ..serializers import (DocumentSerializer, ScanSerializer,
                            TranscriptSerializer)
@@ -14,13 +16,15 @@ from ..serializers import (DocumentSerializer, ScanSerializer,
 __all__ = ['DocumentList', 'DocumentDetail', 'DocumentConfirmDelete',
            'ScanList', 'ScanDetail', 'NormalizeScanOrder', 'Transcript']
 
-class DocumentList(ElasticSearchListMixin, BaseListAPIView):
+class DocumentList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
+    linker_classes = (AddProjectObjectLinker,)
 
 class DocumentDetail(BaseDetailView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
+    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
 
 class DocumentConfirmDelete(DeleteConfirmAPIView):
     queryset = Document.objects.all()
@@ -70,10 +74,9 @@ class ScanList(BaseListAPIView):
         return document
     def get_queryset(self):
         return self.get_document().scans.all()
-    def pre_save(self, obj):
-        super(ScanList, self).pre_save(obj)
-        obj.document = self.get_document()
-        return obj
+    def perform_create(self, serializer):
+        serializer.save(creator=self.request.user,
+                        document_id=self.kwargs.get('document_id'))
 
 
 class ScanDetail(BaseDetailView):

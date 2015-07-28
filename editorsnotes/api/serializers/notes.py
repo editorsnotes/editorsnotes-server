@@ -1,5 +1,7 @@
 from lxml import etree, html
 
+from django.contrib.contenttypes.models import ContentType
+from licensing.models import License
 from rest_framework import serializers
 
 from editorsnotes.main.models import (Note, TextNS, CitationNS, NoteReferenceNS,
@@ -9,7 +11,11 @@ from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    URLField, ProjectSlugField, UpdatersField,
                    HyperlinkedProjectItemField, TopicAssignmentField)
+from .auth import MinimalUserSerializer
 from ..validators import UniqueToProjectValidator
+
+
+__all__ = ['NoteSerializer']
 
 
 class TextNSSerializer(serializers.ModelSerializer):
@@ -22,7 +28,7 @@ class TextNSSerializer(serializers.ModelSerializer):
 class CitationNSSerializer(serializers.ModelSerializer):
     section_id = serializers.ReadOnlyField(source='note_section_id')
     section_type = serializers.ReadOnlyField(source='section_type_label')
-    document = HyperlinkedProjectItemField(view_name='api:api-documents-detail',
+    document = HyperlinkedProjectItemField(view_name='api:documents-detail',
                                            queryset=Document.objects.all())
     document_description = serializers.SerializerMethodField()
     class Meta:
@@ -35,7 +41,7 @@ class CitationNSSerializer(serializers.ModelSerializer):
 class NoteReferenceNSSerializer(serializers.ModelSerializer):
     section_id = serializers.ReadOnlyField(source='note_section_id')
     section_type = serializers.ReadOnlyField(source='section_type_label')
-    note_reference = HyperlinkedProjectItemField(view_name='api:api-notes-detail',
+    note_reference = HyperlinkedProjectItemField(view_name='api:notes-detail',
                                                  queryset=Note.objects.all())
     note_reference_title = serializers.SerializerMethodField()
     class Meta:
@@ -44,6 +50,12 @@ class NoteReferenceNSSerializer(serializers.ModelSerializer):
                   'note_reference', 'note_reference_title', 'content',)
     def get_note_reference_title(self, obj):
         return obj.note_reference.title
+
+class LicenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = License
+        fields = ('url', 'name', 'symbols',)
+
 
 def _serializer_from_section_type(section_type):
     if section_type == 'citation':
@@ -76,6 +88,10 @@ class NoteSectionField(serializers.RelatedField):
                 serializer.validated_data['section_id'] = data['section_id']
             serializer.validated_data['section_type'] = section_type
             return serializer.validated_data
+        else:
+            # TODO: This kind of error is unhelpfully/confusingly rendered. It
+            # would be better if we could add an index somehow
+            raise serializers.ValidationError(serializer.errors)
 
 class NoteStatusField(serializers.ReadOnlyField):
     def get_attribute(self, obj):
@@ -88,21 +104,25 @@ class NoteStatusField(serializers.ReadOnlyField):
                                               'open, closed, or hibernating.')
         return status_choice[0]
 
+# TODO: change license, fuller repr of updaters
 class NoteSerializer(RelatedTopicSerializerMixin,
                      serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
-    updaters = UpdatersField()
+    license = LicenseSerializer(read_only=True, source='get_license')
+    updaters = MinimalUserSerializer(read_only=True, many=True,
+                                     source='get_all_updaters')
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
     sections = NoteSectionField(many=True, source='get_sections_with_subclasses')
     class Meta:
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'is_private', 'last_updated',
+        fields = ('id', 'title', 'url', 'project', 'license', 'is_private', 'last_updated',
                   'updaters', 'related_topics', 'content', 'status', 'sections',)
         validators = [
             UniqueToProjectValidator('title')
         ]
+
     # TODO Make sure all section IDs are valid?
     def _create_note_section(self, note, data):
         section_type = data.pop('section_type')

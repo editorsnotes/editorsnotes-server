@@ -7,8 +7,7 @@ from django.views.generic.edit import ModelFormMixin
 from rest_framework.renderers import JSONRenderer
 import reversion
 
-from editorsnotes.main.models import Project
-from editorsnotes.main.models.auth import RevisionProject
+from editorsnotes.auth.models import Project, RevisionProject
 
 VIEW_ERROR_MSG = 'You do not have permission to view {}.'
 CHANGE_ERROR_MSG = 'You do not have permission to change {}.'
@@ -119,7 +118,7 @@ class BootstrappedBackboneView(ProjectSpecificMixin, BreadcrumbMixin, TemplateVi
                                                    "framework serializer as a "
                                                    "serializer class.")
         if self.object:
-            serializer_context = { 'request': self.request }
+            serializer_context = { 'request': self.request, 'project': self.project }
             serializer = self.serializer_class(self.object, context=serializer_context)
             context['bootstrap'] = JSONRenderer().render(serializer.data)
         else:

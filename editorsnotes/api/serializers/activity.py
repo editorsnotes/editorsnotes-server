@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
-from editorsnotes.main.models.auth import (LogActivity, ADDITION, CHANGE,
-                                           DELETION)
+from editorsnotes.auth.models import (LogActivity, ADDITION, CHANGE,
+                                      DELETION)
+
+__all__ = ['ActivitySerializer']
 
 VERSION_ACTIONS = {
     ADDITION: 'added',

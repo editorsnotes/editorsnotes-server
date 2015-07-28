@@ -1,0 +1,41 @@
+{% extends "auth_home.html" %}
+
+{% load widget_tweaks %}
+
+{% block content %}
+<h1>Sign in</h1>
+
+{% if form.errors %}
+  {% include "field_errors.html" with error="Username and password did not match." %}
+{% endif %}
+
+{% if next %}
+  {% if user.is_authenticated %}
+    <p>Your account doesn't have access to this page. To proceed, please login with an account that has access.</p>
+  {% else %}
+    <p>Please login to see this page.</p>
+  {% endif %}
+{% endif %}
+
+<form method="POST">
+  {% csrf_token %}
+
+  {% for field in form %}
+    {{ field.label_tag }}
+    {% include "field_errors.html" with errors=field.errors %}
+    {{ field|add_class:"field block mb2" }}
+  {% endfor %}
+
+  <input type="submit" class="btn btn-primary" value="Sign In" />
+  <input type="hidden" name="next" value="{{ next }}" />
+</form>
+
+
+<div class="mt2">
+  <a href="{% url "auth:create_account" %}">Create an account</a>
+  <span class="ml1 mr1 gray">•</span>
+  <a href="{% url "auth:password_reset" %}">Reset password</a>
+</div>
+
+
+{% endblock %}

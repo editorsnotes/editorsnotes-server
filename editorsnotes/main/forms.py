@@ -1,6 +1,6 @@
 from django import forms
 
-from .models.auth import UserFeedback
+from editorsnotes.auth.models import UserFeedback
 
 PURPOSE_CHOICES = (
     ('1', 'Feedback'),

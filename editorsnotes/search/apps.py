@@ -1,5 +1,6 @@
 from django.apps import apps as django_apps
 from django.apps import AppConfig
+from requests.exceptions import ConnectionError
 
 from . import get_index
 
@@ -42,6 +43,14 @@ class SearchAppConfig(AppConfig):
     name = 'editorsnotes.search'
     verbose_name = "Editors' Notes search"
     def ready(self):
-        en_index = get_index('main')
+        try:
+            en_index = get_index('main')
+        except ConnectionError as err:
+            raise EnvironmentError(
+                'Could not connect to Elasticsearch server at {}. '
+                'Is Elasticsearch running?'.format(
+                    err.request.url
+                ))
+
         register_models(en_index)
         from . import signals

@@ -9,7 +9,6 @@ services:
 install:
   - "CFLAGS=\"-O0\" && pip install -r requirements.txt"
   - "pip install -q fabric==1.5.1"
-  - "npm install"
 
 before_script:
   - fab make_settings
@@ -18,8 +17,7 @@ before_script:
   - "sed -i -e \"s|# STORAGE_PATH: ''|STORAGE_PATH: '$TRAVIS_BUILD_DIR/editorsnotes/static'|\" editorsnotes/settings_local.py"
   - mkdir -p $TRAVIS_BUILD_DIR/editorsnotes/static
   - python manage.py collectstatic --noinput -v0
-  - python manage.py compile_browserify
   - psql -c "CREATE DATABASE testdb;" -U postgres
 
 script:
-  - python manage.py test main api
+  - python manage.py test

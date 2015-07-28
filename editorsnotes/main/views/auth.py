@@ -10,9 +10,10 @@ from django.template import RequestContext
 from django_browserid.views import Verify
 import reversion
 
+from editorsnotes.auth.models import (
+    User, Project, ProjectInvitation, UserFeedback)
 from editorsnotes.search import get_index
 from ..forms import UserFeedbackForm
-from ..models import User, Project, ProjectInvitation, UserFeedback
 
 @reversion.create_revision()
 def create_invited_user(email):

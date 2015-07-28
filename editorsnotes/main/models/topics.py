@@ -7,8 +7,9 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 import reversion
 
+from editorsnotes.auth.models import Project, ProjectPermissionsMixin
+
 from .. import fields, utils
-from auth import Project, ProjectPermissionsMixin
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
 
@@ -153,7 +154,7 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         return self.preferred_name
     @models.permalink
     def get_absolute_url(self):
-        return ('topic_view', [self.project.slug, self.topic_node_id])
+        return ('api:topics-detail', [self.project.slug, self.topic_node_id])
     def get_admin_url(self):
         return reverse(
             'admin:main_topic_change', args=(self.project.slug, self.topic_node_id))

@@ -1,11 +1,12 @@
 from django.conf import settings
-from django.test.simple import DjangoTestSuiteRunner
+from django_nose import NoseTestSuiteRunner
+
 from editorsnotes.search import get_index
 
 from pyelasticsearch.exceptions import IndexAlreadyExistsError
 
 # custom test changes elasticsearch index name
-class CustomTestSuiteRunner(DjangoTestSuiteRunner):
+class CustomTestSuiteRunner(NoseTestSuiteRunner):
     def setup_test_environment(self, **kwargs):
         super(CustomTestSuiteRunner, self).setup_test_environment(**kwargs)
 

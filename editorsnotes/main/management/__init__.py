@@ -10,7 +10,7 @@ IGNORED_PERMISSIONS = {
 }
 
 def _get_project_specific_permissions(model, is_concretely_inherited=False):
-    from ..models.auth import ProjectPermissionsMixin
+    from editorsnotes.auth.models import ProjectPermissionsMixin
 
     # Only deal with models which subclass ProjectPermissionsMixin
     if not issubclass(model, ProjectPermissionsMixin):

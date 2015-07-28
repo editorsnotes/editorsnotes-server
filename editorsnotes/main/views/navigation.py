@@ -1,5 +1,4 @@
 import os
-import re
 from random import randint
 
 from django.conf import settings
@@ -15,36 +14,20 @@ from PIL import Image, ImageDraw, ImageFont
 from editorsnotes.search import get_index
 
 from ..forms import FeedbackForm
-from ..models import Document, Note, Project, TopicNode
+
 
 def index(request):
     o = {}
     return render_to_response(
         'index.html', o, context_instance=RequestContext(request))
 
-def browse(request):
-    max_count = 6
-    o = {}
-    for model in [TopicNode, Note, Document]:
-        model_name = model._meta.model_name
-        listname = '%s_list' % model_name
-        query_set = model.objects.order_by('-last_updated')
-
-        items = list(query_set[:max_count])
-        o[listname] = items
-    o['projects'] = Project.objects.all().order_by('name')
-    return render_to_response(
-        'browse.html', o, context_instance=RequestContext(request))
-
-reel_numbers = re.compile(r'(\S+):(\S+)')
-ignored_punctuation = '!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 
 def search(request):
 
     q = request.GET.get('q', {'query': {'match_all': {}}})
     en_index = get_index('main')
     results = en_index.search(q, highlight=True, size=50)
-    
+
     o = {
         'results': results['hits']['hits'],
         'query': q if isinstance(q, basestring) else None
@@ -52,6 +35,7 @@ def search(request):
 
     return render_to_response(
         'search.html', o, context_instance=RequestContext(request))
+
 
 def about_test(request):
     x, y = (100, 38)
@@ -64,11 +48,11 @@ def about_test(request):
 
     result = i + j if s == '+' else i - j
 
-    draw.text((9, 5), text, (50,50,50), font=font)
+    draw.text((9, 5), text, (50, 50, 50), font=font)
 
     for i in xrange(0, 500):
         draw.point((randint(0, x), randint(0, y)),
-                   [(x, x, x) for x in (randint(100,180),)][0])
+                   [(xx, xx, xx) for xx in (randint(100, 180),)][0])
 
     request.session['test_answer'] = result
 
@@ -76,6 +60,7 @@ def about_test(request):
     img.save(response, 'PNG')
 
     return response
+
 
 def about(request):
     o = {}
@@ -91,14 +76,19 @@ def about(request):
         if o['form'].is_valid():
 
             test_answer = request.POST.get('testanswer', '')
-            if test_answer.isdigit() and int(test_answer) == request.session['test_answer']:
+            is_good_answer = (
+                test_answer.isdigit() and
+                int(test_answer) == request.session['test_answer']
+            )
+            if is_good_answer:
                 request.session.pop('bad_answers')
 
                 choice = o['form'].cleaned_data['purpose']
                 subj = '(%s) %s' % (
                     dict(o['form'].fields['purpose'].choices)[choice],
                     o['form'].cleaned_data['name'])
-                msg = 'reply to: %(email)s\n\n%(message)s' % o['form'].cleaned_data
+                msg = 'reply to: {email}\n\n{message}'.format(
+                    **o['form'].cleaned_data)
                 mail_admins(subj, msg, fail_silently=True)
                 messages.add_message(
                     request, messages.SUCCESS,
@@ -113,4 +103,3 @@ def about(request):
         o['form'] = FeedbackForm()
     return render_to_response(
         'about.html', o, context_instance=RequestContext(request))
-
