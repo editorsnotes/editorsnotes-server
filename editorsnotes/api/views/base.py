@@ -3,6 +3,7 @@ from collections import Counter, OrderedDict
 from django.conf import settings
 from django.core.urlresolvers import resolve
 from django.db.models.deletion import Collector
+from django.shortcuts import get_object_or_404
 from django.utils.text import force_text
 
 from elasticsearch_dsl import Search
@@ -158,11 +159,15 @@ class ProjectSpecificMixin(object):
         3. As a queryset filter, if the model being filtered has a `project`
         field.
     """
-    def initialize_request(self, request, *args, **kwargs):
+    def initial(self, request, *args, **kwargs):
+        project_slug = kwargs.pop('project_slug')
+
         request = super(ProjectSpecificMixin, self)\
-                .initialize_request(request, *args, **kwargs)
-        request._request.project = Project.objects.get(
-            slug=kwargs.pop('project_slug'))
+            .initial(request, *args, **kwargs)
+
+        project = get_object_or_404(Project, slug=project_slug)
+        request._request.project = project
+
         return request
 
     def perform_create(self, serializer):
