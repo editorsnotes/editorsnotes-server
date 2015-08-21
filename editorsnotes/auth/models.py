@@ -211,7 +211,7 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('api:project-detail', [self.slug])
+        return ('api:projects-detail', [self.slug])
 
     def get_affiliation(self):
         return self
