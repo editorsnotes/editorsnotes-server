@@ -8,7 +8,6 @@ and make sure you have the following dependencies
 * libxslt
 * ElasticSearch
 * node.js & npm
-* Optional: [Watchdog](http://packages.python.org/watchdog/), for use with the `fab watch_static` command to automatically collect and compile static files as they are changed.
 
 1. Run the command `fab setup` inside the project directory
 2. Edit the generated "editorsnotes/settings\_local.py" file with your database information
