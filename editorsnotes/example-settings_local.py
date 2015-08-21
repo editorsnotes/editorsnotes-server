@@ -28,6 +28,10 @@ ELASTICSEARCH_URLS = 'http://127.0.0.1:9200'
 # from hyperlinks in the Elasticsearch index.
 ELASTICSEARCH_SITE = 'http://127.0.0.1:8000'
 
+# The URL where an Editors' Notes Markup Renderer server is running.
+# (https://github.com/editorsnotes/editorsnotes-markup-renderer)
+EDITORSNOTES_MARKUP_RENDERER_URL = 'http://127.0.0.1:9393'
+
 
 SITE_URL = '127.0.0.1'
 

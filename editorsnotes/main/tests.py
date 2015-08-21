@@ -100,6 +100,13 @@ class UtilsTestCase(unittest.TestCase):
         utils.remove_empty_els(test3, ignore=('p',))
         self.assertEqual('<div><p/></div>', etree.tostring(test3))
 
+class MarkupUtilsTestCase(unittest.TestCase):
+    def test_render_markup(self):
+        from utils import markup
+        project = Project(slug='test')
+        html = markup.render('test', project)
+        self.assertEqual(html, u'<p>test</p>\n')
+
 def create_test_user():
     user = User(username='testuser', is_staff=True, is_superuser=True)
     user.set_password('testuser')
