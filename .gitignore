@@ -24,7 +24,6 @@ share/*
 src/*
 static/*
 uploads/*
-node_modules/*
 
 secret.txt
 settings_local.py
