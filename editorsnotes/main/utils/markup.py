@@ -18,7 +18,10 @@ def get_transcluded_items(markup, project):
 
     resp = requests.post(url, params=params, json=payload)
 
-    items = resp.json()
+    try:
+        items = resp.json()
+    except ValueError:
+        raise ValueError('Markup renderer server error: {}'.format(resp.text))
 
     return items
 
