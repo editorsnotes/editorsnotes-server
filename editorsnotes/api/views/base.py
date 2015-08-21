@@ -161,12 +161,11 @@ class ProjectSpecificMixin(object):
     """
     def initial(self, request, *args, **kwargs):
         project_slug = kwargs.pop('project_slug')
+        project = get_object_or_404(Project, slug=project_slug)
+        request._request.project = project
 
         request = super(ProjectSpecificMixin, self)\
             .initial(request, *args, **kwargs)
-
-        project = get_object_or_404(Project, slug=project_slug)
-        request._request.project = project
 
         return request
 
