@@ -3,24 +3,26 @@
 # use a dynamically populated translation dictionary to remove accents
 # from a string
 
-import unicodedata, sys
+import sys
+import unicodedata
 
 CHAR_REPLACEMENT = {
     # latin-1 characters that don't have a unicode decomposition
-    0xc6: u"AE", # LATIN CAPITAL LETTER AE
-    0xd0: u"D",  # LATIN CAPITAL LETTER ETH
-    0xd8: u"OE", # LATIN CAPITAL LETTER O WITH STROKE
-    0xde: u"Th", # LATIN CAPITAL LETTER THORN
-    0xdf: u"ss", # LATIN SMALL LETTER SHARP S
-    0xe6: u"ae", # LATIN SMALL LETTER AE
-    0xf0: u"d",  # LATIN SMALL LETTER ETH
-    0xf8: u"oe", # LATIN SMALL LETTER O WITH STROKE
-    0xfe: u"th", # LATIN SMALL LETTER THORN
+    0xc6: u"AE",  # LATIN CAPITAL LETTER AE
+    0xd0: u"D",   # LATIN CAPITAL LETTER ETH
+    0xd8: u"OE",  # LATIN CAPITAL LETTER O WITH STROKE
+    0xde: u"Th",  # LATIN CAPITAL LETTER THORN
+    0xdf: u"ss",  # LATIN SMALL LETTER SHARP S
+    0xe6: u"ae",  # LATIN SMALL LETTER AE
+    0xf0: u"d",   # LATIN SMALL LETTER ETH
+    0xf8: u"oe",  # LATIN SMALL LETTER O WITH STROKE
+    0xfe: u"th",  # LATIN SMALL LETTER THORN
     }
 
 ##
 # Translation dictionary.  Translation entries are added to this
 # dictionary as needed.
+
 
 class unaccented_map(dict):
 
@@ -50,6 +52,7 @@ class unaccented_map(dict):
         # otherwise, use standard __getitem__ hook (this is slower,
         # since it's called for each character)
         __getitem__ = mapchar
+
 
 def unaccent(text):
     return text.translate(unaccented_map())

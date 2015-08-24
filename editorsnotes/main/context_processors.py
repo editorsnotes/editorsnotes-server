@@ -1,5 +1,6 @@
 from django_browserid.forms import BrowserIDForm
 
+
 def browserid(request):
     """
     A context processor necessary for BrowserID auth
@@ -11,5 +12,7 @@ def browserid(request):
     auth_backend = request.session.get('_auth_user_backend', None)
     return {
         'browserid_form': BrowserIDForm(),
-        'browserid_authenticated': auth_backend == 'django_browserid.auth.BrowserIDBackend'
+        'browserid_authenticated': (
+            auth_backend == 'django_browserid.auth.BrowserIDBackend'
+        )
     }
