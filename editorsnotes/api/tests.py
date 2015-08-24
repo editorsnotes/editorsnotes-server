@@ -103,7 +103,9 @@ class ClearContentTypesMixin(object):
         super(ClearContentTypesMixin, self)\
             ._pre_setup(*args, **kwargs)
 
-class ClearContentTypesTransactionTestCase(ClearContentTypesMixin, FastFixtureTestCase):
+
+class ClearContentTypesTransactionTestCase(ClearContentTypesMixin,
+                                           FastFixtureTestCase):
     pass
 
 
