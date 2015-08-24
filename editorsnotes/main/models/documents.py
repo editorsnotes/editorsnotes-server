@@ -171,8 +171,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         #note_sections = CitationNS.objects.filter(document_id=self.id)
         citations = Citation.objects.filter(document_id=self.id)
 
-        return sorted(chain(note_sections, citations),
-                      key=lambda obj: obj.last_updated)
+        return sorted(chain(citations), key=lambda obj: obj.last_updated)
 
     def as_html(self):
         if self.zotero_data is not None:

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import unittest
 
 from django.contrib.auth.models import Permission
@@ -100,12 +101,52 @@ class UtilsTestCase(unittest.TestCase):
         utils.remove_empty_els(test3, ignore=('p',))
         self.assertEqual('<div><p/></div>', etree.tostring(test3))
 
-class MarkupUtilsTestCase(unittest.TestCase):
+class MarkupUtilsTestCase(TestCase):
+    fixtures = ['projects.json']
+
+    def setUp(self):
+        self.project = Project.objects.get(slug='emma')
+        self.user = self.project.members.all()[0]
+
     def test_render_markup(self):
         from utils import markup
-        project = Project(slug='test')
-        html = markup.render_markup('test', project)
+
+        html = markup.render_markup('test', self.project)
         self.assertEqual(html, u'<p>test</p>\n')
+
+    def test_count_references(self):
+        from utils import markup, markup_html
+
+        document = main_models.Document.objects.create(
+            description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
+            zotero_data=json.dumps({
+                'itemType': 'book',
+                'title': 'My Big Book of Cool Stuff',
+                'creators': [
+                    {
+                        'creatorType': 'author',
+                        'firstName': 'Ryan',
+                        'lastName': 'Shaw'
+                    }
+                ],
+                'date': '2010'
+            }),
+            creator=self.user, last_updater=self.user, project=self.project)
+
+        html = markup.render_markup(u'I am citing [@@d{}]'.format(document.id),
+                                   self.project)
+        self.assertEqual(html, (
+            u'<p>I am citing <cite>('
+            '<a rel="http://editorsnotes.org/v#document" '
+                'href="/projects/emma/documents/{}/">'
+                'Shaw 2010'
+            '</a>)</cite></p>\n'.format(document.id)
+        ))
+
+        tree = etree.fromstring(html)
+        related_documents = markup_html.get_related_documents(tree)
+        self.assertEqual(len(related_documents), 1)
+
 
 def create_test_user():
     user = User(username='testuser', is_staff=True, is_superuser=True)
@@ -118,29 +159,32 @@ class NoteTestCase(TestCase):
     def setUp(self):
         self.project = Project.objects.get(slug='emma')
         self.user = self.project.members.all()[0]
-    def testStripStyleElementsFromContent(self):
-        note = main_models.Note.objects.create(
-            content=u'<style>garbage</style><h1>hey</h1><p>this is a <em>note</em></p>', 
-            creator=self.user, last_updater=self.user, project=self.project)
-        self.assertEquals(
-            etree.tostring(note.content),
-            '<div><h1>hey</h1><p>this is a <em>note</em></p></div>')
-    def testAddCitations(self):
-        note = main_models.Note.objects.create(
-            content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
-            creator=self.user, last_updater=self.user, project=self.project)
-        document = main_models.Document.objects.create(
-            description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
-            creator=self.user, last_updater=self.user, project=self.project)
-        main_models.CitationNS.objects.create(
-            note=note, document=document, creator=self.user, last_updater=self.user)
-        self.assertEquals(note.sections.count(), 1)
-        self.assertEquals(note.sections_counter, 1)
-        self.assertEquals(document, note.sections.select_subclasses()[0].document)
+    #def testStripStyleElementsFromContent(self):
+    #    note = main_models.Note.objects.create(
+    #        content=u'<style>garbage</style><h1>hey</h1><p>this is a <em>note</em></p>', 
+    #        creator=self.user, last_updater=self.user, project=self.project)
+    #    self.assertEquals(
+    #        etree.tostring(note.content),
+    #        '<div><h1>hey</h1><p>this is a <em>note</em></p></div>')
+    #def testAddCitations(self):
+    #    document = main_models.Document.objects.create(
+    #        description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.', 
+    #        creator=self.user, last_updater=self.user, project=self.project)
+
+    #    note = main_models.Note.objects.create(
+    #        markup=u'I am citing [@@d{}]'.format(document.id),
+    #        creator=self.user, last_updater=self.user, project=self.project)
+
+    #    self.assertEquals(note.markup_html,
+    #                      '<p>I am citing<span>Shaw 2010</span></p>')
+
+    #    self.assertEquals(note.sections.count(), 1)
+    #    self.assertEquals(note.sections_counter, 1)
+
     def testAssignTopics(self):
         note = main_models.Note.objects.create(
             title='test note',
-            content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
+            markup=u'# hey\n\nthis is a _note_', 
             creator=self.user, last_updater=self.user, project=self.project)
         topic = main_models.Topic.objects.get_or_create_by_name(
             u'Example', self.project, self.user)
@@ -217,7 +261,7 @@ class NoteTransactionTestCase(FastFixtureTestCase):
     def testAssignTopicTwice(self):
         note = main_models.Note.objects.create(
             title='test note',
-            content=u'<h1>hey</h1><p>this is a <em>note</em></p>', 
+            markup=u'# hey\n\nthis is a _note_', 
             creator=self.user, last_updater=self.user, project=self.project)
         topic = main_models.Topic.objects.get_or_create_by_name(
             u'Example', self.project, self.user)
