@@ -995,4 +995,3 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Revision.objects.count(), 3)
         self.assertEqual(len(response.data['sections']), 0)
-        self.assertEqual(main_models.NoteSection.objects.count(), 0)

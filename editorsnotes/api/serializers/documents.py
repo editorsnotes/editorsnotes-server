@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework.validators import UniqueValidator
 
-from editorsnotes.main.models import Document, Citation, Scan, Transcript, CitationNS
+from editorsnotes.main.models import Document, Citation, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
@@ -81,13 +81,9 @@ class CitationSerializer(serializers.Serializer):
     def get_item_type(self, obj):
         if isinstance(obj, Citation):
             return 'topic'
-        elif isinstance(obj, CitationNS):
-            return 'note'
     def get_item_name(self, obj):
         if isinstance(obj, Citation):
             return obj.content_object.preferred_name
-        elif isinstance(obj, CitationNS):
-            return obj.note.title
     def get_item_url(self, obj):
         request = self.context['request']
         project = getattr(request, 'project', None) \
@@ -98,17 +94,10 @@ class CitationSerializer(serializers.Serializer):
                 'project_slug': project.slug,
                 'topic_node_id': obj.content_object.topic_node_id
             })
-        elif isinstance(obj, CitationNS):
-            url = reverse('api:notes-detail', request=request, kwargs={
-                'project_slug': project.slug,
-                'pk': obj.note_id
-            })
         return url
     def get_content(self, obj):
         if isinstance(obj, Citation):
             return obj.has_notes() and etree.tostring(obj.notes)
-        elif isinstance(obj, CitationNS):
-            return obj.has_content() and etree.tostring(obj.content)
 
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):

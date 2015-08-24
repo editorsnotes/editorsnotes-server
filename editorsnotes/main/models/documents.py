@@ -163,11 +163,12 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
             chain(*[n.related_topics.all() for n in notes])
         ))}
 
+    # FIXME
     def get_citations(self):
-        from editorsnotes.main.models import CitationNS
+        #from editorsnotes.main.models import CitationNS
         from editorsnotes.main.models import Citation
 
-        note_sections = CitationNS.objects.filter(document_id=self.id)
+        #note_sections = CitationNS.objects.filter(document_id=self.id)
         citations = Citation.objects.filter(document_id=self.id)
 
         return sorted(chain(note_sections, citations),
