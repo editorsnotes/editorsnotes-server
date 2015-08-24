@@ -55,9 +55,6 @@ class Migration(migrations.Migration):
             name='notesection_ptr',
         ),
         migrations.DeleteModel(
-            name='NoteSection',
-        ),
-        migrations.DeleteModel(
             name='TextNS',
         ),
         migrations.RemoveField(
