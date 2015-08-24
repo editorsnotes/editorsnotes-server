@@ -5,8 +5,6 @@ import requests
 
 from django.conf import settings
 
-from ..models import Note, Topic, Document
-
 
 def get_transcluded_items(markup, project):
     url = settings.EDITORSNOTES_MARKUP_RENDERER_URL
@@ -34,6 +32,8 @@ def qs_from_ids(Model, project, ids):
 
 
 def format_items(items_dict, project):
+    from ..models import Note, Topic, Document
+
     items = {}
 
     notes = qs_from_ids(Note, project, items_dict.get('note'))
