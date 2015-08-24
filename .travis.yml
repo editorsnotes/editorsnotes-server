@@ -3,19 +3,17 @@ language: python
 python:
   - "2.7"
 
-node_JS:
-  - "iojs"
-
 services:
   - elasticsearch
 
 install:
   - "CFLAGS=\"-O0\" && pip install -r requirements.txt"
   - "pip install -q fabric==1.5.1"
-  - "npm install editorsnotes-markup-renderer"
+  - "nvm install iojs"
+  - "nvm use iojs && npm install editorsnotes-markup-renderer"
 
 before_script:
-  - "./node_modules/.bin/editorsnotes_renderer --port=9393 &"
+  - "nvm exec iojs ./node_modules/.bin/editorsnotes_renderer --port=9393 &"
   - fab make_settings
   - "sed -i -e \"s/'NAME': '',/'NAME': 'testdb',/\" editorsnotes/settings_local.py"
   - "sed -i -e \"s/'USER': '',/'USER': 'postgres',/\" editorsnotes/settings_local.py"
