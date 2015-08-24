@@ -13,7 +13,7 @@ install:
   - "nvm use iojs && npm install editorsnotes-markup-renderer"
 
 before_script:
-  - "nvm exec iojs ./node_modules/.bin/editorsnotes_renderer --port=9393 &"
+  - "./node_modules/.bin/editorsnotes_renderer --port=9393 &"
   - fab make_settings
   - "sed -i -e \"s/'NAME': '',/'NAME': 'testdb',/\" editorsnotes/settings_local.py"
   - "sed -i -e \"s/'USER': '',/'USER': 'postgres',/\" editorsnotes/settings_local.py"
