@@ -80,7 +80,7 @@ def get_rendered_markup(markup, items, project):
     return rendered
 
 
-def render(markup, project):
+def render_markup(markup, project):
     items_dict = get_transcluded_items(markup, project)
     items = format_items(items_dict, project)
     html = get_rendered_markup(markup, items, project)

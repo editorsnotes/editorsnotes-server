@@ -1,16 +1,16 @@
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
-from django.db import models, transaction
+from django.db import models
 
 from licensing.models import License
-from lxml import etree
-from model_utils.managers import InheritanceManagerMixin
 import reversion
 
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from .. import fields
-from base import (Administered, LastUpdateMetadata, URLAccessible,
-                  OrderingManager)
+from ..utils.markup import render_markup
+from base import Administered, LastUpdateMetadata, URLAccessible
+
+__all__ = ['Note', 'NOTE_STATUS_CHOICES']
 
 NOTE_STATUS_CHOICES = (
     ('0', 'closed'),
@@ -18,132 +18,58 @@ NOTE_STATUS_CHOICES = (
     ('2', 'hibernating')
 )
 
-__all__ = ['Note', 'NoteSection', 'CitationNS', 'TextNS', 'NoteReferenceNS']
 
 class Note(LastUpdateMetadata, Administered, URLAccessible,
            ProjectPermissionsMixin, UpdatersMixin):
-    u""" 
+    u"""
     Text written by an editor or curator. The text is stored as XHTML,
     so it may have hyperlinks and all the other features that XHTML
     enables.
     """
     title = models.CharField(max_length='80')
-    content = fields.XHTMLField()
+
+    markup = models.TextField()
+    markup_html = fields.XHTMLField(blank=True, null=True, editable=False)
+
     project = models.ForeignKey('Project', related_name='notes')
-    assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, null=True)
-    status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1, default='1')
+    assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL,
+                                            blank=True, null=True)
+    status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1,
+                              default='1')
     is_private = models.BooleanField(default=False)
     license = models.ForeignKey(License, blank=True, null=True)
     related_topics = GenericRelation('TopicAssignment')
-    sections_counter = models.PositiveIntegerField(default=0)
+
     class Meta:
         app_label = 'main'
-        ordering = ['-last_updated']  
+        ordering = ['-last_updated']
         permissions = (
             (u'view_private_note', u'Can view notes private to a project.'),
         )
         unique_together = (
             ('title', 'project'),
         )
+
     def as_text(self):
         return self.title
+
     @models.permalink
     def get_absolute_url(self):
         return ('api:notes-detail', [self.project.slug, self.id])
+
     def get_affiliation(self):
         return self.project
+
     def get_license(self):
         return self.license or self.project.default_license
+
     def has_topic(self, project_topic):
         return project_topic.id in \
-                self.related_topics.values_list('topic_id', flat=True)
-    def get_sections_with_subclasses(self):
-        # TODO also select_related
-        return self.sections.select_subclasses()
+            self.related_topics.values_list('topic_id', flat=True)
 
-class NoteSectionManager(InheritanceManagerMixin, OrderingManager):
-    pass
-
-class NoteSection(LastUpdateMetadata, ProjectPermissionsMixin):
-    u"""
-    The concrete base class for any note section.
-    """
-    _section_type = models.CharField(max_length=100)
-    note = models.ForeignKey(Note, related_name='sections')
-    note_section_id = models.PositiveIntegerField(blank=True, null=True)
-    ordering = models.PositiveIntegerField(blank=True, null=True)
-    related_topics = GenericRelation('TopicAssignment')
-    objects = NoteSectionManager()
-    class Meta:
-        app_label = 'main'
-        ordering = ['ordering', '-note_section_id']
-        unique_together = ['note', 'note_section_id']
-    def get_affiliation(self):
-        return self.note.project
-    @property
-    def section_type(self):
-        return self._section_type
-    def _get_section_subclass(self):
-        """
-        Get the subclass of this note section, used for caching.
-
-        See this article for a good description of this method.
-        http://alexgaynor.net/2009/feb/10/a-second-look-at-inheritance-and-polymorphism-with-django/
-        """
-        section_subclasses = NoteSection._meta.get_all_related_objects()
-        for cls in section_subclasses:
-            if isinstance(cls, models.related.RelatedObject) and \
-                   cls.field.primary_key and \
-                   cls.opts == self._meta:
-                return cls.get_accessor_name()
-        else:
-            raise Exception('Could not find note section subclass')
-    @transaction.atomic
     def save(self, *args, **kwargs):
-        if not self.id:
-            n = self.note
-            self.note_section_id = n.sections_counter = n.sections_counter + 1
-            n.save()
-            self._section_type = self._get_section_subclass()
-        return super(NoteSection, self).save(*args, **kwargs)
+        self.markup_html = render_markup(self.markup, self.project)
+        return super(Note, self).save(*args, **kwargs)
 
-class CitationNS(NoteSection):
-    document = models.ForeignKey('Document')
-    content = fields.XHTMLField(blank=True, null=True)
-    section_type_label = 'citation'
-    class Meta:
-        app_label = 'main'
-    def __unicode__(self):
-        return u'Note section -- citation -- {}'.format(self.document)
-    def has_content(self):
-        return self.content is not None
-
-class TextNS(NoteSection):
-    content = fields.XHTMLField()
-    section_type_label = 'text'
-    class Meta:
-        app_label = 'main'
-    def __unicode__(self):
-        content_str = etree.tostring(self.content)
-        return u'Note section -- text -- {}'.format(
-            content_str[:20] + '...' if len(content_str) > 20 else '')
-
-class NoteReferenceNS(NoteSection):
-    note_reference = models.ForeignKey(Note)
-    content = fields.XHTMLField(blank=True, null=True)
-    section_type_label = 'note_reference'
-    class Meta:
-        app_label = 'main'
-    def __unicode__(self):
-        return u'Note section -- reference -- {}'.format(self.note_reference)
-    def has_content(self):
-        return self.content is not None
 
 reversion.register(Note)
-
-# to make this extendable to other note sections, should make this introspective
-# or some such eventually
-reversion.register(NoteSection)
-reversion.register(CitationNS, follow=['notesection_ptr'])
-reversion.register(TextNS, follow=['notesection_ptr'])
-reversion.register(NoteReferenceNS, follow=['notesection_ptr'])

@@ -104,7 +104,7 @@ class MarkupUtilsTestCase(unittest.TestCase):
     def test_render_markup(self):
         from utils import markup
         project = Project(slug='test')
-        html = markup.render('test', project)
+        html = markup.render_markup('test', project)
         self.assertEqual(html, u'<p>test</p>\n')
 
 def create_test_user():
