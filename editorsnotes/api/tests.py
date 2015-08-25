@@ -722,7 +722,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['status'], data['status'])
         self.assertEqual(response.data['markup'], data['markup'])
         self.assertEqual(response.data['markup_html'], (
-            u'<p>We need to figure out if it\'s worth it to write tests.</p>'
+            u'<div><p>We need to figure out if it\'s worth it to write tests.</p></div>'
         ))
         self.assertEqual(response.data['title'], new_note_obj.title)
 

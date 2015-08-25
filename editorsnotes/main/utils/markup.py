@@ -1,6 +1,6 @@
 import json
 
-from lxml import etree
+from lxml import etree, html
 import requests
 
 from django.conf import settings
@@ -83,6 +83,8 @@ def get_rendered_markup(markup, items, project):
 def render_markup(markup, project):
     items_dict = get_transcluded_items(markup, project)
     items = format_items(items_dict, project)
-    html = get_rendered_markup(markup, items, project)
+    markup_html = get_rendered_markup(markup, items, project)
 
-    return html
+    markup_html = markup_html.strip().rstrip()
+
+    return html.fragment_fromstring(markup_html, create_parent='div')

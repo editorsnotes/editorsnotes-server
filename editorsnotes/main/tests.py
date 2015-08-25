@@ -127,7 +127,7 @@ class MarkupUtilsTestCase(TestCase):
         from utils import markup
 
         html = markup.render_markup('test', self.project)
-        self.assertEqual(html, u'<p>test</p>\n')
+        self.assertEqual(etree.tostring(html), u'<div><p>test</p></div>')
 
     def test_count_references(self):
         from utils import markup, markup_html
@@ -150,16 +150,15 @@ class MarkupUtilsTestCase(TestCase):
 
         html = markup.render_markup(u'I am citing [@@d{}]'.format(document.id),
                                     self.project)
-        self.assertEqual(html, (
-            u'<p>I am citing <cite>('
+        self.assertEqual(etree.tostring(html), (
+            u'<div><p>I am citing <cite>('
             '<a rel="http://editorsnotes.org/v#document" '
             'href="/projects/emma/documents/{}/">'
             'Shaw 2010'
-            '</a>)</cite></p>\n'.format(document.id)
+            '</a>)</cite></p></div>'.format(document.id)
         ))
 
-        tree = etree.fromstring(html)
-        related_documents = markup_html.get_related_documents(tree)
+        related_documents = markup_html.get_related_documents(html)
         self.assertEqual(len(related_documents), 1)
 
 
