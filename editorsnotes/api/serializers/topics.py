@@ -84,7 +84,7 @@ class TopicSerializer(RelatedTopicSerializerMixin,
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
                   'alternate_names', 'related_topics', 'project',
-                  'last_updated', 'summary')
+                  'last_updated', 'markup', 'markup_html')
         validators = [
             UniqueToProjectValidator('preferred_name')
         ]

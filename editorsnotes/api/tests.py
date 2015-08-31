@@ -41,7 +41,7 @@ TEST_TOPIC = {
     'alternate_names': [u'big guy', u'stretch'],
     'type': u'PER',
     'related_topics': [],
-    'summary': u'<p>A writer of tests</p>'
+    'markup': u'A writer of tests.'
 }
 
 
@@ -121,7 +121,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_TOPIC
         topic_node, topic = main_models.Topic.objects.create_along_with_node(
             data['preferred_name'], self.project, self.user, data['type'],
-            summary=data['summary'])
+            markup=data['markup'])
         return topic
 
     def test_topic_api_create(self):
@@ -140,8 +140,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = main_models.Topic.objects.get(
             topic_node_id=new_topic_node_id, project=self.project)
         self.assertEqual(response.data.get('id'), topic_obj.id)
-        self.assertEqual(etree.tostring(topic_obj.summary),
-                         response.data.get('summary'))
+        self.assertEqual(etree.tostring(topic_obj.markup_html),
+                         response.data.get('markup_html'))
 
         # Make sure a revision was created
         self.assertEqual(Revision.objects.count(), 1)
@@ -263,7 +263,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = create_topic(user=self.user, project=self.project)
 
         # Update the topic with new data.
-        data['summary'] = u'<p>A writer of great tests.</p>'
+        data['markup'] = u'Still writing tests.'
 
         response = self.client.put(
             reverse('api:topics-detail',
@@ -276,9 +276,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         updated_topic_obj = main_models.Topic.objects.get(
             topic_node_id=response.data['topic_node_id'], project=self.project)
         self.assertEqual(topic_obj, updated_topic_obj)
-        self.assertEqual(data['summary'], response.data['summary'])
-        self.assertEqual(data['summary'],
-                         etree.tostring(updated_topic_obj.summary))
+        self.assertEqual(data['markup'], response.data['markup'])
+        self.assertEqual('<div><p>Still writing tests.</p></div>',
+                         etree.tostring(updated_topic_obj.markup_html))
 
         # Make sure a revision was created upon update
         self.assertEqual(Revision.objects.count(), 1)
@@ -309,7 +309,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = create_topic(user=self.user, project=self.project)
 
         data['preferred_name'] = u'Patrick Garbage'
-        data['summary'] = u'<p>such a piece of garbage LOL</p>'
+        data['markup'] = u'a bad, garbage guy'
 
         self.client.logout()
         self.client.login(username='esther', password='esther')

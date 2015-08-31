@@ -410,7 +410,7 @@ class ProjectSpecificPermissionsTestCase(TestCase):
         self.assertFalse(researcher.has_project_perm(
             self.project, 'main.delete_note'))
         self.assertFalse(researcher.has_project_perm(
-            self.project, 'main.change_topicsummary'))
+            self.project, 'main.change_topicmarkup'))
 
     def test_invalid_project_permission(self):
         new_role = self.project.roles\

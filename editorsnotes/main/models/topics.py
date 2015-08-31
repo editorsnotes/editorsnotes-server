@@ -11,6 +11,7 @@ import reversion
 from editorsnotes.auth.models import Project, ProjectPermissionsMixin
 
 from .. import fields, utils
+from ..utils.markup import render_markup
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
 
@@ -179,6 +180,11 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
     def get_absolute_url(self):
         return ('api:topics-detail', [self.project.slug, self.topic_node_id])
 
+    def save(self, *args, **kwargs):
+        if self.markup:
+            self.markup_html = render_markup(self.markup, self.project)
+        return super(Topic, self).save(*args, **kwargs)
+
     def get_admin_url(self):
         return reverse(
             'admin:main_topic_change',
@@ -188,15 +194,15 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         return self.project
 
     def has_summary(self):
-        return self.summary is not None
+        return self.markup is not None
 
     def clean_fields(self, exclude=None):
         super(Topic, self).clean_fields(exclude=exclude)
         if 'summary' not in exclude and self.has_summary():
-            utils.remove_stray_brs(self.summary)
-            utils.remove_empty_els(self.summary)
-            if not self.summary.xpath('string()').strip():
-                self.summary = None
+            utils.remove_stray_brs(self.markup)
+            utils.remove_empty_els(self.markup)
+            if not self.markup.xpath('string()').strip():
+                self.markup = None
 
     def validate_unique(self, exclude=None):
         super(Topic, self).validate_unique(exclude)
@@ -237,10 +243,7 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
                 raise TopicMergeError(
                     'Can\'t merge two summaries. '
                     'Delete a summary before continuing.')
-            target.summary = self.summary
-        for cite in self.summary_cites.all():
-            cite.object_id = target.id
-            cite.save()
+            target.markup = self.markup
 
         # Move topic assignments to the new container, but only if those
         # assignments don't already exist in the target.
