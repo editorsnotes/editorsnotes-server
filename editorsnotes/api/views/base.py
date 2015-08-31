@@ -186,7 +186,6 @@ rel_model = {
     'notesection': lambda original, related: related.note,
     'topicassignment': lambda original, related: related.topic \
         if related.topic != original else related.content_object,
-    'citation': lambda original, related: related.content_object,
     'scan': lambda original, related: related.document
 }
 

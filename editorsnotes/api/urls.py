@@ -35,9 +35,6 @@ project_specific_patterns = patterns('',
     url(r'^/topics/$', views.TopicList.as_view(), name='topics-list'),
     url(r'^/topics/(?P<topic_node_id>\d+)/$', views.TopicDetail.as_view(), name='topics-detail'),
     url(r'^/topics/(?P<topic_node_id>\d+)/confirm_delete$', views.TopicConfirmDelete.as_view(), name='topics-confirm-delete'),
-    url(r'^/topics/(?P<topic_node_id>\d+)/citations/$', views.TopicCitationList.as_view(), name='topic-citations-list'),
-    url(r'^/topics/(?P<topic_node_id>\d+)/citations/normalize_order$', views.NormalizeCitationOrder.as_view(), name='topic-citations-normalize-order'),
-    url(r'^/topics/(?P<topic_node_id>\d+)/citations/(?P<citation_id>\d+)/$', views.TopicCitationDetail.as_view(), name='topic-citations-detail'),
 
     ### Notes ###
     url(r'^/notes/$', views.NoteList.as_view(), name='notes-list'),

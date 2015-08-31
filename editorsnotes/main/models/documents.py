@@ -27,8 +27,7 @@ from .. import fields, utils
 from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
                   Administered, OrderingManager)
 
-__all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink',
-           'Citation']
+__all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink']
 
 class DocumentManager(models.Manager):
     use_for_related_fields = True
@@ -138,40 +137,42 @@ class Document(LastUpdateMetadata, Administered, URLAccessible,
         if hasattr(self, 'link_count') and self.link_count:
             r.append('External Link')
         return r
+    # FIXME
     def get_all_related_topics(self):
         topic_ct = ContentType.objects.get_by_natural_key(
             'main', 'topic')
-        topic_citations = self.citations.filter(content_type_id=topic_ct.id)
-        citation_note_sections = self.citationns_set.all()
-        notes = {ns.note for ns in citation_note_sections}
+        #topic_citations = self.citations.filter(content_type_id=topic_ct.id)
+        #citation_note_sections = self.citationns_set.all()
+        #notes = {ns.note for ns in citation_note_sections}
 
         return {ta.topic for ta in set(chain(
             # Explicitly related topics
             self.related_topics.all(),
 
             # The topic of any TopicSummary objects citing this doc
-            [cite.content_object for cite in topic_citations],
+            #[cite.content_object for cite in topic_citations],
 
             # The related topics of the topic gotten previously
-            chain(*[cite.content_object.assignments.all()
-                   for cite in topic_citations]),
+            #chain(*[cite.content_object.assignments.all()
+                   #for cite in topic_citations]),
 
             # Topics related to sections citing to this doc
-            chain(*[sec.related_topics.all() for sec in citation_note_sections]),
+            #chain(*[sec.related_topics.all() for sec in citation_note_sections]),
 
             # Topics relate to the note citing this doc
-            chain(*[n.related_topics.all() for n in notes])
+            #chain(*[n.related_topics.all() for n in notes])
         ))}
 
     # FIXME
     def get_citations(self):
         #from editorsnotes.main.models import CitationNS
-        from editorsnotes.main.models import Citation
+        #from editorsnotes.main.models import Citation
 
         #note_sections = CitationNS.objects.filter(document_id=self.id)
-        citations = Citation.objects.filter(document_id=self.id)
+        #citations = Citation.objects.filter(document_id=self.id)
 
-        return sorted(chain(citations), key=lambda obj: obj.last_updated)
+        #return sorted(chain(citations), key=lambda obj: obj.last_updated)
+        return []
 
     def as_html(self):
         if self.zotero_data is not None:
@@ -327,44 +328,3 @@ class DocumentLink(CreationMetadata):
     def __unicode__(self):
         return self.url
 reversion.register(DocumentLink)
-
-class DocumentMetadata(CreationMetadata):
-    u"""
-    Aribitrary metadata (key-value pair) for a document.
-    """
-    document = models.ForeignKey(Document, related_name='metadata')
-    key = models.CharField(max_length=32)
-    value = models.TextField()
-    class Meta:
-        app_label = 'main'
-        unique_together = ('document', 'key')
-
-class CitationManager(OrderingManager):
-    def get_for_object(self, obj):
-        return self.filter(
-            content_type=ContentType.objects.get_for_model(obj),
-            object_id=obj.id)
-
-class Citation(LastUpdateMetadata, ProjectPermissionsMixin):
-    u"""
-    A reference to or citation of a document.
-    """
-    document = models.ForeignKey(Document, related_name='citations')
-    ordering = models.IntegerField(blank=True, null=True)
-    notes = fields.XHTMLField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey()
-
-    objects = CitationManager()
-
-    class Meta:
-        app_label = 'main'
-        ordering = ['ordering']
-
-    def has_notes(self):
-        return self.notes is not None
-    def __unicode__(self):
-        return u'Citation for %s (order: %s)' % (self.document, self.ordering)
-    def get_affiliation(self):
-        return self.document.project

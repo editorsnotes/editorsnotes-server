@@ -8,7 +8,6 @@ from editorsnotes.main.models import Topic, TopicNode, AlternateName
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    ProjectSlugField, URLField, TopicAssignmentField)
-from .documents import CitationSerializer
 from ..validators import UniqueToProjectValidator
 
 
@@ -69,12 +68,11 @@ class TopicSerializer(RelatedTopicSerializerMixin,
     })
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
-    citations = CitationSerializer(source='summary_cites', many=True, read_only=True)
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
                   'alternate_names', 'related_topics', 'project',
-                  'last_updated', 'summary', 'citations')
+                  'last_updated', 'summary')
         validators = [
             UniqueToProjectValidator('preferred_name')
         ]
