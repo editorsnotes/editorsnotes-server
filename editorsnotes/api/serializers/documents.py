@@ -1,10 +1,8 @@
 from collections import OrderedDict
 import json
 
-from lxml import etree
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-from rest_framework.validators import UniqueValidator
 
 from editorsnotes.main.models import Document, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
@@ -15,11 +13,14 @@ from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
 
+
 class ZoteroField(serializers.Field):
     def to_representation(self, value):
         return value and json.loads(value, object_pairs_hook=OrderedDict)
+
     def to_internal_value(self, data):
         return json.dumps(data)
+
 
 class HyperLinkedImageField(serializers.ImageField):
     def to_native(self, value):
@@ -31,31 +32,38 @@ class HyperLinkedImageField(serializers.ImageField):
             ret = value.url
         return ret
 
+
 class ScanSerializer(serializers.ModelSerializer):
     creator = serializers.ReadOnlyField(source='creator.username')
     image = HyperLinkedImageField()
     image_thumbnail = HyperLinkedImageField(read_only=True)
     height = serializers.SerializerMethodField()
     width = serializers.SerializerMethodField()
+
     class Meta:
         model = Scan
         fields = ('id', 'image', 'image_thumbnail', 'height', 'width',
                   'ordering', 'created', 'creator',)
+
     def get_height(self, obj):
         try:
             return obj.image.height
         except IOError:
             return None
+
     def get_width(self, obj):
         try:
             return obj.image.width
         except IOError:
             return None
 
+
 class UniqueDocumentDescriptionValidator:
     message = u'Document with this description already exists.'
+
     def set_context(self, serializer):
         self.instance = getattr(self, 'instance', None)
+
     def __call__(self, attrs):
         if self.instance is not None:
             description = attrs.get('description', self.instance.description)
@@ -69,7 +77,10 @@ class UniqueDocumentDescriptionValidator:
         if self.instance is not None:
             qs = qs.exclude(id=self.instance.id)
         if qs.exists():
-            raise serializers.ValidationError({ 'description': [self.message] })
+            raise serializers.ValidationError({
+                'description': [self.message]
+            })
+
 
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
@@ -79,6 +90,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
     zotero_data = ZoteroField(required=False)
     related_topics = TopicAssignmentField()
     scans = ScanSerializer(many=True, required=False, read_only=True)
+
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
@@ -87,19 +99,21 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
         validators = [
             UniqueDocumentDescriptionValidator()
         ]
+
     def get_transcript_url(self, obj):
         if not obj.has_transcript():
             return None
         return reverse('api:transcripts-detail',
                        request=self.context.get('request', None),
-                       kwargs = {
+                       kwargs={
                            'project_slug': obj.project.slug,
                            'document_id': obj.id
                        })
+
     def validate_description(self, value):
         description_stripped = Document.strip_description(value)
         if not description_stripped:
-            raise serializer.ValidationError('Field required.')
+            raise serializers.ValidationError('Field required.')
         remove_stray_brs(value)
         return value
 
@@ -112,5 +126,6 @@ class TranscriptSerializer(serializers.ModelSerializer):
     document = HyperlinkedProjectItemField(view_name='api:documents-detail',
                                            queryset=Document.objects,
                                            required=True)
+
     class Meta:
         model = Transcript
