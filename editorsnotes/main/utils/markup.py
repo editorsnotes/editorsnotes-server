@@ -38,7 +38,7 @@ def format_items(items_dict, project):
 
     notes = qs_from_ids(Note, project, items_dict.get('note'))
     if notes:
-        items['notes'] = dict(
+        items['note'] = dict(
             (note.id, note.title) for note in notes
         )
 
