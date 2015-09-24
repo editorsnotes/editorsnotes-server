@@ -11,6 +11,7 @@ from django.utils.encoding import force_unicode
 
 cleaner = Cleaner(style=True)
 
+
 def update_attrs(attrs, extra_attrs):
     if attrs is None:
         attrs = extra_attrs
@@ -26,6 +27,7 @@ def update_attrs(attrs, extra_attrs):
             else:
                 attrs[k] = extra_attrs[k]
 
+
 class XHTMLWidget(forms.Textarea):
     def _format_value(self, value):
         if value is None:
@@ -35,30 +37,38 @@ class XHTMLWidget(forms.Textarea):
         if isinstance(value, str) or isinstance(value, unicode):
             return value
         raise TypeError('%s cannot be formatted as XHTML' % value)
+
     def render(self, name, value, attrs=None):
-        update_attrs(attrs, { 'class': 'xhtml-textarea' })
+        update_attrs(attrs, {'class': 'xhtml-textarea'})
         final_attrs = self.build_attrs(attrs, name=name)
         return mark_safe(u'<textarea%s>%s</textarea>' % (
-                forms.util.flatatt(final_attrs),
-                conditional_escape(force_unicode(self._format_value(value)))))
+            forms.util.flatatt(final_attrs),
+            conditional_escape(force_unicode(self._format_value(value)))))
+
 
 class ReadonlyXHTMLWidget(XHTMLWidget):
     def render(self, name, value, attrs=None):
-        update_attrs(
-            attrs, { 'style': 'display: none', 'class': 'hidden-textarea' })
+        update_attrs(attrs, {
+            'style': 'display: none',
+            'class': 'hidden-textarea'
+        })
         return (mark_safe(
-                '<div class="readonly">' 
+                '<div class="readonly">'
                 + self._format_value(value)
-                + '</div>') 
+                + '</div>')
                 + super(ReadonlyXHTMLWidget, self).render(name, value, attrs))
+
 
 class XHTMLField(models.Field):
     description = 'A parsed XHTML fragment'
     __metaclass__ = models.SubfieldBase
+
     def __init__(self, *args, **kwargs):
         super(XHTMLField, self).__init__(*args, **kwargs)
+
     def db_type(self, connection):
         return 'xml'
+
     def to_python(self, value):
         if value is None:
             return None
@@ -76,6 +86,7 @@ class XHTMLField(models.Field):
         except etree.ParserError:
             fragment = html.fragment_fromstring(value, create_parent='div')
         return cleaner.clean_html(fragment)
+
     def get_prep_value(self, value):
         if value is None:
             return None
@@ -83,9 +94,11 @@ class XHTMLField(models.Field):
             return value
         else:
             return etree.tostring(value)
+
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return self.get_prep_value(value)
+
     def formfield(self, **kwargs):
         defaults = {'widget': XHTMLWidget}
         defaults.update(kwargs)

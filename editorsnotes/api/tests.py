@@ -41,7 +41,7 @@ TEST_TOPIC = {
     'alternate_names': [u'big guy', u'stretch'],
     'type': u'PER',
     'related_topics': [],
-    'summary': u'<p>A writer of tests</p>'
+    'markup': u'A writer of tests.'
 }
 
 
@@ -82,8 +82,8 @@ def create_document(**kwargs):
 TEST_NOTE = {
     'title': u'Is testing good?',
     'related_topics': [],
-    'content': (
-        u'<p>We need to figure out if it\'s worth it to write tests.</p>'
+    'markup': (
+        u'We need to figure out if it\'s worth it to write tests.'
     ),
     'status': 'open',
     'sections': []
@@ -103,7 +103,9 @@ class ClearContentTypesMixin(object):
         super(ClearContentTypesMixin, self)\
             ._pre_setup(*args, **kwargs)
 
-class ClearContentTypesTransactionTestCase(ClearContentTypesMixin, FastFixtureTestCase):
+
+class ClearContentTypesTransactionTestCase(ClearContentTypesMixin,
+                                           FastFixtureTestCase):
     pass
 
 
@@ -119,7 +121,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_TOPIC
         topic_node, topic = main_models.Topic.objects.create_along_with_node(
             data['preferred_name'], self.project, self.user, data['type'],
-            summary=data['summary'])
+            markup=data['markup'])
         return topic
 
     def test_topic_api_create(self):
@@ -138,8 +140,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = main_models.Topic.objects.get(
             topic_node_id=new_topic_node_id, project=self.project)
         self.assertEqual(response.data.get('id'), topic_obj.id)
-        self.assertEqual(etree.tostring(topic_obj.summary),
-                         response.data.get('summary'))
+        self.assertEqual(etree.tostring(topic_obj.markup_html),
+                         response.data.get('markup_html'))
 
         # Make sure a revision was created
         self.assertEqual(Revision.objects.count(), 1)
@@ -261,7 +263,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = create_topic(user=self.user, project=self.project)
 
         # Update the topic with new data.
-        data['summary'] = u'<p>A writer of great tests.</p>'
+        data['markup'] = u'Still writing tests.'
 
         response = self.client.put(
             reverse('api:topics-detail',
@@ -274,9 +276,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         updated_topic_obj = main_models.Topic.objects.get(
             topic_node_id=response.data['topic_node_id'], project=self.project)
         self.assertEqual(topic_obj, updated_topic_obj)
-        self.assertEqual(data['summary'], response.data['summary'])
-        self.assertEqual(data['summary'],
-                         etree.tostring(updated_topic_obj.summary))
+        self.assertEqual(data['markup'], response.data['markup'])
+        self.assertEqual('<div><p>Still writing tests.</p></div>',
+                         etree.tostring(updated_topic_obj.markup_html))
 
         # Make sure a revision was created upon update
         self.assertEqual(Revision.objects.count(), 1)
@@ -307,7 +309,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = create_topic(user=self.user, project=self.project)
 
         data['preferred_name'] = u'Patrick Garbage'
-        data['summary'] = u'<p>such a piece of garbage LOL</p>'
+        data['markup'] = u'a bad, garbage guy'
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -631,18 +633,9 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_NOTE
         note = main_models.Note.objects.create(
             title=data['title'],
-            content=data['content'],
+            markup=data['markup'],
             status='1',
             project=self.project,
-            creator=self.user,
-            last_updater=self.user)
-        return note
-
-    def create_test_note_with_section(self):
-        note = self.create_test_note()
-        main_models.TextNS.objects.create(
-            note=note,
-            content='<p>Need to get started on this one</p>',
             creator=self.user,
             last_updater=self.user)
         return note
@@ -727,10 +720,11 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(response.data['title'], data['title'])
         self.assertEqual(response.data['status'], data['status'])
-        self.assertEqual(response.data['content'], data['content'])
+        self.assertEqual(response.data['markup'], data['markup'])
+        self.assertEqual(response.data['markup_html'], (
+            u'<div><p>We need to figure out if it\'s worth it to write tests.</p></div>'
+        ))
         self.assertEqual(response.data['title'], new_note_obj.title)
-        self.assertEqual(response.data['content'],
-                         etree.tostring(new_note_obj.content))
 
         url_for = lambda topic: response.wsgi_request\
             .build_absolute_uri(topic.get_absolute_url())
@@ -926,73 +920,45 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data['detail'], NO_AUTHENTICATION_MESSAGE)
 
-    def make_section_data(self):
-        another_note_obj = main_models.Note.objects.create(
-            title='Another note', status='0', project=self.project,
-            content='Just another note.',
-            creator=self.user, last_updater=self.user)
+    #def test_note_api_create_note_sections(self):
+    #    "Create a test note with multiple sections"
+    #    # First create a note with multiple sections
+    #    data = TEST_NOTE.copy()
+    #    data.update({'sections': self.make_section_data()})
 
-        document_obj = main_models.Document.objects.create(
-            description="New document", project=self.project,
-            creator=self.user, last_updater=self.user)
+    #    response = self.client.post(
+    #        reverse('api:notes-list', args=[self.project.slug]),
+    #        json.dumps(data),
+    #        content_type='application/json'
+    #    )
+    #    self.assertEqual(response.status_code, 201)
+    #    self.assertEqual(Revision.objects.count(), 1)
+    #    self.assertEqual(len(response.data['sections']), 3)
 
-        return [
-            {
-                'section_type': 'text',
-                'content': 'this is the start'
-            },
-            {
-                'section_type': 'citation',
-                'document': document_obj.get_absolute_url(),
-                'content': 'A fascinating article.'
-            },
-            {
-                'section_type': 'note_reference',
-                'note_reference': another_note_obj.get_absolute_url(),
-                'content': 'See also this note.'
-            }
-        ]
+    #    # Update one of the sections
+    #    data.update({'sections': response.data['sections']})
+    #    data['sections'][0]['content'] = 'This is an updated section'
 
-    def test_note_api_create_note_sections(self):
-        "Create a test note with multiple sections"
-        # First create a note with multiple sections
-        data = TEST_NOTE.copy()
-        data.update({'sections': self.make_section_data()})
+    #    response = self.client.put(
+    #        reverse('api:notes-detail',
+    #                args=[self.project.slug, response.data['id']]),
+    #        json.dumps(data),
+    #        content_type='application/json'
+    #    )
+    #    self.assertEqual(response.status_code, 200)
+    #    self.assertEqual(Revision.objects.count(), 2)
+    #    self.assertEqual(len(response.data['sections']), 3)
+    #    self.assertEqual(response.data['sections'][0]['content'],
+    #                     '<div>This is an updated section</div>')
 
-        response = self.client.post(
-            reverse('api:notes-list', args=[self.project.slug]),
-            json.dumps(data),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Revision.objects.count(), 1)
-        self.assertEqual(len(response.data['sections']), 3)
-
-        # Update one of the sections
-        data.update({'sections': response.data['sections']})
-        data['sections'][0]['content'] = 'This is an updated section'
-
-        response = self.client.put(
-            reverse('api:notes-detail',
-                    args=[self.project.slug, response.data['id']]),
-            json.dumps(data),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Revision.objects.count(), 2)
-        self.assertEqual(len(response.data['sections']), 3)
-        self.assertEqual(response.data['sections'][0]['content'],
-                         '<div>This is an updated section</div>')
-
-        # Delete all the sections
-        data.update({'sections': []})
-        response = self.client.put(
-            reverse('api:notes-detail',
-                    args=[self.project.slug, response.data['id']]),
-            json.dumps(data),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Revision.objects.count(), 3)
-        self.assertEqual(len(response.data['sections']), 0)
-        self.assertEqual(main_models.NoteSection.objects.count(), 0)
+    #    # Delete all the sections
+    #    data.update({'sections': []})
+    #    response = self.client.put(
+    #        reverse('api:notes-detail',
+    #                args=[self.project.slug, response.data['id']]),
+    #        json.dumps(data),
+    #        content_type='application/json'
+    #    )
+    #    self.assertEqual(response.status_code, 200)
+    #    self.assertEqual(Revision.objects.count(), 3)
+    #    self.assertEqual(len(response.data['sections']), 0)

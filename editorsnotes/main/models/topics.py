@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import (GenericForeignKey,
+                                                GenericRelation)
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -10,6 +11,7 @@ import reversion
 from editorsnotes.auth.models import Project, ProjectPermissionsMixin
 
 from .. import fields, utils
+from ..utils.markup import render_markup
 from base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
 
@@ -23,6 +25,7 @@ TYPE_CHOICES = (
     ('PUB', 'Publication')
 )
 
+
 class TopicMergeError(Exception):
     pass
 
@@ -30,10 +33,12 @@ class TopicMergeError(Exception):
 # Main topic node model #
 #########################
 
+
 class TopicNodeManager(models.Manager):
     def for_project(self, project):
         return self.select_related('project_topics')\
-                .filter(project_topics__project_id=project.id)
+            .filter(project_topics__project_id=project.id)
+
 
 class TopicNode(LastUpdateMetadata, URLAccessible):
     """
@@ -50,23 +55,31 @@ class TopicNode(LastUpdateMetadata, URLAccessible):
     deleted and optionally point to the new Topic node that it was merged into.
     """
     _preferred_name = models.CharField(max_length='200')
-    type = models.CharField(max_length=3, choices=TYPE_CHOICES, blank=True, null=True)
+    type = models.CharField(max_length=3, choices=TYPE_CHOICES, blank=True,
+                            null=True)
     deleted = models.BooleanField(default=False, editable=False)
-    merged_into = models.ForeignKey('self', blank=True, null=True, editable=False)
+    merged_into = models.ForeignKey('self', blank=True, null=True,
+                                    editable=False)
     objects = TopicNodeManager()
+
     class Meta:
         app_label = 'main'
+
     def as_text(self):
         return self.preferred_name
+
     @models.permalink
     def get_absolute_url(self):
         return ('topic_node_view', [self.id])
+
     @property
     def preferred_name(self):
         return self._preferred_name
+
     def get_connected_projects(self):
         return Project.objects.filter(
             id__in=self.project_topics.values_list('project_id', flat=True))
+
     def related_objects(self, model=None):
         qs = TopicAssignment.objects.filter(topic__topic_node_id=self.id)
         if model is not None:
@@ -102,22 +115,25 @@ class TopicManager(models.Manager):
                                        creator_id=user.id,
                                        last_updater_id=user.id,
                                        **kwargs)
+
     def create_from_node(self, topic_node, project, user, name=None):
         """
         Given a topic node, create a new container for a project.
 
-        If no name is passed, the (cached) preferred name of the topic node will
-        be used as the container's preferred name.
+        If no name is passed, the (cached) preferred name of the topic node
+        will be used as the container's preferred name.
         """
         return self.create(topic_node=topic_node, project=project,
                            creator=user, last_updater=user,
                            preferred_name=name or topic_node.preferred_name)
+
     def get_or_create_by_name(self, name, project, user):
         qs = self.filter(preferred_name=name, project=project)
         if qs.exists():
             return qs.get()
         node, topic = self.create_along_with_node(name, project, user)
         return topic
+
     def get_or_create_from_node(self, topic_node, project, user, name=None):
         """
         Given a topic node, get or create a container for a project.
@@ -133,42 +149,61 @@ class TopicManager(models.Manager):
         return self.get_or_create(topic_node=topic_node, project=project,
                                   defaults=defaults)
 
+
 class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
             Administered):
     project = models.ForeignKey('Project', related_name='topics')
     topic_node = models.ForeignKey(TopicNode, related_name='project_topics')
     preferred_name = models.CharField(max_length=200)
-    related_topics = GenericRelation('TopicAssignment', related_query_name='assigned_to')
-    summary = fields.XHTMLField(blank=True, null=True)
-    summary_cites = GenericRelation('Citation')
+    related_topics = GenericRelation('TopicAssignment',
+                                     related_query_name='assigned_to')
+
+    markup = models.TextField(blank=True, null=True)
+    markup_html = fields.XHTMLField(blank=True, null=True, editable=False)
+
     deleted = models.BooleanField(default=False, editable=False)
-    merged_into = models.ForeignKey('self', blank=True, null=True, editable=False)
+    merged_into = models.ForeignKey('self', blank=True, null=True,
+                                    editable=False)
     objects = TopicManager()
+
     class Meta:
         app_label = 'main'
         unique_together = (
             ('project', 'preferred_name'),
             ('project', 'topic_node')
         )
+
     def as_text(self):
         return self.preferred_name
+
     @models.permalink
     def get_absolute_url(self):
         return ('api:topics-detail', [self.project.slug, self.topic_node_id])
+
+    def save(self, *args, **kwargs):
+        if self.markup:
+            self.markup_html = render_markup(self.markup, self.project)
+        return super(Topic, self).save(*args, **kwargs)
+
     def get_admin_url(self):
         return reverse(
-            'admin:main_topic_change', args=(self.project.slug, self.topic_node_id))
+            'admin:main_topic_change',
+            args=(self.project.slug, self.topic_node_id))
+
     def get_affiliation(self):
         return self.project
+
     def has_summary(self):
-        return self.summary is not None
+        return self.markup is not None
+
     def clean_fields(self, exclude=None):
         super(Topic, self).clean_fields(exclude=exclude)
         if 'summary' not in exclude and self.has_summary():
-            utils.remove_stray_brs(self.summary)
-            utils.remove_empty_els(self.summary)
-            if not self.summary.xpath('string()').strip():
-                self.summary = None
+            utils.remove_stray_brs(self.markup)
+            utils.remove_empty_els(self.markup)
+            if not self.markup.xpath('string()').strip():
+                self.markup = None
+
     def validate_unique(self, exclude=None):
         super(Topic, self).validate_unique(exclude)
         qs = self.__class__.objects.filter(
@@ -190,7 +225,7 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
                 '__all__': [u'This project is already connected with topic '
                             'node {}.'.format(self.topic_node)]
             })
-            
+
     @transaction.atomic
     def merge_into(self, target):
         """
@@ -206,11 +241,9 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         if self.has_summary():
             if target.has_summary():
                 raise TopicMergeError(
-                    'Can\'t merge two summaries. Delete a summary before continuing.')
-            target.summary = self.summary
-        for cite in self.summary_cites.all():
-            cite.object_id = target.id
-            cite.save()
+                    'Can\'t merge two summaries. '
+                    'Delete a summary before continuing.')
+            target.markup = self.markup
 
         # Move topic assignments to the new container, but only if those
         # assignments don't already exist in the target.
@@ -225,12 +258,12 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         for stale_assignment in self.related_topics.all():
             stale_assignment.delete()
 
-        # If no projects point to origin's topic node anymore, merge it into the
-        # target's topic node.
+        # If no projects point to origin's topic node anymore, merge it into
+        # the target's topic node.
         other_containers_exist = self.topic_node.project_topics\
-                .filter(deleted=False)\
-                .exclude(id=self.id)\
-                .exists()
+            .filter(deleted=False)\
+            .exclude(id=self.id)\
+            .exists()
         if not other_containers_exist:
             self.topic_node.deleted = True
             self.topic_node.merged_into = target.topic_node
@@ -244,14 +277,18 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
         return target
 reversion.register(Topic)
 
+
 class AlternateName(CreationMetadata, ProjectPermissionsMixin):
     topic = models.ForeignKey(Topic, related_name='alternate_names')
     name = models.CharField(max_length=200)
+
     class Meta:
         app_label = 'main'
         unique_together = ('topic', 'name',)
+
     def __unicode__(self):
             return self.name
+
 
 class TopicAssignment(CreationMetadata, ProjectPermissionsMixin):
     """
@@ -265,20 +302,25 @@ class TopicAssignment(CreationMetadata, ProjectPermissionsMixin):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey()
+
     class Meta:
         app_label = 'main'
         unique_together = ('content_type', 'object_id', 'topic')
+
     @property
     def topic_node(self):
         return self.topic.topic_node
+
     @property
     def topic_node_id(self):
         return self.topic.topic_node_id
+
     def __unicode__(self):
         return u'{} --> {}: {}'.format(
             self.topic.preferred_name,
             self.content_object._meta.model_name,
             self.content_object)
+
     def get_affiliation(self):
         return self.topic.project
 reversion.register(TopicAssignment)
@@ -289,19 +331,24 @@ reversion.register(TopicAssignment)
 ##############################################################
 
 class LegacyTopic(models.Model, URLAccessible):
-    """ 
+    """
     A controlled topic such as a person name, an organization name, a
     place name, an event name, a publication name, or the name of a
     topic or theme.
     """
     preferred_name = models.CharField(max_length='80', unique=True)
-    slug = models.CharField(max_length='80', unique=True, editable=False, db_index=True)
-    merged_into = models.ForeignKey(TopicNode, blank=True, null=True, editable=False)
+    slug = models.CharField(max_length='80', unique=True, editable=False,
+                            db_index=True)
+    merged_into = models.ForeignKey(TopicNode, blank=True, null=True,
+                                    editable=False)
+
     class Meta:
         app_label = 'main'
         ordering = ['slug']
+
     @models.permalink
     def get_absolute_url(self):
         return ('legacy_topic_view', [self.slug])
+
     def as_text(self):
         return 'DEPRECATED: {}'.format(self.preferred_name)

@@ -4,11 +4,10 @@ from rest_framework import serializers
 from rest_framework.fields import ReadOnlyField
 from rest_framework.reverse import reverse
 
-from editorsnotes.main.models import Topic, TopicNode, AlternateName
+from editorsnotes.main.models import Topic, TopicNode
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    ProjectSlugField, URLField, TopicAssignmentField)
-from .documents import CitationSerializer
 from ..validators import UniqueToProjectValidator
 
 
@@ -20,13 +19,15 @@ class TopicNodeSerializer(serializers.ModelSerializer):
     url = URLField('api:topic-nodes-detail', ('id',))
     alternate_forms = serializers.SerializerMethodField('get_alternate_forms')
     project_topics = serializers.SerializerMethodField('get_project_value')
+
     class Meta:
         model = TopicNode
         fields = ('id', 'name', 'url', 'alternate_forms', 'type',
                   'project_topics',)
+
     def get_alternate_forms(self, obj):
         topics = obj.project_topics.select_related('alternate_names')
-        alternate_forms = set() 
+        alternate_forms = set()
         alternate_forms.update(topic.preferred_name for topic in topics)
         alternate_forms.update(
             alternate_name.name
@@ -34,29 +35,38 @@ class TopicNodeSerializer(serializers.ModelSerializer):
             for alternate_name in topic.alternate_names.all())
         alternate_forms.remove(obj._preferred_name)
         return list(alternate_forms)
+
     def get_project_value(self, obj):
         return [OrderedDict((
             ('project_name', topic.project.name),
             ('project_url', reverse('api:projects-detail',
-                                    kwargs={ 'project_slug': topic.project.slug },
-                                    request=self.context['request'])),
+                                    request=self.context['request'],
+                                    kwargs={
+                                        'project_slug': topic.project.slug
+                                    })),
             ('preferred_name', topic.preferred_name),
             ('url', reverse('api:topics-detail',
-                            kwargs={'project_slug': topic.project.slug,
-                                    'pk': obj.id},
-                                  request=self.context['request']))))
+                            request=self.context['request'],
+                            kwargs={
+                                'project_slug': topic.project.slug,
+                                'pk': obj.id
+                            }))
+        ))
             for topic in obj.project_topics.select_related('project')]
+
 
 class AlternateNameField(serializers.Field):
     def to_representation(self, value):
         return value.values_list('name', flat=True)
+
     def to_internal_value(self, value):
         if not isinstance(value, list):
             raise serializers.ValidationError('Alternate names must be a list')
         if not all([1 <= len(name) <= 200 for name in value]):
-            raise serializers.ValidationError('Alternate names must be between '
-                                              '1 and 200 characters.')
+            raise serializers.ValidationError(
+                'Alternate names must be between 1 and 200 characters.')
         return value
+
 
 class TopicSerializer(RelatedTopicSerializerMixin,
                       serializers.ModelSerializer):
@@ -69,15 +79,16 @@ class TopicSerializer(RelatedTopicSerializerMixin,
     })
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
-    citations = CitationSerializer(source='summary_cites', many=True, read_only=True)
+
     class Meta:
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
                   'alternate_names', 'related_topics', 'project',
-                  'last_updated', 'summary', 'citations')
+                  'last_updated', 'markup', 'markup_html')
         validators = [
             UniqueToProjectValidator('preferred_name')
         ]
+
     def create(self, validated_data):
         topic_node_id = self.context.get('topic_node_id', None)
         if topic_node_id is None and 'view' in self.context:
@@ -94,9 +105,11 @@ class TopicSerializer(RelatedTopicSerializerMixin,
         instance = super(TopicSerializer, self).create(validated_data)
         self.save_alternate_names(instance, alternate_names)
         return instance
+
     def update(self, instance, validated_data):
         alternate_names = validated_data.pop('alternate_names', None)
-        instance = super(TopicSerializer, self).update(instance, validated_data)
+        instance = super(TopicSerializer, self)\
+            .update(instance, validated_data)
         self.save_alternate_names(instance, alternate_names)
         return instance
 

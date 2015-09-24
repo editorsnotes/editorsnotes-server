@@ -9,8 +9,7 @@ def register_models(en_index):
     en_index.register(main.get_model('Note'),
                       display_field='serialized.title',
                       highlight_fields=('serialized.title',
-                                        'serialized.content',
-                                        'serialized.sections'))
+                                        'serialized.markup_html'))
     en_index.register(main.get_model('Topic'),
                       display_field='serialized.preferred_name',
                       highlight_fields=('serialized.preferred_name',
