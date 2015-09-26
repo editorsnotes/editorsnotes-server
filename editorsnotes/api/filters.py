@@ -30,7 +30,8 @@ class ElasticSearchFilterBackend(BaseFilterBackend):
                 'operator': 'and',
                 'fuzziness': '0.3'
             })
-            search = search.highlight('_all').highlight_options({
+
+            search = search.highlight('_all').highlight_options(**{
                 'pre_tags': ['&lt;strong&gt;'],
                 'post_tags': ['&lt;/strong&gt;']
             })
