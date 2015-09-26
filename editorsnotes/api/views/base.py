@@ -30,6 +30,7 @@ from ..filters import (ElasticSearchFilterBackend,
 from ..pagination import ESLimitOffsetPagination
 from ..permissions import ProjectSpecificPermissions
 from ..renderers import HTMLRedirectRenderer
+from ..serializers import ProjectSerializer
 
 
 def create_revision_on_methods(*methods):
@@ -100,6 +101,7 @@ class ElasticSearchListMixin(object):
     """
     pagination_class = ESLimitOffsetPagination
     filter_backends = (ElasticSearchFilterBackend,)
+
     def get_queryset(self):
         model = self.queryset.model
         index = get_index('main')
@@ -122,11 +124,15 @@ class ElasticSearchListMixin(object):
         if next_link:
             self.add_link('next', next_link)
 
-
         self.add_links()
+
+        project_serializer = ProjectSerializer(request.project, context={
+            'request': request
+        })
 
         return Response(OrderedDict([
             ('_links', self.get_links()),
+            ('project', project_serializer.data),
             ('count', self.paginator.count),
             ('results', [result['_source']['serialized'] for result in search_results])
         ]))
