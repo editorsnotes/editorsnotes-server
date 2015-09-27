@@ -76,6 +76,22 @@ def runserver():
         local('{python} manage.py runserver'.format(**env))
 
 @task
+def generate_blank_settings():
+    settings_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        'editorsnotes/example-settings_local.py')
+    secret_key = generate_secret_key()
+
+    with open(settings_path) as settings_file:
+        settings_str = settings_file.read()
+
+    settings_str = settings_str.replace(
+        "SECRET_KEY = ''", "SECRET_KEY = '{}'".format(secret_key))
+
+    print settings_str
+    return settings_str
+
+@task
 @runs_once
 def make_settings():
     """
