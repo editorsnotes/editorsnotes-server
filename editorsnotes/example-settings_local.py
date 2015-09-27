@@ -11,6 +11,9 @@ POSTGRES_DB = {
     'PORT': ''
 }
 
+
+# ALLOWED_HOSTS = ['www.example.com']
+
 ELASTICSEARCH_ENABLED = True
 
 # Each ElasticSearch index created will be prefixed with this string.
