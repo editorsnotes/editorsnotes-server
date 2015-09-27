@@ -1,13 +1,19 @@
-Editors' Notes API and authentication server.
+# Editors' Notes
+
+[![Build status](https://travis-ci.org/editorsnotes/editorsnotes.svg)](https://travis-ci.org/editorsnotes/editorsnotes)
+
+This Django application runs the Editors' Notes API and authentication server.
 
 
-# Required services
+# Installation
+
+## Required services
 
 Editors' Notes uses [PostgreSQL] and [Elasticsearch]. Consult the documentation
 of those applications for installation instructions.
 
 
-# Dependencies
+## Dependencies
 
 Editors' Notes currently uses **Python 2.7**.
 
@@ -19,13 +25,13 @@ This project depends on the Python package `lxml`, which has two dependencies:
   * __OSX__ (homebrew): `brew install libxml2 libxslt && brew link libxml2 libxslt`
 
 
-# Deployment
+## Deployment
 
 See [editorsnotes/editorsnotes.org] for instructions on how to deploy Editors'
 Notes on a server using nginx and uWSGI.
 
 
-# Local development environment
+## Local development environment
 
 Setting up a local environment requires the Python task runner [Fabric], which
 can be installed with your package manager. Once it and the dependencies above
@@ -43,7 +49,7 @@ have been installed, perform the following steps:
 
   4. Start the development server with `fab runserver`
 
-__FIXME: Add section about required editorsnotes-markup-renderer as well__
+__FIXME: Add section about required editorsnotes-markup-renderer__
 
 
 [PostgreSQL]: http://www.postgresql.org/
