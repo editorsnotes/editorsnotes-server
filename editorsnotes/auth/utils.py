@@ -11,7 +11,7 @@ def send_activation_email(request, user):
 
     site_url = '{protocol}://{site}'.format(
         protocol='https' if request.is_secure() else 'http',
-        site=conf.SITE_URL
+        site=settings.SITE_URL
     )
 
     if user.is_active:
@@ -28,6 +28,6 @@ def send_activation_email(request, user):
             activation_url=reverse('auth:activate_account', args=[b64uid, token]),
             activation_token=token),
 
-        settings.SITE_EMAIL,
+        settings.SERVER_EMAIL,
         [user.email]
     )
