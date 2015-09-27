@@ -15,9 +15,9 @@ def send_activation_email(request, user):
     send_mail(
         'Activate your Editors\' Notes account',
 
-        'This email was used to create an account at {settings.SITE_URL}.\n\n'
+        'This email was used to create an account at {site_url}.\n\n'
         'To activate your account, visit the following link:\n\n'
-        '\t{settings.SITE_URL}{activation_url}\n\n'
+        '\t{site_url}{activation_url}\n\n'
         'If you did not request an account, please ignore this email.'.format(
             site_url=settings.SITE_URL,
             activation_url=reverse('auth:activate_account', args=[b64uid, token]),
