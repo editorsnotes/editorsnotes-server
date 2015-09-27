@@ -1,19 +1,17 @@
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.contrib.sites.shortcuts import get_current_site
+from django conf import settings
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.utils.http import urlsafe_base64_encode
 
 def send_activation_email(request, user):
-    site = get_current_site(request)
-
     b64uid = urlsafe_base64_encode(str(user.id))
     token_generator = PasswordResetTokenGenerator()
     token = token_generator.make_token(user)
 
     site_url = '{protocol}://{site}'.format(
         protocol='https' if request.is_secure() else 'http',
-        site=site.domain
+        site=conf.SITE_URL
     )
 
     if user.is_active:
@@ -30,6 +28,6 @@ def send_activation_email(request, user):
             activation_url=reverse('auth:activate_account', args=[b64uid, token]),
             activation_token=token),
 
-        'no-reply@{site.domain}',
+        settings.SITE_EMAIL,
         [user.email]
     )

@@ -43,6 +43,8 @@ ADMINS = (
 )
 MANAGERS = ADMINS
 
+SERVER_EMAIL = 'no-reply@{}'.format(SITE_URL)
+
 
 #############
 # Overrides #
