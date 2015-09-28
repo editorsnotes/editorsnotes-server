@@ -1,6 +1,27 @@
 from django.contrib.auth import get_permission_codename
 from rest_framework.reverse import reverse
 
+from editorsnotes.auth.models import Project, User
+
+class ActivityLinker(object):
+    def get_links(self, request, view):
+        obj = view.object
+
+        if isinstance(obj, Project):
+            href = reverse('api:projects-activity',
+                           args=[obj.slug],
+                           request=request)
+        if isinstance(obj, User):
+            href = reverse('api:users-activity',
+                           args=[obj.username],
+                           request=request)
+
+        else:
+            raise ValueError('Can only get activity for Projects and Users')
+
+        return [{'rel': 'activity', 'href': href, 'method': 'GET'}]
+
+
 class AddProjectObjectLinker(object):
     def get_links(self, request, view):
         model = view.queryset.model

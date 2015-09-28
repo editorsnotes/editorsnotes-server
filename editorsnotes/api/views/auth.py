@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from editorsnotes.auth.models import Project, User
 from editorsnotes.search import get_index
 
+from .base import LinkerMixin
+from ..linkers import ActivityLinker
 from ..serializers import ProjectSerializer, MinimalUserSerializer, UserSerializer
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
@@ -16,23 +18,26 @@ class ProjectList(ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-class ProjectDetail(RetrieveAPIView):
+class ProjectDetail(LinkerMixin, RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    linker_classes = (ActivityLinker,)
     def get_object(self):
         qs = self.get_queryset()
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
         return project
 
-class UserDetail(RetrieveAPIView):
+class UserDetail(LinkerMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = MinimalUserSerializer
+    linker_classes = (ActivityLinker,)
     lookup_field = 'username'
 
-class SelfUserDetail(RetrieveAPIView):
+class SelfUserDetail(LinkerMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
+    linker_classes = (ActivityLinker,)
     def get_object(self):
         return self.request.user
 
