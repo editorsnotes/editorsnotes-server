@@ -1,3 +1,4 @@
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import SAFE_METHODS
 
 from editorsnotes.main.models import Note
@@ -9,7 +10,8 @@ from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
 from ..permissions import ProjectSpecificPermissions
 from ..serializers.notes import NoteSerializer
 
-__all__ = ['NoteList', 'NoteDetail', 'NoteConfirmDelete']
+__all__ = ['NoteList', 'NoteDetail', 'AllProjectNoteList',
+           'NoteConfirmDelete']
 
 class NotePermissions(ProjectSpecificPermissions):
     authenticated_users_only = False
@@ -38,6 +40,11 @@ class NoteDetail(BaseDetailView):
     serializer_class = NoteSerializer
     permission_classes = (NotePermissions,)
     linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
+
+class AllProjectNoteList(ElasticSearchListMixin, LinkerMixin, ListAPIView):
+    queryset = Note.objects.all()
+    serializer_class = NoteSerializer
+    # FIXME: Only show notes that aren't private
 
 
 class NoteConfirmDelete(DeleteConfirmAPIView):

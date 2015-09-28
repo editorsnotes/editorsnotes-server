@@ -126,16 +126,21 @@ class ElasticSearchListMixin(object):
 
         self.add_links()
 
-        project_serializer = ProjectSerializer(request.project, context={
-            'request': request
-        })
-
-        return Response(OrderedDict([
+        response_data = OrderedDict((
             ('_links', self.get_links()),
-            ('project', project_serializer.data),
-            ('count', self.paginator.count),
-            ('results', [result['_source']['serialized'] for result in search_results])
-        ]))
+        ))
+
+        if hasattr(request, 'project'):
+            project_serializer = ProjectSerializer(request.project, context={
+                'request': request
+            })
+            response_data['project'] = project_serializer.data
+
+        response_data['count'] = self.paginator.count
+        response_data['results'] = [result['_source']['serialized']
+                                    for result in search_results]
+
+        return Response(response_data)
 
     def ____________list(self, request, *args, **kwargs):
         if 'autocomplete' in request.QUERY_PARAMS:
