@@ -90,15 +90,19 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
     zotero_data = ZoteroField(required=False)
     related_topics = TopicAssignmentField()
     scans = ScanSerializer(many=True, required=False, read_only=True)
+    cited_by = serializers.SerializerMethodField('get_citations')
 
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
-                  'scans', 'transcript', 'related_topics',
+                  'scans', 'transcript', 'related_topics', 'cited_by',
                   'zotero_data',)
         validators = [
             UniqueDocumentDescriptionValidator()
         ]
+
+    def get_citations(self, obj):
+        return obj.get_citations()
 
     def get_transcript_url(self, obj):
         if not obj.has_transcript():
