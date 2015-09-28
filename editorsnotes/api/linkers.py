@@ -11,7 +11,7 @@ class ActivityLinker(object):
             href = reverse('api:projects-activity',
                            args=[obj.slug],
                            request=request)
-        if isinstance(obj, User):
+        elif isinstance(obj, User):
             href = reverse('api:users-activity',
                            args=[obj.username],
                            request=request)
