@@ -8,12 +8,15 @@ from rest_framework.renderers import JSONRenderer
 
 from editorsnotes.api import serializers
 
+from . import mappings
+
 class DocumentTypeAdapter(object):
     def __init__(self, es, index_name, model=None, highlight_fields=None,
                  display_field=None):
+
         self.model = model or self.get_model()
-        self.type_label = getattr(self, 'type_label', self.model._meta.model_name)
         self.serializer = self.get_serializer()
+        self.doctype = self.get_document_type()
 
         self.display_field = getattr(self, 'display_field', display_field)
         if self.display_field is None:
@@ -29,6 +32,14 @@ class DocumentTypeAdapter(object):
 
     def __unicode__(self):
         return self.model._meta.model_name
+
+    @property
+    def type_label(self):
+        return self.doctype._doc_type.name
+
+    @property
+    def type_mapping(self):
+        return self.doctype._doc_type.mapping.to_dict()
 
     def get_model(self):
         try:
@@ -46,37 +57,13 @@ class DocumentTypeAdapter(object):
             raise NotImplementedError('Override this method to define a serializer.')
         return serializer
 
-    def get_mapping(self):
-        mapping = {
-            self.type_label : {
-                'properties': {
-                    'display_url': { 'type': 'string', 'index': 'not_analyzed' },
-                    'display_title': {
-                        'search_analyzer': 'analyzer_shingle',
-                        'index_analyzer': 'analyzer_shingle',
-                        'type': 'string'
-                    },
-                    'serialized': {
-                        'properties': {
-                            'last_updated': { 'type': 'date' },
-                            'project': {
-                                'properties': {
-                                    'name': {'type': 'string', 'index': 'not_analyzed'},
-                                    'url': {'type': 'string', 'index': 'not_analyzed' }
-                                }
-                            },
-                            'related_topics': {
-                                'properties': {
-                                    'preferred_name': {'type': 'string', 'index': 'not_analyzed'},
-                                    'url': {'type': 'string', 'index': 'not_analyzed'}
-                                }
-                            },
-                        }
-                    }
-                }
-            }
-        }
-        return mapping
+    def get_document_type(self):
+        default_doc_type_name = '{}DocType'.format(self.model._meta.object_name)
+        try:
+            doc_type = getattr(mappings, default_doc_type_name)
+        except AttributeError:
+            raise NotImplementedError('Override this method to define a DocumentType.')
+        return doc_type
 
     def clear(self):
         try:
@@ -85,8 +72,7 @@ class DocumentTypeAdapter(object):
             pass
 
     def put_mapping(self):
-        mapping = self.get_mapping()
-        self.es.put_mapping(self.index_name, self.type_label, mapping)
+        self.es.put_mapping(self.index_name, self.type_label, self.type_mapping)
 
     def data_from_object(self, obj, request=None):
         if not hasattr(obj, '_rest_serialized'):
