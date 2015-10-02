@@ -1,9 +1,9 @@
 from django.conf import settings
-from elasticsearch_dsl import Date, String, Nested, DocType
+from elasticsearch_dsl import Date, String, Nested, DocType, Object
 
 
 def base_serialized_field():
-    mapping = Nested()
+    mapping = Object()
 
     mapping.field('last_updated', Date())
     mapping.field('last_updater', String(index='not_analyzed'))
@@ -11,7 +11,7 @@ def base_serialized_field():
     mapping.field('created', Date())
     mapping.field('creator', String(index='not_analyzed'))
 
-    project = Nested()
+    project = Object()
     project.field('name', String(index='not_analyzed'))
     project.field('url', String(index='not_analyzed'))
     mapping.field('project', project)
@@ -45,7 +45,7 @@ class TopicDocType(BaseDocType):
 
 class DocumentDocType(BaseDocType):
     serialized = base_serialized_field()\
-        .field('zotero_data', Nested()
+        .field('zotero_data', Object()
                .field('itemType', String(index='not_analyzed'))
                .field('publicationTitle', String(index='not_analyzed'))
                .field('archive', String(index='not_analyzed')))
