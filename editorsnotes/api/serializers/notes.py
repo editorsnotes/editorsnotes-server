@@ -52,3 +52,11 @@ class NoteSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
         validators = [
             UniqueToProjectValidator('title')
         ]
+
+    def __init__(self, *args, **kwargs):
+        minimal = kwargs.pop('minimal', False)
+        super(NoteSerializer, self).__init__(*args, **kwargs)
+        if minimal:
+            self.fields.pop('_embedded', None)
+            self.fields.pop('markup')
+            self.fields.pop('markup_html')

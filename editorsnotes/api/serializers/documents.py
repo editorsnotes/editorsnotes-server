@@ -101,6 +101,10 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
             UniqueDocumentDescriptionValidator()
         ]
 
+    def __init__(self, *args, **kwargs):
+        minimal = kwargs.pop('minimal', False)
+        super(DocumentSerializer, self).__init__(*args, **kwargs)
+
     def get_citations(self, obj):
         return obj.get_citations()
 

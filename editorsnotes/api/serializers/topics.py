@@ -91,6 +91,14 @@ class TopicSerializer(RelatedTopicSerializerMixin,
             UniqueToProjectValidator('preferred_name')
         ]
 
+    def __init__(self, *args, **kwargs):
+        minimal = kwargs.pop('minimal', False)
+        super(TopicSerializer, self).__init__(*args, **kwargs)
+        if minimal:
+            self.fields.pop('markup')
+            self.fields.pop('markup_html')
+            self.fields.pop('_embedded', None)
+
     def create(self, validated_data):
         topic_node_id = self.context.get('topic_node_id', None)
         if topic_node_id is None and 'view' in self.context:
