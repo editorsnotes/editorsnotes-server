@@ -126,11 +126,8 @@ class ENIndex(ElasticSearchIndex):
     def register(self, model, adapter=None, highlight_fields=None,
                  display_field=None):
 
-        if adapter is None:
-            doc_type = DocumentTypeAdapter(self.es, self.name, model,
-                                           highlight_fields, display_field)
-        else:
-            doc_type = adapter(self.es, self.name, model)
+        doc_type = DocumentTypeAdapter(
+            self.es, self.name, model, highlight_fields, display_field)
         self.document_types[model] = doc_type
 
         self.put_type_mappings()
