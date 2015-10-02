@@ -8,7 +8,7 @@ from editorsnotes.main.models import Topic, TopicNode
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
                    ProjectSlugField, URLField, TopicAssignmentField,
-                   EmbeddedItemsURLField)
+                   EmbeddedMarkupReferencesMixin)
 from ..validators import UniqueToProjectValidator
 
 
@@ -69,7 +69,8 @@ class AlternateNameField(serializers.Field):
         return value
 
 
-class TopicSerializer(RelatedTopicSerializerMixin,
+class TopicSerializer(EmbeddedMarkupReferencesMixin,
+                      RelatedTopicSerializerMixin,
                       serializers.ModelSerializer):
     topic_node_id = ReadOnlyField(source='topic_node.id')
     type = ReadOnlyField(source='topic_node.type')
@@ -80,11 +81,10 @@ class TopicSerializer(RelatedTopicSerializerMixin,
     })
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
-    _embedded = EmbeddedItemsURLField(source='markup_html')
 
     class Meta:
         model = Topic
-        fields = ('_embedded', 'id', 'topic_node_id', 'preferred_name', 'type',
+        fields = ('id', 'topic_node_id', 'preferred_name', 'type',
                   'url', 'alternate_names', 'related_topics', 'project',
                   'last_updated', 'markup', 'markup_html')
         validators = [

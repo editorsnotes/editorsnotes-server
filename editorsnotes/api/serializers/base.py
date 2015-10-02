@@ -29,6 +29,25 @@ class CurrentProjectDefault:
         return u'%s()' % self.__class__.__name__
 
 
+class EmbeddedMarkupReferencesMixin(object):
+    def __init__(self, *args, **kwargs):
+        embed_style = kwargs.pop('embed_style', None)
+        super(EmbeddedMarkupReferencesMixin, self).__init__(*args, **kwargs)
+
+        if embed_style is None:
+            return
+
+        if embed_style == 'urls':
+            field = EmbeddedItemsURLField
+        elif embed_style == 'nested':
+            field = EmbeddedItemsSerializedField
+        else:
+            raise ValueError('Bad value for `embed_style`. Must be "urls" or '
+                             "nested")
+
+        self.fields['_embedded'] = field(source='markup_html')
+
+
 class EmbeddedItemsURLField(ReadOnlyField):
     def to_representation(self, value):
         urls_by_type = markup_html.get_embedded_item_urls(value)
