@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
 from rest_framework.relations import (HyperlinkedRelatedField, RelatedField,
                                       get_attribute)
@@ -7,6 +9,7 @@ from rest_framework.serializers import (ReadOnlyField, ModelSerializer,
 
 from editorsnotes.auth.models import Project
 from editorsnotes.main.models import Topic
+from editorsnotes.main.utils import markup_html
 
 
 def nested_getattr(obj, attr_string):
@@ -24,6 +27,20 @@ class CurrentProjectDefault:
 
     def __repr__(self):
         return u'%s()' % self.__class__.__name__
+
+
+class EmbeddedItemsURLField(ReadOnlyField):
+    def to_representation(self, value):
+        urls_by_type = markup_html.get_embedded_item_urls(value)
+        embedded_urls = set(chain(*urls_by_type.values()))
+
+        request = self.context.get('request')
+        if request:
+            embedded_urls = [
+                request.build_absolute_uri(url) for url in embedded_urls
+            ]
+
+        return embedded_urls
 
 
 class URLField(ReadOnlyField):

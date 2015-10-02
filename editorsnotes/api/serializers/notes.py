@@ -5,7 +5,8 @@ from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   URLField, ProjectSlugField, TopicAssignmentField)
+                   URLField, ProjectSlugField, TopicAssignmentField,
+                   EmbeddedItemsURLField)
 from .auth import MinimalUserSerializer
 from ..validators import UniqueToProjectValidator
 
@@ -41,12 +42,13 @@ class NoteSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
                                      source='get_all_updaters')
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
+    _embedded = EmbeddedItemsURLField(source='markup_html')
 
     class Meta:
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'license', 'is_private',
-                  'last_updated', 'updaters', 'related_topics', 'markup',
-                  'markup_html', 'status',)
+        fields = ('_embedded', 'id', 'title', 'url', 'project', 'license',
+                  'is_private', 'last_updated', 'updaters', 'related_topics',
+                  'markup', 'markup_html', 'status',)
         validators = [
             UniqueToProjectValidator('title')
         ]
