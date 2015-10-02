@@ -43,6 +43,39 @@ class EmbeddedItemsURLField(ReadOnlyField):
         return embedded_urls
 
 
+class EmbeddedItemsSerializedField(RelatedField):
+    def __init__(self, *args, **kwargs):
+        kwargs['read_only'] = True
+        super(EmbeddedItemsSerializedField, self).__init__(*args, **kwargs)
+
+    def make_serializer(self, item_type, queryset):
+        from . import NoteSerializer, TopicSerializer, DocumentSerializer
+
+        SERIALIZERS_BY_LABEL = {
+            'note': NoteSerializer,
+            'topic': TopicSerializer,
+            'document': DocumentSerializer
+        }
+
+        serializer_class = SERIALIZERS_BY_LABEL[item_type]
+        serializer_kwargs = {
+            'many': True,
+            'minimal': True,
+            'context': self.context
+        }
+        return serializer_class(queryset, **serializer_kwargs).data
+
+    def to_representation(self, value):
+        models_by_type = markup_html.get_embedded_models(value)
+
+        serialized_items = {
+            item_type: self.make_serializer(item_type, queryset)
+            for item_type, queryset in models_by_type.items()
+        }
+
+        return serialized_items
+
+
 class URLField(ReadOnlyField):
     """
     An identity URL field.
