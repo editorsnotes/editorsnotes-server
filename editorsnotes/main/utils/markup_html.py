@@ -15,6 +15,8 @@ MODELS_BY_LABEL = {
 
 
 def models_by_id(Model, ids):
+    if Model == Topic:
+        return Model.objects.filter(topic_node_id__in=ids)
     return Model.objects.filter(id__in=ids)
 
 
@@ -40,8 +42,14 @@ def get_embedded_item_urls(tree):
     }
 
 
+def id_from_kwargs(kwargs):
+    if 'topic_node_id' in kwargs:
+        return kwargs['topic_node_id']
+    return kwargs['pk']
+
+
 def qs_from_urls(model_class, urls):
-    ids = [resolve(url).kwargs['pk'] for url in urls]
+    ids = [id_from_kwargs(resolve(url).kwargs) for url in urls]
     return models_by_id(model_class, ids)
 
 
