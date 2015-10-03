@@ -7,7 +7,8 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Topic, TopicNode
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   ProjectSlugField, URLField, TopicAssignmentField)
+                   ProjectSlugField, URLField, TopicAssignmentField,
+                   EmbeddedMarkupReferencesMixin)
 from ..validators import UniqueToProjectValidator
 
 
@@ -68,7 +69,8 @@ class AlternateNameField(serializers.Field):
         return value
 
 
-class TopicSerializer(RelatedTopicSerializerMixin,
+class TopicSerializer(EmbeddedMarkupReferencesMixin,
+                      RelatedTopicSerializerMixin,
                       serializers.ModelSerializer):
     topic_node_id = ReadOnlyField(source='topic_node.id')
     type = ReadOnlyField(source='topic_node.type')
@@ -82,12 +84,20 @@ class TopicSerializer(RelatedTopicSerializerMixin,
 
     class Meta:
         model = Topic
-        fields = ('id', 'topic_node_id', 'preferred_name', 'type', 'url',
-                  'alternate_names', 'related_topics', 'project',
+        fields = ('id', 'topic_node_id', 'preferred_name', 'type',
+                  'url', 'alternate_names', 'related_topics', 'project',
                   'last_updated', 'markup', 'markup_html')
         validators = [
             UniqueToProjectValidator('preferred_name')
         ]
+
+    def __init__(self, *args, **kwargs):
+        minimal = kwargs.pop('minimal', False)
+        super(TopicSerializer, self).__init__(*args, **kwargs)
+        if minimal:
+            self.fields.pop('markup')
+            self.fields.pop('markup_html')
+            self.fields.pop('_embedded', None)
 
     def create(self, validated_data):
         topic_node_id = self.context.get('topic_node_id', None)

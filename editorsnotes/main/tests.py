@@ -158,8 +158,8 @@ class MarkupUtilsTestCase(TestCase):
             '</a>)</cite></p></div>'.format(document.id)
         ))
 
-        related_documents = markup_html.get_related_documents(html)
-        self.assertEqual(len(related_documents), 1)
+        related_items = markup_html.get_embedded_models(html)
+        self.assertEqual(len(related_items['document']), 1)
 
 
 def create_test_user():

@@ -5,7 +5,9 @@ from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   URLField, ProjectSlugField, TopicAssignmentField)
+                   URLField, ProjectSlugField, TopicAssignmentField,
+                   EmbeddedMarkupReferencesMixin)
+
 from .auth import MinimalUserSerializer
 from ..validators import UniqueToProjectValidator
 
@@ -33,7 +35,9 @@ class NoteStatusField(serializers.ReadOnlyField):
 
 
 # TODO: change license, fuller repr of updaters
-class NoteSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
+class NoteSerializer(RelatedTopicSerializerMixin,
+                     EmbeddedMarkupReferencesMixin,
+                     serializers.ModelSerializer):
     url = URLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     license = LicenseSerializer(read_only=True, source='get_license')
@@ -44,9 +48,17 @@ class NoteSerializer(RelatedTopicSerializerMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'license', 'is_private',
-                  'last_updated', 'updaters', 'related_topics', 'markup',
-                  'markup_html', 'status',)
+        fields = ('id', 'title', 'url', 'project', 'license',
+                  'is_private', 'last_updated', 'updaters', 'related_topics',
+                  'markup', 'markup_html', 'status',)
         validators = [
             UniqueToProjectValidator('title')
         ]
+
+    def __init__(self, *args, **kwargs):
+        minimal = kwargs.pop('minimal', False)
+        super(NoteSerializer, self).__init__(*args, **kwargs)
+        if minimal:
+            self.fields.pop('_embedded', None)
+            self.fields.pop('markup')
+            self.fields.pop('markup_html')

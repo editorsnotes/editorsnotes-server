@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
 from rest_framework.relations import (HyperlinkedRelatedField, RelatedField,
                                       get_attribute)
@@ -7,6 +9,7 @@ from rest_framework.serializers import (ReadOnlyField, ModelSerializer,
 
 from editorsnotes.auth.models import Project
 from editorsnotes.main.models import Topic
+from editorsnotes.main.utils import markup_html
 
 
 def nested_getattr(obj, attr_string):
@@ -24,6 +27,72 @@ class CurrentProjectDefault:
 
     def __repr__(self):
         return u'%s()' % self.__class__.__name__
+
+
+class EmbeddedMarkupReferencesMixin(object):
+    def __init__(self, *args, **kwargs):
+        embed_style = kwargs.pop('embed_style', None)
+        super(EmbeddedMarkupReferencesMixin, self).__init__(*args, **kwargs)
+
+        if embed_style is None:
+            return
+
+        if embed_style == 'urls':
+            field = EmbeddedItemsURLField
+        elif embed_style == 'nested':
+            field = EmbeddedItemsSerializedField
+        else:
+            raise ValueError('Bad value for `embed_style`. Must be "urls" or '
+                             "nested")
+
+        self.fields['_embedded'] = field(source='markup_html')
+
+
+class EmbeddedItemsURLField(ReadOnlyField):
+    def to_representation(self, value):
+        urls_by_type = markup_html.get_embedded_item_urls(value)
+        embedded_urls = set(chain(*urls_by_type.values()))
+
+        request = self.context.get('request')
+        if request:
+            embedded_urls = [
+                request.build_absolute_uri(url) for url in embedded_urls
+            ]
+
+        return embedded_urls
+
+
+class EmbeddedItemsSerializedField(RelatedField):
+    def __init__(self, *args, **kwargs):
+        kwargs['read_only'] = True
+        super(EmbeddedItemsSerializedField, self).__init__(*args, **kwargs)
+
+    def make_serializer(self, item_type, queryset):
+        from . import NoteSerializer, TopicSerializer, DocumentSerializer
+
+        SERIALIZERS_BY_LABEL = {
+            'note': NoteSerializer,
+            'topic': TopicSerializer,
+            'document': DocumentSerializer
+        }
+
+        serializer_class = SERIALIZERS_BY_LABEL[item_type]
+        serializer_kwargs = {
+            'many': True,
+            'minimal': True,
+            'context': self.context
+        }
+        return serializer_class(queryset, **serializer_kwargs).data
+
+    def to_representation(self, value):
+        models_by_type = markup_html.get_embedded_models(value)
+
+        serialized_items = {
+            item_type: self.make_serializer(item_type, queryset)
+            for item_type, queryset in models_by_type.items()
+        }
+
+        return serialized_items
 
 
 class URLField(ReadOnlyField):

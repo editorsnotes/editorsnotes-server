@@ -16,7 +16,7 @@ from editorsnotes.main.models.topics import TYPE_CHOICES
 from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
                    ElasticSearchListMixin, ProjectSpecificMixin,
                    ProjectSpecificPermissions, create_revision_on_methods,
-                   LinkerMixin)
+                   LinkerMixin, EmbeddedMarkupReferencesMixin)
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..serializers.topics import TopicSerializer, TopicNodeSerializer
@@ -58,7 +58,8 @@ class TopicConfirmDelete(DeleteConfirmAPIView):
         return obj
 
 @create_revision_on_methods('create')
-class TopicDetail(BaseDetailView, CreateModelMixin):
+class TopicDetail(EmbeddedMarkupReferencesMixin, BaseDetailView,
+                  CreateModelMixin):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)

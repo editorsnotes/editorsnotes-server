@@ -1,3 +1,7 @@
+"""
+Utilities for interacting with the markup renderer server.
+"""
+
 import json
 
 from lxml import etree, html

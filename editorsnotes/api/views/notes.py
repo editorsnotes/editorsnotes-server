@@ -4,7 +4,8 @@ from rest_framework.permissions import SAFE_METHODS
 from editorsnotes.main.models import Note
 
 from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
-                   ElasticSearchListMixin, LinkerMixin)
+                   ElasticSearchListMixin, LinkerMixin,
+                   EmbeddedMarkupReferencesMixin)
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..permissions import ProjectSpecificPermissions
@@ -35,7 +36,7 @@ class NoteList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     serializer_class = NoteSerializer
     linker_classes = (AddProjectObjectLinker,)
 
-class NoteDetail(BaseDetailView):
+class NoteDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permission_classes = (NotePermissions,)
