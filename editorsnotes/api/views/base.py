@@ -110,6 +110,14 @@ class LinkerMixin(object):
         return Response(data)
 
 
+class EmbeddedMarkupReferencesMixin(object):
+    def get_serializer(self, *args, **kwargs):
+        embed_style = self.request.query_params.get('embed_style', None)
+        if embed_style in ['urls', 'nested']:
+            kwargs['embed_style'] = embed_style
+        return super(EmbeddedMarkupReferencesMixin, self)\
+            .get_serializer(*args, **kwargs)
+
 class ElasticSearchListMixin(object):
     """
     Mixin that replaces the `list` method with a query to Elasticsearch.
