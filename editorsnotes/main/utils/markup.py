@@ -29,8 +29,13 @@ def get_transcluded_items(markup, project):
 
 
 def qs_from_ids(Model, project, ids):
+    from ..models import Topic
+
     if not ids:
         return None
+
+    if Model == Topic:
+        return Model.objects.filter(project=project, topic_node_id__in=ids)
 
     return Model.objects.filter(project=project, id__in=ids)
 
@@ -42,30 +47,32 @@ def format_items(items_dict, project):
 
     notes = qs_from_ids(Note, project, items_dict.get('note'))
     if notes:
-        items['note'] = dict(
-            (note.id, note.title) for note in notes
-        )
+        items['note'] = [
+            {'id': note.id, 'title': note.title}
+            for note in notes
+        ]
 
     topics = qs_from_ids(Topic, project, items_dict.get('topic'))
     if topics:
-        items['topic'] = dict(
-            (topic.id, topic.preferred_name) for topic in topics
-        )
+        items['topic'] = [
+            {
+                'topic_node_id': topic.topic_node_id,
+                'preferred_name': topic.preferred_name
+            }
+            for topic in topics
+        ]
 
     documents = qs_from_ids(Document, project, items_dict.get('document'))
     if documents:
-        has_zotero = {doc for doc in documents if doc.zotero_data}
-        no_zotero = set(documents).difference(has_zotero)
-
-        if has_zotero:
-            items['document_zotero_json'] = dict(
-                (doc.id, json.loads(doc.zotero_data)) for doc in has_zotero
-            )
-
-        if no_zotero:
-            items['document_description'] = dict(
-                (doc.id, etree.tostring(doc.description)) for doc in no_zotero
-            )
+        items['document'] = [
+            {
+                'id': document.id,
+                'zotero_data': (document.zotero_data and
+                                json.loads(document.zotero_data)),
+                'description': etree.tostring(document.description)
+            }
+            for document in documents
+        ]
 
     return items
 
