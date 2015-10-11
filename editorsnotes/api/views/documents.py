@@ -67,6 +67,14 @@ class ScanList(BaseListAPIView):
     serializer_class = ScanSerializer
     parser_classes = (MultiPartParser,)
     paginate_by = None
+
+    def get_serializer(self, *args, **kwargs):
+        # Allow multiple images to be uploaded at once
+        kwargs['data'] = [
+            {'image': image} for image in kwargs['data'].getlist('image')
+        ]
+        kwargs['many'] = True
+        return super(ScanList, self).get_serializer(*args, **kwargs)
     def get_document(self):
         document_id = self.kwargs.get('document_id')
         document_qs = Document.objects.prefetch_related('scans__creator')
