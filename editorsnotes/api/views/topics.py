@@ -18,7 +18,7 @@ from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
                    ProjectSpecificPermissions, create_revision_on_methods,
                    LinkerMixin, EmbeddedMarkupReferencesMixin)
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
-                       DeleteProjectObjectLinker)
+                       DeleteProjectObjectLinker, ReferencedByLinker)
 from ..serializers.topics import TopicSerializer, TopicNodeSerializer
 
 __all__ = ['TopicNodeList', 'TopicNodeDetail', 'TopicList', 'TopicDetail',
@@ -62,7 +62,8 @@ class TopicDetail(EmbeddedMarkupReferencesMixin, BaseDetailView,
                   CreateModelMixin):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
-    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
+    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,
+                      ReferencedByLinker)
     def get_object(self, queryset=None):
         # TODO: Make sure permissions are in fact checked
         filtered_queryset = self.filter_queryset(self.get_queryset())

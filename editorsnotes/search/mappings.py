@@ -21,6 +21,8 @@ def base_serialized_field():
     related_topics.field('url', String(index='not_analyzed'))
     mapping.field('related_topics', related_topics)
 
+    mapping.field('_embedded', String(index='not_analyzed', multi=True))
+
     return mapping
 
 

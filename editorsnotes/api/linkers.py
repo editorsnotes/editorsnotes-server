@@ -3,6 +3,20 @@ from rest_framework.reverse import reverse
 
 from editorsnotes.auth.models import Project, User
 
+class ReferencedByLinker(object):
+    def get_links(self, request, view):
+        obj = view.object
+
+        if hasattr(obj, 'get_referencing_items'):
+            return [{
+                'rel': 'referencedBy',
+                'href': href,
+                'method': 'GET',
+                'label': label
+            } for href, label in obj.get_referencing_items(labels=True)]
+
+        return []
+
 class ActivityLinker(object):
     def get_links(self, request, view):
         obj = view.object

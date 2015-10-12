@@ -80,12 +80,17 @@ class LinkerMixin(object):
         super(LinkerMixin, self).__init__(*args, **kwargs)
         self._links = []
 
-    def add_link(self, rel, href, method='GET'):
-        self._links.append(OrderedDict([
+    def add_link(self, rel, href, method='GET', label=None):
+        link = OrderedDict((
             ('rel', rel),
             ('href', href),
             ('method', method)
-        ]))
+        ))
+
+        if label:
+            link['label'] = label
+
+        self._links.append(link)
 
     def add_links(self):
         linkers = [linker() for linker in getattr(self, 'linker_classes', [])]

@@ -55,6 +55,17 @@ class URLAccessible(object):
             self._meta.model_name, conditional_escape(self.as_text()))
 
 
+class ReferencesMixin(object):
+    def get_referencing_items(self, labels=False):
+        from editorsnotes.search import get_index
+        index = get_index('main')
+
+        url = self.get_absolute_url()
+        referencing_urls = index.get_referencing_items(url)
+
+        return referencing_urls
+
+
 class OrderingManager(models.Manager):
     """
     A manager which can explicitly set the ordering of its querysets.

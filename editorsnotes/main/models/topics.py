@@ -13,7 +13,8 @@ from editorsnotes.auth.models import Project, ProjectPermissionsMixin
 from .. import fields, utils
 from ..utils.markup import render_markup
 from base import (
-    Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
+    Administered, CreationMetadata, LastUpdateMetadata, URLAccessible,
+    ReferencesMixin)
 
 __all__ = ['Topic', 'TopicNode', 'TopicAssignment', 'AlternateName',
            'LegacyTopic']
@@ -151,7 +152,7 @@ class TopicManager(models.Manager):
 
 
 class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
-            Administered):
+            ReferencesMixin, Administered):
     project = models.ForeignKey('Project', related_name='topics')
     topic_node = models.ForeignKey(TopicNode, related_name='project_topics')
     preferred_name = models.CharField(max_length=200)
