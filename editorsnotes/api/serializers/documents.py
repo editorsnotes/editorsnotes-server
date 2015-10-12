@@ -7,9 +7,9 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Document, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
 
-from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   URLField, ProjectSlugField, HyperlinkedProjectItemField,
-                   TopicAssignmentField)
+from .base import RelatedTopicSerializerMixin
+from ..fields import (CurrentProjectDefault, HyperlinkedProjectItemField,
+                      ProjectSlugField, TopicAssignmentField, URLField)
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
 
@@ -102,7 +102,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
         ]
 
     def __init__(self, *args, **kwargs):
-        minimal = kwargs.pop('minimal', False)
+        kwargs.pop('minimal', False)
         super(DocumentSerializer, self).__init__(*args, **kwargs)
 
     def get_citations(self, obj):

@@ -6,10 +6,11 @@ from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Topic, TopicNode
 
-from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   ProjectSlugField, URLField, TopicAssignmentField,
-                   EmbeddedMarkupReferencesMixin)
+from ..fields import (CurrentProjectDefault, ProjectSlugField,
+                      TopicAssignmentField, URLField)
 from ..validators import UniqueToProjectValidator
+
+from .base import EmbeddedMarkupReferencesMixin, RelatedTopicSerializerMixin
 
 
 __all__ = ['TopicSerializer', 'TopicNodeSerializer']

@@ -4,12 +4,12 @@ from rest_framework import serializers
 from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
-from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   URLField, ProjectSlugField, TopicAssignmentField,
-                   EmbeddedMarkupReferencesMixin)
+from ..fields import (CurrentProjectDefault, ProjectSlugField,
+                      TopicAssignmentField, URLField)
+from ..validators import UniqueToProjectValidator
 
 from .auth import MinimalUserSerializer
-from ..validators import UniqueToProjectValidator
+from .base import EmbeddedMarkupReferencesMixin, RelatedTopicSerializerMixin
 
 
 __all__ = ['NoteSerializer']
