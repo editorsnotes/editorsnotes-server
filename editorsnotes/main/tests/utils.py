@@ -9,8 +9,8 @@ from lxml import etree, html
 
 from editorsnotes.auth.models import Project
 
-import models as main_models
-import utils
+from .. import models as main_models
+from .. import utils
 
 
 class UtilsTestCase(unittest.TestCase):
@@ -119,13 +119,13 @@ class MarkupUtilsTestCase(TestCase):
         self.user = self.project.members.all()[0]
 
     def test_render_markup(self):
-        from utils import markup
+        from ..utils import markup
 
         html = markup.render_markup('test', self.project)
         self.assertEqual(etree.tostring(html), u'<div><p>test</p></div>')
 
     def test_count_references(self):
-        from utils import markup, markup_html
+        from ..utils import markup, markup_html
 
         document = main_models.Document.objects.create(
             description='Ryan Shaw, <em>My Big Book of Cool Stuff</em>, 2010.',

@@ -8,14 +8,7 @@ from django_nose import FastFixtureTestCase
 
 from editorsnotes.auth.models import Project, User
 
-import models as main_models
-
-
-def create_test_user():
-    user = User(username='testuser', is_staff=True, is_superuser=True)
-    user.set_password('testuser')
-    user.save()
-    return user
+from .. import models as main_models
 
 
 class NoteTestCase(TestCase):

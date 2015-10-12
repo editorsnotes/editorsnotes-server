@@ -9,7 +9,7 @@ from editorsnotes.main.models import Topic, TopicNode
 from editorsnotes.main.views.auth import create_invited_user
 
 
-def create_test_user():
+def create_user():
     user = User(username='testuser', is_staff=True, is_superuser=True)
     user.set_password('testuser')
     user.save()
@@ -18,7 +18,7 @@ def create_test_user():
 
 class NewUserTestCase(TestCase):
     def setUp(self):
-        self.user = create_test_user()
+        self.user = create_user()
 
     def test_create_new_user(self):
         new_user_email = 'fakeperson@example.com'
@@ -101,7 +101,7 @@ class ProjectSpecificPermissionsTestCase(TestCase):
         role.users.add(self.user)
 
     def test_super_role(self):
-        from management import get_all_project_permissions
+        from editorsnotes.main.management import get_all_project_permissions
 
         role = self.project.roles.get()
         self.assertEqual(role, self.project.roles.get_for_user(self.user))
