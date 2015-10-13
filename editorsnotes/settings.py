@@ -118,7 +118,6 @@ INSTALLED_APPS = (
     'editorsnotes.main',
     'editorsnotes.auth',
     'editorsnotes.djotero',
-    'editorsnotes.admin',
     'editorsnotes.api',
     'editorsnotes.search',
 )

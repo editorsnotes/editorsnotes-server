@@ -33,8 +33,8 @@ project_specific_patterns = patterns('',
 
     ### Topics ###
     url(r'^/topics/$', views.TopicList.as_view(), name='topics-list'),
-    url(r'^/topics/(?P<topic_node_id>\d+)/$', views.TopicDetail.as_view(), name='topics-detail'),
-    url(r'^/topics/(?P<topic_node_id>\d+)/confirm_delete$', views.TopicConfirmDelete.as_view(), name='topics-confirm-delete'),
+    url(r'^/topics/(?P<pk>\d+)/$', views.TopicDetail.as_view(), name='topics-detail'),
+    url(r'^/topics/(?P<pk>\d+)/confirm_delete$', views.TopicConfirmDelete.as_view(), name='topics-confirm-delete'),
 
     ### Notes ###
     url(r'^/notes/$', views.NoteList.as_view(), name='notes-list'),
@@ -58,8 +58,6 @@ urlpatterns = patterns('',
     url(r'^browse/$', views.base.browse, name='browse'),
     url(r'^auth-token/$', 'rest_framework.authtoken.views.obtain_auth_token', name='obtain-auth-token'),
     url(r'^search/$', views.SearchView.as_view(), name='search'),
-    url(r'^topics/$', views.TopicNodeList.as_view(), name='topic-nodes-list'),
-    url(r'^topics/(?P<pk>\d+)/$$', views.TopicNodeDetail.as_view(), name='topic-nodes-detail'),
     url(r'^notes/$', views.AllProjectNoteList.as_view(), name='all-projects-notes-list'),
     url(r'^projects/$', views.ProjectList.as_view(), name='projects-list'),
     url(r'^projects/(?P<project_slug>\w+)', include(project_specific_patterns)),

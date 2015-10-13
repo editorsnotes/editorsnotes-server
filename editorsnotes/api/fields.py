@@ -127,14 +127,10 @@ class UpdatersField(ReadOnlyField):
 
 class MinimalTopicSerializer(ModelSerializer):
     url = IdentityURLField()
-    topic_node_id = SerializerMethodField()
 
     class Meta:
         model = Topic
-        fields = ('id', 'topic_node_id', 'preferred_name', 'url',)
-
-    def get_topic_node_id(self, obj):
-        return obj.topic_node_id
+        fields = ('id', 'preferred_name', 'url',)
 
 
 class TopicAssignmentField(RelatedField):

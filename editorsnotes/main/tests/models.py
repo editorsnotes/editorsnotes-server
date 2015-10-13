@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
 from django.test import TestCase
 
-from editorsnotes.auth.models import Project, User
+from editorsnotes.auth.models import Project
 
 from .. import models as main_models
 
@@ -21,8 +21,13 @@ class NoteTestCase(TestCase):
             title='test note',
             markup=u'# hey\n\nthis is a _note_',
             creator=self.user, last_updater=self.user, project=self.project)
-        topic = main_models.Topic.objects.get_or_create_by_name(
-            u'Example', self.project, self.user)
+
+        topic = main_models.Topic.objects.create(
+            preferred_name=u'Example',
+            project=self.project,
+            creator=self.user,
+            last_updater=self.user
+        )
 
         self.assertFalse(note.has_topic(topic))
 
@@ -108,8 +113,13 @@ class NoteTransactionTestCase(TestCase):
             title='test note',
             markup=u'# hey\n\nthis is a _note_',
             creator=self.user, last_updater=self.user, project=self.project)
-        topic = main_models.Topic.objects.get_or_create_by_name(
-            u'Example', self.project, self.user)
+
+        topic = main_models.Topic.objects.create(
+            preferred_name=u'Example',
+            project=self.project,
+            creator=self.user,
+            last_updater=self.user)
+
         note.related_topics.create(topic=topic, creator=self.user)
 
         with self.assertRaises(IntegrityError):

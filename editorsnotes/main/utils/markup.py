@@ -34,9 +34,6 @@ def qs_from_ids(Model, project, ids):
     if not ids:
         return None
 
-    if Model == Topic:
-        return Model.objects.filter(project=project, topic_node_id__in=ids)
-
     return Model.objects.filter(project=project, id__in=ids)
 
 
@@ -55,10 +52,7 @@ def format_items(items_dict, project):
     topics = qs_from_ids(Topic, project, items_dict.get('topic'))
     if topics:
         items['topic'] = [
-            {
-                'topic_node_id': topic.topic_node_id,
-                'preferred_name': topic.preferred_name
-            }
+            {'id': topic.id, 'preferred_name': topic.preferred_name}
             for topic in topics
         ]
 

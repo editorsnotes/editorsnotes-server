@@ -5,7 +5,6 @@ from django.test import TestCase
 
 from ..models import Project, User, ProjectInvitation
 
-from editorsnotes.main.models import Topic, TopicNode
 from editorsnotes.main.views.auth import create_invited_user
 
 
@@ -43,45 +42,6 @@ class NewUserTestCase(TestCase):
         self.assertTrue(isinstance(new_user, User))
         self.assertEqual(ProjectInvitation.objects.count(), 0)
         self.assertEqual(new_user.username, 'fakeperson')
-
-
-class ProjectTopicTestCase(TestCase):
-    fixtures = ['projects.json']
-
-    def setUp(self):
-        self.project = Project.objects.get(slug='emma')
-        self.user = self.project.members.all()[0]
-        self.project2 = Project.objects.get(slug='sanger')
-        self.user2 = self.project2.members.all()[0]
-
-    def test_create_project_topic(self):
-        topic_node, topic = Topic.objects.create_along_with_node(
-            u'Emma Goldman', self.project, self.user)
-
-        self.assertTrue(isinstance(topic_node, TopicNode))
-
-        topic2 = Topic.objects.create_from_node(
-            topic_node, self.project2, self.user2, name=u'Emma Goldman!!!')
-
-        self.assertEqual(topic_node, topic2.topic_node)
-        self.assertEqual(topic_node.get_connected_projects().count(), 2)
-
-    def test_merge_topic_nodes(self):
-        _, good_topic = Topic.objects.create_along_with_node(
-            'Emma Goldman', self.project, self.user)
-        _, bad_topic = Topic.objects.create_along_with_node(
-            u'Емма Голдман', self.project, self.user)
-
-        bad_topic.merge_into(good_topic)
-
-        bad_node = bad_topic.topic_node
-        good_node = good_topic.topic_node
-
-        self.assertEqual(bad_topic.deleted, True)
-        self.assertEqual(bad_node.deleted, True)
-        self.assertEqual(bad_topic.merged_into, good_topic)
-        self.assertEqual(bad_node.merged_into, good_node)
-        self.assertEqual(good_node.get_connected_projects().count(), 1)
 
 
 class ProjectSpecificPermissionsTestCase(TestCase):
