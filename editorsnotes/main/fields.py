@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import conditional_escape
 from django.utils.encoding import force_unicode
 
-cleaner = Cleaner(style=True)
+cleaner = Cleaner(style=True, remove_unknown_tags=False)
 
 
 def update_attrs(attrs, extra_attrs):

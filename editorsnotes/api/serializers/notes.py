@@ -4,12 +4,13 @@ from rest_framework import serializers
 from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
-from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   URLField, ProjectSlugField, TopicAssignmentField,
-                   EmbeddedMarkupReferencesMixin)
+from ..fields import (CurrentProjectDefault, ProjectSlugField,
+                      TopicAssignmentField, IdentityURLField,
+                      UnqualifiedURLField)
+from ..validators import UniqueToProjectValidator
 
 from .auth import MinimalUserSerializer
-from ..validators import UniqueToProjectValidator
+from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
 
 __all__ = ['NoteSerializer']
@@ -35,10 +36,9 @@ class NoteStatusField(serializers.ReadOnlyField):
 
 
 # TODO: change license, fuller repr of updaters
-class NoteSerializer(RelatedTopicSerializerMixin,
-                     EmbeddedMarkupReferencesMixin,
+class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                      serializers.ModelSerializer):
-    url = URLField()
+    url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     license = LicenseSerializer(read_only=True, source='get_license')
     updaters = MinimalUserSerializer(read_only=True, many=True,
@@ -46,11 +46,16 @@ class NoteSerializer(RelatedTopicSerializerMixin,
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
 
+    references = UnqualifiedURLField(source='get_referenced_items')
+    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+
     class Meta:
+        embedded_fields = ('references', 'referenced_by',)
         model = Note
         fields = ('id', 'title', 'url', 'project', 'license',
                   'is_private', 'last_updated', 'updaters', 'related_topics',
-                  'markup', 'markup_html', 'status',)
+                  'markup', 'markup_html', 'status', 'references',
+                  'referenced_by',)
         validators = [
             UniqueToProjectValidator('title')
         ]

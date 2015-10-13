@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from itertools import chain
+
 from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
 from django.contrib.contenttypes.models import ContentType
@@ -13,7 +15,8 @@ from editorsnotes.auth.models import Project, ProjectPermissionsMixin
 from .. import fields, utils
 from ..utils.markup import render_markup
 from base import (
-    Administered, CreationMetadata, LastUpdateMetadata, URLAccessible)
+    Administered, CreationMetadata, LastUpdateMetadata, URLAccessible,
+    IsReferenced)
 
 __all__ = ['Topic', 'TopicNode', 'TopicAssignment', 'AlternateName',
            'LegacyTopic']
@@ -151,7 +154,7 @@ class TopicManager(models.Manager):
 
 
 class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
-            Administered):
+            IsReferenced, Administered):
     project = models.ForeignKey('Project', related_name='topics')
     topic_node = models.ForeignKey(TopicNode, related_name='project_topics')
     preferred_name = models.CharField(max_length=200)
@@ -195,6 +198,15 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
 
     def has_summary(self):
         return self.markup is not None
+
+    def get_referenced_items(self):
+        from ..utils.markup_html import get_embedded_item_urls
+        if not self.markup_html:
+            return []
+
+        urls_by_type = get_embedded_item_urls(self.markup_html)
+        embedded_urls = set(chain(*urls_by_type.values()))
+        return embedded_urls
 
     def clean_fields(self, exclude=None):
         super(Topic, self).clean_fields(exclude=exclude)

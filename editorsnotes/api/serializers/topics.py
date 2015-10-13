@@ -6,10 +6,12 @@ from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Topic, TopicNode
 
-from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   ProjectSlugField, URLField, TopicAssignmentField,
-                   EmbeddedMarkupReferencesMixin)
+from ..fields import (CurrentProjectDefault, ProjectSlugField,
+                      UnqualifiedURLField, TopicAssignmentField,
+                      IdentityURLField)
 from ..validators import UniqueToProjectValidator
+
+from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
 
 __all__ = ['TopicSerializer', 'TopicNodeSerializer']
@@ -17,7 +19,7 @@ __all__ = ['TopicSerializer', 'TopicNodeSerializer']
 
 class TopicNodeSerializer(serializers.ModelSerializer):
     name = ReadOnlyField(source='_preferred_name')
-    url = URLField('api:topic-nodes-detail', ('id',))
+    url = IdentityURLField()
     alternate_forms = serializers.SerializerMethodField('get_alternate_forms')
     project_topics = serializers.SerializerMethodField('get_project_value')
 
@@ -69,24 +71,26 @@ class AlternateNameField(serializers.Field):
         return value
 
 
-class TopicSerializer(EmbeddedMarkupReferencesMixin,
-                      RelatedTopicSerializerMixin,
+class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                       serializers.ModelSerializer):
+
     topic_node_id = ReadOnlyField(source='topic_node.id')
     type = ReadOnlyField(source='topic_node.type')
     alternate_names = AlternateNameField(required=False)
-    url = URLField(lookup_kwarg_attrs={
-        'project_slug': 'project.slug',
-        'topic_node_id': 'topic_node_id'
-    })
+    url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
 
+    references = UnqualifiedURLField(source='get_referenced_items')
+    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+
     class Meta:
+        embedded_fields = ('references', 'referenced_by',)
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type',
                   'url', 'alternate_names', 'related_topics', 'project',
-                  'last_updated', 'markup', 'markup_html')
+                  'last_updated', 'markup', 'markup_html', 'references',
+                  'referenced_by',)
         validators = [
             UniqueToProjectValidator('preferred_name')
         ]

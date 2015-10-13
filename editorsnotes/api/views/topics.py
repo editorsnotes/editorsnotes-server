@@ -62,7 +62,7 @@ class TopicDetail(EmbeddedMarkupReferencesMixin, BaseDetailView,
                   CreateModelMixin):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
-    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
+    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker)
     def get_object(self, queryset=None):
         # TODO: Make sure permissions are in fact checked
         filtered_queryset = self.filter_queryset(self.get_queryset())

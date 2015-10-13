@@ -4,7 +4,7 @@ import json
 
 from django.conf import settings
 
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, F
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch.exceptions import InvalidJsonResponseError
 from rest_framework.renderers import JSONRenderer
@@ -175,6 +175,19 @@ class ENIndex(ElasticSearchIndex):
                 prepared_query['highlight']['fields'][field_name] = {}
 
         return self.es.search(prepared_query, index=self.name, **kwargs)
+
+    def get_referencing_items(self, item_url):
+        query_filter = F('term', **{'serialized._embedded': item_url})
+
+        if 'topic' in item_url:
+            query_filter = query_filter | (
+                F('term', **{'serialized.related_topic.url': item_url}))
+
+        query = Search(using=self.es, index=self.name)\
+            .filter(query_filter)\
+            .fields(['display_url'])
+
+        return [(result.display_url[0]) for result in query.execute().hits]
 
 
 class ActivityIndex(ElasticSearchIndex):

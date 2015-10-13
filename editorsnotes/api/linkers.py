@@ -3,6 +3,7 @@ from rest_framework.reverse import reverse
 
 from editorsnotes.auth.models import Project, User
 
+
 class ActivityLinker(object):
     def get_links(self, request, view):
         obj = view.object

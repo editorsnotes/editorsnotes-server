@@ -80,12 +80,17 @@ class LinkerMixin(object):
         super(LinkerMixin, self).__init__(*args, **kwargs)
         self._links = []
 
-    def add_link(self, rel, href, method='GET'):
-        self._links.append(OrderedDict([
+    def add_link(self, rel, href, method='GET', label=None):
+        link = OrderedDict((
             ('rel', rel),
             ('href', href),
             ('method', method)
-        ]))
+        ))
+
+        if label:
+            link['label'] = label
+
+        self._links.append(link)
 
     def add_links(self):
         linkers = [linker() for linker in getattr(self, 'linker_classes', [])]
@@ -112,9 +117,8 @@ class LinkerMixin(object):
 
 class EmbeddedMarkupReferencesMixin(object):
     def get_serializer(self, *args, **kwargs):
-        embed_style = self.request.query_params.get('embed_style', None)
-        if embed_style in ['urls', 'nested']:
-            kwargs['embed_style'] = embed_style
+        if 'include_embeds' in self.request.query_params:
+            kwargs['include_embeds'] = True
         return super(EmbeddedMarkupReferencesMixin, self)\
             .get_serializer(*args, **kwargs)
 

@@ -7,9 +7,10 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Document, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
 
-from .base import (RelatedTopicSerializerMixin, CurrentProjectDefault,
-                   URLField, ProjectSlugField, HyperlinkedProjectItemField,
-                   TopicAssignmentField)
+from .base import RelatedTopicSerializerMixin, EmbeddedItemsMixin
+from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
+                      ProjectSlugField, TopicAssignmentField, IdentityURLField,
+                      UnqualifiedURLField)
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
 
@@ -82,9 +83,9 @@ class UniqueDocumentDescriptionValidator:
             })
 
 
-class DocumentSerializer(RelatedTopicSerializerMixin,
+class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
-    url = URLField()
+    url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
@@ -92,17 +93,20 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
     scans = ScanSerializer(many=True, required=False, read_only=True)
     cited_by = serializers.SerializerMethodField('get_citations')
 
+    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+
     class Meta:
+        embedded_fields = ('referenced_by',)
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
                   'scans', 'transcript', 'related_topics', 'cited_by',
-                  'zotero_data',)
+                  'zotero_data', 'referenced_by',)
         validators = [
             UniqueDocumentDescriptionValidator()
         ]
 
     def __init__(self, *args, **kwargs):
-        minimal = kwargs.pop('minimal', False)
+        kwargs.pop('minimal', False)
         super(DocumentSerializer, self).__init__(*args, **kwargs)
 
     def get_citations(self, obj):
@@ -127,13 +131,21 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
 
 
 class TranscriptSerializer(serializers.ModelSerializer):
-    url = URLField(lookup_kwarg_attrs={
-        'project_slug': 'document.project.slug',
-        'document_id': 'document.id'
-    })
-    document = HyperlinkedProjectItemField(view_name='api:documents-detail',
-                                           queryset=Document.objects,
-                                           required=True)
+    url = CustomLookupHyperlinkedField(
+        lookup_kwarg_attrs={
+            'project_slug': 'document.project.slug',
+            'document_id': 'document.id'
+        },
+        read_only=True
+    )
+    document = CustomLookupHyperlinkedField(
+        view_name='api:documents-detail',
+        lookup_kwarg_attrs={
+            'project_slug': 'document.project.slug',
+            'document_id': 'document.id'
+        },
+        read_only=True
+    )
 
     class Meta:
         model = Transcript
