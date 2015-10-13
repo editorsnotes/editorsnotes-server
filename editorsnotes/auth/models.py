@@ -146,7 +146,7 @@ class UpdatersMixin(object):
     def get_all_updaters(self):
         ct = ContentType.objects.get_for_model(self.__class__)
         qs = reversion.models.Revision.objects\
-            .select_related('user', 'version')\
+            .select_related('user')\
             .filter(version__content_type_id=ct.id,
                     version__object_id_int=self.id)
         user_counter = Counter([revision.user for revision in qs])

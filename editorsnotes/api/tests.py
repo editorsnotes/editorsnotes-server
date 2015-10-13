@@ -6,8 +6,8 @@ from lxml import etree
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
+from django.test import TestCase
 
-from django_nose import FastFixtureTestCase
 from reversion.models import Revision
 
 from editorsnotes.auth.models import Project, User, LogActivity
@@ -105,7 +105,7 @@ class ClearContentTypesMixin(object):
 
 
 class ClearContentTypesTransactionTestCase(ClearContentTypesMixin,
-                                           FastFixtureTestCase):
+                                           TestCase):
     pass
 
 

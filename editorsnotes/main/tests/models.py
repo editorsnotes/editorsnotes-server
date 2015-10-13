@@ -4,8 +4,6 @@ from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
 from django.test import TestCase
 
-from django_nose import FastFixtureTestCase
-
 from editorsnotes.auth.models import Project, User
 
 from .. import models as main_models
@@ -98,7 +96,7 @@ class DocumentTestCase(TestCase):
         self.assertEqual(updated_document.transcript, transcript)
 
 
-class NoteTransactionTestCase(FastFixtureTestCase):
+class NoteTransactionTestCase(TestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
