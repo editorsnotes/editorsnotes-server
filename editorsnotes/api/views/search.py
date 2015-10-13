@@ -13,7 +13,7 @@ __all__ = ['SearchView']
 class SearchView(GenericAPIView):
     def get(self, request, format=None):
         query = {'query': {}}
-        params = request.QUERY_PARAMS
+        params = request.query_params
 
         if 'autocomplete' in params:
             self.filter_backend = ElasticSearchAutocompleteFilterBackend

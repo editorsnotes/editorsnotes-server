@@ -170,7 +170,7 @@ class ElasticSearchListMixin(object):
         return Response(response_data)
 
     def ____________list(self, request, *args, **kwargs):
-        if 'autocomplete' in request.QUERY_PARAMS:
+        if 'autocomplete' in request.query_params:
             self.filter_backends += (ElasticSearchAutocompleteFilterBackend,)
             result = self.filter_queryset(None)
             data = {
