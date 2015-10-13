@@ -75,29 +75,22 @@ class DocumentTypeAdapter(object):
         self.es.put_mapping(self.index_name, self.type_label, self.type_mapping)
 
     def data_from_object(self, obj, request=None):
-        from ..api.serializers.base import EmbeddedMarkupReferencesMixin
-
         if not hasattr(obj, '_rest_serialized'):
-            context = { 'request': request or self.dummy_request }
-            kwargs = {'context': context}
-
-            if issubclass(self.serializer, EmbeddedMarkupReferencesMixin):
-                kwargs['embed_style'] = 'urls'
-
-            serializer = self.serializer(obj, **kwargs)
-            data = json.loads(JSONRenderer().render(serializer.data))
-            obj._rest_serialized = data
-
+            request = request or self.dummy_request
+            serializer = self.serializer(obj, context={'request': request})
+            json_data = json.loads(JSONRenderer().render(serializer.data))
+            obj._rest_serialized = json_data
         else:
-            embeds = obj._rest_serialized.get('_embedded')
-            if embeds:
-                obj._rest.serialized['_embedded'] = [item['url'] for item in embeds]
+            json_data = obj._rest_serialized.copy()
+            json_data.pop('_embedded', None)
+
         data = {
             'id': obj.id,
-            'serialized': obj._rest_serialized,
+            'serialized': json_data,
             'display_url': self.dummy_request.build_absolute_uri(obj.get_absolute_url()),
             'display_title': obj.as_text()
         }
+
         return data
 
     def get_object(self, instance=None, pk=None):
