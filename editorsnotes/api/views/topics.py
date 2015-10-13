@@ -10,8 +10,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from editorsnotes.main.models import Topic, TopicNode
-from editorsnotes.main.models.topics import TYPE_CHOICES
+from editorsnotes.main.models import Topic
 
 from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
                    ElasticSearchListMixin, ProjectSpecificMixin,
@@ -19,25 +18,10 @@ from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
                    LinkerMixin, EmbeddedMarkupReferencesMixin)
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
-from ..serializers.topics import TopicSerializer, TopicNodeSerializer
+from ..serializers.topics import TopicSerializer
 
-__all__ = ['TopicNodeList', 'TopicNodeDetail', 'TopicList', 'TopicDetail',
-           'TopicConfirmDelete']
+__all__ = ['TopicList', 'TopicDetail', 'TopicConfirmDelete']
 
-def topic_types(request):
-    types = { 'types': [{'key': key, 'localized': localized}
-                        for key, localized in TYPE_CHOICES] }
-    return HttpResponse(json.dumps(types), content_type="application/json")
-
-class TopicNodeList(ListAPIView):
-    paginate_by = 50
-    paginate_by_param = 'page_size'
-    queryset = TopicNode.objects.all()
-    serializer_class = TopicNodeSerializer
-
-class TopicNodeDetail(RetrieveAPIView):
-    queryset = TopicNode.objects.all()
-    serializer_class = TopicNodeSerializer
 
 class TopicList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     queryset = Topic.objects.all()
@@ -50,22 +34,8 @@ class TopicConfirmDelete(DeleteConfirmAPIView):
         'GET': ('main.delete_topic',),
         'HEAD': ('main.delete_topic',)
     }
-    def get_object(self):
-        qs = self.model.objects.filter(project=self.request.project,
-                                       topic_node_id=self.kwargs['topic_node_id'])
-        obj = get_object_or_404(qs)
-        self.check_object_permissions(self.request, obj)
-        return obj
 
-@create_revision_on_methods('create')
-class TopicDetail(EmbeddedMarkupReferencesMixin, BaseDetailView,
-                  CreateModelMixin):
+class TopicDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker)
-    def get_object(self, queryset=None):
-        # TODO: Make sure permissions are in fact checked
-        filtered_queryset = self.filter_queryset(self.get_queryset())
-        return get_object_or_404(filtered_queryset,
-                                 project=self.request.project,
-                                 topic_node_id=self.kwargs['topic_node_id'])

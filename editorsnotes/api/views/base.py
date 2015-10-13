@@ -325,7 +325,6 @@ class BaseDetailView(ProjectSpecificMixin, LogActivityMixin,
 def root(request, format=None):
     return Response({
         'auth-token': reverse('api:obtain-auth-token', request=request),
-        'topics': reverse('api:topic-nodes-list', request=request),
         'projects': reverse('api:projects-list', request=request),
         'search': reverse('api:search', request=request)
         #'notes': reverse('api:notes-list'),

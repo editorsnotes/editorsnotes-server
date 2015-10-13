@@ -38,8 +38,8 @@ def delete_es_indexes():
 
 TEST_TOPIC = {
     'preferred_name': u'Patrick Golden',
+    'types': [u'http://schema.org/Person'],
     'alternate_names': [u'big guy', u'stretch'],
-    'type': u'PER',
     'related_topics': [],
     'markup': u'A writer of tests.'
 }
@@ -47,10 +47,11 @@ TEST_TOPIC = {
 
 def create_topic(**kwargs):
     data = TEST_TOPIC.copy()
+    if 'user' in kwargs:
+        kwargs['last_updater'] = kwargs['creator'] = kwargs.pop('user')
     data.update(kwargs)
-    data.pop('alternate_names', None)
     data.pop('related_topics', None)
-    node, topic = main_models.Topic.objects.create_along_with_node(**data)
+    topic = main_models.Topic.objects.create(**data)
     return topic
 
 
@@ -118,10 +119,11 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.login(username='barry', password='barry')
 
     def create_test_topic(self):
-        data = TEST_TOPIC
-        topic_node, topic = main_models.Topic.objects.create_along_with_node(
-            data['preferred_name'], self.project, self.user, data['type'],
-            markup=data['markup'])
+        data = TEST_TOPIC.copy()
+        data.pop('related_topics')
+        data['project'] = self.project
+        data['creator'] = data['last_updater'] = self.user
+        topic = main_models.Topic.objects.create(**data)
         return topic
 
     def test_topic_api_create(self):
@@ -136,9 +138,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-        new_topic_node_id = response.data.get('topic_node_id')
-        topic_obj = main_models.Topic.objects.get(
-            topic_node_id=new_topic_node_id, project=self.project)
+        new_topic_id = response.data.get('id')
+        topic_obj = main_models.Topic.objects.get(id=new_topic_id)
         self.assertEqual(response.data.get('id'), topic_obj.id)
         self.assertEqual(etree.tostring(topic_obj.markup_html),
                          response.data.get('markup_html'))
@@ -235,7 +236,6 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         topic_data = response.data['results'][0]
 
-        self.assertEqual(topic_obj.topic_node_id, topic_data['topic_node_id'])
         self.assertEqual(topic_obj.id, topic_data['id'])
         self.assertEqual(topic_obj.preferred_name,
                          topic_data['preferred_name'])
@@ -267,14 +267,13 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         response = self.client.put(
             reverse('api:topics-detail',
-                    args=[self.project.slug, topic_obj.topic_node_id]),
+                    args=[self.project.slug, topic_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
 
-        updated_topic_obj = main_models.Topic.objects.get(
-            topic_node_id=response.data['topic_node_id'], project=self.project)
+        updated_topic_obj = main_models.Topic.objects.get(id=response.data['id'])
         self.assertEqual(topic_obj, updated_topic_obj)
         self.assertEqual(data['markup'], response.data['markup'])
         self.assertEqual('<div><p>Still writing tests.</p></div>',
@@ -316,7 +315,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         response = self.client.put(
             reverse('api:topics-detail',
-                    args=[self.project.slug, topic_obj.topic_node_id]),
+                    args=[self.project.slug, topic_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -331,7 +330,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         response = self.client.put(
             reverse('api:topics-detail',
-                    args=[self.project.slug, topic_obj.topic_node_id]),
+                    args=[self.project.slug, topic_obj.id]),
             json.dumps(data),
             content_type='application/json'
         )
@@ -346,12 +345,11 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(main_models.Topic.objects.count(), 1)
         response = self.client.delete(
             reverse('api:topics-detail',
-                    args=[self.project.slug, topic_obj.topic_node_id]),
+                    args=[self.project.slug, topic_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(main_models.Topic.objects.count(), 0)
-        self.assertEqual(main_models.TopicNode.objects.count(), 1)
 
         # Make sure an entry was added to the activity index
         activity_response = self.client.get(reverse('api:projects-activity',
@@ -381,7 +379,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         response = self.client.delete(
             reverse('api:topics-detail',
-                    args=[self.project.slug, topic_obj.topic_node_id]),
+                    args=[self.project.slug, topic_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -392,7 +390,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         response = self.client.delete(
             reverse('api:topics-detail',
-                    args=[self.project.slug, topic_obj.topic_node_id]),
+                    args=[self.project.slug, topic_obj.id]),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
@@ -731,7 +729,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['related_topics'], [
             {
                 'id': topic.id,
-                'topic_node_id': topic.topic_node_id,
                 'url': url_for(topic),
                 'preferred_name': topic.preferred_name
             }
