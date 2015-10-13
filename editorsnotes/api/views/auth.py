@@ -65,7 +65,7 @@ class ActivityView(GenericAPIView):
     ACTIONS = ['added', 'changed', 'deleted']
     def get_es_query(self):
         q = {'query': {'filtered': {'filter': {'bool': { 'must': []}}}}}
-        params = self.request.QUERY_PARAMS
+        params = self.request.query_params
         if 'count' in params:
             q['size'] = parse_int(params['count'])
         if 'start' in params:

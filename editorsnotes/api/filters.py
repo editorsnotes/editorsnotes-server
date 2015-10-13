@@ -43,7 +43,7 @@ class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         query = BASE_QUERY.copy()
         filters = []
-        params = request.QUERY_PARAMS
+        params = request.query_params
 
         if hasattr(request, 'project') or 'project' in params:
             project = params.get('project', request.project.slug)
