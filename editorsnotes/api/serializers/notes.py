@@ -5,7 +5,7 @@ from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from ..fields import (CurrentProjectDefault, ProjectSlugField,
-                      TopicAssignmentField, URLField)
+                      TopicAssignmentField, IdentityURLField)
 from ..validators import UniqueToProjectValidator
 
 from .auth import MinimalUserSerializer
@@ -36,9 +36,8 @@ class NoteStatusField(serializers.ReadOnlyField):
 
 # TODO: change license, fuller repr of updaters
 class NoteSerializer(RelatedTopicSerializerMixin,
-                     EmbeddedMarkupReferencesMixin,
                      serializers.ModelSerializer):
-    url = URLField()
+    url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     license = LicenseSerializer(read_only=True, source='get_license')
     updaters = MinimalUserSerializer(read_only=True, many=True,

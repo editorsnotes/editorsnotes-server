@@ -8,8 +8,8 @@ from editorsnotes.main.models import Document, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
 
 from .base import RelatedTopicSerializerMixin
-from ..fields import (CurrentProjectDefault, HyperlinkedProjectItemField,
-                      ProjectSlugField, TopicAssignmentField, URLField)
+from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
+                      ProjectSlugField, TopicAssignmentField, IdentityURLField)
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
 
@@ -84,7 +84,7 @@ class UniqueDocumentDescriptionValidator:
 
 class DocumentSerializer(RelatedTopicSerializerMixin,
                          serializers.ModelSerializer):
-    url = URLField()
+    url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
@@ -127,13 +127,21 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
 
 
 class TranscriptSerializer(serializers.ModelSerializer):
-    url = URLField(lookup_kwarg_attrs={
-        'project_slug': 'document.project.slug',
-        'document_id': 'document.id'
-    })
-    document = HyperlinkedProjectItemField(view_name='api:documents-detail',
-                                           queryset=Document.objects,
-                                           required=True)
+    url = CustomLookupHyperlinkedField(
+        lookup_kwarg_attrs={
+            'project_slug': 'document.project.slug',
+            'document_id': 'document.id'
+        },
+        read_only=True
+    )
+    document = CustomLookupHyperlinkedField(
+        view_name='api:documents-detail',
+        lookup_kwarg_attrs={
+            'project_slug': 'document.project.slug',
+            'document_id': 'document.id'
+        },
+        read_only=True
+    )
 
     class Meta:
         model = Transcript

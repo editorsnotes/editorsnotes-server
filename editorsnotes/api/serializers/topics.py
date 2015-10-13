@@ -7,7 +7,7 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Topic, TopicNode
 
 from ..fields import (CurrentProjectDefault, ProjectSlugField,
-                      TopicAssignmentField, URLField)
+                      TopicAssignmentField, IdentityURLField)
 from ..validators import UniqueToProjectValidator
 
 from .base import EmbeddedMarkupReferencesMixin, RelatedTopicSerializerMixin
@@ -18,7 +18,7 @@ __all__ = ['TopicSerializer', 'TopicNodeSerializer']
 
 class TopicNodeSerializer(serializers.ModelSerializer):
     name = ReadOnlyField(source='_preferred_name')
-    url = URLField('api:topic-nodes-detail', ('id',))
+    url = IdentityURLField()
     alternate_forms = serializers.SerializerMethodField('get_alternate_forms')
     project_topics = serializers.SerializerMethodField('get_project_value')
 
@@ -76,10 +76,7 @@ class TopicSerializer(EmbeddedMarkupReferencesMixin,
     topic_node_id = ReadOnlyField(source='topic_node.id')
     type = ReadOnlyField(source='topic_node.type')
     alternate_names = AlternateNameField(required=False)
-    url = URLField(lookup_kwarg_attrs={
-        'project_slug': 'project.slug',
-        'topic_node_id': 'topic_node_id'
-    })
+    url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
 

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from editorsnotes.auth.models import Project, User, FeaturedItem, ProjectRole
 from editorsnotes.search import get_index
 
-from .base import URLField
+from ..fields import CustomLookupHyperlinkedField, IdentityURLField
 
 __all__ = ['ProjectSerializer', 'MinimalUserSerializer', 'UserSerializer']
 
@@ -33,16 +33,35 @@ class FeaturedItemSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    url = URLField('api:projects-detail', {'project_slug': 'slug'})
+    url = IdentityURLField()
     featured_items = FeaturedItemSerializer(many=True,
                                             source='featureditem_set')
     notes = serializers.SerializerMethodField()
-    notes_url = URLField('api:notes-list', {'project_slug': 'slug'})
+    notes_url = CustomLookupHyperlinkedField(
+        view_name='api:notes-list',
+        lookup_kwarg_attrs={'project_slug': 'slug'},
+        read_only=True
+    )
+
     topics = serializers.SerializerMethodField()
-    topics_url = URLField('api:topics-list', {'project_slug': 'slug'})
+    topics_url = CustomLookupHyperlinkedField(
+        view_name='api:topics-list',
+        lookup_kwarg_attrs={'project_slug': 'slug'},
+        read_only=True
+    )
+
     documents = serializers.SerializerMethodField()
-    documents_url = URLField('api:documents-list', {'project_slug': 'slug'})
-    activity_url = URLField('api:projects-activity', {'project_slug': 'slug'})
+    documents_url = CustomLookupHyperlinkedField(
+        view_name='api:documents-list',
+        lookup_kwarg_attrs={'project_slug': 'slug'},
+        read_only=True
+    )
+
+    activity_url = CustomLookupHyperlinkedField(
+        view_name='api:projects-activity',
+        lookup_kwarg_attrs={'project_slug': 'slug'},
+        read_only=True
+    )
 
     class Meta:
         model = Project
@@ -61,7 +80,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class MinimalUserSerializer(serializers.ModelSerializer):
-    url = URLField('api:users-detail', {'username': 'username'})
+    url = IdentityURLField()
 
     class Meta:
         model = User
@@ -70,9 +89,11 @@ class MinimalUserSerializer(serializers.ModelSerializer):
 
 class ProjectRoleSerializer(serializers.ModelSerializer):
     project = serializers.ReadOnlyField(source='project.name')
-    project_url = URLField('api:projects-detail', {
-        'project_slug': 'project.slug'
-    })
+    project_url = CustomLookupHyperlinkedField(
+        view_name='api:projects-detail',
+        lookup_kwarg_attrs={'project_slug': 'project.slug'},
+        read_only=True
+    )
 
     class Meta:
         model = ProjectRole
@@ -80,7 +101,7 @@ class ProjectRoleSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    url = URLField('api:users-detail', {'username': 'username'})
+    url = IdentityURLField()
     project_roles = serializers.SerializerMethodField()
 
     class Meta:

@@ -1,8 +1,8 @@
 from itertools import chain
 
 from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
-from rest_framework.relations import (HyperlinkedRelatedField, RelatedField,
-                                      get_attribute)
+from rest_framework.relations import (
+    HyperlinkedRelatedField, RelatedField, get_attribute)
 from rest_framework.reverse import reverse
 from rest_framework.serializers import (
     ModelSerializer, ReadOnlyField, SerializerMethodField)
@@ -76,38 +76,59 @@ class EmbeddedItemsSerializedField(RelatedField):
         return serialized_items
 
 
-class URLField(ReadOnlyField):
+class IdentityURLField(ReadOnlyField):
     """
-    An identity URL field.
+    URL field that will use an object's get_absolute_url function to create a
+    fully qualified URL.
+    """
+    def get_attribute(self, obj):
+        return obj.get_absolute_url()
+
+    def to_representation(self, value):
+        return self.context['request'].build_absolute_uri(value)
+
+
+class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
+    """
+    HyperlinkedRelatedField that allows custom URL lookup definitions
 
     lookup_kwarg_attrs should be a dictionary of strings whose values will be
     applied to the object to get the lookup args.
+
+    If no view_name is provided, it will be inferred from the object itself.
     """
     read_only = True
 
-    def __init__(self, view_name=None, lookup_kwarg_attrs=None):
-        self.view_name = view_name
-        self.lookup_kwargs = lookup_kwarg_attrs or {
+    def __init__(self, view_name=None, lookup_kwarg_attrs=None,
+                 *args, **kwargs):
+        DEFAULT_LOOKUP_ATTRS = {
             'project_slug': 'project.slug',
             'pk': 'id'
         }
-        super(URLField, self).__init__()
+        self.lookup_kwargs = lookup_kwarg_attrs or DEFAULT_LOOKUP_ATTRS.copy()
 
-    def _get_default_view_name(self, obj):
-        return 'api:{}-detail'.format(
-            obj.__class__._meta.verbose_name_plural[:])
+        # View name will be figured out later, once the instance is known.
+        self.view_name = None
 
-    def _get_lookup_kwargs(self, obj):
-        return dict((k, nested_getattr(obj, v))
-                    for k, v in self.lookup_kwargs.items())
+        super(HyperlinkedRelatedField, self).__init__(*args, **kwargs)
 
-    def get_attribute(self, obj):
-        return obj
+    def get_default_view_name(self, obj):
+        class_name = obj.__class__._meta.verbose_name_plural[:]
+        return 'api:{}-detail'.format(class_name)
 
-    def to_representation(self, value):
-        view = self.view_name or self._get_default_view_name(value)
-        kwargs = self._get_lookup_kwargs(value)
-        return reverse(view, kwargs=kwargs, request=self.context['request'])
+    def get_lookup_kwargs(self, obj):
+        return dict(
+            (key, nested_getattr(obj, val))
+            for key, val in self.lookup_kwargs.items())
+
+    def get_attribute(self, instance):
+        return instance
+
+    def get_url(self, obj, view_name, request, format):
+        view_name = self.view_name or self.get_default_view_name(obj)
+        url_kwargs = self.get_lookup_kwargs(obj)
+
+        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
 
 
 class ProjectSlugField(ReadOnlyField):
@@ -127,24 +148,6 @@ class ProjectSlugField(ReadOnlyField):
         return {'name': value.name, 'url': url}
 
 
-class HyperlinkedProjectItemField(HyperlinkedRelatedField):
-    def get_attribute(self, obj):
-        return get_attribute(obj, self.source_attrs)
-
-    def to_representation(self, value):
-        """
-        Return URL from item requiring project slug kwarg
-        """
-        try:
-            return reverse(
-                self.view_name, kwargs={'project_slug': value.project.slug,
-                                        'pk': value.id},
-                request=self.context.get('request', None),
-                format=self.format or self.context.get('format', None))
-        except NoReverseMatch:
-            raise Exception('Could not resolve URL for document.')
-
-
 class UpdatersField(ReadOnlyField):
     read_only = True
 
@@ -156,10 +159,7 @@ class UpdatersField(ReadOnlyField):
 
 
 class MinimalTopicSerializer(ModelSerializer):
-    url = URLField(lookup_kwarg_attrs={
-        'project_slug': 'project.slug',
-        'topic_node_id': 'topic_node_id'
-    })
+    url = IdentityURLField()
     topic_node_id = SerializerMethodField()
 
     class Meta:
