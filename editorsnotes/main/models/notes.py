@@ -59,9 +59,12 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     def get_absolute_url(self):
         return ('api:notes-detail', [self.project.slug, self.id])
 
+    def has_markup(self):
+        return self.markup_html is not None
+
     def get_referenced_items(self):
         from ..utils.markup_html import get_embedded_item_urls
-        if not self.markup_html:
+        if not self.has_markup:
             return []
 
         urls_by_type = get_embedded_item_urls(self.markup_html)

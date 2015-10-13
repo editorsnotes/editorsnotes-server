@@ -196,12 +196,12 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
     def get_affiliation(self):
         return self.project
 
-    def has_summary(self):
+    def has_markup(self):
         return self.markup is not None
 
     def get_referenced_items(self):
         from ..utils.markup_html import get_embedded_item_urls
-        if not self.markup_html:
+        if not self.has_markup():
             return []
 
         urls_by_type = get_embedded_item_urls(self.markup_html)
