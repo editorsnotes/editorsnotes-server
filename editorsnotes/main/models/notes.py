@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
@@ -58,11 +60,12 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
         return ('api:notes-detail', [self.project.slug, self.id])
 
     def get_referenced_items(self):
+        from ..utils.markup_html import get_embedded_item_urls
         if not self.markup_html:
             return []
 
         urls_by_type = get_embedded_item_urls(self.markup_html)
-        embedded_urls = set(chain(*urls_by_type.value()))
+        embedded_urls = set(chain(*urls_by_type.values()))
         return embedded_urls
 
     def get_affiliation(self):
