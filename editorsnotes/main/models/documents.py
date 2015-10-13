@@ -23,7 +23,7 @@ from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
 from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
-                  Administered, OrderingManager)
+                  Administered, OrderingManager, IsReferenced)
 
 __all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink']
 
@@ -58,7 +58,7 @@ FROM main_transcript WHERE main_transcript.document_id = main_document.id )
             })
 
 
-class Document(LastUpdateMetadata, Administered, URLAccessible,
+class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
                ProjectPermissionsMixin, UpdatersMixin, ZoteroItem):
     u"""
     Anything that can be taken as evidence for (documentation of) something.

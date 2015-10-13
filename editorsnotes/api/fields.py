@@ -29,51 +29,18 @@ class CurrentProjectDefault:
         return u'%s()' % self.__class__.__name__
 
 
-class EmbeddedItemsURLField(ReadOnlyField):
-    def to_representation(self, value):
-        urls_by_type = markup_html.get_embedded_item_urls(value)
-        embedded_urls = set(chain(*urls_by_type.values()))
+class UnqualifiedURLField(ReadOnlyField):
+    def get_attribute(self, obj):
+        # FIXME: format too
+        request = self.context['request']
+        value = super(ReadOnlyField, self).get_attribute(obj)
 
-        request = self.context.get('request')
-        if request:
-            embedded_urls = [
-                request.build_absolute_uri(url) for url in embedded_urls
-            ]
+        make_url = lambda path: request.build_absolute_uri(path)
 
-        return embedded_urls
-
-
-class EmbeddedItemsSerializedField(RelatedField):
-    def __init__(self, *args, **kwargs):
-        kwargs['read_only'] = True
-        super(EmbeddedItemsSerializedField, self).__init__(*args, **kwargs)
-
-    def make_serializer(self, item_type, queryset):
-        from . import NoteSerializer, TopicSerializer, DocumentSerializer
-
-        SERIALIZERS_BY_LABEL = {
-            'note': NoteSerializer,
-            'topic': TopicSerializer,
-            'document': DocumentSerializer
-        }
-
-        serializer_class = SERIALIZERS_BY_LABEL[item_type]
-        serializer_kwargs = {
-            'many': True,
-            'minimal': True,
-            'context': self.context
-        }
-        return serializer_class(queryset, **serializer_kwargs).data
-
-    def to_representation(self, value):
-        models_by_type = markup_html.get_embedded_models(value)
-
-        serialized_items = {
-            item_type: self.make_serializer(item_type, queryset)
-            for item_type, queryset in models_by_type.items()
-        }
-
-        return serialized_items
+        return (
+            make_url(value) if isinstance(value, basestring)
+            else map(make_url, value)
+        )
 
 
 class IdentityURLField(ReadOnlyField):

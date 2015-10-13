@@ -185,12 +185,9 @@ class ENIndex(ElasticSearchIndex):
 
         query = Search(using=self.es, index=self.name)\
             .filter(query_filter)\
-            .fields(['display_url', 'display_title'])
+            .fields(['display_url'])
 
-        return [
-            (result.display_url[0], result.display_title[0])
-            for result in query.execute().hits
-        ]
+        return [(result.display_url[0]) for result in query.execute().hits]
 
 
 class ActivityIndex(ElasticSearchIndex):

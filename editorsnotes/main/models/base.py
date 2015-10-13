@@ -55,7 +55,7 @@ class URLAccessible(object):
             self._meta.model_name, conditional_escape(self.as_text()))
 
 
-class ReferencesMixin(object):
+class IsReferenced(object):
     def get_referencing_items(self, labels=False):
         from editorsnotes.search import get_index
         index = get_index('main')

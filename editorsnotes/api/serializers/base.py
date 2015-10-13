@@ -1,23 +1,23 @@
-from ..fields import EmbeddedItemsURLField, EmbeddedItemsSerializedField
+from itertools import chain
+
+ensure_list = lambda val: [val] if isinstance(val, basestring) else val
 
 
-class EmbeddedMarkupReferencesMixin(object):
+class EmbeddedItemsMixin(object):
     def __init__(self, *args, **kwargs):
-        embed_style = kwargs.pop('embed_style', None)
-        super(EmbeddedMarkupReferencesMixin, self).__init__(*args, **kwargs)
+        self.include_embeds = kwargs.pop('include_embeds', False)
+        return super(EmbeddedItemsMixin, self).__init__(*args, **kwargs)
 
-        if embed_style is None:
-            return
+    def to_representation(self, instance):
+        data = super(EmbeddedItemsMixin, self).to_representation(instance)
 
-        if embed_style == 'urls':
-            field = EmbeddedItemsURLField
-        elif embed_style == 'nested':
-            field = EmbeddedItemsSerializedField
-        else:
-            raise ValueError('Bad value for `embed_style`. Must be "urls" or '
-                             "nested")
+        if self.include_embeds:
+            embedded_fields = getattr(self.Meta, 'embedded_fields', [])
+            urls = [ensure_list(data[key]) for key in embedded_fields]
+            urls = set(chain.from_iterable(urls))
+            data['_embedded'] = urls
 
-        self.fields['_embedded'] = field(source='markup_html')
+        return data
 
 
 class RelatedTopicSerializerMixin(object):

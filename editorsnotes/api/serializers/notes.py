@@ -5,11 +5,12 @@ from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from ..fields import (CurrentProjectDefault, ProjectSlugField,
-                      TopicAssignmentField, IdentityURLField)
+                      TopicAssignmentField, IdentityURLField,
+                      UnqualifiedURLField)
 from ..validators import UniqueToProjectValidator
 
 from .auth import MinimalUserSerializer
-from .base import EmbeddedMarkupReferencesMixin, RelatedTopicSerializerMixin
+from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
 
 __all__ = ['NoteSerializer']
@@ -35,7 +36,7 @@ class NoteStatusField(serializers.ReadOnlyField):
 
 
 # TODO: change license, fuller repr of updaters
-class NoteSerializer(RelatedTopicSerializerMixin,
+class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                      serializers.ModelSerializer):
     url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
@@ -45,11 +46,16 @@ class NoteSerializer(RelatedTopicSerializerMixin,
     status = NoteStatusField()
     related_topics = TopicAssignmentField()
 
+    references = UnqualifiedURLField(source='get_referenced_items')
+    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+
     class Meta:
+        embedded_fields = ('references', 'referenced_by',)
         model = Note
         fields = ('id', 'title', 'url', 'project', 'license',
                   'is_private', 'last_updated', 'updaters', 'related_topics',
-                  'markup', 'markup_html', 'status',)
+                  'markup', 'markup_html', 'status', 'references',
+                  'referenced_by',)
         validators = [
             UniqueToProjectValidator('title')
         ]

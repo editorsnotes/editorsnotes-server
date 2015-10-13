@@ -8,7 +8,7 @@ import reversion
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from .. import fields
 from ..utils.markup import render_markup
-from base import Administered, LastUpdateMetadata, URLAccessible
+from base import Administered, LastUpdateMetadata, URLAccessible, IsReferenced
 
 __all__ = ['Note', 'NOTE_STATUS_CHOICES']
 
@@ -20,7 +20,7 @@ NOTE_STATUS_CHOICES = (
 
 
 class Note(LastUpdateMetadata, Administered, URLAccessible,
-           ProjectPermissionsMixin, UpdatersMixin):
+           IsReferenced, ProjectPermissionsMixin, UpdatersMixin):
     u"""
     Text written by an editor or curator. The text is stored as XHTML,
     so it may have hyperlinks and all the other features that XHTML
@@ -56,6 +56,14 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     @models.permalink
     def get_absolute_url(self):
         return ('api:notes-detail', [self.project.slug, self.id])
+
+    def get_referenced_items(self):
+        if not self.markup_html:
+            return []
+
+        urls_by_type = get_embedded_item_urls(self.markup_html)
+        embedded_urls = set(chain(*urls_by_type.value()))
+        return embedded_urls
 
     def get_affiliation(self):
         return self.project

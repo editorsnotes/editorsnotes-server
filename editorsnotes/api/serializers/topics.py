@@ -7,10 +7,11 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Topic, TopicNode
 
 from ..fields import (CurrentProjectDefault, ProjectSlugField,
-                      TopicAssignmentField, IdentityURLField)
+                      UnqualifiedURLField, TopicAssignmentField,
+                      IdentityURLField)
 from ..validators import UniqueToProjectValidator
 
-from .base import EmbeddedMarkupReferencesMixin, RelatedTopicSerializerMixin
+from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
 
 __all__ = ['TopicSerializer', 'TopicNodeSerializer']
@@ -70,9 +71,9 @@ class AlternateNameField(serializers.Field):
         return value
 
 
-class TopicSerializer(EmbeddedMarkupReferencesMixin,
-                      RelatedTopicSerializerMixin,
+class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                       serializers.ModelSerializer):
+
     topic_node_id = ReadOnlyField(source='topic_node.id')
     type = ReadOnlyField(source='topic_node.type')
     alternate_names = AlternateNameField(required=False)
@@ -80,11 +81,16 @@ class TopicSerializer(EmbeddedMarkupReferencesMixin,
     project = ProjectSlugField(default=CurrentProjectDefault())
     related_topics = TopicAssignmentField(required=False)
 
+    references = UnqualifiedURLField(source='get_referenced_items')
+    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+
     class Meta:
+        embedded_fields = ('references', 'referenced_by',)
         model = Topic
         fields = ('id', 'topic_node_id', 'preferred_name', 'type',
                   'url', 'alternate_names', 'related_topics', 'project',
-                  'last_updated', 'markup', 'markup_html')
+                  'last_updated', 'markup', 'markup_html', 'references',
+                  'referenced_by',)
         validators = [
             UniqueToProjectValidator('preferred_name')
         ]

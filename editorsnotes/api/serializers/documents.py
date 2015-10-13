@@ -7,9 +7,10 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Document, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
 
-from .base import RelatedTopicSerializerMixin
+from .base import RelatedTopicSerializerMixin, EmbeddedItemsMixin
 from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
-                      ProjectSlugField, TopicAssignmentField, IdentityURLField)
+                      ProjectSlugField, TopicAssignmentField, IdentityURLField,
+                      UnqualifiedURLField)
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
 
@@ -82,7 +83,7 @@ class UniqueDocumentDescriptionValidator:
             })
 
 
-class DocumentSerializer(RelatedTopicSerializerMixin,
+class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
     url = IdentityURLField()
     project = ProjectSlugField(default=CurrentProjectDefault())
@@ -92,11 +93,14 @@ class DocumentSerializer(RelatedTopicSerializerMixin,
     scans = ScanSerializer(many=True, required=False, read_only=True)
     cited_by = serializers.SerializerMethodField('get_citations')
 
+    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+
     class Meta:
+        embedded_fields = ('referenced_by',)
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
                   'scans', 'transcript', 'related_topics', 'cited_by',
-                  'zotero_data',)
+                  'zotero_data', 'referenced_by',)
         validators = [
             UniqueDocumentDescriptionValidator()
         ]
