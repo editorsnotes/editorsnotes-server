@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from editorsnotes.auth.models import Project, User
-from editorsnotes.search import get_index
+from editorsnotes.search import activity as activity_search
 
 from .base import LinkerMixin
 from ..linkers import ActivityLinker
@@ -90,5 +90,6 @@ class ActivityView(GenericAPIView):
     def get(self, request, format=None, **kwargs):
         obj = self.get_object(**kwargs)
         es_query = self.get_es_query()
-        data = get_index('activity').get_activity_for(obj, es_query)
+
+        data = activity_search.get_activity_for(obj, es_query)
         return Response({ 'activity': data })

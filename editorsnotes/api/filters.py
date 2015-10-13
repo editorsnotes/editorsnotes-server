@@ -1,7 +1,6 @@
 from elasticsearch_dsl import Search, Q
 from rest_framework.filters import BaseFilterBackend
 
-from editorsnotes.search import get_index
 from editorsnotes.search.utils import clean_query_string
 
 BASE_QUERY = {'query': {'filtered': {'query': {'match_all': {}}}}}

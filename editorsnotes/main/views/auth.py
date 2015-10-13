@@ -12,7 +12,7 @@ import reversion
 
 from editorsnotes.auth.models import (
     User, Project, ProjectInvitation, UserFeedback)
-from editorsnotes.search import get_index
+from editorsnotes.search.activity import get_activity_for
 from ..forms import UserFeedbackForm
 
 @reversion.create_revision()
@@ -66,8 +66,7 @@ def user(request, username=None):
     o['user'] = user
 
 
-    activity_index = get_index('activity')
-    o['activities'] = activity_index.get_activity_for(user)
+    o['activities'] = get_activity_for(user)
 
     # FIX
     # o['profile'] = get_for(user)
@@ -111,8 +110,7 @@ def all_feedback(request):
 def project(request, project_slug):
     o = {}
     o['project'] = get_object_or_404(Project, slug=project_slug)
-    activity_index = get_index('activity')
-    o['activities'] = activity_index.get_activity_for(o['project'])
+    o['activities'] = get_activity_for(o['project'])
 
     if request.user.is_authenticated():
         o['project_role'] = o['project'].get_role_for(request.user)

@@ -2,15 +2,15 @@ from django.apps import apps as django_apps
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from . import get_index
+from . import activity, items
 
 main = django_apps.get_app_config('main')
-en_index = get_index('main')
-activity_index = get_index('activity')
+en_index = items.index
+activity_index = activity.index
 
 @receiver(post_save, sender=main.get_model('LogActivity'))
 def update_activity_index(sender, instance, created, **kwargs):
-    activity_index.handle_edit(instance)
+    activity.handle_edit(instance)
 
 @receiver(post_save)
 def update_elastic_search_handler(sender, instance, created, **kwargs):

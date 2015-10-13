@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from editorsnotes.auth.models import Project, User, FeaturedItem, ProjectRole
-from editorsnotes.search import get_index
+from editorsnotes.search import items as items_search
 
 from ..fields import CustomLookupHyperlinkedField, IdentityURLField
 
@@ -9,7 +9,7 @@ __all__ = ['ProjectSerializer', 'MinimalUserSerializer', 'UserSerializer']
 
 
 def count_for(project, doc_type):
-    index = get_index('main')
+    index = items_search.index
     count = index.es.count(
         {'query': {'term': {'serialized.project.name': project.name}}},
         index=index.name,

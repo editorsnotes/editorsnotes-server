@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand
 
-from ... import get_index
+from .. import items
 
 class Command(BaseCommand):
     help = 'Rebuild elasticsearch index'
     def handle(self, *args, **kwargs):
-        en_index = get_index('main')
+        en_index = items.index
         en_index.delete()
         en_index.create()
         for doc_type in en_index.document_types.values():

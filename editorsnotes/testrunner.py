@@ -1,7 +1,8 @@
 from django.conf import settings
 from django_nose import NoseTestSuiteRunner
 
-from editorsnotes.search import get_index
+from editorsnotes.search import items
+from editorsnotes.search import activity
 
 from pyelasticsearch.exceptions import IndexAlreadyExistsError
 
@@ -13,8 +14,8 @@ class CustomTestSuiteRunner(NoseTestSuiteRunner):
         test_index_prefix = settings.ELASTICSEARCH_PREFIX + '-test'
         settings.ELASTICSEARCH_PREFIX = test_index_prefix
 
-        en_index = get_index('main')
-        activity_index = get_index('activity')
+        en_index = items.index
+        activity_index = activity.index
 
         en_index.name = en_index.get_name()
         activity_index.name = activity_index.get_name()
@@ -34,6 +35,5 @@ class CustomTestSuiteRunner(NoseTestSuiteRunner):
     def teardown_test_environment(self, **kwargs):
         super(CustomTestSuiteRunner, self).teardown_test_environment(**kwargs)
 
-        get_index('main').delete()
-        get_index('activity').delete()
-
+        items.index.delete()
+        activity.index.delete()

@@ -2,7 +2,7 @@ from django.apps import apps as django_apps
 from django.apps import AppConfig
 from requests.exceptions import ConnectionError
 
-from . import get_index
+from . import items
 
 def register_models(en_index):
     main = django_apps.get_app_config('main')
@@ -29,7 +29,8 @@ class SearchAppConfig(AppConfig):
     verbose_name = "Editors' Notes search"
     def ready(self):
         try:
-            en_index = get_index('main')
+            en_index = items.index
+            en_index.exists()
         except ConnectionError as err:
             raise EnvironmentError(
                 'Could not connect to Elasticsearch server at {}. '

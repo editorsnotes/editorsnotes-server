@@ -12,12 +12,12 @@ from reversion.models import Revision
 
 from editorsnotes.auth.models import Project, User, LogActivity
 from editorsnotes.main import models as main_models
-from editorsnotes.search import get_index
+from editorsnotes.search import items, activity
 
 
 def flush_es_indexes():
-    en_index = get_index('main')
-    activity_index = get_index('activity')
+    en_index = items.index
+    activity_index = activity.index
 
     if en_index.exists():
         en_index.delete()
@@ -29,8 +29,8 @@ def flush_es_indexes():
 
 
 def delete_es_indexes():
-    en_index = get_index('main')
-    activity_index = get_index('activity')
+    en_index = items.index
+    activity_index = activity.index
     if en_index.exists():
         en_index.delete()
     if activity_index.exists():
