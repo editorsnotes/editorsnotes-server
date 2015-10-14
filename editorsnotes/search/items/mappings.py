@@ -41,6 +41,10 @@ class NoteDocType(BaseDocType):
 
 
 class TopicDocType(BaseDocType):
+    serialized = base_serialized_field()\
+        .field('types', String(index='not_analyzed'))\
+        .field('same_as', String(index='not_analyzed'))
+
     class Meta:
         index = settings.ELASTICSEARCH_PREFIX + '-items'
         doc_type = 'topic'
