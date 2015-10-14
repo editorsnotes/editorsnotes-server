@@ -5,7 +5,7 @@ from django.test import TransactionTestCase
 from pyelasticsearch import ElasticHttpError
 
 from ..api.tests import ClearContentTypesMixin
-from . import items
+from .items.helpers import perform_query
 
 class SearchTestCase(ClearContentTypesMixin, TransactionTestCase):
     def test_escape_special_chars(self):
@@ -15,6 +15,6 @@ class SearchTestCase(ClearContentTypesMixin, TransactionTestCase):
 
         for query in es_special_chars:
             try:
-                items.perform_query(query)
+                perform_query(query)
             except ElasticHttpError:
                 self.fail('Search for query “{}” raised an exception.'.format(query))

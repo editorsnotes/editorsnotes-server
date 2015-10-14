@@ -8,6 +8,8 @@ from django.core import urlresolvers
 from django.db import models
 from django.utils.html import conditional_escape
 
+from editorsnotes.search.items.helpers import get_referencing_items
+
 from .. import utils
 
 
@@ -57,8 +59,6 @@ class URLAccessible(object):
 
 class IsReferenced(object):
     def get_referencing_items(self, labels=False):
-        from editorsnotes.search.items import get_referencing_items
-
         url = self.get_absolute_url()
         referencing_urls = get_referencing_items(url)
 

@@ -4,18 +4,10 @@ Functions for the items index.
 
 from itertools import chain
 
-from django.utils.functional import SimpleLazyObject
-
 from elasticsearch_dsl import F
 
-from .utils import clean_query_string
-
-
-def _get_index():
-    from .index import ENIndex
-    return ENIndex()
-
-index = SimpleLazyObject(_get_index)
+from . import index
+from ..utils import clean_query_string
 
 
 def data_for_object(obj):

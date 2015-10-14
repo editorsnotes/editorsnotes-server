@@ -12,7 +12,7 @@ import reversion
 
 from editorsnotes.auth.models import (
     User, Project, ProjectInvitation, UserFeedback)
-from editorsnotes.search.activity import get_activity_for
+from editorsnotes.search.activity.helpers import get_activity_for
 from ..forms import UserFeedbackForm
 
 @reversion.create_revision()

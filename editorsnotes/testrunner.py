@@ -1,39 +1,27 @@
-from django.conf import settings
 from django_nose import NoseTestSuiteRunner
 
-from editorsnotes.search import items
-from editorsnotes.search import activity
+from editorsnotes.search import activity_index, items_index
 
-from pyelasticsearch.exceptions import IndexAlreadyExistsError
+from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 
-# custom test changes elasticsearch index name
+
+ES_INDICES = (items_index, activity_index,)
+
+
 class CustomTestSuiteRunner(NoseTestSuiteRunner):
     def setup_test_environment(self, **kwargs):
         super(CustomTestSuiteRunner, self).setup_test_environment(**kwargs)
 
-        test_index_prefix = settings.ELASTICSEARCH_PREFIX + '-test'
-        settings.ELASTICSEARCH_PREFIX = test_index_prefix
+        for index in ES_INDICES:
+            try:
+                index.delete()
+            except ElasticHttpNotFoundError:
+                pass
 
-        en_index = items.index
-        activity_index = activity.index
-
-        en_index.name = en_index.get_name()
-        activity_index.name = activity_index.get_name()
-
-        for doctype in en_index.document_types.values():
-            doctype.index_name = en_index.name
-
-        try:
-            en_index.create()
-            activity_index.create()
-        except IndexAlreadyExistsError:
-            en_index.delete()
-            en_index.create()
-            activity_index.delete()
-            activity_index.create()
+            index.initialize()
 
     def teardown_test_environment(self, **kwargs):
         super(CustomTestSuiteRunner, self).teardown_test_environment(**kwargs)
 
-        items.index.delete()
-        activity.index.delete()
+        for index in ES_INDICES:
+            index.delete()

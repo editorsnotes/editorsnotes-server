@@ -12,29 +12,19 @@ from reversion.models import Revision
 
 from editorsnotes.auth.models import Project, User, LogActivity
 from editorsnotes.main import models as main_models
-from editorsnotes.search import items, activity
+from editorsnotes.search import items_index, activity_index
 
 
 def flush_es_indexes():
-    en_index = items.index
-    activity_index = activity.index
-
-    if en_index.exists():
-        en_index.delete()
-    en_index.create()
-
-    if activity_index.exists():
-        activity_index.delete()
-    activity_index.create()
-
+    for index in [activity_index, items_index]:
+        if index.exists():
+            index.delete()
+        index.initialize()
 
 def delete_es_indexes():
-    en_index = items.index
-    activity_index = activity.index
-    if en_index.exists():
-        en_index.delete()
-    if activity_index.exists():
-        activity_index.delete()
+    for index in [activity_index, items_index]:
+        if index.exists():
+            index.delete()
 
 TEST_TOPIC = {
     'preferred_name': u'Patrick Golden',
