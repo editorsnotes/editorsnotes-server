@@ -3,12 +3,12 @@ from django.db import models
 
 from editorsnotes.main.models.auth import LogActivity
 
-from ... import get_index
+from .. import activity
 
 class Command(BaseCommand):
     help = 'Rebuild elasticsearch activity index'
     def handle(self, *args, **kwargs):
-        activity_index = get_index('activity')
+        activity_index = activity.index
 
         activity_index.delete()
         activity_index.create()

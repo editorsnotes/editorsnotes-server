@@ -45,8 +45,8 @@ def get_item_types():
     data = json.loads(cache.get('item_types'))
 
     from editorsnotes.main.models import Document
-    from editorsnotes.search import get_index
-    en_index = get_index('main')
+    from editorsnotes.search import items
+    en_index = items.index
     facet_search = en_index.search_model(Document, {
         'query': {'filtered': {'query': {'match_all': {}}}},
         'facets': {

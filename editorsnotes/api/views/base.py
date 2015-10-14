@@ -23,7 +23,7 @@ from editorsnotes.auth.models import (
 
 from editorsnotes.main.models import Note, Topic, Document
 from editorsnotes.main.models.base import Administered
-from editorsnotes.search import get_index
+from editorsnotes.search import items as items_search
 
 from ..filters import (ElasticSearchFilterBackend,
                        ElasticSearchAutocompleteFilterBackend)
@@ -71,8 +71,8 @@ class ElasticSearchRetrieveMixin(RetrieveModelMixin):
 
         # Still need to get the object to check for perms
         self.object = self.get_object()
-        en_index = get_index('main')
-        data = en_index.data_for_object(self.object)
+
+        data = items_search.data_for_object(self.object)
         return Response(data['_source']['serialized'])
 
 class LinkerMixin(object):
@@ -131,8 +131,7 @@ class ElasticSearchListMixin(object):
 
     def get_queryset(self):
         model = self.queryset.model
-        index = get_index('main')
-        return index.base_search_for_model(model)
+        return items_search.index.make_search_for_model(model)
 
     def list(self, request, *args, **kwargs):
         """
@@ -334,7 +333,7 @@ def root(request, format=None):
 def search_model(Model, query):
     query = query.to_dict()
     query['fields'] = ['display_title', 'display_url']
-    results = get_index('main').search_model(Model, query)
+    results = items_search.search_model(Model, query)
     return [
         {
             'title': result['fields']['display_title'][0],
