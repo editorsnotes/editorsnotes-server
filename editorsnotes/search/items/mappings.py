@@ -56,3 +56,11 @@ class DocumentDocType(BaseDocType):
     class Meta:
         index = settings.ELASTICSEARCH_PREFIX + '-items'
         doc_type = 'document'
+
+class ProjectDocType(DocType):
+    serialized = Object()\
+        .field('url', String(index='not_analyzed'))
+
+    class Meta:
+        index = settings.ELASTICSEARCH_PREFIX + '-items'
+        doc_type = 'project'
