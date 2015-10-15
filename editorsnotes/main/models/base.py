@@ -35,10 +35,7 @@ class LastUpdateMetadata(CreationMetadata):
 
 
 class Administered(object):
-    def get_admin_url(self):
-        return urlresolvers.reverse(
-            'admin:main_%s_change' % self._meta.model_name,
-            args=(self.get_affiliation().slug, self.id,))
+    pass
 
 
 class URLAccessible(object):

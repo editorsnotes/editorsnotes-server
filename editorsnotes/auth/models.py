@@ -4,7 +4,7 @@ from collections import Counter
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.dispatch import receiver
@@ -16,9 +16,9 @@ from editorsnotes.main import fields
 from editorsnotes.main.management import get_all_project_permissions
 from editorsnotes.main.models.base import URLAccessible, CreationMetadata
 
+
 __all__ = [
     'User',
-    'UserFeedback',
     'Project',
     'ProjectRole',
     'ProjectInvitation',
@@ -120,23 +120,6 @@ class User(AbstractUser, URLAccessible):
     @staticmethod
     def get_activity_for(user, max_count=50):
         return activity_for(user, max_count=50)
-
-
-PURPOSE_CHOICES = (
-    (1, 'Feedback'),
-    (2, 'Bug report'),
-    (9, 'Other')
-)
-
-
-class UserFeedback(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False)
-    created = models.DateTimeField(auto_now_add=True, editable=False)
-    purpose = models.IntegerField(choices=PURPOSE_CHOICES)
-    message = models.TextField()
-
-    class Meta:
-        app_label = 'main'
 
 
 class UpdatersMixin(object):
@@ -400,7 +383,7 @@ class FeaturedItem(CreationMetadata, ProjectPermissionsMixin):
     project = models.ForeignKey(Project)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
 
     def __unicode__(self):
         return u'({})-- {}'.format(
@@ -437,7 +420,7 @@ class LogActivity(models.Model):
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
 
     display_title = models.CharField(max_length=300)
 

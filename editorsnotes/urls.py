@@ -13,8 +13,3 @@ urlpatterns = patterns('',
 urlpatterns += patterns('',
     url(r'^auth/', include('editorsnotes.auth.urls', namespace='auth', app_name='auth')),
 )
-
-# The rest
-urlpatterns += patterns('',
-    url(r'^', include('editorsnotes.other_urls')),
-)
