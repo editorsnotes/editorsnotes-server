@@ -15,10 +15,12 @@ class ElasticSearchFilterBackend(BaseFilterBackend):
         search = queryset
 
         if hasattr(request, 'project') or 'project' in params:
-            project_name = request.project.name \
-                    if hasattr(request, 'project') \
-                    else params['project']
-            search = search.filter('term', **{ 'serialized.project.name': project_name })
+            project_url = (
+                request.project.get_absolute_url()
+                if hasattr(request, 'project')
+                else params['project'])
+
+            search = search.filter('term', **{'serialized.project': project_url})
 
         if 'updater' in params:
             search = search.filter('term', **{ 'serialized.updater.usernmae': params.get('updater') })
