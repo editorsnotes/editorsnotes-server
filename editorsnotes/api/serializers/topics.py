@@ -26,7 +26,8 @@ class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'references', 'referenced_by',)
+        embedded_fields = ('project', 'references', 'referenced_by',
+                           'related_topics',)
         model = Topic
         fields = ('id', 'url', 'preferred_name', 'types', 'same_as',
                   'alternate_names', 'related_topics', 'project',

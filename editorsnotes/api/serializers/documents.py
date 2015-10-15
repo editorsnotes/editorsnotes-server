@@ -98,7 +98,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'referenced_by',)
+        embedded_fields = ('project', 'referenced_by', 'related_topics',)
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
                   'scans', 'transcript', 'related_topics', 'cited_by',

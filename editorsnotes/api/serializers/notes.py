@@ -52,7 +52,8 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'references', 'referenced_by',)
+        embedded_fields = ('project', 'references', 'referenced_by',
+                           'related_topics')
         model = Note
         fields = ('id', 'title', 'url', 'project', 'license',
                   'is_private', 'last_updated', 'updaters', 'related_topics',

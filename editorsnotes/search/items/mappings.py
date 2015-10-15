@@ -11,13 +11,9 @@ def base_serialized_field():
     mapping.field('created', Date())
     mapping.field('creator', String(index='not_analyzed'))
 
-    related_topics = Nested()
-    related_topics.field('preferred_name', String(index='not_analyzed'))
-    related_topics.field('url', String(index='not_analyzed'))
-    mapping.field('related_topics', related_topics)
-
     # URL references
     mapping.field('project', String(index='not_analyzed'))
+    mapping.field('related_topics', String(index='not_analyzed', multi=True))
     mapping.field('references', String(index='not_analyzed', multi=True))
     mapping.field('referenced_by', String(index='not_analyzed', multi=True))
 

@@ -116,49 +116,30 @@ class UpdatersField(ReadOnlyField):
         return [u.username for u in value]
 
 
-class MinimalTopicSerializer(ModelSerializer):
-    url = IdentityURLField()
-
-    class Meta:
-        model = Topic
-        fields = ('id', 'preferred_name', 'url',)
-
-
-class TopicAssignmentField(RelatedField):
+class TopicAssignmentField(HyperlinkedRelatedField):
     default_error_messages = {
-        'no_match': 'No topic matches this URL.',
         'outside_project': 'Related topics must be within the same project.',
-        'bad_path': 'This URL is not a topic API url.'
     }
 
     def __init__(self, *args, **kwargs):
         kwargs['queryset'] = Topic.objects.all()
+        kwargs['view_name'] = 'api:topics-detail'
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
 
-    def get_attribute(self, obj):
-        return [ta.topic for ta in obj.related_topics.all()]
+    def get_url(self, obj, view_name, request, format):
+        args = (obj.topic.project_slug, obj.topic.id)
+        return reverse('api:topics-detail', args=args, request=request,
+                       format=format)
 
-    def to_representation(self, topics):
-        return [MinimalTopicSerializer(topic, context=self.context).data
-                for topic in topics]
+    def get_object(self, view_name, view_args, view_kwargs):
+        request = self.context['request']
 
-    def to_internal_value(self, data):
-        if self.read_only:
-            return
-        return [self._topic_from_url(url) for url in data]
-
-    def _topic_from_url(self, url):
-        try:
-            match = resolve(url)
-        except Resolver404:
-            self.fail('no_match')
-
-        if match.view_name != 'api:topics-detail':
-            self.fail('bad_path')
-
-        current_project = self.context['request'].project
-        lookup_project_slug = match.kwargs.pop('project_slug')
-        if lookup_project_slug != current_project.slug:
+        if view_kwargs['project_slug'] != request.project.slug:
             self.fail('outside_project')
 
-        return self.get_queryset().get(project=current_project, **match.kwargs)
+        lookup_kwargs = {
+            'project__slug': view_kwargs['project_slug'],
+            'id': view_kwargs['pk']
+        }
+
+        return self.get_queryset().get(**lookup_kwargs)
