@@ -26,14 +26,37 @@ class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'references', 'referenced_by',
-                           'related_topics', 'updaters',)
         model = Topic
-        fields = ('id', 'url', 'preferred_name', 'types', 'same_as',
-                  'updaters', 'created',
-                  'alternate_names', 'related_topics', 'project',
-                  'last_updated', 'markup', 'markup_html', 'references',
-                  'referenced_by',)
+        fields = (
+            'id',
+            'url',
+            'project',
+
+            'preferred_name',
+
+            'created',
+            'last_updated',
+            'updaters',
+
+            'types',
+            'same_as',
+            'alternate_names',
+
+            'markup',
+            'markup_html',
+
+            'related_topics',
+            'references',
+            'referenced_by',
+        )
+        embedded_fields = (
+            'project',
+            'updaters',
+
+            'related_topics',
+            'references',
+            'referenced_by',
+        )
         validators = [UniqueToProjectValidator('preferred_name')]
 
     def __init__(self, *args, **kwargs):

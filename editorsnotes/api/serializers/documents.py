@@ -100,13 +100,32 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'referenced_by', 'related_topics',
-                           'updaters')
         model = Document
-        fields = ('id', 'description', 'url', 'project', 'created',
-                  'last_updated', 'updaters',
-                  'scans', 'transcript', 'related_topics', 'cited_by',
-                  'zotero_data', 'referenced_by',)
+        fields = (
+            'id',
+            'url',
+            'project',
+
+            'description',
+
+            'created',
+            'last_updated',
+            'updaters',
+
+            'zotero_data',
+            'scans',
+            'transcript',
+
+            'related_topics',
+            'cited_by',
+            'referenced_by',
+        )
+        embedded_fields = (
+            'project',
+            'updaters',
+            'related_topics',
+            'referenced_by',
+        )
         validators = [
             UniqueDocumentDescriptionValidator()
         ]

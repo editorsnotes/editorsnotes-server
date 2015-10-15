@@ -9,7 +9,6 @@ from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
                       UnqualifiedURLField)
 from ..validators import UniqueToProjectValidator
 
-from .auth import MinimalUserSerializer
 from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
 
@@ -52,14 +51,35 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'references', 'referenced_by', 'updaters',
-                           'related_topics')
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'license',
-                  'is_private', 'created', 'last_updated', 'updaters',
-                  'related_topics',
-                  'markup', 'markup_html', 'status', 'references',
-                  'referenced_by',)
+        fields = (
+            'id',
+            'url',
+            'project',
+
+            'title',
+
+            'status',
+            'is_private',
+            'license',
+            'created',
+            'last_updated',
+            'updaters',
+
+            'markup',
+            'markup_html',
+
+            'related_topics',
+            'references',
+            'referenced_by',
+        )
+        embedded_fields = (
+            'project',
+            'updaters',
+            'related_topics'
+            'references',
+            'referenced_by',
+        )
         validators = [
             UniqueToProjectValidator('title')
         ]
