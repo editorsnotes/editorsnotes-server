@@ -7,7 +7,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
-from django_browserid.views import Verify
 import reversion
 
 from editorsnotes.auth.models import (
@@ -41,12 +40,6 @@ def create_invited_user(email):
     invitation.delete()
 
     return new_user
-
-class CustomBrowserIDVerify(Verify):
-    failure_url = '/accounts/login/'
-    def get_success_url(self):
-        return self.request.GET.get('return_to',
-                                    self.request.user.get_absolute_url())
 
 def user_logout(request):
     auth.logout(request)

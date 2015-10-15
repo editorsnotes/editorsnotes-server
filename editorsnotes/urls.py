@@ -3,7 +3,6 @@
 from django.conf.urls import patterns, url, include
 from django.conf import settings
 from django.views.generic.base import RedirectView
-from editorsnotes.main.views.auth import CustomBrowserIDVerify
 
 # API
 urlpatterns = patterns('',

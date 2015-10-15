@@ -3,7 +3,6 @@
 from django.conf.urls import patterns, url, include
 from django.conf import settings
 from django.views.generic.base import RedirectView
-from editorsnotes.main.views.auth import CustomBrowserIDVerify
 
 # These will be intercepted by apache in production
 urlpatterns = patterns('',
@@ -19,7 +18,6 @@ urlpatterns += patterns('',
     url(r'^accounts/logout/$', 'editorsnotes.main.views.auth.user_logout', name='user_logout_view'),
     url(r'^accounts/profile/$', 'editorsnotes.main.views.auth.user'),
     url(r'^accounts/profile/feedback/$', 'editorsnotes.main.views.auth.user_feedback', name='user_feedback_view'),
-    url(r'^accounts/browserid/$', CustomBrowserIDVerify.as_view(), name='browserid_verify'),
     url(r'^users/(?P<username>[\w@\+\.\-]+)/$', 'editorsnotes.main.views.auth.user', name='user_view'),
 )
 

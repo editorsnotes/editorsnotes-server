@@ -41,7 +41,6 @@ ROOT_URLCONF = 'editorsnotes.urls'
 AUTH_USER_MODEL = 'main.User'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'django_browserid.auth.BrowserIDBackend',
 )
 
 LOGIN_REDIRECT_URL = '/auth/'
@@ -84,7 +83,6 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'editorsnotes.main.context_processors.browserid',
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
@@ -105,7 +103,6 @@ MIDDLEWARE_CLASSES = (
 
 INSTALLED_APPS = (
     'django.contrib.auth',
-    'django_browserid',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
@@ -126,7 +123,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
-BROWSERID_CREATE_USER = 'editorsnotes.main.views.auth.create_invited_user'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
