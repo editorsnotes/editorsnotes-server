@@ -41,18 +41,3 @@ urlpatterns += patterns('',
 urlpatterns += patterns('',
     url(r'^', include('editorsnotes.main.urls')),
 )
-
-
-urlpatterns += patterns('editorsnotes.djotero.views',
-#    url(r'^document/upload/$', 'import_zotero', name='import_zotero_view'),
-#    url(r'^document/upload/libraries/$', 'libraries', name='libraries_view'),
-#    url(r'^document/upload/collections/$', 'collections', name='collections_view'),
-#    url(r'^document/upload/items/$', 'items', name='items_view'),
-#    url(r'^document/upload/continue/$', 'items_continue', name='items_continue_view'),
-#    url(r'^document/upload/import/$', 'import_items', name='import_items_view'),
-    url(r'^user/zotero_info$', 'update_zotero_info', name='update_zotero_info_view'),
-    url(r'^api/metadata/documents/item_template/$', 'item_template', name='item_template_view'),
-    url(r'^api/metadata/documents/item_types/$', 'item_types', name='item_types_view'),
-    url(r'^api/metadata/documents/item_type_creators/$', 'item_type_creators', name='item_type_creators_view'),
-    url(r'^api/document/archives/$', 'api_archives', name='api_archives_view'),
-)
