@@ -87,7 +87,8 @@ class UniqueDocumentDescriptionValidator:
 class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
     url = IdentityURLField()
-    project = HyperlinkedAffiliatedProjectField(default=CurrentProjectDefault())
+    project = HyperlinkedAffiliatedProjectField(
+        default=CurrentProjectDefault())
 
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)

@@ -1,15 +1,9 @@
-from itertools import chain
-
-from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
-from rest_framework.relations import (
-    HyperlinkedRelatedField, RelatedField, get_attribute)
+from rest_framework.relations import HyperlinkedRelatedField
+# from rest_framework.relations import get_attribute
 from rest_framework.reverse import reverse
-from rest_framework.serializers import (
-    ModelSerializer, ReadOnlyField, SerializerMethodField)
+from rest_framework.serializers import ReadOnlyField
 
-from editorsnotes.auth.models import Project
 from editorsnotes.main.models import Topic
-from editorsnotes.main.utils import markup_html
 
 
 def nested_getattr(obj, attr_string):
@@ -32,6 +26,7 @@ class CurrentProjectDefault:
 class HyperlinkedAffiliatedProjectField(ReadOnlyField):
     def get_attribute(self, obj):
         return obj.get_affiliation()
+
     def to_representation(self, value):
         request = self.context['request']
         return request.build_absolute_uri(value.get_absolute_url())
@@ -74,17 +69,14 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     """
     read_only = True
 
-    def __init__(self, view_name=None, lookup_kwarg_attrs=None,
-                 *args, **kwargs):
-        DEFAULT_LOOKUP_ATTRS = {
+    def __init__(self, *args, **kwargs):
+        self.lookup_kwarg_attrs = kwargs.pop('lookup_kwarg_attrs', {
             'project_slug': 'project.slug',
             'pk': 'id'
-        }
-        self.lookup_kwargs = lookup_kwarg_attrs or DEFAULT_LOOKUP_ATTRS.copy()
+        })
 
         # View name will be figured out later, once the instance is known.
-        self.view_name = None
-
+        self.view_name = kwargs.pop('view_name', None)
         super(HyperlinkedRelatedField, self).__init__(*args, **kwargs)
 
     def get_default_view_name(self, obj):
@@ -94,7 +86,7 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     def get_lookup_kwargs(self, obj):
         return dict(
             (key, nested_getattr(obj, val))
-            for key, val in self.lookup_kwargs.items())
+            for key, val in self.lookup_kwarg_attrs.items())
 
     def get_attribute(self, instance):
         return instance
@@ -102,8 +94,8 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     def get_url(self, obj, view_name, request, format):
         view_name = self.view_name or self.get_default_view_name(obj)
         url_kwargs = self.get_lookup_kwargs(obj)
-
-        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+        return reverse(view_name, kwargs=url_kwargs,
+                       request=request, format=format)
 
 
 class UpdatersField(ReadOnlyField):
