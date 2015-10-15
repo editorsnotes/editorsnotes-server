@@ -20,7 +20,7 @@ class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     project = HyperlinkedAffiliatedProjectField(
         default=CurrentProjectDefault())
 
-    related_topics = TopicAssignmentField(required=False)
+    related_topics = TopicAssignmentField(many=True)
 
     references = UnqualifiedURLField(source='get_referenced_items')
     referenced_by = UnqualifiedURLField(source='get_referencing_items')

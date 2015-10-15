@@ -114,12 +114,13 @@ class TopicAssignmentField(HyperlinkedRelatedField):
     }
 
     def __init__(self, *args, **kwargs):
+        # Set these automatically
         kwargs['queryset'] = Topic.objects.all()
         kwargs['view_name'] = 'api:topics-detail'
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
 
     def get_url(self, obj, view_name, request, format):
-        args = (obj.topic.project_slug, obj.topic.id)
+        args = (obj.topic.project.slug, obj.topic.id)
         return reverse('api:topics-detail', args=args, request=request,
                        format=format)
 

@@ -92,7 +92,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
 
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
-    related_topics = TopicAssignmentField()
+    related_topics = TopicAssignmentField(many=True)
     scans = ScanSerializer(many=True, required=False, read_only=True)
     cited_by = serializers.SerializerMethodField('get_citations')
 

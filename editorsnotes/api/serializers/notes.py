@@ -46,7 +46,7 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     updaters = MinimalUserSerializer(read_only=True, many=True,
                                      source='get_all_updaters')
     status = NoteStatusField()
-    related_topics = TopicAssignmentField()
+    related_topics = TopicAssignmentField(many=True)
 
     references = UnqualifiedURLField(source='get_referenced_items')
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
