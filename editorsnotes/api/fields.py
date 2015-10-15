@@ -1,15 +1,9 @@
-from itertools import chain
-
-from django.core.urlresolvers import resolve, NoReverseMatch, Resolver404
-from rest_framework.relations import (
-    HyperlinkedRelatedField, RelatedField, get_attribute)
+from rest_framework.relations import HyperlinkedRelatedField
+# from rest_framework.relations import get_attribute
 from rest_framework.reverse import reverse
-from rest_framework.serializers import (
-    ModelSerializer, ReadOnlyField, SerializerMethodField)
+from rest_framework.serializers import ReadOnlyField
 
-from editorsnotes.auth.models import Project
 from editorsnotes.main.models import Topic
-from editorsnotes.main.utils import markup_html
 
 
 def nested_getattr(obj, attr_string):
@@ -27,6 +21,15 @@ class CurrentProjectDefault:
 
     def __repr__(self):
         return u'%s()' % self.__class__.__name__
+
+
+class HyperlinkedAffiliatedProjectField(ReadOnlyField):
+    def get_attribute(self, obj):
+        return obj.get_affiliation()
+
+    def to_representation(self, value):
+        request = self.context['request']
+        return request.build_absolute_uri(value.get_absolute_url())
 
 
 class UnqualifiedURLField(ReadOnlyField):
@@ -66,17 +69,14 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     """
     read_only = True
 
-    def __init__(self, view_name=None, lookup_kwarg_attrs=None,
-                 *args, **kwargs):
-        DEFAULT_LOOKUP_ATTRS = {
+    def __init__(self, *args, **kwargs):
+        self.lookup_kwarg_attrs = kwargs.pop('lookup_kwarg_attrs', {
             'project_slug': 'project.slug',
             'pk': 'id'
-        }
-        self.lookup_kwargs = lookup_kwarg_attrs or DEFAULT_LOOKUP_ATTRS.copy()
+        })
 
         # View name will be figured out later, once the instance is known.
-        self.view_name = None
-
+        self.view_name = kwargs.pop('view_name', None)
         super(HyperlinkedRelatedField, self).__init__(*args, **kwargs)
 
     def get_default_view_name(self, obj):
@@ -86,7 +86,7 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     def get_lookup_kwargs(self, obj):
         return dict(
             (key, nested_getattr(obj, val))
-            for key, val in self.lookup_kwargs.items())
+            for key, val in self.lookup_kwarg_attrs.items())
 
     def get_attribute(self, instance):
         return instance
@@ -94,25 +94,8 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     def get_url(self, obj, view_name, request, format):
         view_name = self.view_name or self.get_default_view_name(obj)
         url_kwargs = self.get_lookup_kwargs(obj)
-
-        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
-
-
-class ProjectSlugField(ReadOnlyField):
-    def __init__(self, *args, **kwargs):
-        self.queryset = Project.objects.all()
-        super(ProjectSlugField, self).__init__(*args, **kwargs)
-
-    def get_attribute(self, obj):
-        return obj.get_affiliation()
-
-    def to_representation(self, value):
-        url = reverse('api:projects-detail',
-                      request=self.context['request'],
-                      kwargs={
-                          'project_slug': value.slug
-                      })
-        return {'name': value.name, 'url': url}
+        return reverse(view_name, kwargs=url_kwargs,
+                       request=request, format=format)
 
 
 class UpdatersField(ReadOnlyField):
@@ -122,52 +105,38 @@ class UpdatersField(ReadOnlyField):
         return obj.get_all_updaters()
 
     def to_representation(self, value):
-        return [u.username for u in value]
+        request = self.context['request']
+        return [
+            request.build_absolute_uri(user.get_absolute_url())
+            for user in value
+        ]
 
 
-class MinimalTopicSerializer(ModelSerializer):
-    url = IdentityURLField()
-
-    class Meta:
-        model = Topic
-        fields = ('id', 'preferred_name', 'url',)
-
-
-class TopicAssignmentField(RelatedField):
+class TopicAssignmentField(HyperlinkedRelatedField):
     default_error_messages = {
-        'no_match': 'No topic matches this URL.',
         'outside_project': 'Related topics must be within the same project.',
-        'bad_path': 'This URL is not a topic API url.'
     }
 
     def __init__(self, *args, **kwargs):
+        # Set these automatically
         kwargs['queryset'] = Topic.objects.all()
+        kwargs['view_name'] = 'api:topics-detail'
         super(TopicAssignmentField, self).__init__(*args, **kwargs)
 
-    def get_attribute(self, obj):
-        return [ta.topic for ta in obj.related_topics.all()]
+    def get_url(self, obj, view_name, request, format):
+        args = (obj.topic.project.slug, obj.topic.id)
+        return reverse('api:topics-detail', args=args, request=request,
+                       format=format)
 
-    def to_representation(self, topics):
-        return [MinimalTopicSerializer(topic, context=self.context).data
-                for topic in topics]
+    def get_object(self, view_name, view_args, view_kwargs):
+        request = self.context['request']
 
-    def to_internal_value(self, data):
-        if self.read_only:
-            return
-        return [self._topic_from_url(url) for url in data]
-
-    def _topic_from_url(self, url):
-        try:
-            match = resolve(url)
-        except Resolver404:
-            self.fail('no_match')
-
-        if match.view_name != 'api:topics-detail':
-            self.fail('bad_path')
-
-        current_project = self.context['request'].project
-        lookup_project_slug = match.kwargs.pop('project_slug')
-        if lookup_project_slug != current_project.slug:
+        if view_kwargs['project_slug'] != request.project.slug:
             self.fail('outside_project')
 
-        return self.get_queryset().get(project=current_project, **match.kwargs)
+        lookup_kwargs = {
+            'project__slug': view_kwargs['project_slug'],
+            'id': view_kwargs['pk']
+        }
+
+        return self.get_queryset().get(**lookup_kwargs)

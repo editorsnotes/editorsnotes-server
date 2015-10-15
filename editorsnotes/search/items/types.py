@@ -24,6 +24,11 @@ DEFINED_TYPES = (
         'Document',
         'serialized.description',
         ['serialized.description']
+    ),
+    (
+        'Project',
+        'serialized.descripton',
+        ['serialized.description']
     )
 )
 
@@ -37,7 +42,12 @@ class DocumentTypeConfig(object):
 
         self.es = es
         self.index_name = index_name
-        self.model = main.get_model(model_name)
+
+        try:
+            self.model = main.get_model(model_name)
+        except LookupError:
+            self.model = auth.get_model(model_name)
+
         self.doctype = getattr(mappings, '{}DocType'.format(model_name))
         self.serializer = getattr(
             serializers, '{}Serializer'.format(model_name))
@@ -106,7 +116,6 @@ class DocumentTypeConfig(object):
         i = 0
         _qs = qs or self.model.objects.all()
         self.clear()
-        self.put_mapping()
 
         # Break up qs into chunks & bulk index each
         while True:

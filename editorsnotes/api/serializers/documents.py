@@ -9,7 +9,8 @@ from editorsnotes.main.utils import remove_stray_brs
 
 from .base import RelatedTopicSerializerMixin, EmbeddedItemsMixin
 from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
-                      ProjectSlugField, TopicAssignmentField, IdentityURLField,
+                      HyperlinkedAffiliatedProjectField, UpdatersField,
+                      TopicAssignmentField, IdentityURLField,
                       UnqualifiedURLField)
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
@@ -86,21 +87,45 @@ class UniqueDocumentDescriptionValidator:
 class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
     url = IdentityURLField()
-    project = ProjectSlugField(default=CurrentProjectDefault())
+    project = HyperlinkedAffiliatedProjectField(
+        default=CurrentProjectDefault())
+    updaters = UpdatersField()
+
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
-    related_topics = TopicAssignmentField()
+    related_topics = TopicAssignmentField(many=True)
     scans = ScanSerializer(many=True, required=False, read_only=True)
     cited_by = serializers.SerializerMethodField('get_citations')
 
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('referenced_by',)
         model = Document
-        fields = ('id', 'description', 'url', 'project', 'last_updated',
-                  'scans', 'transcript', 'related_topics', 'cited_by',
-                  'zotero_data', 'referenced_by',)
+        fields = (
+            'id',
+            'url',
+            'project',
+
+            'description',
+
+            'created',
+            'last_updated',
+            'updaters',
+
+            'zotero_data',
+            'scans',
+            'transcript',
+
+            'related_topics',
+            'cited_by',
+            'referenced_by',
+        )
+        embedded_fields = (
+            'project',
+            'updaters',
+            'related_topics',
+            'referenced_by',
+        )
         validators = [
             UniqueDocumentDescriptionValidator()
         ]

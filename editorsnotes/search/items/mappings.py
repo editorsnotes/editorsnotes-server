@@ -11,16 +11,9 @@ def base_serialized_field():
     mapping.field('created', Date())
     mapping.field('creator', String(index='not_analyzed'))
 
-    project = Object()
-    project.field('name', String(index='not_analyzed'))
-    project.field('url', String(index='not_analyzed'))
-    mapping.field('project', project)
-
-    related_topics = Nested()
-    related_topics.field('preferred_name', String(index='not_analyzed'))
-    related_topics.field('url', String(index='not_analyzed'))
-    mapping.field('related_topics', related_topics)
-
+    # URL references
+    mapping.field('project', String(index='not_analyzed'))
+    mapping.field('related_topics', String(index='not_analyzed', multi=True))
     mapping.field('references', String(index='not_analyzed', multi=True))
     mapping.field('referenced_by', String(index='not_analyzed', multi=True))
 
@@ -41,6 +34,10 @@ class NoteDocType(BaseDocType):
 
 
 class TopicDocType(BaseDocType):
+    serialized = base_serialized_field()\
+        .field('types', String(index='not_analyzed'))\
+        .field('same_as', String(index='not_analyzed'))
+
     class Meta:
         index = settings.ELASTICSEARCH_PREFIX + '-items'
         doc_type = 'topic'
@@ -56,3 +53,11 @@ class DocumentDocType(BaseDocType):
     class Meta:
         index = settings.ELASTICSEARCH_PREFIX + '-items'
         doc_type = 'document'
+
+class ProjectDocType(DocType):
+    serialized = Object()\
+        .field('url', String(index='not_analyzed'))
+
+    class Meta:
+        index = settings.ELASTICSEARCH_PREFIX + '-items'
+        doc_type = 'project'

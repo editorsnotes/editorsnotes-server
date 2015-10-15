@@ -4,12 +4,11 @@ from rest_framework import serializers
 from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
-from ..fields import (CurrentProjectDefault, ProjectSlugField,
-                      TopicAssignmentField, IdentityURLField,
+from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
+                      TopicAssignmentField, IdentityURLField, UpdatersField,
                       UnqualifiedURLField)
 from ..validators import UniqueToProjectValidator
 
-from .auth import MinimalUserSerializer
 from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
 
@@ -39,23 +38,48 @@ class NoteStatusField(serializers.ReadOnlyField):
 class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                      serializers.ModelSerializer):
     url = IdentityURLField()
-    project = ProjectSlugField(default=CurrentProjectDefault())
+    project = HyperlinkedAffiliatedProjectField(
+        default=CurrentProjectDefault())
+
     license = LicenseSerializer(read_only=True, source='get_license')
-    updaters = MinimalUserSerializer(read_only=True, many=True,
-                                     source='get_all_updaters')
+    updaters = UpdatersField()
+
     status = NoteStatusField()
-    related_topics = TopicAssignmentField()
+    related_topics = TopicAssignmentField(many=True)
 
     references = UnqualifiedURLField(source='get_referenced_items')
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('references', 'referenced_by',)
         model = Note
-        fields = ('id', 'title', 'url', 'project', 'license',
-                  'is_private', 'last_updated', 'updaters', 'related_topics',
-                  'markup', 'markup_html', 'status', 'references',
-                  'referenced_by',)
+        fields = (
+            'id',
+            'url',
+            'project',
+
+            'title',
+
+            'status',
+            'is_private',
+            'license',
+            'created',
+            'last_updated',
+            'updaters',
+
+            'markup',
+            'markup_html',
+
+            'related_topics',
+            'references',
+            'referenced_by',
+        )
+        embedded_fields = (
+            'project',
+            'updaters',
+            'related_topics',
+            'references',
+            'referenced_by',
+        )
         validators = [
             UniqueToProjectValidator('title')
         ]
