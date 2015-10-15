@@ -273,10 +273,6 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible,
         # Transcripts don't have their own URLs; use the document URL.
         return '%s#transcript' % self.document.get_absolute_url()
 
-    def get_admin_url(self):
-        return reverse('admin:main_transcript_add_or_change',
-                       args=(self.document_id,))
-
     def as_html(self):
         return self.document.as_html()
 

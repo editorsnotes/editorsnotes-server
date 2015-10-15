@@ -5,9 +5,6 @@ from django.test import TestCase
 
 from ..models import Project, User, ProjectInvitation
 
-from editorsnotes.main.views.auth import create_invited_user
-
-
 def create_user():
     user = User(username='testuser', is_staff=True, is_superuser=True)
     user.set_password('testuser')
@@ -15,33 +12,29 @@ def create_user():
     return user
 
 
-class NewUserTestCase(TestCase):
-    def setUp(self):
-        self.user = create_user()
-
-    def test_create_new_user(self):
-        new_user_email = 'fakeperson@example.com'
-
-        test_project = Project.objects.create(
-            name='Editors\' Notes\' Idiot Brigade',
-            slug='ENIB',
-        )
-        test_role = test_project.roles.get_or_create_by_name('editor')
-
-        # We haven't invited this person yet, so this shouldn't make an account
-        self.assertEqual(create_invited_user(new_user_email), None)
-
-        ProjectInvitation.objects.create(
-            project=test_project,
-            email=new_user_email,
-            project_role=test_role,
-            creator=self.user
-        )
-        new_user = create_invited_user(new_user_email)
-
-        self.assertTrue(isinstance(new_user, User))
-        self.assertEqual(ProjectInvitation.objects.count(), 0)
-        self.assertEqual(new_user.username, 'fakeperson')
+# class NewUserTestCase(TestCase):
+#     def setUp(self):
+#         self.user = create_user()
+# 
+#     def test_create_new_user(self):
+#         new_user_email = 'fakeperson@example.com'
+# 
+#         test_project = Project.objects.create(
+#             name='Editors\' Notes\' Idiot Brigade',
+#             slug='ENIB',
+#         )
+#         test_role = test_project.roles.get_or_create_by_name('editor')
+# 
+#         ProjectInvitation.objects.create(
+#             project=test_project,
+#             email=new_user_email,
+#             project_role=test_role,
+#             creator=self.user
+#         )
+# 
+#         self.assertTrue(isinstance(new_user, User))
+#         self.assertEqual(ProjectInvitation.objects.count(), 0)
+#         self.assertEqual(new_user.username, 'fakeperson')
 
 
 class ProjectSpecificPermissionsTestCase(TestCase):
