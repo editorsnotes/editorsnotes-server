@@ -29,6 +29,14 @@ class CurrentProjectDefault:
         return u'%s()' % self.__class__.__name__
 
 
+class HyperlinkedAffiliatedProjectField(ReadOnlyField):
+    def get_attribute(self, obj):
+        return obj.get_affiliation()
+    def to_representation(self, value):
+        request = self.context['request']
+        return request.build_absolute_uri(value.get_absolute_url())
+
+
 class UnqualifiedURLField(ReadOnlyField):
     def get_attribute(self, obj):
         # FIXME: format too
@@ -96,23 +104,6 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
         url_kwargs = self.get_lookup_kwargs(obj)
 
         return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
-
-
-class ProjectSlugField(ReadOnlyField):
-    def __init__(self, *args, **kwargs):
-        self.queryset = Project.objects.all()
-        super(ProjectSlugField, self).__init__(*args, **kwargs)
-
-    def get_attribute(self, obj):
-        return obj.get_affiliation()
-
-    def to_representation(self, value):
-        url = reverse('api:projects-detail',
-                      request=self.context['request'],
-                      kwargs={
-                          'project_slug': value.slug
-                      })
-        return {'name': value.name, 'url': url}
 
 
 class UpdatersField(ReadOnlyField):

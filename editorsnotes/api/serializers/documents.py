@@ -9,7 +9,8 @@ from editorsnotes.main.utils import remove_stray_brs
 
 from .base import RelatedTopicSerializerMixin, EmbeddedItemsMixin
 from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
-                      ProjectSlugField, TopicAssignmentField, IdentityURLField,
+                      HyperlinkedAffiliatedProjectField,
+                      TopicAssignmentField, IdentityURLField,
                       UnqualifiedURLField)
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
@@ -86,7 +87,8 @@ class UniqueDocumentDescriptionValidator:
 class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
     url = IdentityURLField()
-    project = ProjectSlugField(default=CurrentProjectDefault())
+    project = HyperlinkedAffiliatedProjectField(default=CurrentProjectDefault())
+
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
     related_topics = TopicAssignmentField()
@@ -96,7 +98,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('referenced_by',)
+        embedded_fields = ('project', 'referenced_by',)
         model = Document
         fields = ('id', 'description', 'url', 'project', 'last_updated',
                   'scans', 'transcript', 'related_topics', 'cited_by',

@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from editorsnotes.main.models import Topic
 
-from ..fields import (CurrentProjectDefault, ProjectSlugField,
+from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
                       UnqualifiedURLField, TopicAssignmentField,
                       IdentityURLField)
 from ..validators import UniqueToProjectValidator
@@ -16,14 +16,17 @@ __all__ = ['TopicSerializer']
 class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                       serializers.ModelSerializer):
     url = IdentityURLField()
-    project = ProjectSlugField(default=CurrentProjectDefault())
+
+    project = HyperlinkedAffiliatedProjectField(
+        default=CurrentProjectDefault())
+
     related_topics = TopicAssignmentField(required=False)
 
     references = UnqualifiedURLField(source='get_referenced_items')
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('references', 'referenced_by',)
+        embedded_fields = ('project', 'references', 'referenced_by',)
         model = Topic
         fields = ('id', 'url', 'preferred_name', 'types', 'same_as',
                   'alternate_names', 'related_topics', 'project',

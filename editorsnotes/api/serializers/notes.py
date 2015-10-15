@@ -4,7 +4,7 @@ from rest_framework import serializers
 from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
-from ..fields import (CurrentProjectDefault, ProjectSlugField,
+from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
                       TopicAssignmentField, IdentityURLField,
                       UnqualifiedURLField)
 from ..validators import UniqueToProjectValidator
@@ -39,7 +39,9 @@ class NoteStatusField(serializers.ReadOnlyField):
 class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                      serializers.ModelSerializer):
     url = IdentityURLField()
-    project = ProjectSlugField(default=CurrentProjectDefault())
+    project = HyperlinkedAffiliatedProjectField(
+        default=CurrentProjectDefault())
+
     license = LicenseSerializer(read_only=True, source='get_license')
     updaters = MinimalUserSerializer(read_only=True, many=True,
                                      source='get_all_updaters')
@@ -50,7 +52,7 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('references', 'referenced_by',)
+        embedded_fields = ('project', 'references', 'referenced_by',)
         model = Note
         fields = ('id', 'title', 'url', 'project', 'license',
                   'is_private', 'last_updated', 'updaters', 'related_topics',
