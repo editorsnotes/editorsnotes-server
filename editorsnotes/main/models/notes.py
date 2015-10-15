@@ -1,5 +1,3 @@
-from itertools import chain
-
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
@@ -8,9 +6,8 @@ from licensing.models import License
 import reversion
 
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
-from .. import fields
-from ..utils.markup import render_markup
-from base import Administered, LastUpdateMetadata, URLAccessible, IsReferenced
+from base import (Administered, LastUpdateMetadata, URLAccessible,
+                  IsReferenced, ENMarkup)
 
 __all__ = ['Note', 'NOTE_STATUS_CHOICES']
 
@@ -21,7 +18,7 @@ NOTE_STATUS_CHOICES = (
 )
 
 
-class Note(LastUpdateMetadata, Administered, URLAccessible,
+class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
            IsReferenced, ProjectPermissionsMixin, UpdatersMixin):
     u"""
     Text written by an editor or curator. The text is stored as XHTML,
@@ -29,9 +26,6 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     enables.
     """
     title = models.CharField(max_length='80')
-
-    markup = models.TextField()
-    markup_html = fields.XHTMLField(blank=True, null=True, editable=False)
 
     project = models.ForeignKey('Project', related_name='notes')
     assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL,
@@ -59,18 +53,6 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     def get_absolute_url(self):
         return ('api:notes-detail', [self.project.slug, self.id])
 
-    def has_markup(self):
-        return self.markup_html is not None
-
-    def get_referenced_items(self):
-        from ..utils.markup_html import get_embedded_item_urls
-        if not self.has_markup:
-            return []
-
-        urls_by_type = get_embedded_item_urls(self.markup_html)
-        embedded_urls = set(chain(*urls_by_type.values()))
-        return embedded_urls
-
     def get_affiliation(self):
         return self.project
 
@@ -80,10 +62,6 @@ class Note(LastUpdateMetadata, Administered, URLAccessible,
     def has_topic(self, project_topic):
         return project_topic.id in \
             self.related_topics.values_list('topic_id', flat=True)
-
-    def save(self, *args, **kwargs):
-        self.markup_html = render_markup(self.markup, self.project)
-        return super(Note, self).save(*args, **kwargs)
 
 
 reversion.register(Note)
