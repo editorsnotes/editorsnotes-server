@@ -147,3 +147,20 @@ try:
     INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
 except NameError:
     pass
+
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'editorsnotes': {
+                'handlers': ['console'],
+                'level': 'INFO',
+            },
+        }
+    }
