@@ -116,7 +116,6 @@ class DocumentTypeConfig(object):
         i = 0
         _qs = qs or self.model.objects.all()
         self.clear()
-        self.put_mapping()
 
         # Break up qs into chunks & bulk index each
         while True:
