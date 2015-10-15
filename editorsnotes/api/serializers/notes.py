@@ -76,7 +76,7 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         embedded_fields = (
             'project',
             'updaters',
-            'related_topics'
+            'related_topics',
             'references',
             'referenced_by',
         )

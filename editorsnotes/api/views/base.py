@@ -117,8 +117,7 @@ class LinkerMixin(object):
 
 class EmbeddedMarkupReferencesMixin(object):
     def get_serializer(self, *args, **kwargs):
-        if 'include_embeds' in self.request.query_params:
-            kwargs['include_embeds'] = True
+        kwargs['include_embeds'] = True
         return super(EmbeddedMarkupReferencesMixin, self)\
             .get_serializer(*args, **kwargs)
 
