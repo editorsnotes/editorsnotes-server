@@ -105,7 +105,11 @@ class UpdatersField(ReadOnlyField):
         return obj.get_all_updaters()
 
     def to_representation(self, value):
-        return [u.username for u in value]
+        request = self.context['request']
+        return [
+            request.build_absolute_uri(user.get_absolute_url())
+            for user in value
+        ]
 
 
 class TopicAssignmentField(HyperlinkedRelatedField):

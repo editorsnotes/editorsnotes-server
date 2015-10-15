@@ -5,7 +5,7 @@ from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
 from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
-                      TopicAssignmentField, IdentityURLField,
+                      TopicAssignmentField, IdentityURLField, UpdatersField,
                       UnqualifiedURLField)
 from ..validators import UniqueToProjectValidator
 
@@ -43,8 +43,8 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         default=CurrentProjectDefault())
 
     license = LicenseSerializer(read_only=True, source='get_license')
-    updaters = MinimalUserSerializer(read_only=True, many=True,
-                                     source='get_all_updaters')
+    updaters = UpdatersField()
+
     status = NoteStatusField()
     related_topics = TopicAssignmentField(many=True)
 
@@ -52,11 +52,12 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'references', 'referenced_by',
+        embedded_fields = ('project', 'references', 'referenced_by', 'updaters',
                            'related_topics')
         model = Note
         fields = ('id', 'title', 'url', 'project', 'license',
-                  'is_private', 'last_updated', 'updaters', 'related_topics',
+                  'is_private', 'created', 'last_updated', 'updaters',
+                  'related_topics',
                   'markup', 'markup_html', 'status', 'references',
                   'referenced_by',)
         validators = [

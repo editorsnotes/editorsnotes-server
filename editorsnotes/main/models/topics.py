@@ -9,7 +9,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 import reversion
 
-from editorsnotes.auth.models import ProjectPermissionsMixin
+from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 
 from .. import fields
 from ..utils.markup import render_markup
@@ -29,7 +29,7 @@ class TopicMergeError(Exception):
 
 
 class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
-            IsReferenced, Administered):
+            UpdatersMixin, IsReferenced, Administered):
     project = models.ForeignKey('Project', related_name='topics')
 
     # TODO: Make sure these are unique when saved

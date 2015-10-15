@@ -9,7 +9,7 @@ from editorsnotes.main.utils import remove_stray_brs
 
 from .base import RelatedTopicSerializerMixin, EmbeddedItemsMixin
 from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
-                      HyperlinkedAffiliatedProjectField,
+                      HyperlinkedAffiliatedProjectField, UpdatersField,
                       TopicAssignmentField, IdentityURLField,
                       UnqualifiedURLField)
 
@@ -89,6 +89,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     url = IdentityURLField()
     project = HyperlinkedAffiliatedProjectField(
         default=CurrentProjectDefault())
+    updaters = UpdatersField()
 
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
@@ -99,9 +100,11 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     referenced_by = UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
-        embedded_fields = ('project', 'referenced_by', 'related_topics',)
+        embedded_fields = ('project', 'referenced_by', 'related_topics',
+                           'updaters')
         model = Document
-        fields = ('id', 'description', 'url', 'project', 'last_updated',
+        fields = ('id', 'description', 'url', 'project', 'created',
+                  'last_updated', 'updaters',
                   'scans', 'transcript', 'related_topics', 'cited_by',
                   'zotero_data', 'referenced_by',)
         validators = [
