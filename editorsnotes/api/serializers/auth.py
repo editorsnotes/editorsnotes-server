@@ -3,6 +3,7 @@ from rest_framework import serializers
 from editorsnotes.auth.models import Project, User
 
 from ..fields import CustomLookupHyperlinkedField, IdentityURLField
+from .base import EmbeddedItemsMixin
 
 
 __all__ = ['ProjectSerializer', 'UserSerializer']
@@ -55,22 +56,40 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     url = IdentityURLField()
+
+    projects = serializers.HyperlinkedRelatedField(
+        source='get_affiliated_projects',
+        many=True,
+        read_only=True,
+        view_name='api:projects-detail',
+        lookup_field='slug',
+        lookup_url_kwarg='project_slug'
+    )
+
+    activity = serializers.HyperlinkedRelatedField(
+        source='*',
+        read_only=True,
+        view_name='api:users-activity',
+        lookup_field='username',
+        lookup_url_kwarg='username'
+    )
 
     class Meta:
         model = User
         fields = (
             'url',
             'profile',
+
+            'projects',
+
+            'activity',
             'display_name',
             'date_joined',
             'last_login'
 
             # FIXME
-            # 'projects', (or groups, roles)
             # 'email',
-            # 'markup',
-            # 'markup_html',
-            # 'references'
         )
+        embedded_fields = ('projects',)
