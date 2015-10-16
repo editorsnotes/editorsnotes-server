@@ -45,6 +45,9 @@ def get_data_for_urls(item_urls):
     docs = []
     ret = OrderedDict()
 
+    if not item_urls:
+        return ret
+
     item_urls = list(item_urls)
     item_urls.sort()
 
