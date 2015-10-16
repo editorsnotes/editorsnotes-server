@@ -31,12 +31,13 @@ __all__ = [
 ]
 
 
-class User(AbstractUser, ENMarkup, URLAccessible):
+class User(AbstractUser, URLAccessible):
     # Has gone through the email verification rigmarole. I'm keeping this
     # separate from is_active because they are semantically different. Django
     # suggests that is_active should be used as a way to make someone's account
     # "inactive" without deleting it (which would ruin foreign keys, etc.)
     confirmed = models.BooleanField(default=False)
+    profile = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
         app_label = 'main'

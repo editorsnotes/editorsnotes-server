@@ -36,13 +36,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='user',
-            name='markup',
-            field=models.TextField(null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='user',
-            name='markup_html',
-            field=editorsnotes.main.fields.XHTMLField(null=True, editable=False, blank=True),
+            name='profile',
+            field=models.CharField(max_length=1000, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='note',
