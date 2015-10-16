@@ -12,21 +12,25 @@ from . import mappings
 DEFINED_TYPES = (
     (
         'Note',
+        'id',
         'serialized.title',
         ['serialized.title', 'serialized.markup_html']
     ),
     (
         'Topic',
+        'id',
         'serialized.preferred_name',
         ['serialized.preferred_name', 'serialized.markup_html']
     ),
     (
         'Document',
+        'id',
         'serialized.description',
         ['serialized.description']
     ),
     (
         'Project',
+        'slug',
         'serialized.descripton',
         ['serialized.description']
     )
@@ -34,14 +38,17 @@ DEFINED_TYPES = (
 
 
 class DocumentTypeConfig(object):
-    def __init__(self, es, index_name, model_name, display_field,
+    def __init__(self, es, index_name, model_name, id_field, display_field,
                  highlight_fields=None):
 
         from editorsnotes.api import serializers
         main = apps.get_app_config('main')
+        auth = apps.get_app_config('auth')
 
         self.es = es
         self.index_name = index_name
+        self.id_field = id_field
+        self.doc_id_field = 'serialized.{}'.format(self.id_field)
 
         try:
             self.model = main.get_model(model_name)
@@ -60,7 +67,8 @@ class DocumentTypeConfig(object):
 
     @property
     def type_mapping(self):
-        return self.doctype._doc_type.mapping.to_dict()
+        mapping = self.doctype._doc_type.mapping.to_dict()
+        return mapping
 
     def clear(self):
         try:
@@ -90,29 +98,37 @@ class DocumentTypeConfig(object):
 
         return data
 
-    def get_object(self, instance=None, pk=None):
-        if pk is None and instance is None:
-            raise ValueError('Provide either a pk or instance to update.')
-        obj = instance or self.model.objects.get(pk=pk)
-        if not isinstance(obj, self.model):
+    def get_object(self, instance=None, id_lookup=None):
+        if id_lookup is None and instance is None:
+            raise ValueError('Provide either an instance or a lookup value '
+                             'to retrieve a given {}'.format(self.type_label))
+
+        if instance and not isinstance(instance, self.model):
             raise ValueError('Instance must be a {} object'.format(self.model))
+
+        obj = instance or self.model.objects.get({self.id_field: id_lookup})
+
         return obj
 
-    def index(self, instance=None, pk=None, request=None):
-        obj = self.get_object(instance, pk)
+    def index(self, instance=None, id_lookup=None, request=None):
+        obj = self.get_object(instance, id_lookup)
         doc = self.data_from_object(obj, request)
-        self.es.index(self.index_name, self.type_label,
-                      doc, obj.pk, refresh=True)
+        doc_id = obj[self.id_field]
 
-    def update(self, instance=None, pk=None, request=None):
-        obj = self.get_object(instance, pk)
+        self.es.index(self.index_name, self.type_label, doc, doc_id,
+                      refresh=True)
+
+    def update(self, instance=None, id_lookup=None, request=None):
+        obj = self.get_object(instance, id_lookup)
         doc = self.data_from_object(obj, request)
-        self.es.update(self.index_name, self.type_label, obj.pk,
-                       doc=doc, refresh=True)
+        doc_id = obj[self.id_field]
+        self.es.update(self.index_name, self.type_label, doc_id, doc=doc,
+                       refresh=True)
 
-    def remove(self, instance=None, pk=None):
-        obj = self.get_object(instance, pk)
-        self.es.delete(self.index_name, self.type_label, obj.pk)
+    def remove(self, instance=None, id_lookup=None):
+        obj = self.get_object(instance, id_lookup)
+        doc_id = obj[self.id_field]
+        self.es.delete(self.index_name, self.type_label, doc_id, refresh=True)
 
     def update_all(self, qs=None, chunk_size=300):
         i = 0

@@ -40,6 +40,7 @@ def get_referencing_items(item_url):
 
     return [(result.display_url[0]) for result in query.execute().hits]
 
+
 def get_data_for_urls(item_urls):
     docs = []
     ret = OrderedDict()
@@ -50,11 +51,16 @@ def get_data_for_urls(item_urls):
     for url in item_urls:
         match = resolve(urlparse(url).path)
 
-        pk = match.kwargs['pk']
         model = match.func.cls.queryset.model
         doc_type = model._meta.verbose_name
 
-        docs.append({ '_type': doc_type, '_id': pk })
+        pk = (
+            match.kwargs['project_slug']
+            if doc_type == 'project'
+            else match.kwargs['pk']
+        )
+
+        docs.append({'_type': doc_type, '_id': pk})
 
     resp = index.es.multi_get(docs, index=index.name)
 

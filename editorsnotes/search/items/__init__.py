@@ -25,7 +25,7 @@ class ItemsIndex(ElasticSearchIndex):
         # Document type settings by model
         self.document_types = {}
 
-        for model_name, display_field, highlight_fields in DEFINED_TYPES:
+        for model_name, display_field, id_field, highlight_fields in DEFINED_TYPES:
             config = DocumentTypeConfig(
                 self.es, self.name, model_name,
                 display_field, highlight_fields)
