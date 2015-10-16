@@ -29,7 +29,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
 
     project = models.ForeignKey('Project', related_name='notes')
     assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                            blank=True, null=True)
+                                            blank=True)
     status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1,
                               default='1')
     is_private = models.BooleanField(default=False)
