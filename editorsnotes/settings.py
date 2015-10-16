@@ -130,7 +130,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication'
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'editorsnotes.api.renderers.HTMLRedirectRenderer',
         'rest_framework.renderers.JSONRenderer',
         'editorsnotes.api.renderers.BrowsableJSONAPIRenderer',
     )

@@ -9,7 +9,7 @@ from editorsnotes.search.activity.helpers import get_activity_for
 
 from .base import LinkerMixin
 from ..linkers import ActivityLinker
-from ..serializers import ProjectSerializer, MinimalUserSerializer, UserSerializer
+from ..serializers import ProjectSerializer, UserSerializer
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
            'SelfUserDetail']
@@ -29,7 +29,7 @@ class ProjectDetail(LinkerMixin, RetrieveAPIView):
 
 class UserDetail(LinkerMixin, RetrieveAPIView):
     queryset = User.objects.all()
-    serializer_class = MinimalUserSerializer
+    serializer_class = UserSerializer
     linker_classes = (ActivityLinker,)
     lookup_field = 'username'
 

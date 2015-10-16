@@ -12,9 +12,9 @@ from django.dispatch import receiver
 import reversion
 from licensing.models import License
 
-from editorsnotes.main import fields
 from editorsnotes.main.management import get_all_project_permissions
-from editorsnotes.main.models.base import URLAccessible, CreationMetadata
+from editorsnotes.main.models.base import (URLAccessible, CreationMetadata,
+                                           ENMarkup)
 
 
 __all__ = [
@@ -32,14 +32,12 @@ __all__ = [
 
 
 class User(AbstractUser, URLAccessible):
-    zotero_key = models.CharField(max_length='24', blank=True, null=True)
-    zotero_uid = models.CharField(max_length='6', blank=True, null=True)
-
     # Has gone through the email verification rigmarole. I'm keeping this
     # separate from is_active because they are semantically different. Django
     # suggests that is_active should be used as a way to make someone's account
     # "inactive" without deleting it (which would ruin foreign keys, etc.)
     confirmed = models.BooleanField(default=False)
+    profile = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
         app_label = 'main'
@@ -160,7 +158,7 @@ class ProjectManager(models.Manager):
             .filter(roles__group__user=user)
 
 
-class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
+class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
     name = models.CharField(max_length='80')
     slug = models.SlugField(
         help_text=(
@@ -174,7 +172,6 @@ class Project(models.Model, URLAccessible, ProjectPermissionsMixin):
         blank=True,
         null=True
     )
-    description = fields.XHTMLField(blank=True, null=True)
     default_license = models.ForeignKey(
         License,
         default=1,

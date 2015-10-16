@@ -67,7 +67,8 @@
     "model": "main.project", 
     "fields": {
       "image": "", 
-      "description": "We are collecting the papers of Emma Goldman.", 
+      "markup": "We are collecting the papers of Emma Goldman.",
+      "markup_html": "<p>We are collecting the papers of Emma Goldman.</p>",
       "name": "The Emma Goldman Papers", 
       "slug": "emma"
     }
@@ -77,7 +78,8 @@
     "model": "main.project", 
     "fields": {
       "image": "", 
-      "description": "We are collecting the papers of Margaret Sanger", 
+      "markup": "We are collecting the papers of Margaret Sanger.",
+      "markup_html": "<p>We are collecting the papers of Margaret Sanger.</p>",
       "name": "The Margaret Sanger Papers", 
       "slug": "sanger"
     }
