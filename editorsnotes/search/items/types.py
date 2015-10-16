@@ -113,7 +113,7 @@ class DocumentTypeConfig(object):
     def index(self, instance=None, id_lookup=None, request=None):
         obj = self.get_object(instance, id_lookup)
         doc = self.data_from_object(obj, request)
-        doc_id = obj[self.id_field]
+        doc_id = getattr(obj, self.id_field)
 
         self.es.index(self.index_name, self.type_label, doc, doc_id,
                       refresh=True)
@@ -121,13 +121,13 @@ class DocumentTypeConfig(object):
     def update(self, instance=None, id_lookup=None, request=None):
         obj = self.get_object(instance, id_lookup)
         doc = self.data_from_object(obj, request)
-        doc_id = obj[self.id_field]
+        doc_id = getattr(obj, self.id_field)
         self.es.update(self.index_name, self.type_label, doc_id, doc=doc,
                        refresh=True)
 
     def remove(self, instance=None, id_lookup=None):
         obj = self.get_object(instance, id_lookup)
-        doc_id = obj[self.id_field]
+        doc_id = getattr(obj, self.id_field)
         self.es.delete(self.index_name, self.type_label, doc_id, refresh=True)
 
     def update_all(self, qs=None, chunk_size=300):
