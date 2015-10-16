@@ -35,6 +35,12 @@ def make_dummy_request():
         'SERVER_NAME': hostname,
         'SERVER_PORT': port
     })
+
     if secure:
+        request._get_scheme = lambda: 'https'
         request._is_secure = lambda: True
+    else:
+        request._get_scheme = lambda: 'http'
+        request._is_secure = lambda: False
+
     return request

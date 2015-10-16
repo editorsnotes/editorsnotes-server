@@ -16,7 +16,7 @@ class ElasticSearchFilterBackend(BaseFilterBackend):
 
         if hasattr(request, 'project') or 'project' in params:
             project_url = (
-                request.project.get_absolute_url()
+                request.build_absolute_uri(request.project.get_absolute_url())
                 if hasattr(request, 'project')
                 else params['project'])
 
