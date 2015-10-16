@@ -65,6 +65,8 @@ class DocumentTypeConfig(object):
     def clear(self):
         try:
             self.es.delete_all(self.index_name, self.type_label)
+            self.es.put_mapping(self.index_name, self.type_label,
+                                self.type_mapping)
         except ElasticHttpNotFoundError:
             pass
 
