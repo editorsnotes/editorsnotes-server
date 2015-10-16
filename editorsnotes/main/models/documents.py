@@ -23,7 +23,7 @@ from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
 from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
-                  Administered, OrderingManager, IsReferenced)
+                  Administered, IsReferenced)
 
 __all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink']
 
@@ -318,7 +318,6 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
     image_thumbnail = models.ImageField(upload_to='scans/%Y/%m',
                                         blank=True, null=True)
     ordering = models.IntegerField(blank=True, null=True)
-    objects = OrderingManager()
 
     class Meta:
         app_label = 'main'

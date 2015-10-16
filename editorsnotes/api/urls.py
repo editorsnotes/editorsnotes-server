@@ -47,7 +47,6 @@ project_specific_patterns = patterns('',
     url(r'^/documents/(?P<pk>\d+)/confirm_delete$', views.DocumentConfirmDelete.as_view(), name='documents-confirm-delete'),
     url(r'^/documents/(?P<document_id>\d+)/scans/$', views.ScanList.as_view(), name='scans-list'),
     url(r'^/documents/(?P<document_id>\d+)/scans/(?P<scan_id>\d+)/$', views.ScanDetail.as_view(), name='scans-detail'),
-    url(r'^/documents/(?P<document_id>\d+)/scans/normalize_order$', views.NormalizeScanOrder.as_view(), name='scans-normalize-order'),
 
     url(r'^/documents/(?P<document_id>\d+)/transcript/$', views.Transcript.as_view(), name='transcripts-detail'),
 )
