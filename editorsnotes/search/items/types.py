@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import json
 
 from pyelasticsearch.exceptions import ElasticHttpNotFoundError
@@ -83,14 +84,15 @@ class DocumentTypeConfig(object):
 
         if not hasattr(obj, '_rest_serialized'):
             serializer = self.serializer(obj, context={'request': request})
-            json_data = json.loads(JSONRenderer().render(serializer.data))
+            json_data = json.loads(JSONRenderer().render(serializer.data),
+                                   object_pairs_hook=OrderedDict)
             obj._rest_serialized = json_data
         else:
             json_data = obj._rest_serialized.copy()
             json_data.pop('_embedded', None)
 
         data = {
-            'id': obj.id,
+            'id': getattr(obj, self.id_field),
             'serialized': json_data,
             'display_url': request.build_absolute_uri(obj.get_absolute_url()),
             'display_title': obj.as_text()
