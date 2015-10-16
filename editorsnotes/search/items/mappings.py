@@ -5,11 +5,11 @@ from elasticsearch_dsl import Date, String, Nested, DocType, Object
 def base_serialized_field():
     mapping = Object()
 
-    mapping.field('last_updated', Date())
-    mapping.field('last_updater', String(index='not_analyzed'))
+    mapping.field('url', String(index='not_analyzed'))
 
+    mapping.field('last_updated', Date())
     mapping.field('created', Date())
-    mapping.field('creator', String(index='not_analyzed'))
+    mapping.field('updaters', String(index='not_analyzed'))
 
     # URL references
     mapping.field('project', String(index='not_analyzed'))
@@ -54,9 +54,14 @@ class DocumentDocType(BaseDocType):
         index = settings.ELASTICSEARCH_PREFIX + '-items'
         doc_type = 'document'
 
-class ProjectDocType(DocType):
+class ProjectDocType(BaseDocType):
     serialized = Object()\
-        .field('url', String(index='not_analyzed'))
+        .field('url', String(index='not_analyzed'))\
+        .field('featured_items', String(index='not_analyzed'))\
+        .field('notes', String(index='not_analyzed'))\
+        .field('topics', String(index='not_analyzed'))\
+        .field('documents', String(index='not_analyzed'))\
+        .field('activity', String(index='not_analyzed'))
 
     class Meta:
         index = settings.ELASTICSEARCH_PREFIX + '-items'
