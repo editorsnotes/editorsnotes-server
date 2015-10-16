@@ -27,4 +27,3 @@ uploads/*
 
 secret.txt
 settings_local.py
-editorsnotes/templates/*.txt

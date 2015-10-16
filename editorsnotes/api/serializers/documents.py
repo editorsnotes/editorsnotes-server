@@ -45,7 +45,7 @@ class ScanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scan
         fields = ('id', 'image', 'image_thumbnail', 'height', 'width',
-                  'ordering', 'created', 'creator',)
+                  'created', 'creator',)
 
     def get_height(self, obj):
         try:

@@ -30,8 +30,6 @@ def setup():
         abort(red('Deactivate any virtual environments before continuing.'))
     make_settings()
     make_virtual_env()
-    install_node_packages()
-    symlink_packages()
     collect_static()
     print ('\nDevelopment environment successfully created.\n' +
            'Create a Postgres database, enter its information into ' +
@@ -150,11 +148,6 @@ def make_virtual_env():
     with lcd(PROJ_ROOT):
         local('virtualenv .')
         local('./bin/pip install -r requirements.txt')
-
-def install_node_packages():
-    "Install requirements from NPM."
-    with lcd(PROJ_ROOT):
-        local('npm install')
 
 def collect_static():
     with lcd(PROJ_ROOT):
