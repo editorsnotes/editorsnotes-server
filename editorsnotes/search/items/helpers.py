@@ -2,9 +2,13 @@
 Functions for the items index.
 """
 
+from collections import OrderedDict
 from itertools import chain
+from urlparse import urlparse
 
 from elasticsearch_dsl import F
+
+from django.core.urlresolvers import resolve
 
 from . import index
 from ..utils import clean_query_string
@@ -35,6 +39,30 @@ def get_referencing_items(item_url):
         .fields(['display_url'])
 
     return [(result.display_url[0]) for result in query.execute().hits]
+
+def get_data_for_urls(item_urls):
+    docs = []
+    ret = OrderedDict()
+
+    item_urls = list(item_urls)
+    item_urls.sort()
+
+    for url in item_urls:
+        match = resolve(urlparse(url).path)
+
+        pk = match.kwargs['pk']
+        model = match.func.cls.queryset.model
+        doc_type = model._meta.verbose_name
+
+        docs.append({ '_type': doc_type, '_id': pk })
+
+    resp = index.es.multi_get(docs, index=index.name)
+
+    for i, item_url in enumerate(item_urls):
+        doc = resp['docs'][i]
+        ret[item_url] = doc['_source']['serialized'] if doc['found'] else None
+
+    return ret
 
 
 def perform_query(query, highlight=False, **kwargs):

@@ -1,5 +1,7 @@
 from itertools import chain
 
+from editorsnotes.search.items.helpers import get_data_for_urls
+
 ensure_list = lambda val: [val] if isinstance(val, basestring) else val
 
 
@@ -15,7 +17,7 @@ class EmbeddedItemsMixin(object):
             embedded_fields = getattr(self.Meta, 'embedded_fields', [])
             urls = [ensure_list(data[key]) for key in embedded_fields]
             urls = set(chain.from_iterable(urls))
-            data['_embedded'] = urls
+            data['_embedded'] = get_data_for_urls(urls)
 
         return data
 
