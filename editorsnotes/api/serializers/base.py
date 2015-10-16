@@ -1,5 +1,13 @@
+from collections import OrderedDict
 from itertools import chain
+import json
+from urlparse import urlparse
 
+from django.core.urlresolvers import resolve
+
+from rest_framework.renderers import JSONRenderer
+
+from editorsnotes.auth.models import User
 from editorsnotes.search.items.helpers import get_data_for_urls
 
 ensure_list = lambda val: [val] if isinstance(val, basestring) else val
@@ -17,9 +25,50 @@ class EmbeddedItemsMixin(object):
             embedded_fields = getattr(self.Meta, 'embedded_fields', [])
             urls = [ensure_list(data[key]) for key in embedded_fields]
             urls = set(chain.from_iterable(urls))
-            data['_embedded'] = get_data_for_urls(urls)
+
+            users_base = self.context['request'].build_absolute_uri('/users/')
+
+            user_urls = {url for url in urls if url.startswith(users_base)}
+            urls = urls.difference(user_urls)
+
+            embedded_data = OrderedDict()
+            for key, val in get_data_for_urls(urls).items():
+                embedded_data[key] = val
+
+            for key, val in self.get_users_from_urls(user_urls).items():
+                embedded_data[key] = val
+
+            data['_embedded'] = embedded_data
 
         return data
+
+    def get_users_from_urls(self, urls):
+        from editorsnotes.api.serializers import UserSerializer
+        urls = list(urls)
+        urls.sort()
+
+        if not urls:
+            return {}
+
+        usernames = [
+            resolve(urlparse(url).path).kwargs['username']
+            for url in urls
+        ]
+
+        qs = User.objects.filter(username__in=usernames)
+
+        serializer = UserSerializer(instance=qs, many=True, context=self.context)
+        data = json.loads(JSONRenderer().render(serializer.data),
+                          object_pairs_hook=OrderedDict)
+
+        ret = OrderedDict()
+        for i, url in enumerate(urls):
+            ret[url] = data[i]
+
+        return ret
+
+
+
 
 
 class RelatedTopicSerializerMixin(object):
