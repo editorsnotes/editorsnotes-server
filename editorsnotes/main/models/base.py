@@ -75,10 +75,6 @@ class URLAccessible(object):
     def as_text(self):
         raise Exception('Must implement %s.as_text()' % self._meta.model_name)
 
-    def as_html(self):
-        return '<span class="%s">%s</span>' % (
-            self._meta.model_name, conditional_escape(self.as_text()))
-
 
 class IsReferenced(object):
     def get_referencing_items(self, labels=False):

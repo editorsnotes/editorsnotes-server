@@ -208,33 +208,6 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
         # return sorted(chain(citations), key=lambda obj: obj.last_updated)
         return []
 
-    def as_html(self):
-        if self.zotero_data is not None:
-            data_attributes = ''.join([
-                ' data-%s="%s"' % (k, escape(v))
-                for k, v in self.get_zotero_fields()
-                if v and k not in ['tags', 'extra']
-            ])
-        else:
-            data_attributes = ''
-        if self.edtf_date:
-            data_attributes += ' data-edtf-date="%s"' % self.edtf_date
-
-        all_representations = self.get_all_representations()
-        if all_representations:
-            data_attributes += ' data-representations="{}"'.format(
-                all_representations)
-
-        return mark_safe(
-            '<div id="document-%s" class="document%s"%s>%s</div>' % (
-                self.id,
-                (
-                    (self.has_transcript() or self.has_scans())
-                    and ' has-scans-or-transcript' or ''
-                ),
-                data_attributes,
-                etree.tostring(self.description)))
-
     def save(self, *args, **kwargs):
         self.ordering = re.sub(
             r'[^\w\s]', '',
@@ -272,9 +245,6 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible,
     def get_absolute_url(self):
         # Transcripts don't have their own URLs; use the document URL.
         return '%s#transcript' % self.document.get_absolute_url()
-
-    def as_html(self):
-        return self.document.as_html()
 
     def get_footnote_href_ids(self):
         anchors = (self.content.cssselect('a.footnote')
