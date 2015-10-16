@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from editorsnotes.auth.models import Project, User
 from editorsnotes.search.activity.helpers import get_activity_for
 
-from .base import LinkerMixin
+from .base import EmbeddedMarkupReferencesMixin, LinkerMixin
 from ..linkers import ActivityLinker
 from ..serializers import ProjectSerializer, UserSerializer
 
@@ -27,13 +27,13 @@ class ProjectDetail(LinkerMixin, RetrieveAPIView):
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
         return project
 
-class UserDetail(LinkerMixin, RetrieveAPIView):
+class UserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     linker_classes = (ActivityLinker,)
     lookup_field = 'username'
 
-class SelfUserDetail(LinkerMixin, RetrieveAPIView):
+class SelfUserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
