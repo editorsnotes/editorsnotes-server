@@ -3,12 +3,13 @@ from rest_framework.parsers import MultiPartParser
 
 from editorsnotes.main.models import Document, Scan, Transcript
 
-from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
-                   ElasticSearchListMixin, LinkerMixin)
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..serializers import (DocumentSerializer, ScanSerializer,
                            TranscriptSerializer)
+
+from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
+from .mixins import ElasticSearchListMixin, LinkerMixin
 
 __all__ = ['DocumentList', 'DocumentDetail', 'DocumentConfirmDelete',
            'ScanList', 'ScanDetail', 'Transcript']

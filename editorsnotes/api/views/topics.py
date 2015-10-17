@@ -1,11 +1,12 @@
 from editorsnotes.main.models import Topic
 
-from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
-                   ElasticSearchListMixin, LinkerMixin,
-                   EmbeddedMarkupReferencesMixin)
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..serializers.topics import TopicSerializer
+
+from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
+from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+                     LinkerMixin)
 
 __all__ = ['TopicList', 'TopicDetail', 'TopicConfirmDelete']
 

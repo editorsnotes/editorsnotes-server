@@ -8,9 +8,10 @@ from rest_framework.response import Response
 from editorsnotes.auth.models import Project, User
 from editorsnotes.search.activity.helpers import get_activity_for
 
-from .base import EmbeddedMarkupReferencesMixin, LinkerMixin
 from ..linkers import ActivityLinker
 from ..serializers import ProjectSerializer, UserSerializer
+
+from .mixins import EmbeddedMarkupReferencesMixin, LinkerMixin
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
            'SelfUserDetail']

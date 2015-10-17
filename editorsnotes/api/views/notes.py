@@ -3,13 +3,14 @@ from rest_framework.permissions import SAFE_METHODS
 
 from editorsnotes.main.models import Note
 
-from .base import (BaseListAPIView, BaseDetailView, DeleteConfirmAPIView,
-                   ElasticSearchListMixin, LinkerMixin,
-                   EmbeddedMarkupReferencesMixin)
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..permissions import ProjectSpecificPermissions
 from ..serializers.notes import NoteSerializer
+
+from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
+from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+                     LinkerMixin)
 
 __all__ = ['NoteList', 'NoteDetail', 'AllProjectNoteList',
            'NoteConfirmDelete']
