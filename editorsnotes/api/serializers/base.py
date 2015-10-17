@@ -57,7 +57,8 @@ class EmbeddedItemsMixin(object):
 
         qs = User.objects.filter(username__in=usernames)
 
-        serializer = UserSerializer(instance=qs, many=True, context=self.context)
+        serializer = UserSerializer(instance=qs, many=True,
+                                    context=self.context)
         data = json.loads(JSONRenderer().render(serializer.data),
                           object_pairs_hook=OrderedDict)
 
@@ -66,9 +67,6 @@ class EmbeddedItemsMixin(object):
             ret[url] = data[i]
 
         return ret
-
-
-
 
 
 class RelatedTopicSerializerMixin(object):

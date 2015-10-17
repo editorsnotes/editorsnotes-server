@@ -33,8 +33,10 @@ class AddProjectObjectLinker(object):
                               get_permission_codename('add', model._meta))
 
         if user.is_authenticated() and user.has_project_perm(project, perm):
-            view_name = 'api:{}-list'.format(model._meta.verbose_name_plural.lower())
-            href = reverse(view_name, args=[request.project.slug], request=request)
+            view_name = 'api:{}-list'.format(
+                model._meta.verbose_name_plural.lower())
+            href = reverse(view_name, args=[request.project.slug],
+                           request=request)
             return [{
                 'rel': 'add',
                 'href': href,
@@ -42,6 +44,7 @@ class AddProjectObjectLinker(object):
             }]
         else:
             return []
+
 
 class EditProjectObjectLinker(object):
     def get_links(self, request, view):
@@ -61,6 +64,7 @@ class EditProjectObjectLinker(object):
             }]
         else:
             return []
+
 
 class DeleteProjectObjectLinker(object):
     def get_links(self, request, view):

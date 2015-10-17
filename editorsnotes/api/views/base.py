@@ -1,7 +1,6 @@
 from collections import Counter, OrderedDict
 
 from django.conf import settings
-from django.core.urlresolvers import resolve
 from django.db.models.deletion import Collector
 from django.shortcuts import get_object_or_404
 from django.utils.text import force_text
@@ -51,6 +50,7 @@ def create_revision_on_methods(*methods):
                                        log_activity=self.log_obj)
             return ret
         return wrapped
+
     def klass_wrapper(klass):
         for method_name in methods:
             old_method = getattr(klass, method_name)
@@ -59,6 +59,7 @@ def create_revision_on_methods(*methods):
         return klass
     return klass_wrapper
 
+
 class ElasticSearchRetrieveMixin(RetrieveModelMixin):
     """
     Mixin that replaces the `retrieve` method with a query to Elasticsearch.
@@ -66,13 +67,15 @@ class ElasticSearchRetrieveMixin(RetrieveModelMixin):
     def retrieve(self, request, *args, **kwargs):
 
         if not settings.ELASTICSEARCH_ENABLED:
-            return super(ElasticSearchRetrieveMixin, self).retrieve(request, *args, **kwargs)
+            return super(ElasticSearchRetrieveMixin, self)\
+                .retrieve(request, *args, **kwargs)
 
         # Still need to get the object to check for perms
         self.object = self.get_object()
 
         data = items_search.data_for_object(self.object)
         return Response(data['_source']['serialized'])
+
 
 class LinkerMixin(object):
     def __init__(self, *args, **kwargs):
@@ -119,6 +122,7 @@ class EmbeddedMarkupReferencesMixin(object):
         kwargs['include_embeds'] = True
         return super(EmbeddedMarkupReferencesMixin, self)\
             .get_serializer(*args, **kwargs)
+
 
 class ElasticSearchListMixin(object):
     """
@@ -184,6 +188,7 @@ class ElasticSearchListMixin(object):
                 r['url'] = doc['fields']['serialized.url']
                 data['results'].append(r)
 
+
 class ProjectSpecificMixin(object):
     """
     Mixin for API views that populates project information in various places
@@ -208,6 +213,7 @@ class ProjectSpecificMixin(object):
         serializer.save(project=self.request.project,
                         creator=self.request.user,
                         last_updater=self.request.user)
+
     def perform_update(self, serializer):
         serializer.save(last_updater=self.request.user)
 
@@ -219,13 +225,16 @@ class ProjectSpecificMixin(object):
 
 rel_model = {
     'notesection': lambda original, related: related.note,
-    'topicassignment': lambda original, related: related.topic \
-        if related.topic != original else related.content_object,
+    'topicassignment': lambda original, related: (
+        related.topic if related.topic != original else related.content_object
+    ),
     'scan': lambda original, related: related.document
 }
 
+
 class DeleteConfirmAPIView(ProjectSpecificMixin, GenericAPIView):
     permission_classes = (ProjectSpecificPermissions,)
+
     def get(self, request, **kwargs):
         obj = self.get_object()
         collector = Collector(using='default')
@@ -238,32 +247,38 @@ class DeleteConfirmAPIView(ProjectSpecificMixin, GenericAPIView):
             display_obj = rel_model.get(model._meta.model_name,
                                         lambda original, related: related)
             instances = [display_obj(obj, instance) for instance in instances]
-            instances = filter(lambda instance: hasattr(instance, 'get_absolute_url'), instances)
+            instances = filter(
+                lambda instance: hasattr(instance, 'get_absolute_url'),
+                instances)
             counter = Counter(instances)
             ret['items'] += [{
                 'name': force_text(instance),
-                'preview_url': request._request.build_absolute_uri(instance.get_absolute_url()),
+                'preview_url': request._request.build_absolute_uri(
+                    instance.get_absolute_url()),
                 'type': model._meta.verbose_name,
                 'count': count
             } for instance, count in counter.items()]
 
-        ret['items'].sort(key=lambda item: item['type'] != obj._meta.verbose_name)
+        ret['items'].sort(
+            key=lambda item: item['type'] != obj._meta.verbose_name)
 
         return Response(ret)
 
     def get_view_description(self, html=False):
         description = self.__doc__ or """
-        Returns a nested list of objects that would be also be deleted when this
-        object is deleted.
+        Returns a nested list of objects that would be also be deleted when
+        this object is deleted.
         """
         description = formatting.dedent(description)
         if html:
             return formatting.markup_description(description)
         return description
 
+
 class LogActivityMixin(object):
     def _should_log_activity(self, obj):
         return isinstance(obj, Administered)
+
     def make_log_activity(self, obj, action, commit=True):
         log_obj = LogActivity(
             user=self.request.user,
@@ -276,6 +291,7 @@ class LogActivityMixin(object):
         self.log_obj = log_obj
         return log_obj
 
+
 @create_revision_on_methods('create')
 class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin,
                       ListCreateAPIView):
@@ -283,6 +299,7 @@ class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin,
     paginate_by_param = 'page_size'
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
+
     def perform_create(self, serializer):
         ModelClass = serializer.Meta.model
         field_info = model_meta.get_field_info(ModelClass)
@@ -296,11 +313,13 @@ class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin,
         if self._should_log_activity(instance):
             self.make_log_activity(instance, ADDITION)
 
+
 @create_revision_on_methods('update', 'destroy')
 class BaseDetailView(ProjectSpecificMixin, LogActivityMixin,
                      LinkerMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
+
     def perform_update(self, serializer):
         ModelClass = serializer.Meta.model
         field_info = model_meta.get_field_info(ModelClass)
@@ -310,6 +329,7 @@ class BaseDetailView(ProjectSpecificMixin, LogActivityMixin,
         instance = serializer.save(**kwargs)
         if self._should_log_activity(instance):
             self.make_log_activity(instance, CHANGE)
+
     def perform_destroy(self, instance):
         deleted_id = instance.id
         instance.delete()
@@ -318,15 +338,17 @@ class BaseDetailView(ProjectSpecificMixin, LogActivityMixin,
             log_obj.object_id = deleted_id
             log_obj.save()
 
+
 @api_view(('GET',))
 def root(request, format=None):
     return Response({
         'auth-token': reverse('api:obtain-auth-token', request=request),
         'projects': reverse('api:projects-list', request=request),
         'search': reverse('api:search', request=request)
-        #'notes': reverse('api:notes-list'),
-        #'documents': reverse('api:documents-list')
+        # 'notes': reverse('api:notes-list'),
+        # 'documents': reverse('api:documents-list')
     })
+
 
 def search_model(Model, query):
     query = query.to_dict()
@@ -340,6 +362,7 @@ def search_model(Model, query):
         for result in results['hits']['hits']
     ]
 
+
 @api_view(['GET'])
 def browse(request, format=None):
     es_query = Search().sort('-serialized.last_updated')[:10]
@@ -348,7 +371,7 @@ def browse(request, format=None):
     ret['topics'] = search_model(Topic, es_query)
     ret['documents'] = search_model(Document, es_query)
     ret['notes'] = search_model(Note, es_query.filter(
-        'term', **{ 'serialized.is_private': 'false' }
+        'term', **{'serialized.is_private': 'false'}
     ))
 
     return Response(ret)

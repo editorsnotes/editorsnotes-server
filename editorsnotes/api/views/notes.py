@@ -14,12 +14,15 @@ from ..serializers.notes import NoteSerializer
 __all__ = ['NoteList', 'NoteDetail', 'AllProjectNoteList',
            'NoteConfirmDelete']
 
+
 class NotePermissions(ProjectSpecificPermissions):
     authenticated_users_only = False
+
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
         return super(NotePermissions, self).has_permission(request, view)
+
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS and obj.is_private:
             if request.user and request.user.is_authenticated():
@@ -36,11 +39,13 @@ class NoteList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     serializer_class = NoteSerializer
     linker_classes = (AddProjectObjectLinker,)
 
+
 class NoteDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permission_classes = (NotePermissions,)
     linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
+
 
 class AllProjectNoteList(ElasticSearchListMixin, LinkerMixin, ListAPIView):
     queryset = Note.objects.all()

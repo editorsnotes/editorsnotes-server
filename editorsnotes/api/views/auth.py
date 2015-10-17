@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import (
+    GenericAPIView, ListAPIView, RetrieveAPIView)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -14,18 +15,22 @@ from ..serializers import ProjectSerializer, UserSerializer
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
            'SelfUserDetail']
 
+
 class ProjectList(ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+
 
 class ProjectDetail(LinkerMixin, RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     linker_classes = (ActivityLinker,)
+
     def get_object(self):
         qs = self.get_queryset()
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
         return project
+
 
 class UserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin, RetrieveAPIView):
     queryset = User.objects.all()
@@ -33,13 +38,17 @@ class UserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin, RetrieveAPIView):
     linker_classes = (ActivityLinker,)
     lookup_field = 'username'
 
-class SelfUserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin, RetrieveAPIView):
+
+class SelfUserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin,
+                     RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
     linker_classes = (ActivityLinker,)
+
     def get_object(self):
         return self.request.user
+
 
 def parse_int(val, default=25, maximum=100):
     if not isinstance(val, int):
@@ -48,6 +57,7 @@ def parse_int(val, default=25, maximum=100):
         except ValueError:
             val = default
     return val if val <= maximum else maximum
+
 
 class ActivityView(GenericAPIView):
     """
@@ -61,8 +71,10 @@ class ActivityView(GenericAPIView):
     * action ("add", "change", "delete")
     * order ('asc' or 'desc')
     """
+
     TYPES = ['note', 'topic', 'document', 'transcript', 'footnote']
     ACTIONS = ['added', 'changed', 'deleted']
+
     def get_es_query(self):
         q = {'query': {'filtered': {'filter': {'bool': { 'must': []}}}}}
         params = self.request.query_params
@@ -79,6 +91,7 @@ class ActivityView(GenericAPIView):
                 'term': { 'data.action': params['action'] }
             })
         return q
+
     def get_object(self, username=None, project_slug=None):
         if username is not None:
             obj = get_object_or_404(User, username=username)
@@ -87,6 +100,7 @@ class ActivityView(GenericAPIView):
         else:
             raise ValueError()
         return obj
+
     def get(self, request, format=None, **kwargs):
         obj = self.get_object(**kwargs)
         es_query = self.get_es_query()

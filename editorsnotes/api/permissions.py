@@ -1,5 +1,6 @@
 from rest_framework.permissions import DjangoModelPermissions, SAFE_METHODS
 
+
 class ProjectSpecificPermissions(DjangoModelPermissions):
     """
     Permissions for project-specific items.

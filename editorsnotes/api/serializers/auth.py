@@ -63,7 +63,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         return ROOT_NAMESPACE + 'Project'
 
 
-
 class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     url = IdentityURLField()
 

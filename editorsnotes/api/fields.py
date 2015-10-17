@@ -1,5 +1,4 @@
 from rest_framework.relations import HyperlinkedRelatedField
-# from rest_framework.relations import get_attribute
 from rest_framework.reverse import reverse
 from rest_framework.serializers import ReadOnlyField
 

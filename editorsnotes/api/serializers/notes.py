@@ -94,5 +94,6 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
             self.fields.pop('_embedded', None)
             self.fields.pop('markup')
             self.fields.pop('markup_html')
+
     def get_type(self, obj):
         return ROOT_NAMESPACE + 'Note'
