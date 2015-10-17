@@ -44,6 +44,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 LOGIN_REDIRECT_URL = '/auth/'
+LOGIN_URL = '/auth/signin'
 
 
 #################
