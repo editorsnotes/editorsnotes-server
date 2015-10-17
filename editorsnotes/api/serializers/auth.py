@@ -90,6 +90,7 @@ class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
         model = User
         fields = (
             'url',
+            'type',
             'profile',
 
             'projects',
