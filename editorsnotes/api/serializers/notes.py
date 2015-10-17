@@ -7,6 +7,7 @@ from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
                       TopicAssignmentField, IdentityURLField, UpdatersField,
                       UnqualifiedURLField)
+from ..ld import ROOT_NAMESPACE
 from ..validators import UniqueToProjectValidator
 
 from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
@@ -38,6 +39,7 @@ class NoteStatusField(serializers.ReadOnlyField):
 class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                      serializers.ModelSerializer):
     url = IdentityURLField()
+    type = serializers.SerializerMethodField()
     project = HyperlinkedAffiliatedProjectField(
         default=CurrentProjectDefault())
 
@@ -55,6 +57,7 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         fields = (
             'id',
             'url',
+            'type',
             'project',
 
             'title',
@@ -91,3 +94,5 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
             self.fields.pop('_embedded', None)
             self.fields.pop('markup')
             self.fields.pop('markup_html')
+    def get_type(self, obj):
+        return ROOT_NAMESPACE + 'Note'
