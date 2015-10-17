@@ -29,7 +29,6 @@ from ..filters import (ElasticSearchFilterBackend,
                        ElasticSearchAutocompleteFilterBackend)
 from ..pagination import ESLimitOffsetPagination
 from ..permissions import ProjectSpecificPermissions
-from ..renderers import HTMLRedirectRenderer
 from ..serializers import ProjectSerializer
 
 
