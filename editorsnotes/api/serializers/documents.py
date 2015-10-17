@@ -12,6 +12,7 @@ from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
                       HyperlinkedAffiliatedProjectField, UpdatersField,
                       TopicAssignmentField, IdentityURLField,
                       UnqualifiedURLField)
+from ..ld import ROOT_NAMESPACE
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
 
@@ -87,6 +88,7 @@ class UniqueDocumentDescriptionValidator:
 class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
     url = IdentityURLField()
+    type = serializers.SerializerMethodField()
     project = HyperlinkedAffiliatedProjectField(
         default=CurrentProjectDefault())
     updaters = UpdatersField()
@@ -104,6 +106,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         fields = (
             'id',
             'url',
+            'type',
             'project',
 
             'description',
@@ -133,6 +136,9 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     def __init__(self, *args, **kwargs):
         kwargs.pop('minimal', False)
         super(DocumentSerializer, self).__init__(*args, **kwargs)
+
+    def get_type(self, obj):
+        return ROOT_NAMESPACE + 'Document'
 
     def get_citations(self, obj):
         return obj.get_citations()

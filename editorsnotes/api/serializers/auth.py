@@ -3,6 +3,7 @@ from rest_framework import serializers
 from editorsnotes.auth.models import Project, User
 
 from ..fields import CustomLookupHyperlinkedField, IdentityURLField
+from ..ld import ROOT_NAMESPACE
 from .base import EmbeddedItemsMixin
 
 
@@ -11,6 +12,8 @@ __all__ = ['ProjectSerializer', 'UserSerializer']
 
 class ProjectSerializer(serializers.ModelSerializer):
     url = IdentityURLField()
+
+    type = serializers.SerializerMethodField()
 
     notes = CustomLookupHyperlinkedField(
         view_name='api:notes-list',
@@ -40,6 +43,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = (
             'url',
+            'type',
 
             'name',
             'markup',
@@ -55,9 +59,15 @@ class ProjectSerializer(serializers.ModelSerializer):
             # 'references',
         )
 
+    def get_type(self, obj):
+        return ROOT_NAMESPACE + 'Project'
+
+
 
 class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     url = IdentityURLField()
+
+    type = serializers.SerializerMethodField()
 
     projects = serializers.HyperlinkedRelatedField(
         source='get_affiliated_projects',
@@ -93,3 +103,6 @@ class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             # 'email',
         )
         embedded_fields = ('projects',)
+
+    def get_type(self, obj):
+        return ROOT_NAMESPACE + 'User'
