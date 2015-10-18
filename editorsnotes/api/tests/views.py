@@ -718,6 +718,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['results'][0]['title'], note_obj.title)
 
         original_response_content = response.data
+        original_response_content.pop('operation')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -726,6 +727,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
+        response.data.pop('operation')
         self.assertEqual(response.data, original_response_content)
 
         self.client.logout()
