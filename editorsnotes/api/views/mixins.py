@@ -9,7 +9,30 @@ from editorsnotes.auth.models import Project, LogActivity
 from editorsnotes.main.models.base import Administered
 from editorsnotes.search import items_index
 
+from ..hydra import operation_from_perm
 from ..pagination import ESLimitOffsetPagination
+
+
+class HydraProjectPermissionsMixin(object):
+    hydra_project_perms = []
+
+    # Putting this in finalize_response instead of get_serializer because we
+    # don't call that method when using Elasticsearch.
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super(HydraProjectPermissionsMixin, self)\
+            .finalize_response(request, response, *args, **kwargs)
+
+        user = self.request.user
+        project = self.request.project
+
+        if user.is_authenticated():
+            response.data['operation'] = [
+                operation_from_perm(user, project, perm)
+                for perm in self.hydra_project_perms
+                if user.has_project_perm(project, perm)
+            ]
+
+        return response
 
 
 class EmbeddedMarkupReferencesMixin(object):
@@ -55,11 +78,6 @@ class ElasticSearchListMixin(object):
 
         prev_link = self.paginator.get_previous_link()
         next_link = self.paginator.get_next_link()
-
-        # if prev_link:
-        #     self.add_link('prev', prev_link)
-        # if next_link:
-        #     self.add_link('next', next_link)
 
         # FIXME: Also embed project URL/project?
 
