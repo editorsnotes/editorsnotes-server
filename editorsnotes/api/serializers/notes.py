@@ -4,9 +4,7 @@ from rest_framework import serializers
 from editorsnotes.main.models import Note
 from editorsnotes.main.models.notes import NOTE_STATUS_CHOICES
 
-from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
-                      TopicAssignmentField, IdentityURLField, UpdatersField,
-                      UnqualifiedURLField)
+from .. import fields
 from ..ld import ROOT_NAMESPACE
 from ..validators import UniqueToProjectValidator
 
@@ -38,19 +36,21 @@ class NoteStatusField(serializers.ReadOnlyField):
 # TODO: change license, fuller repr of updaters
 class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                      serializers.ModelSerializer):
-    url = IdentityURLField()
+    url = fields.IdentityURLField()
     type = serializers.SerializerMethodField()
-    project = HyperlinkedAffiliatedProjectField(
-        default=CurrentProjectDefault())
+    project = fields.HyperlinkedAffiliatedProjectField(
+        default=fields.CurrentProjectDefault())
 
     license = LicenseSerializer(read_only=True, source='get_license')
-    updaters = UpdatersField()
+    updaters = fields.UpdatersField()
 
     status = NoteStatusField()
-    related_topics = TopicAssignmentField(many=True)
+    related_topics = fields.TopicAssignmentField(many=True)
 
-    references = UnqualifiedURLField(source='get_referenced_items')
-    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+    references = fields.UnqualifiedURLField(
+        source='get_referenced_items')
+    referenced_by = fields.UnqualifiedURLField(
+        source='get_referencing_items')
 
     class Meta:
         model = Note
@@ -86,14 +86,6 @@ class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         validators = [
             UniqueToProjectValidator('title')
         ]
-
-    def __init__(self, *args, **kwargs):
-        minimal = kwargs.pop('minimal', False)
-        super(NoteSerializer, self).__init__(*args, **kwargs)
-        if minimal:
-            self.fields.pop('_embedded', None)
-            self.fields.pop('markup')
-            self.fields.pop('markup_html')
 
     def get_type(self, obj):
         return ROOT_NAMESPACE + 'Note'

@@ -2,9 +2,7 @@ from rest_framework import serializers
 
 from editorsnotes.main.models import Topic
 
-from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
-                      UnqualifiedURLField, TopicAssignmentField, UpdatersField,
-                      IdentityURLField)
+from .. import fields
 from ..ld import ROOT_NAMESPACE
 from ..validators import UniqueToProjectValidator
 
@@ -16,16 +14,18 @@ __all__ = ['TopicSerializer']
 
 class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                       serializers.ModelSerializer):
-    url = IdentityURLField()
+    url = fields.IdentityURLField()
     type = serializers.SerializerMethodField()
-    project = HyperlinkedAffiliatedProjectField(
-        default=CurrentProjectDefault())
-    updaters = UpdatersField()
+    project = fields.HyperlinkedAffiliatedProjectField(
+        default=fields.CurrentProjectDefault())
+    updaters = fields.UpdatersField()
 
-    related_topics = TopicAssignmentField(many=True)
+    related_topics = fields.TopicAssignmentField(many=True)
 
-    references = UnqualifiedURLField(source='get_referenced_items')
-    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+    references = fields.UnqualifiedURLField(
+        source='get_referenced_items')
+    referenced_by = fields.UnqualifiedURLField(
+        source='get_referencing_items')
 
     class Meta:
         model = Topic
@@ -61,14 +61,6 @@ class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
             'referenced_by',
         )
         validators = [UniqueToProjectValidator('preferred_name')]
-
-    def __init__(self, *args, **kwargs):
-        minimal = kwargs.pop('minimal', False)
-        super(TopicSerializer, self).__init__(*args, **kwargs)
-        if minimal:
-            self.fields.pop('markup')
-            self.fields.pop('markup_html')
-            self.fields.pop('_embedded', None)
 
     def get_type(self, obj):
         return ROOT_NAMESPACE + 'Topic'

@@ -7,11 +7,8 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Document, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
 
+from .. import fields
 from .mixins import RelatedTopicSerializerMixin, EmbeddedItemsMixin
-from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
-                      HyperlinkedAffiliatedProjectField, UpdatersField,
-                      TopicAssignmentField, IdentityURLField,
-                      UnqualifiedURLField)
 from ..ld import ROOT_NAMESPACE
 
 __all__ = ['DocumentSerializer', 'ScanSerializer', 'TranscriptSerializer']
@@ -87,19 +84,19 @@ class UniqueDocumentDescriptionValidator:
 
 class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
-    url = IdentityURLField()
+    url = fields.IdentityURLField()
     type = serializers.SerializerMethodField()
-    project = HyperlinkedAffiliatedProjectField(
-        default=CurrentProjectDefault())
-    updaters = UpdatersField()
+    project = fields.HyperlinkedAffiliatedProjectField(
+        default=fields.CurrentProjectDefault())
+    updaters = fields.UpdatersField()
 
     transcript = serializers.SerializerMethodField('get_transcript_url')
     zotero_data = ZoteroField(required=False)
-    related_topics = TopicAssignmentField(many=True)
+    related_topics = fields.TopicAssignmentField(many=True)
     scans = ScanSerializer(many=True, required=False, read_only=True)
     cited_by = serializers.SerializerMethodField('get_citations')
 
-    referenced_by = UnqualifiedURLField(source='get_referencing_items')
+    referenced_by = fields.UnqualifiedURLField(source='get_referencing_items')
 
     class Meta:
         model = Document
@@ -133,10 +130,6 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
             UniqueDocumentDescriptionValidator()
         ]
 
-    def __init__(self, *args, **kwargs):
-        kwargs.pop('minimal', False)
-        super(DocumentSerializer, self).__init__(*args, **kwargs)
-
     def get_type(self, obj):
         return ROOT_NAMESPACE + 'Document'
 
@@ -162,14 +155,14 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
 
 
 class TranscriptSerializer(serializers.ModelSerializer):
-    url = CustomLookupHyperlinkedField(
+    url = fields.CustomLookupHyperlinkedField(
         lookup_kwarg_attrs={
             'project_slug': 'document.project.slug',
             'document_id': 'document.id'
         },
         read_only=True
     )
-    document = CustomLookupHyperlinkedField(
+    document = fields.CustomLookupHyperlinkedField(
         view_name='api:documents-detail',
         lookup_kwarg_attrs={
             'project_slug': 'document.project.slug',
