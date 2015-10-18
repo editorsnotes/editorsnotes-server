@@ -4,7 +4,7 @@ from editorsnotes.auth.models import Project, User
 
 from ..fields import CustomLookupHyperlinkedField, IdentityURLField
 from ..ld import ROOT_NAMESPACE
-from .base import EmbeddedItemsMixin
+from .mixins import EmbeddedItemsMixin
 
 
 __all__ = ['ProjectSerializer', 'UserSerializer']

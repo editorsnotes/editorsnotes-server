@@ -4,22 +4,19 @@ from rest_framework.parsers import MultiPartParser
 from editorsnotes.main.models import Document, Scan, Transcript
 
 from .. import filters as es_filters
-from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
-                       DeleteProjectObjectLinker)
 from ..serializers import (DocumentSerializer, ScanSerializer,
                            TranscriptSerializer)
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
-from .mixins import ElasticSearchListMixin, LinkerMixin
+from .mixins import ElasticSearchListMixin
 
 __all__ = ['DocumentList', 'DocumentDetail', 'DocumentConfirmDelete',
            'ScanList', 'ScanDetail', 'Transcript']
 
 
-class DocumentList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
+class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
-    linker_classes = (AddProjectObjectLinker,)
     es_filter_backends = (
         es_filters.ProjectFilterBackend,
         es_filters.QFilterBackend,
@@ -30,7 +27,6 @@ class DocumentList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
 class DocumentDetail(BaseDetailView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
-    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
 
 
 class DocumentConfirmDelete(DeleteConfirmAPIView):

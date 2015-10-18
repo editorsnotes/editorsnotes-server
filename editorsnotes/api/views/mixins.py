@@ -9,47 +9,30 @@ from editorsnotes.auth.models import Project, LogActivity
 from editorsnotes.main.models.base import Administered
 from editorsnotes.search import items_index
 
+from ..hydra import operation_from_perm
 from ..pagination import ESLimitOffsetPagination
 
 
-class LinkerMixin(object):
-    def __init__(self, *args, **kwargs):
-        super(LinkerMixin, self).__init__(*args, **kwargs)
-        self._links = []
+class HydraProjectPermissionsMixin(object):
+    hydra_project_perms = []
 
-    def add_link(self, rel, href, method='GET', label=None):
-        link = OrderedDict((
-            ('rel', rel),
-            ('href', href),
-            ('method', method)
-        ))
+    # Putting this in finalize_response instead of get_serializer because we
+    # don't call that method when using Elasticsearch.
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super(HydraProjectPermissionsMixin, self)\
+            .finalize_response(request, response, *args, **kwargs)
 
-        if label:
-            link['label'] = label
+        user = self.request.user
+        project = self.request.project
 
-        self._links.append(link)
+        if user.is_authenticated():
+            response.data['operation'] = [
+                operation_from_perm(user, project, perm)
+                for perm in self.hydra_project_perms
+                if user.has_project_perm(project, perm)
+            ]
 
-    def add_links(self):
-        linkers = [linker() for linker in getattr(self, 'linker_classes', [])]
-        for linker in linkers:
-            links = linker.get_links(self.request, self)
-            for link in links:
-                self.add_link(**link)
-
-    def get_links(self):
-        return self._links
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-
-        self.object = instance
-        self.add_links()
-
-        data = OrderedDict([('_links', self.get_links())])
-        data.update(serializer.data)
-
-        return Response(data)
+        return response
 
 
 class EmbeddedMarkupReferencesMixin(object):
@@ -95,11 +78,6 @@ class ElasticSearchListMixin(object):
 
         prev_link = self.paginator.get_previous_link()
         next_link = self.paginator.get_next_link()
-
-        # if prev_link:
-        #     self.add_link('prev', prev_link)
-        # if next_link:
-        #     self.add_link('next', next_link)
 
         # FIXME: Also embed project URL/project?
 
