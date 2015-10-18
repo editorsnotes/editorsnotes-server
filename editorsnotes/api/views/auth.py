@@ -7,11 +7,9 @@ from editorsnotes.auth.models import Project, User
 from editorsnotes.search import activity_index
 
 from ..filters import ActivityFilterBackend
-from ..linkers import ActivityLinker
 from ..serializers import ProjectSerializer, UserSerializer
 
-from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
-                     LinkerMixin)
+from .mixins import ElasticSearchListMixin, EmbeddedMarkupReferencesMixin
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
            'SelfUserDetail']
@@ -22,10 +20,9 @@ class ProjectList(ListAPIView):
     serializer_class = ProjectSerializer
 
 
-class ProjectDetail(LinkerMixin, RetrieveAPIView):
+class ProjectDetail(RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    linker_classes = (ActivityLinker,)
 
     def get_object(self):
         qs = self.get_queryset()
@@ -33,19 +30,16 @@ class ProjectDetail(LinkerMixin, RetrieveAPIView):
         return project
 
 
-class UserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin, RetrieveAPIView):
+class UserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    linker_classes = (ActivityLinker,)
     lookup_field = 'username'
 
 
-class SelfUserDetail(EmbeddedMarkupReferencesMixin, LinkerMixin,
-                     RetrieveAPIView):
+class SelfUserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
-    linker_classes = (ActivityLinker,)
 
     def get_object(self):
         return self.request.user

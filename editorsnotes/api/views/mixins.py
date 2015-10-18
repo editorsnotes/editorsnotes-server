@@ -12,46 +12,6 @@ from editorsnotes.search import items_index
 from ..pagination import ESLimitOffsetPagination
 
 
-class LinkerMixin(object):
-    def __init__(self, *args, **kwargs):
-        super(LinkerMixin, self).__init__(*args, **kwargs)
-        self._links = []
-
-    def add_link(self, rel, href, method='GET', label=None):
-        link = OrderedDict((
-            ('rel', rel),
-            ('href', href),
-            ('method', method)
-        ))
-
-        if label:
-            link['label'] = label
-
-        self._links.append(link)
-
-    def add_links(self):
-        linkers = [linker() for linker in getattr(self, 'linker_classes', [])]
-        for linker in linkers:
-            links = linker.get_links(self.request, self)
-            for link in links:
-                self.add_link(**link)
-
-    def get_links(self):
-        return self._links
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-
-        self.object = instance
-        self.add_links()
-
-        data = OrderedDict([('_links', self.get_links())])
-        data.update(serializer.data)
-
-        return Response(data)
-
-
 class EmbeddedMarkupReferencesMixin(object):
     def get_serializer(self, *args, **kwargs):
         kwargs['include_embeds'] = True

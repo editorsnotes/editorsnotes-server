@@ -4,14 +4,11 @@ from rest_framework.permissions import SAFE_METHODS
 from editorsnotes.main.models import Note
 
 from .. import filters as es_filters
-from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
-                       DeleteProjectObjectLinker)
 from ..permissions import ProjectSpecificPermissions
 from ..serializers.notes import NoteSerializer
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
-from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
-                     LinkerMixin)
+from .mixins import ElasticSearchListMixin, EmbeddedMarkupReferencesMixin
 
 __all__ = ['NoteList', 'NoteDetail', 'AllProjectNoteList',
            'NoteConfirmDelete']
@@ -36,10 +33,9 @@ class NotePermissions(ProjectSpecificPermissions):
         return False
 
 
-class NoteList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
+class NoteList(ElasticSearchListMixin, BaseListAPIView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
-    linker_classes = (AddProjectObjectLinker,)
     es_filter_backends = (
         es_filters.ProjectFilterBackend,
         es_filters.QFilterBackend,
@@ -51,10 +47,9 @@ class NoteDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permission_classes = (NotePermissions,)
-    linker_classes = (EditProjectObjectLinker, DeleteProjectObjectLinker,)
 
 
-class AllProjectNoteList(ElasticSearchListMixin, LinkerMixin, ListAPIView):
+class AllProjectNoteList(ElasticSearchListMixin, ListAPIView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     # FIXME: Only show notes that aren't private

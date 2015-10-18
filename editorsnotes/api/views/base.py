@@ -20,7 +20,7 @@ from editorsnotes.main.models import Note, Topic, Document
 from editorsnotes.search import items as items_search
 
 from ..permissions import ProjectSpecificPermissions
-from .mixins import LinkerMixin, LogActivityMixin, ProjectSpecificMixin
+from .mixins import LogActivityMixin, ProjectSpecificMixin
 
 
 def create_revision_on_methods(*methods):
@@ -128,7 +128,7 @@ class BaseListAPIView(ProjectSpecificMixin, LogActivityMixin,
 
 @create_revision_on_methods('update', 'destroy')
 class BaseDetailView(ProjectSpecificMixin, LogActivityMixin,
-                     LinkerMixin, RetrieveUpdateDestroyAPIView):
+                     RetrieveUpdateDestroyAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     parser_classes = (JSONParser,)
 

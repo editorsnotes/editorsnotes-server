@@ -479,7 +479,6 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                          etree.tostring(document_obj.description))
 
         original_response_content = response.data
-        orig_links = original_response_content.pop('_links')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -487,9 +486,6 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
-
-        new_links_1 = response.data.pop('_links')
-        self.assertNotEqual(orig_links, new_links_1)
 
         self.assertEqual(
             response.data,
@@ -502,9 +498,6 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        new_links_2 = response.data.pop('_links')
-        self.assertEqual(new_links_1, new_links_2)
-        self.assertNotEqual(orig_links, new_links_2)
         self.assertEqual(response.data, original_response_content)
 
     def test_document_api_update(self):
@@ -628,58 +621,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
             last_updater=self.user)
         return note
 
-    def test_note_api_list_links(self):
-        """
-        Note resources should have hyperlinks to edit the note if the
-        authenticated user has the right permissions.
-        """
-        response = self.client.get(
-            reverse('api:notes-list', args=[self.project.slug]),
-            HTTP_ACCEPT='application/json')
-
-        add_link = filter(lambda link: link['rel'] == 'add',
-                          response.data.get('_links'))
-        self.assertEqual(len(add_link), 1)
-
-        self.client.logout()
-        self.client.login(username='esther', password='esther')
-        response = self.client.get(
-            reverse('api:notes-list', args=[self.project.slug]),
-            HTTP_ACCEPT='application/json')
-        add_link = filter(lambda link: link['rel'] == 'add',
-                          response.data.get('_links'))
-        self.assertEqual(len(add_link), 0)
-
-    def test_note_api_detail_links(self):
-        """
-        Note resources should have hyperlinks to edit the note if the
-        authenticated user has the right permissions.
-        """
-        note_obj = self.create_test_note()
-
-        response = self.client.get(
-            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
-            HTTP_ACCEPT='application/json')
-
-        edit_link = filter(lambda link: link['rel'] == 'edit',
-                           response.data.get('_links'))
-        delete_link = filter(lambda link: link['rel'] == 'delete',
-                             response.data.get('_links'))
-        self.assertEqual(len(edit_link), 1)
-        self.assertEqual(len(delete_link), 1)
-
-        self.client.logout()
-        self.client.login(username='esther', password='esther')
-        response = self.client.get(
-            reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
-            HTTP_ACCEPT='application/json')
-        edit_link = filter(lambda link: link['rel'] == 'edit',
-                           response.data.get('_links'))
-        delete_link = filter(lambda link: link['rel'] == 'delete',
-                             response.data.get('_links'))
-        self.assertEqual(len(edit_link), 0)
-        self.assertEqual(len(delete_link), 0)
-
     def test_note_api_create(self):
         "Creating a note within your own project is ok"
         data = TEST_NOTE.copy()
@@ -777,7 +718,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['results'][0]['title'], note_obj.title)
 
         original_response_content = response.data
-        orig_links = original_response_content.pop('_links')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -786,9 +726,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        new_links_1 = response.data.pop('_links')
-        self.assertNotEqual(orig_links, new_links_1)
-
         self.assertEqual(response.data, original_response_content)
 
         self.client.logout()
@@ -796,10 +733,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
-
-        new_links_2 = response.data.pop('_links')
-        self.assertEqual(new_links_1, new_links_2)
-        self.assertNotEqual(orig_links, new_links_2)
 
         self.assertEqual(response.data, original_response_content)
 
