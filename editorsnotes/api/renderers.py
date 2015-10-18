@@ -12,12 +12,15 @@ class BrowsableJSONAPIRenderer(renderers.BrowsableAPIRenderer):
 
 class JSONLDRenderer(renderers.JSONRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        json_with_context = OrderedDict()
-        json_with_context['@context'] = CONTEXT.copy()
+        data_with_context = OrderedDict()
 
-        json_with_context.update(data)
+        # If there are any values for `@context`, add them to the default
+        # context dict.
+        context = CONTEXT.copy()
+        context.update(data.pop('@context', {}))
 
-        data = json_with_context
+        data_with_context['@context'] = context
+        data_with_context.update(data)
 
         return super(JSONLDRenderer, self)\
-            .render(data, accepted_media_type, renderer_context)
+            .render(data_with_context, accepted_media_type, renderer_context)

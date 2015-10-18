@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from .ld import ROOT_NAMESPACE
 
 PERM_TO_HYDRA_TYPE = {
@@ -37,10 +39,38 @@ def operation_from_perm(user, project, perm_label):
     hydra_title = PERM_TO_HYDRA_TITLE[perm_type]
     method = PERM_TO_METHOD[perm_type]
 
-    return {
-        'type': hydra_type,
-        'title': hydra_title.format(model_opts.verbose_name),
-        'method': method,
-        'expects': ROOT_NAMESPACE + model_opts.object_name,
-        'returns': ROOT_NAMESPACE + model_opts.object_name
+    return OrderedDict((
+        ('type', hydra_type),
+        ('title', hydra_title.format(model_opts.verbose_name)),
+        ('method', method),
+        ('expects', ROOT_NAMESPACE + model_opts.object_name),
+        ('returns', ROOT_NAMESPACE + model_opts.object_name)
+    ))
+
+
+def project_links_for_request_user(project, request):
+    user = request.user
+
+    add_perms = user._get_project_role(project)\
+        .get_permissions()\
+        .filter(codename__in=('add_note', 'add_topic', 'add_document'))
+
+    available_add_perms_by_model = {
+        perm.codename.split('_')[1]: ['main.' + perm.codename]
+        for perm in add_perms
     }
+
+    project_url = request.build_absolute_uri(project.get_absolute_url())
+
+    return [
+        OrderedDict((
+            ('url', '{}doc/#{}s'.format(project_url, model)),
+            ('type', 'Link'),
+            ('title', '{} list'.format(model.title())),
+            ('supportedOperation', [
+                operation_from_perm(user, project, codename)
+                for codename in available_add_perms_by_model.get(model, [])
+            ])
+        ))
+        for model in ('note', 'topic', 'document')
+    ]
