@@ -8,7 +8,7 @@ from ..fields import (CurrentProjectDefault, HyperlinkedAffiliatedProjectField,
 from ..ld import ROOT_NAMESPACE
 from ..validators import UniqueToProjectValidator
 
-from .base import EmbeddedItemsMixin, RelatedTopicSerializerMixin
+from .mixins import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
 
 __all__ = ['TopicSerializer']

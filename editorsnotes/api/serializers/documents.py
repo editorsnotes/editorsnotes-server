@@ -7,7 +7,7 @@ from rest_framework.reverse import reverse
 from editorsnotes.main.models import Document, Scan, Transcript
 from editorsnotes.main.utils import remove_stray_brs
 
-from .base import RelatedTopicSerializerMixin, EmbeddedItemsMixin
+from .mixins import RelatedTopicSerializerMixin, EmbeddedItemsMixin
 from ..fields import (CurrentProjectDefault, CustomLookupHyperlinkedField,
                       HyperlinkedAffiliatedProjectField, UpdatersField,
                       TopicAssignmentField, IdentityURLField,
