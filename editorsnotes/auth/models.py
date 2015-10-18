@@ -115,10 +115,6 @@ class User(AbstractUser, URLAccessible):
     def has_project_perms(self, project, perm_list):
         return all(self.has_project_perm(project, p) for p in perm_list)
 
-    @staticmethod
-    def get_activity_for(user, max_count=50):
-        return activity_for(user, max_count=50)
-
 
 class UpdatersMixin(object):
     """
@@ -214,10 +210,6 @@ class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
     def get_role_for(self, user):
         qs = self.roles.filter(group__user=user)
         return qs.get() if qs.exists() else None
-
-    @staticmethod
-    def get_activity_for(project, max_count=50):
-        return activity_for(project, max_count=max_count)
 
 
 @receiver(models.signals.post_save, sender=Project)
@@ -453,46 +445,3 @@ class RevisionLogActivity(models.Model):
 
     class Meta:
         app_label = 'main'
-
-
-def activity_for(model, max_count=50):
-    u'''
-    Return recent activity for a user or project.
-    '''
-    if isinstance(model, User):
-        user_ids = [model.id]
-    elif isinstance(model, Project):
-        user_ids = [u.id for u in model.members.all()]
-    else:
-        raise TypeError(
-            'Argument must either be an instance of a User or a Project')
-
-    activity = []
-    checked_object_ids = {
-        'topic': [],
-        'note': [],
-        'document': [],
-        'transcript': []
-    }
-
-    for entry in reversion.models.Version.objects\
-            .select_related('content_type__name', 'revision')\
-            .order_by('-revision__date_created')\
-            .filter(content_type__app_label='main',
-                    content_type__model__in=checked_object_ids.keys(),
-                    revision__user_id__in=user_ids):
-        if entry.object_id in checked_object_ids[entry.content_type.name]:
-            continue
-        checked_object_ids[entry.content_type.name].append(entry.object_id)
-        if entry.type == reversion.models.VERSION_DELETE:
-            continue
-        obj = entry.object
-        if obj is None:
-            continue
-        activity.append({
-            'what': obj,
-            'when': entry.revision.date_created
-        })
-        if len(activity) == max_count:
-            break
-    return activity, checked_object_ids

@@ -3,6 +3,7 @@ from rest_framework.permissions import SAFE_METHODS
 
 from editorsnotes.main.models import Note
 
+from .. import filters as es_filters
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..permissions import ProjectSpecificPermissions
@@ -39,6 +40,11 @@ class NoteList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     linker_classes = (AddProjectObjectLinker,)
+    es_filter_backends = (
+        es_filters.ProjectFilterBackend,
+        es_filters.QFilterBackend,
+        es_filters.UpdaterFilterBackend,
+    )
 
 
 class NoteDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):

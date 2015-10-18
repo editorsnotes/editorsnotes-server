@@ -1,114 +1,92 @@
-from elasticsearch_dsl import Search, Q
+from django.conf import settings
+
+from elasticsearch_dsl import Q
 from rest_framework.filters import BaseFilterBackend
 
-from editorsnotes.search.utils import clean_query_string
+from editorsnotes.search.utils import clean_query_string, make_dummy_request
 
-BASE_QUERY = {'query': {'filtered': {'query': {'match_all': {}}}}}
 
-# Filters should expect that the `queryset` parameter will be an instance of an
-# elasticsearch_dsl.Search class. They should return another instance of that
-# class which has any relevant changes applied.
-
-class ElasticSearchFilterBackend(BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
+class ProjectFilterBackend(object):
+    "Filter the search's project base on either request or params"
+    def filter_search(self, request, search, view):
         params = request.query_params
-        search = queryset
 
-        if hasattr(request, 'project') or 'project' in params:
-            project_url = (
-                request.build_absolute_uri(request.project.get_absolute_url())
-                if hasattr(request, 'project')
-                else params['project'])
+        if not (hasattr(request, 'project') or 'project' in params):
+            return search
 
-            search = search.filter('term', **{'serialized.project': project_url})
+        request_project = getattr(request, 'project', None)
 
-        if 'updater' in params:
-            search = search.filter('term', **{ 'serialized.updater.usernmae': params.get('updater') })
+        # If in debug mode, always use a request based off of the base URL that
+        # ES uses to index things, since it might be different from the passed
+        # request URL. In production, requests should always be proxied and get
+        # the same host.
+        if settings.DEBUG:
+            request = make_dummy_request()
 
-        if 'q' in params:
-            search = search.query('match', display_title={
-                'query': params.get('q'),
-                'operator': 'and',
-                'fuzziness': '0.3'
-            })
+        project_url = (
+            request.build_absolute_uri(request_project.get_absolute_url())
+            if request_project
+            else params['project']
+        )
 
-            search = search.highlight('_all').highlight_options(**{
-                'pre_tags': ['&lt;strong&gt;'],
-                'post_tags': ['&lt;/strong&gt;']
-            })
+        return search.filter('term', **{'serialized.project': project_url})
 
-        search = search.sort('-last_updated')
+
+class UpdaterFilterBackend(object):
+    """
+    Filter searches based on updater in params
+
+    FIXME: work with multiple updaters? -> this'll likely be part of a more
+    general faceting strategy.
+    """
+    def filter_search(self, request, search, view):
+        params = request.query_params
+        if 'updater' not in params:
+            return search
+
+        return search.filter('term', **{
+            'serialized.updater': params['updater']
+        })
+
+
+class QFilterBackend(object):
+    "General filter based on the `q` parameter."
+    def filter_search(self, request, search, view):
+        q = request.query_params.get('q', None)
+        if not q:
+            return search
+
+        # search = search.highlight('_all').highlight_options(**{
+        #     'pre_tags': ['&lt;strong&gt;'],
+        #     'post_tags': ['&lt;/strong&gt;']
+        # })
+
+        return search.query('match', display_title={
+            'query': clean_query_string(q),
+            'operator': 'and',
+            'fuzziness': '0.3'
+        })
+
+
+# TODO: Make a new autocomplete filter.
+
+
+ACTIVITY_TYPES = ['note', 'topic', 'document']
+ACTIvITY_ACTIONS = ['added', 'changed', 'deleted']
+
+
+class ActivityFilterBackend(BaseFilterBackend):
+    def filter_search(self, request, search, view):
+        params = request.query_params
+        must = []
+
+        if 'type' in params and params['type'] in ACTIVITY_TYPES:
+            must.append(Q('term', **{'data.type': params['type']}))
+
+        if 'action' in params and params['action'] in ACTIvITY_ACTIONS:
+            must.append(Q('term', **{'data.action': params['action']}))
+
+        if must:
+            search.query = Q('bool', must=must)
+
         return search
-
-class ElasticSearchAutocompleteFilterBackend(BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        query = BASE_QUERY.copy()
-        filters = []
-        params = request.query_params
-
-        if hasattr(request, 'project') or 'project' in params:
-            project = params.get('project', request.project.slug)
-            filters.append({'term': {'serialized.project.url':
-                                     '/projects/{}/'.format(project)}})
-
-        term = clean_query_string(params.get('autocomplete').lower()).split()
-
-        query['query']['filtered']['query'] = {
-            'bool': { 'must': [], 'should': [] }
-        }
-
-        must = query['query']['filtered']['query']['bool']['must']
-        should = query['query']['filtered']['query']['bool']['should']
-
-        if len(term) > 1:
-            must.append({
-                'match': {
-                    'display_title': {
-                        'query': ' '.join(term[:-1]),
-                        'operator': 'and',
-                        'fuzziness': '0.2'
-                    }
-                }
-            })
-
-        must.append({
-            'prefix': {
-                'display_title': {
-                    'value': term[-1]
-                }
-            }
-        })
-
-        should.append({
-            'match_phrase': {
-                'display_title': params.get('autocomplete').lower()
-            }
-        })
-
-        should.append({
-            'match': {
-                'display_title': {
-                    'query': ' '.join(term),
-                    'operator': 'and'
-                }
-            }
-        })
-
-        query['fields'] = ['display_title', 'display_url']
-
-        if filters:
-            query['query']['filtered']['filter'] = { 'and': filters }
-
-        if params.get('highlight'):
-            query['highlight'] = {
-                'fields': {'display_title': {'number_of_fragments': 0}},
-                'pre_tags': ['&lt;strong&gt;'],
-                'post_tags': ['&lt;/strong&gt;']
-            }
-
-        if hasattr(view, 'queryset') and view.queryset is not None:
-            return en_index.search_model(view.queryset.model, query)
-        else:
-            # Should boost notes most of all
-            return en_index.search(query)
-
