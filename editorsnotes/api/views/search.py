@@ -5,8 +5,6 @@ from rest_framework.response import Response
 
 from editorsnotes.search import items as items_search
 
-from ..filters import ElasticSearchAutocompleteFilterBackend
-
 __all__ = ['SearchView']
 
 
@@ -16,7 +14,7 @@ class SearchView(GenericAPIView):
         params = request.query_params
 
         if 'autocomplete' in params:
-            self.filter_backend = ElasticSearchAutocompleteFilterBackend
+            # self.filter_backend = ElasticSearchAutocompleteFilterBackend
             result = self.filter_queryset(None)
             data = {
                 'count': result['hits']['total'],

@@ -1,17 +1,17 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.generics import (
-    GenericAPIView, ListAPIView, RetrieveAPIView)
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 from editorsnotes.auth.models import Project, User
-from editorsnotes.search.activity.helpers import get_activity_for
+from editorsnotes.search import activity_index
 
+from ..filters import ActivityFilterBackend
 from ..linkers import ActivityLinker
 from ..serializers import ProjectSerializer, UserSerializer
 
-from .mixins import EmbeddedMarkupReferencesMixin, LinkerMixin
+from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+                     LinkerMixin)
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
            'SelfUserDetail']
@@ -60,40 +60,21 @@ def parse_int(val, default=25, maximum=100):
     return val if val <= maximum else maximum
 
 
-class ActivityView(GenericAPIView):
+class ActivityView(ElasticSearchListMixin, ListAPIView):
     """
     Recent activity for a user or project.
 
     Takes the following arguments:
-
-    * count (int)
-    * start (int)
-    * type ("note", "topic", "document", "transcript", "footnote")
-    * action ("add", "change", "delete")
-    * order ('asc' or 'desc')
+        * type ("note", "topic", "document")
+        * action ("add", "change", "delete")
     """
 
-    TYPES = ['note', 'topic', 'document', 'transcript', 'footnote']
-    ACTIONS = ['added', 'changed', 'deleted']
+    es_filter_backends = (ActivityFilterBackend,)
 
-    def get_es_query(self):
-        q = {'query': {'filtered': {'filter': {'bool': { 'must': []}}}}}
-        params = self.request.query_params
-        if 'count' in params:
-            q['size'] = parse_int(params['count'])
-        if 'start' in params:
-            q['from'] = parse_int(params['start'])
-        if 'type' in params and params['type'] in self.TYPES:
-            q['query']['filtered']['filter']['bool']['must'].append({
-                'term': { 'data.type': params['type'] }
-            })
-        if 'action' in params and params['action'] in self.ACTIONS:
-            q['query']['filtered']['filter']['bool']['must'].append({
-                'term': { 'data.action': params['action'] }
-            })
-        return q
+    def get_object(self):
+        username = self.kwargs.get('username', None)
+        project_slug = self.kwargs.get('project_slug', None)
 
-    def get_object(self, username=None, project_slug=None):
         if username is not None:
             obj = get_object_or_404(User, username=username)
         elif project_slug is not None:
@@ -102,9 +83,18 @@ class ActivityView(GenericAPIView):
             raise ValueError()
         return obj
 
-    def get(self, request, format=None, **kwargs):
-        obj = self.get_object(**kwargs)
-        es_query = self.get_es_query()
+    def process_es_result(self, result):
+        return result['_source']['data']
 
-        data = get_activity_for(obj, es_query)
-        return Response({ 'activity': data })
+    def get_es_search(self):
+        search = activity_index.make_search()
+        obj = self.get_object()
+
+        # FIXME FIXME FIXME: Users' and projects' actions should be indexed by
+        # their URLs, not their usernames/slugs
+        if isinstance(obj, User):
+            search = search.filter('term', **{'data.user': obj.username})
+        else:
+            search = search.filter('term', **{'data.project': obj.slug})
+
+        return search

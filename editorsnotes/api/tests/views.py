@@ -147,9 +147,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
                                                     args=[self.project.slug]),
                                             HTTP_ACCEPT='application/json')
         self.assertEqual(activity_response.status_code, 200)
-        self.assertEqual(len(activity_response.data['activity']), 1)
+        self.assertEqual(len(activity_response.data['results']), 1)
 
-        activity_data = activity_response.data['activity'][0]
+        activity_data = activity_response.data['results'][0]
 
         # 'time': ???,
         expected = {
@@ -277,7 +277,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
                                                     args=[self.project.slug]),
                                             HTTP_ACCEPT='application/json')
         self.assertEqual(activity_response.status_code, 200)
-        activity_data = activity_response.data['activity'][0]
+        activity_data = activity_response.data['results'][0]
 
         # 'time': ???,
         expected = {
@@ -346,7 +346,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
                                                     args=[self.project.slug]),
                                             HTTP_ACCEPT='application/json')
         self.assertEqual(activity_response.status_code, 200)
-        activity_data = activity_response.data['activity'][0]
+        activity_data = activity_response.data['results'][0]
 
         # 'time': ???,
         expected = {

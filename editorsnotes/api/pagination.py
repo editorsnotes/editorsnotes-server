@@ -8,12 +8,16 @@ class ESLimitOffsetPagination(LimitOffsetPagination):
     max_limit = 200
 
     def paginate_queryset(self, search_query, request, view=None):
+        raise Exception('This pagination class is only meant to work with '
+                        'elasticsearch_dsl searches')
+
+    def paginate_search(self, search, request, view=None):
         self.limit = self.get_limit(request)
         self.offset = self.get_offset(request)
         self.request = request
 
-        search_query = search_query[self.offset:self.offset + self.limit]
-        search_results = search_query.execute()
+        search = search[self.offset:self.offset + self.limit]
+        search_results = search.execute()
 
         self.count = search_results.hits.total
         return search_results.hits.hits

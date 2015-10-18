@@ -3,6 +3,7 @@ from rest_framework.parsers import MultiPartParser
 
 from editorsnotes.main.models import Document, Scan, Transcript
 
+from .. import filters as es_filters
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..serializers import (DocumentSerializer, ScanSerializer,
@@ -19,6 +20,11 @@ class DocumentList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     linker_classes = (AddProjectObjectLinker,)
+    es_filter_backends = (
+        es_filters.ProjectFilterBackend,
+        es_filters.QFilterBackend,
+        es_filters.UpdaterFilterBackend,
+    )
 
 
 class DocumentDetail(BaseDetailView):

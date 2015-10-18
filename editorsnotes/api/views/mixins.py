@@ -7,12 +7,9 @@ from rest_framework.response import Response
 from editorsnotes.auth.models import Project, LogActivity
 
 from editorsnotes.main.models.base import Administered
-from editorsnotes.search import items as items_search
+from editorsnotes.search import items_index
 
-from ..filters import (ElasticSearchFilterBackend,
-                       ElasticSearchAutocompleteFilterBackend)
 from ..pagination import ESLimitOffsetPagination
-from ..serializers import ProjectSerializer
 
 
 class LinkerMixin(object):
@@ -66,65 +63,52 @@ class ElasticSearchListMixin(object):
     """
     Mixin that replaces the `list` method with a query to Elasticsearch.
     """
-    pagination_class = ESLimitOffsetPagination
-    filter_backends = (ElasticSearchFilterBackend,)
 
-    def get_queryset(self):
-        model = self.queryset.model
-        return items_search.index.make_search_for_model(model)
+    es_filter_backends = []
+    pagination_class = ESLimitOffsetPagination
+
+    def filter_search(self, search):
+        for backend in list(self.es_filter_backends):
+            search = backend().filter_search(self.request, search, self)
+        return search
+
+    def paginate_search(self, search):
+        "Proxy method to paginate_queryset to make things less confusing."
+        return self.paginator.paginate_search(search, self.request, view=self)
+
+    def get_es_search(self):
+        "By default, return a search for the queryset model"
+        return items_index\
+            .make_search_for_model(self.queryset.model)\
+            .sort('-serialized.last_updated')
+
+    def process_es_result(self, result):
+        return result['_source']['serialized']
 
     def list(self, request, *args, **kwargs):
-        """
+        search = getattr(self, 'search', self.get_es_search())
+        search = self.filter_search(search)
 
-        Filter backends must expect that the 'queryset' argument will be an
-        instance of an elasticsearch-dsl search query, not a django QuerySet
-        """
-        search_query = self.filter_queryset(self.get_queryset())
-        search_results = self.paginate_queryset(search_query)
+        # Responses will __always__ be paginated. `paginate_search` will
+        # execute the query and return the hits as indexed in Elasticsearch.
+        results = self.paginate_search(search)
 
         prev_link = self.paginator.get_previous_link()
-        if prev_link:
-            self.add_link('prev', prev_link)
-
         next_link = self.paginator.get_next_link()
-        if next_link:
-            self.add_link('next', next_link)
 
-        self.add_links()
+        # if prev_link:
+        #     self.add_link('prev', prev_link)
+        # if next_link:
+        #     self.add_link('next', next_link)
 
-        response_data = OrderedDict((
-            ('_links', self.get_links()),
-        ))
+        # FIXME: Also embed project URL/project?
 
-        if hasattr(request, 'project'):
-            project_serializer = ProjectSerializer(request.project, context={
-                'request': request
-            })
-            response_data['project'] = project_serializer.data
-
-        response_data['count'] = self.paginator.count
-        response_data['results'] = [result['_source']['serialized']
-                                    for result in search_results]
-
-        return Response(response_data)
-
-    def ____________list(self, request, *args, **kwargs):
-        if 'autocomplete' in request.query_params:
-            self.filter_backends += (ElasticSearchAutocompleteFilterBackend,)
-            result = self.filter_queryset(None)
-            data = {
-                'count': result['hits']['total'],
-                'results': []
-            }
-            for doc in result['hits']['hits']:
-                r = OrderedDict()
-                r['type'] = doc['_type']
-                r['title'] = (
-                    doc['highlight']['display_title'][0]
-                    if 'highlight' in doc else
-                    doc['fields']['display_title'])
-                r['url'] = doc['fields']['serialized.url']
-                data['results'].append(r)
+        return Response(OrderedDict((
+            ('count', self.paginator.count),
+            ('prev', prev_link),
+            ('next', next_link),
+            ('results', map(self.process_es_result, results))
+        )))
 
 
 class ProjectSpecificMixin(object):

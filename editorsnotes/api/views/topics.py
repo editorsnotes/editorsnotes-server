@@ -1,5 +1,6 @@
 from editorsnotes.main.models import Topic
 
+from .. import filters as es_filters
 from ..linkers import (AddProjectObjectLinker, EditProjectObjectLinker,
                        DeleteProjectObjectLinker)
 from ..serializers.topics import TopicSerializer
@@ -15,6 +16,11 @@ class TopicList(ElasticSearchListMixin, LinkerMixin, BaseListAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     linker_classes = (AddProjectObjectLinker,)
+    es_filter_backends = (
+        es_filters.ProjectFilterBackend,
+        es_filters.QFilterBackend,
+        es_filters.UpdaterFilterBackend,
+    )
 
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
