@@ -81,7 +81,7 @@ class ActivityView(ElasticSearchListMixin, ListAPIView):
         return result['_source']['data']
 
     def get_es_search(self):
-        search = activity_index.make_search()
+        search = activity_index.make_search().sort('-time')
         obj = self.get_object()
 
         # FIXME FIXME FIXME: Users' and projects' actions should be indexed by
