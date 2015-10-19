@@ -4,11 +4,11 @@ from collections import OrderedDict
 ROOT_NAMESPACE = 'https://workingnotes.org/v#'
 
 
-NAMESPACES = ((
+NAMESPACES = OrderedDict((
     ('dc', 'http://purl.org/dc/terms/'),
     ('hydra', 'http://www.w3.org/ns/hydra/core#'),
     ('itm', 'http://spi-fm.uca.es/spdef/models/genericTools/itm/1.0#'),
-    ('rdf' 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'),
+    ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'),
     ('schema', 'http://schema.org/'),
     ('xsd', 'http://www.w3.org/2001/XMLSchema#'),
     ('wn', ROOT_NAMESPACE),
@@ -29,7 +29,7 @@ CONTEXT.update(OrderedDict((
     ('embedded', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
-    )))
+    ))),
     ('last_updated', OrderedDict((
         ('@id', 'schema:dateModified'),
         ('@type', 'xsd:dateTimeStamp'),
