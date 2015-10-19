@@ -1,23 +1,17 @@
-from collections import Counter, OrderedDict
+from collections import Counter
 
 from django.db.models.deletion import Collector
 from django.utils.text import force_text
 
-from elasticsearch_dsl import Search
-from rest_framework.decorators import api_view
 from rest_framework.generics import (
     GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView)
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework.utils import formatting, model_meta
 import reversion
 
 from editorsnotes.auth.models import (RevisionProject, RevisionLogActivity,
                                       ADDITION, CHANGE, DELETION)
-
-from editorsnotes.main.models import Note, Topic, Document
-from editorsnotes.search import items as items_search
 
 from ..permissions import ProjectSpecificPermissions
 from .mixins import LogActivityMixin, ProjectSpecificMixin
@@ -149,41 +143,3 @@ class BaseDetailView(ProjectSpecificMixin, LogActivityMixin,
             log_obj = self.make_log_activity(instance, DELETION, commit=False)
             log_obj.object_id = deleted_id
             log_obj.save()
-
-
-@api_view(('GET',))
-def root(request, format=None):
-    return Response({
-        'auth-token': reverse('api:obtain-auth-token', request=request),
-        'projects': reverse('api:projects-list', request=request),
-        'search': reverse('api:search', request=request)
-        # 'notes': reverse('api:notes-list'),
-        # 'documents': reverse('api:documents-list')
-    })
-
-
-def search_model(Model, query):
-    query = query.to_dict()
-    query['fields'] = ['display_title', 'display_url']
-    results = items_search.search_model(Model, query)
-    return [
-        {
-            'title': result['fields']['display_title'][0],
-            'url': result['fields']['display_url'][0]
-        }
-        for result in results['hits']['hits']
-    ]
-
-
-@api_view(['GET'])
-def browse(request, format=None):
-    es_query = Search().sort('-serialized.last_updated')[:10]
-    ret = OrderedDict()
-
-    ret['topics'] = search_model(Topic, es_query)
-    ret['documents'] = search_model(Document, es_query)
-    ret['notes'] = search_model(Note, es_query.filter(
-        'term', **{'serialized.is_private': 'false'}
-    ))
-
-    return Response(ret)

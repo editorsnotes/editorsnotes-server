@@ -66,38 +66,6 @@ class SelfUserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
     def get_object(self):
         return self.request.user
 
-    def finalize_response(self, request, response, *args, **kwargs):
-        response = super(SelfUserDetail, self)\
-            .finalize_response(request, response, *args, **kwargs)
-
-        response.data['affiliated_projects'] = {}
-
-        projects = request.user.get_affiliated_projects()
-        all_project_links = []
-
-        for project in projects:
-            links = project_links_for_request_user(project, request)
-
-            serializer = ProjectSerializer(
-                instance=project, context={'request': request})
-            serializer.data
-            serializer._data['@context'] = {
-                link['url'].split('#')[1]: {
-                    '@id': link['url'],
-                    '@type': '@id',
-                }
-                for link in links
-            }
-
-            url = request.build_absolute_uri(project.get_absolute_url())
-            response.data['affiliated_projects'][url] = serializer.data
-
-            all_project_links += links
-
-        response.data['links'] = all_project_links
-
-        return response
-
 
 def parse_int(val, default=25, maximum=100):
     if not isinstance(val, int):

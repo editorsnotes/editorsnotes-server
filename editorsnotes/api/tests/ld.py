@@ -101,7 +101,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
 
     def test_authenticated_user_home(self):
         self.client.login(username='barry', password='barry')
-        response = self.client.get('/me/', HTTP_ACCEPT='application/json')
+        response = self.client.get('/', HTTP_ACCEPT='application/json')
 
         dummy_req = RequestFactory().get('/')
         project_url = dummy_req.build_absolute_uri(
