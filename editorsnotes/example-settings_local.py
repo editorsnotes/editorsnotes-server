@@ -11,6 +11,8 @@ POSTGRES_DB = {
     'PORT': ''
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 # ALLOWED_HOSTS = ['www.example.com']
 
