@@ -11,7 +11,7 @@ from elasticsearch_dsl import F
 from django.core.urlresolvers import resolve
 
 from . import index
-from ..utils import clean_query_string
+from ..utils import clean_query_string, make_dummy_request
 
 
 def data_for_object(obj):
@@ -28,7 +28,11 @@ def get_referencing_items(item_url):
     """
     Get all items which have referenced the given item URL
     """
-    query_filter = F('term', **{'serialized._embedded': item_url})
+
+    if item_url.startswith('/'):
+        item_url = make_dummy_request().build_absolute_uri(item_url)
+
+    query_filter = F('term', **{'serialized.references': item_url})
 
     if 'topic' in item_url:
         query_filter = query_filter | (

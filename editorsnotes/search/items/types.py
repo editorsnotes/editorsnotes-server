@@ -89,7 +89,7 @@ class DocumentTypeConfig(object):
             obj._rest_serialized = json_data
         else:
             json_data = obj._rest_serialized.copy()
-            json_data.pop('_embedded', None)
+            json_data.pop('embedded', None)
 
         data = {
             'id': getattr(obj, self.id_field),
