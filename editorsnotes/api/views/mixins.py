@@ -26,7 +26,7 @@ class HydraProjectPermissionsMixin(object):
         project = self.request.project
 
         if user.is_authenticated():
-            response.data['operation'] = [
+            response.data['hydra:operation'] = [
                 operation_from_perm(user, project, perm)
                 for perm in self.hydra_project_perms
                 if user.has_project_perm(project, perm)

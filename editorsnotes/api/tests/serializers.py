@@ -49,5 +49,5 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(data, {
             'project_url': project_url,
-            '_embedded': {project_url: project_data}
+            'embedded': {project_url: project_data}
         })

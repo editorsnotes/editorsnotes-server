@@ -1,63 +1,75 @@
 from collections import OrderedDict
 
+
 ROOT_NAMESPACE = 'https://workingnotes.org/v#'
 
-CONTEXT = OrderedDict((
-    ('hydra', 'http://www.w3.org/ns/hydra/core#'),
 
+NAMESPACES = ((
+    ('dc', 'http://purl.org/dc/terms/'),
+    ('hydra', 'http://www.w3.org/ns/hydra/core#'),
+    ('itm', 'http://spi-fm.uca.es/spdef/models/genericTools/itm/1.0#'),
+    ('rdf' 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'),
+    ('schema', 'http://schema.org/'),
+    ('xsd', 'http://www.w3.org/2001/XMLSchema#'),
+    ('wn', ROOT_NAMESPACE),
+))
+
+
+CONTEXT = NAMESPACES.copy()
+CONTEXT.update(OrderedDict((
     ('access', OrderedDict((
-        ('@id', 'http://purl.org/dc/terms/accessRights'),
+        ('@id', 'dc:accessRights'),
         ('@type', '@id')
     ))),
     ('affilated_projects', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
     ))),
-    ('display_name', 'http://schema.org/name'),
-    ('last_updated', OrderedDict((
-        ('@id', 'http://schema.org/dateModified'),
-        ('@type', 'http://www.w3.org/2001/XMLSchema#dateTimeStamp'),
-    ))),
-    ('license', 'http://schema.org/license'),
-    ('links', OrderedDict((
-        ('@id', '@graph'),
-        ('@container', '@index'),
-    ))),
-    ('markup', OrderedDict((
-        ('@id', 'http://schema.org/text'),
-        ('@type', 'http://www.w3.org/2001/XMLSchema#string'),
-    ))),
-    ('markup_html', OrderedDict((
-        ('@id', 'http://schema.org/text'),
-        ('@type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#HTML'),
-    ))),
-    ('name', 'http://schema.org/name'),
-    ('project', 'http://schema.org/isPartOf'),
-    ('referenced_by', OrderedDict((
-        ('@reverse', 'http://schema.org/mentions'),
-        ('@type', '@id'),
-    ))),
-    ('references', OrderedDict((
-        ('@id', 'http://schema.org/mentions'),
-        ('@type', '@id'),
-    ))),
-    ('related_topics', OrderedDict((
-        ('@id', 'http://schema.org/about'),
-        ('@type', '@id'),
-    ))),
-    ('status', OrderedDict((
-        ('@id', 'http://spi-fm.uca.es/spdef/models/genericTools/itm/1.0#status'),
-        ('@type', '@id'),
-    ))),
-    ('title', 'http://schema.org/name'),
-    ('type', '@type'),
-    ('updaters', OrderedDict((
-        ('@id', 'http://schema.org/author'),
-        ('@type', '@id'),
-    ))),
-    ('url', '@id'),
-    ('_embedded', OrderedDict((
+    ('display_name', 'schame:name'),
+    ('embedded', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
     )))
-))
+    ('last_updated', OrderedDict((
+        ('@id', 'schema:dateModified'),
+        ('@type', 'xsd:dateTimeStamp'),
+    ))),
+    ('license', 'schema:license'),
+    ('links', OrderedDict((
+        ('@id', '@graph'),
+        ('@container', '@set'),
+    ))),
+    ('markup', OrderedDict((
+        ('@id', 'schema:text'),
+        ('@type', 'xsd:string'),
+    ))),
+    ('markup_html', OrderedDict((
+        ('@id', 'schema:text'),
+        ('@type', 'rdf:HTML'),
+    ))),
+    ('name', 'schema:name'),
+    ('project', 'schema:isPartOf'),
+    ('referenced_by', OrderedDict((
+        ('@reverse', 'schema:mentions'),
+        ('@type', '@id'),
+    ))),
+    ('references', OrderedDict((
+        ('@id', 'schema:mentions'),
+        ('@type', '@id'),
+    ))),
+    ('related_topics', OrderedDict((
+        ('@id', 'schema:about'),
+        ('@type', '@id'),
+    ))),
+    ('status', OrderedDict((
+        ('@id', 'item:status'),
+        ('@type', '@id'),
+    ))),
+    ('title', 'schema:name'),
+    ('type', '@type'),
+    ('updaters', OrderedDict((
+        ('@id', 'schema:author'),
+        ('@type', '@id'),
+    ))),
+    ('url', '@id'),
+)))

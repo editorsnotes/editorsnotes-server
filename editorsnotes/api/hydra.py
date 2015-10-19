@@ -3,9 +3,9 @@ from collections import OrderedDict
 from .ld import ROOT_NAMESPACE
 
 PERM_TO_HYDRA_TYPE = {
-    'add': 'CreateResourceOperation',
-    'change': 'ReplaceResourceOperation',
-    'delete': 'DeleteResourceOperation'
+    'add': 'hydra:CreateResourceOperation',
+    'change': 'hydra:ReplaceResourceOperation',
+    'delete': 'hydra:DeleteResourceOperation'
 }
 
 PERM_TO_HYDRA_TITLE = {

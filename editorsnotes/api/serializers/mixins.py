@@ -38,7 +38,7 @@ class EmbeddedItemsMixin(object):
             for key, val in self.get_users_from_urls(user_urls).items():
                 embedded_data[key] = val
 
-            data['_embedded'] = embedded_data
+            data['embedded'] = embedded_data
 
         return data
 

@@ -7,7 +7,7 @@ from .views import ClearContentTypesTransactionTestCase
 
 
 NOTE_CREATE_OPERATION = {
-    'type': 'CreateResourceOperation',
+    'type': 'hydra:CreateResourceOperation',
     'hydra:title': 'Create a new note',
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Note',
@@ -15,7 +15,7 @@ NOTE_CREATE_OPERATION = {
 }
 
 DOCUMENT_CREATE_OPERATION = {
-    'type': 'CreateResourceOperation',
+    'type': 'hydra:CreateResourceOperation',
     'hydra:title': 'Create a new document',
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Document',
@@ -23,7 +23,7 @@ DOCUMENT_CREATE_OPERATION = {
 }
 
 TOPIC_CREATE_OPERATION = {
-    'type': 'CreateResourceOperation',
+    'type': 'hydra:CreateResourceOperation',
     'hydra:title': 'Create a new topic',
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Topic',
@@ -47,7 +47,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
             reverse('api:notes-list', args=[self.project.slug]),
             HTTP_ACCEPT='application/json')
 
-        self.assertEqual(response.data.get('operation'), None)
+        self.assertEqual(response.data.get('hydra:operation'), None)
 
     def test_authenticated_list_request_operations(self):
         self.client.login(username='barry', password='barry')
@@ -55,7 +55,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
             reverse('api:notes-list', args=[self.project.slug]),
             HTTP_ACCEPT='application/json')
 
-        self.assertEqual(response.data.get('operation'),
+        self.assertEqual(response.data.get('hydra:operation'),
                          [NOTE_CREATE_OPERATION])
 
     def test_authenticated_user_project_home(self):
