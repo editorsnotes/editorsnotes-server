@@ -91,9 +91,7 @@ class ElasticSearchListMixin(object):
             ('results', map(self.process_es_result, results))
         ))
 
-        # FIXME: Also embed project URL/project?
-
-        if request.project:
+        if hasattr(request, 'project'):
             serializer = ProjectSerializer(instance=request.project,
                                            context={'request': request})
             project_url = serializer.data['url']
