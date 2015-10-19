@@ -46,7 +46,8 @@ class NoteList(ElasticSearchListMixin, HydraProjectPermissionsMixin,
     hydra_project_perms = ('main.add_note',)
 
 
-class NoteDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):
+class NoteDetail(EmbeddedMarkupReferencesMixin, HydraProjectPermissionsMixin,
+                 BaseDetailView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permission_classes = (NotePermissions,)

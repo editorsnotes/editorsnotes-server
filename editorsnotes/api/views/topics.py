@@ -4,7 +4,8 @@ from .. import filters as es_filters
 from ..serializers.topics import TopicSerializer
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
-from .mixins import ElasticSearchListMixin, EmbeddedMarkupReferencesMixin
+from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+                     HydraProjectPermissionsMixin)
 
 __all__ = ['TopicList', 'TopicDetail', 'TopicConfirmDelete']
 
@@ -17,11 +18,13 @@ class TopicList(ElasticSearchListMixin, BaseListAPIView):
         es_filters.QFilterBackend,
         es_filters.UpdaterFilterBackend,
     )
+    hydra_project_perms = ('main.add_note',)
 
 
 class TopicDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
+    hydra_project_perms = ('main.change_note', 'main.delete_note',)
 
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
