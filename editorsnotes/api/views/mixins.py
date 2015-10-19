@@ -4,8 +4,8 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.response import Response
 
+from editorsnotes.api.serializers import ProjectSerializer
 from editorsnotes.auth.models import Project, LogActivity
-
 from editorsnotes.main.models.base import Administered
 from editorsnotes.search import items_index
 
@@ -84,14 +84,23 @@ class ElasticSearchListMixin(object):
         prev_link = self.paginator.get_previous_link()
         next_link = self.paginator.get_next_link()
 
-        # FIXME: Also embed project URL/project?
-
-        return Response(OrderedDict((
+        data = OrderedDict((
             ('count', self.paginator.count),
             ('prev', prev_link),
             ('next', next_link),
             ('results', map(self.process_es_result, results))
-        )))
+        ))
+
+        # FIXME: Also embed project URL/project?
+
+        if request.project:
+            serializer = ProjectSerializer(instance=request.project,
+                                           context={'request': request})
+            project_url = serializer.data['url']
+            data['project'] = project_url
+            data['embedded'] = {project_url: serializer.data}
+
+        return Response(data)
 
 
 class ProjectSpecificMixin(object):
