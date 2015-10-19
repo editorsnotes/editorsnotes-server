@@ -2,18 +2,16 @@
 
 from io import BytesIO
 import os
-import re
 from hashlib import md5
 from itertools import chain
 import unicodedata
 
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models
-from django.utils.html import escape, strip_tags, strip_entities
-from django.utils.safestring import mark_safe
+from django.utils.html import strip_tags, strip_entities
 from lxml import etree, html
 from PIL import Image
 import reversion
@@ -23,9 +21,9 @@ from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
 from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
-                  Administered, IsReferenced)
+                  Administered, IsReferenced, ENMarkup)
 
-__all__ = ['Document', 'Transcript', 'Footnote', 'Scan', 'DocumentLink']
+__all__ = ['Document', 'Transcript', 'Scan']
 
 
 class DocumentManager(models.Manager):
@@ -36,19 +34,9 @@ class DocumentManager(models.Manager):
         return super(DocumentManager, self).get_queryset()\
             .select_related('_transcript', 'zotero_link', 'project')\
             .extra(select={
-                'link_count': '''
-SELECT COUNT(*)
-FROM main_documentlink WHERE main_documentlink.document_id = main_document.id
-                ''',
-
                 'scan_count': '''
 SELECT COUNT(*)
 FROM main_scan WHERE main_scan.document_id = main_document.id
-                ''',
-
-                'part_count': '''
-SELECT COUNT(*)
-FROM main_document AS part WHERE part.collection_id = main_document.id
                 ''',
 
                 '_has_transcript': '''
@@ -67,23 +55,22 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
     contracts, photographs, database records, whole databases, etc. etc.
     Note that a document may be a collection of other documents.
     """
-    import_id = models.CharField(max_length=64, editable=False,
-                                 blank=True, null=True,
-                                 unique=True, db_index=True)
+
     project = models.ForeignKey('Project', related_name='documents')
+
+    # FIXME: Should have validation/cleaning
+    links = ArrayField(models.CharField(max_length=1000), default=list)
+
     description = fields.XHTMLField()
     description_digest = models.CharField(max_length=32, editable=False)
-    collection = models.ForeignKey('self', related_name='parts',
-                                   blank=True, null=True)
-    ordering = models.CharField(max_length=32, editable=False)
-    language = models.CharField(max_length=32, default='English')
+
     related_topics = GenericRelation('TopicAssignment')
+
     objects = DocumentManager()
-    edtf_date = models.TextField(blank=True, null=True)
 
     class Meta:
         app_label = 'main'
-        ordering = ['ordering', 'import_id']
+        ordering = ['-last_updated']
         unique_together = ('project', 'description_digest')
 
     def as_text(self):
@@ -131,14 +118,6 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
         except Transcript.DoesNotExist:
             return None
 
-    def get_link_count(self):
-        if hasattr(self, 'link_count'):
-            return self.link_count
-        return self.links.count()
-
-    def has_links(self):
-        return self.get_link_count() > 0
-
     def get_scan_count(self):
         if hasattr(self, 'scan_count'):
             return self.scan_count
@@ -147,28 +126,10 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
     def has_scans(self):
         return self.get_scan_count() > 0
 
-    def get_part_count(self):
-        if hasattr(self, 'part_count'):
-            return self.part_count
-        return self.parts.count()
-
-    def has_parts(self):
-        return self.get_part_count() > 0
-
     def has_transcript(self):
         if hasattr(self, '_has_transcript'):
             return self._has_transcript
         return self.transcript is not None
-
-    def get_all_representations(self):
-        r = []
-        if self.has_transcript():
-            r.append('Transcript')
-        if self.has_scans():
-            r.append('Scans')
-        if hasattr(self, 'link_count') and self.link_count:
-            r.append('External Link')
-        return r
 
     # FIXME
     def get_all_related_topics(self):
@@ -209,9 +170,6 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
         return []
 
     def save(self, *args, **kwargs):
-        self.ordering = re.sub(
-            r'[^\w\s]', '',
-            utils.xhtml_to_text(self.description))[:32]
         self.description_digest = Document.hash_description(self.description)
         return super(Document, self).save(*args, **kwargs)
 reversion.register(Document)
@@ -220,17 +178,18 @@ reversion.register(Document)
 class TranscriptManager(models.Manager):
     # Include related document in default query.
     def get_queryset(self):
-        return super(TranscriptManager, self).get_queryset()\
+        return super(TranscriptManager, self)\
+            .get_queryset()\
             .select_related('document')
 
 
-class Transcript(LastUpdateMetadata, Administered, URLAccessible,
+class Transcript(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
                  ProjectPermissionsMixin):
     u"""
     A text transcript of a document.
     """
     document = models.OneToOneField(Document, related_name='_transcript')
-    content = fields.XHTMLField()
+
     objects = TranscriptManager()
 
     class Meta:
@@ -242,71 +201,15 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible,
     def get_affiliation(self):
         return self.document.project
 
-    def get_absolute_url(self):
-        # Transcripts don't have their own URLs; use the document URL.
-        return '%s#transcript' % self.document.get_absolute_url()
-
-    def get_footnote_href_ids(self):
-        anchors = (self.content.cssselect('a.footnote')
-                   if self.content is not None else [])
-        return [int(re.findall('\d+', a.attrib.get('href'))[0])
-                for a in anchors]
-
-    def get_footnotes(self):
-        fn_ids = self.get_footnote_href_ids()
-        return sorted(self.footnotes.all(),
-                      key=lambda fn: fn_ids.index(fn.id)
-                      if fn.id in fn_ids else 9999)
-reversion.register(Transcript)
-
-
-class Footnote(LastUpdateMetadata, Administered, URLAccessible,
-               ProjectPermissionsMixin):
-    u"""
-    A footnote attached to a transcript.
-    """
-    transcript = models.ForeignKey(Transcript, related_name='footnotes')
-    content = fields.XHTMLField()
-
-    class Meta:
-        app_label = 'main'
-
-    def get_affiliation(self):
-        return self.transcript.document.project
-
     @models.permalink
     def get_absolute_url(self):
-        document = self.transcript.document
-        return ('footnote_view', [document.project.slug, document.id, self.id])
+        return ('api:transcripts-detail',
+                [str(self.project.slug), str(self.document_id)])
 
-    def footnoted_text(self):
-        try:
-            selector = 'a.footnote[href="%s"]' % self.get_absolute_url()
-            results = self.transcript.content.cssselect(selector)
-            if len(results) == 1:
-                return unicode(results[0].xpath('string()'))
-        except NoReverseMatch:  # footnote has been deleted
-            pass
-        return None
-
-    def as_text(self):
-        footnoted_text = self.footnoted_text()
-        if footnoted_text is None:
-            return utils.xhtml_to_text(self.content)
-        else:
-            return footnoted_text
-
-    def remove_self_from(self, transcript):
-        selector = 'a.footnote[href="%s"]' % self.get_absolute_url()
-        results = transcript.content.cssselect(selector)
-        if len(results) == 1:
-            results[0].drop_tag()
-
-    def delete(self, *args, **kwargs):
-        self.remove_self_from(self.transcript)
-        self.transcript.save()
-        super(Footnote, self).delete(*args, **kwargs)
-reversion.register(Footnote)
+    # FIXME
+    def get_footnotes(self):
+        return []
+reversion.register(Transcript)
 
 
 class Scan(CreationMetadata, ProjectPermissionsMixin):
@@ -347,21 +250,4 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
         if self.image and not self.pk:
             self.generate_thumbnail(save=False)
         return super(Scan, self).save(*args, **kwargs)
-
 reversion.register(Scan)
-
-
-class DocumentLink(CreationMetadata):
-    u"""
-    A link to an online version of or catalog entry for a document.
-    """
-    document = models.ForeignKey(Document, related_name='links')
-    url = models.URLField()
-    description = models.TextField(blank=True)
-
-    class Meta:
-        app_label = 'main'
-
-    def __unicode__(self):
-        return self.url
-reversion.register(DocumentLink)
