@@ -19,14 +19,14 @@ class TopicList(ElasticSearchListMixin, HydraProjectPermissionsMixin,
         es_filters.QFilterBackend,
         es_filters.UpdaterFilterBackend,
     )
-    hydra_project_perms = ('main.add_note',)
+    hydra_project_perms = ('main.add_topic',)
 
 
 class TopicDetail(EmbeddedMarkupReferencesMixin, HydraProjectPermissionsMixin,
                   BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
-    hydra_project_perms = ('main.change_note', 'main.delete_note',)
+    hydra_project_perms = ('main.change_topic', 'main.delete_topic',)
 
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
