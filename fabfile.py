@@ -146,7 +146,7 @@ def get_db_tables():
 def make_virtual_env():
     "Make a virtual environment for local dev use"
     with lcd(PROJ_ROOT):
-        local('virtualenv .')
+        local('virtualenv -p python2 .')
         local('./bin/pip install -r requirements.txt')
 
 def collect_static():
