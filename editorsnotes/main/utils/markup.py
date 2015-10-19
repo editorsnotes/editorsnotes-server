@@ -3,11 +3,15 @@ Utilities for interacting with the markup renderer server.
 """
 
 import json
+import logging
 
 from lxml import etree, html
 import requests
 
 from django.conf import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_transcluded_items(markup, project):
@@ -29,11 +33,8 @@ def get_transcluded_items(markup, project):
 
 
 def qs_from_ids(Model, project, ids):
-    from ..models import Topic
-
     if not ids:
         return None
-
     return Model.objects.filter(project=project, id__in=ids)
 
 
@@ -80,6 +81,13 @@ def get_rendered_markup(markup, items, project):
     payload.update(items)
 
     resp = requests.post(url, json=payload)
+
+    if resp.status_code != 200:
+        logger.critical('Failed to parse markup. Payload was:\n\n{}\n'.format(
+            json.dumps(payload)))
+
+        raise ValueError('Failed to parse Editors\' Notes markup')
+
     rendered = resp.text
 
     return rendered
