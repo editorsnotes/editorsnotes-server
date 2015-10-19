@@ -8,7 +8,7 @@ from django.test.client import RequestFactory
 from editorsnotes.auth.models import Project
 
 from .views import ClearContentTypesTransactionTestCase
-from ..serializers.base import EmbeddedItemsMixin
+from ..serializers.mixins import EmbeddedItemsMixin
 from ..serializers import ProjectSerializer
 
 
