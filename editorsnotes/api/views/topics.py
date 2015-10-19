@@ -10,7 +10,8 @@ from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
 __all__ = ['TopicList', 'TopicDetail', 'TopicConfirmDelete']
 
 
-class TopicList(ElasticSearchListMixin, BaseListAPIView):
+class TopicList(ElasticSearchListMixin, HydraProjectPermissionsMixin,
+                BaseListAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     es_filter_backends = (
@@ -21,7 +22,8 @@ class TopicList(ElasticSearchListMixin, BaseListAPIView):
     hydra_project_perms = ('main.add_note',)
 
 
-class TopicDetail(EmbeddedMarkupReferencesMixin, BaseDetailView):
+class TopicDetail(EmbeddedMarkupReferencesMixin, HydraProjectPermissionsMixin,
+                  BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     hydra_project_perms = ('main.change_note', 'main.delete_note',)

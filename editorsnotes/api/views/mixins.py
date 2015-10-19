@@ -25,6 +25,11 @@ class HydraProjectPermissionsMixin(object):
         user = self.request.user
         project = self.request.project
 
+        # Don't add anything if there's no content (i.e. in a successful
+        # DELETE operation)
+        if not response.data:
+            return response
+
         if user.is_authenticated():
             response.data['hydra:operation'] = [
                 operation_from_perm(user, project, perm)

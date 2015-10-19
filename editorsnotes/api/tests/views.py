@@ -224,6 +224,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
 
+        self.assertEqual(len(response.data['hydra:operation']), 1)
+
         topic_data = response.data['results'][0]
 
         self.assertEqual(topic_obj.id, topic_data['id'])
@@ -479,6 +481,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                          etree.tostring(document_obj.description))
 
         original_response_content = response.data
+        member_operation = original_response_content.pop('hydra:operation')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -486,10 +489,16 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
+        nonmember_operation = response.data.pop('hydra:operation')
 
         self.assertEqual(
             response.data,
             original_response_content
+        )
+
+        self.assertNotEqual(
+            member_operation,
+            nonmember_operation
         )
 
         self.client.logout()
@@ -718,7 +727,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['results'][0]['title'], note_obj.title)
 
         original_response_content = response.data
-        original_response_content.pop('operation')
+        member_operation = original_response_content.pop('hydra:operation')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -727,7 +736,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        response.data.pop('operation')
+        nonmember_operation = response.data.pop('hydra:operation')
         self.assertEqual(response.data, original_response_content)
 
         self.client.logout()
@@ -737,6 +746,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(response.data, original_response_content)
+        self.assertNotEqual(member_operation, nonmember_operation)
 
     def test_note_api_update(self):
         "Updating a note in your own project is ok"
