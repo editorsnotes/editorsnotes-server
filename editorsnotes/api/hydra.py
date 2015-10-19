@@ -41,10 +41,10 @@ def operation_from_perm(user, project, perm_label):
 
     return OrderedDict((
         ('type', hydra_type),
-        ('title', hydra_title.format(model_opts.verbose_name)),
-        ('method', method),
-        ('expects', ROOT_NAMESPACE + model_opts.object_name),
-        ('returns', ROOT_NAMESPACE + model_opts.object_name)
+        ('hydra:title', hydra_title.format(model_opts.verbose_name)),
+        ('hydra:method', method),
+        ('hydra:expects', ROOT_NAMESPACE + model_opts.object_name),
+        ('hydra:returns', ROOT_NAMESPACE + model_opts.object_name)
     ))
 
 
@@ -65,9 +65,9 @@ def project_links_for_request_user(project, request):
     return [
         OrderedDict((
             ('url', '{}doc/#{}s'.format(project_url, model)),
-            ('type', 'Link'),
-            ('title', '{} list'.format(model.title())),
-            ('supportedOperation', [
+            ('type', 'hydra:Link'),
+            ('hydra:title', '{} list'.format(model.title())),
+            ('hydra:supportedOperation', [
                 operation_from_perm(user, project, codename)
                 for codename in available_add_perms_by_model.get(model, [])
             ])

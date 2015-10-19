@@ -3,9 +3,15 @@ from collections import OrderedDict
 ROOT_NAMESPACE = 'https://workingnotes.org/v#'
 
 CONTEXT = OrderedDict((
+    ('hydra', 'http://www.w3.org/ns/hydra/core#'),
+
     ('access', OrderedDict((
         ('@id', 'http://purl.org/dc/terms/accessRights'),
         ('@type', '@id')
+    ))),
+    ('affilated_projects', OrderedDict((
+        ('@id', '@graph'),
+        ('@container', '@index'),
     ))),
     ('display_name', 'http://schema.org/name'),
     ('last_updated', OrderedDict((
@@ -13,6 +19,10 @@ CONTEXT = OrderedDict((
         ('@type', 'http://www.w3.org/2001/XMLSchema#dateTimeStamp'),
     ))),
     ('license', 'http://schema.org/license'),
+    ('links', OrderedDict((
+        ('@id', '@graph'),
+        ('@container', '@index'),
+    ))),
     ('markup', OrderedDict((
         ('@id', 'http://schema.org/text'),
         ('@type', 'http://www.w3.org/2001/XMLSchema#string'),

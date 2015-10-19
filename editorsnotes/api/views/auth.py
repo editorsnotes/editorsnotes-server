@@ -70,7 +70,7 @@ class SelfUserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
         response = super(SelfUserDetail, self)\
             .finalize_response(request, response, *args, **kwargs)
 
-        response.data['projects'] = {}
+        response.data['affiliated_projects'] = {}
 
         projects = request.user.get_affiliated_projects()
         all_project_links = []
@@ -90,7 +90,7 @@ class SelfUserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
             }
 
             url = request.build_absolute_uri(project.get_absolute_url())
-            response.data['projects'][url] = serializer.data
+            response.data['affiliated_projects'][url] = serializer.data
 
             all_project_links += links
 

@@ -8,26 +8,26 @@ from .views import ClearContentTypesTransactionTestCase
 
 NOTE_CREATE_OPERATION = {
     'type': 'CreateResourceOperation',
-    'title': 'Create a new note',
-    'method': 'POST',
-    'expects': 'https://workingnotes.org/v#Note',
-    'returns': 'https://workingnotes.org/v#Note'
+    'hydra:title': 'Create a new note',
+    'hydra:method': 'POST',
+    'hydra:expects': 'https://workingnotes.org/v#Note',
+    'hydra:returns': 'https://workingnotes.org/v#Note'
 }
 
 DOCUMENT_CREATE_OPERATION = {
     'type': 'CreateResourceOperation',
-    'title': 'Create a new document',
-    'method': 'POST',
-    'expects': 'https://workingnotes.org/v#Document',
-    'returns': 'https://workingnotes.org/v#Document'
+    'hydra:title': 'Create a new document',
+    'hydra:method': 'POST',
+    'hydra:expects': 'https://workingnotes.org/v#Document',
+    'hydra:returns': 'https://workingnotes.org/v#Document'
 }
 
 TOPIC_CREATE_OPERATION = {
     'type': 'CreateResourceOperation',
-    'title': 'Create a new topic',
-    'method': 'POST',
-    'expects': 'https://workingnotes.org/v#Topic',
-    'returns': 'https://workingnotes.org/v#Topic'
+    'hydra:title': 'Create a new topic',
+    'hydra:method': 'POST',
+    'hydra:expects': 'https://workingnotes.org/v#Topic',
+    'hydra:returns': 'https://workingnotes.org/v#Topic'
 }
 
 
@@ -74,23 +74,23 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
             {
                 'url': dummy_req.build_absolute_uri(
                     '/projects/emma/doc/#notes'),
-                'type': 'Link',
-                'title': 'Note list',
-                'supportedOperation': [NOTE_CREATE_OPERATION]
+                'type': 'hydra:Link',
+                'hydra:title': 'Note list',
+                'hydra:supportedOperation': [NOTE_CREATE_OPERATION]
             },
             {
                 'url': dummy_req.build_absolute_uri(
                     '/projects/emma/doc/#topics'),
-                'type': 'Link',
-                'title': 'Topic list',
-                'supportedOperation': [TOPIC_CREATE_OPERATION]
+                'type': 'hydra:Link',
+                'hydra:title': 'Topic list',
+                'hydra:supportedOperation': [TOPIC_CREATE_OPERATION]
             },
             {
                 'url': dummy_req.build_absolute_uri(
                     '/projects/emma/doc/#documents'),
-                'type': 'Link',
-                'title': 'Document list',
-                'supportedOperation': [DOCUMENT_CREATE_OPERATION]
+                'type': 'hydra:Link',
+                'hydra:title': 'Document list',
+                'hydra:supportedOperation': [DOCUMENT_CREATE_OPERATION]
             }
         ])
 
@@ -107,18 +107,6 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
         project_url = dummy_req.build_absolute_uri(
             self.project.get_absolute_url())
 
-        self.assertEqual(response.data.get('projects').keys(), [project_url])
-        self.assertEqual(len(response.data['projects'].values()[0]['@context']), 3)
+        self.assertEqual(response.data.get('affiliated_projects').keys(), [project_url])
+        self.assertEqual(len(response.data['affiliated_projects'].values()[0]['@context']), 3)
         self.assertEqual(len(response.data.get('links')), 3)
-
-# In user homepage:
-# 'projects': {
-#     'https://workingnotes.org/projects/emma/': {
-#         '@context': {
-#             'notes': 'emma:notes',
-#             'documents': 'emma:documents',
-#             'topics': 'emma:topics'
-#         },
-#         'name': 'Emma Goldman Papers',
-#     }
-# },
