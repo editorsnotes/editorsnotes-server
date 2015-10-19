@@ -70,7 +70,7 @@ class User(AbstractUser, URLAccessible):
         return [(role.project, role) for role in roles]
 
     def _get_project_role(self, project):
-        role_attr = '_{}_role_cache'
+        role_attr = '_{}_role_cache'.format(project.slug)
         if not hasattr(self, role_attr):
             setattr(self, role_attr, project.get_role_for(self))
         return getattr(self, role_attr)
