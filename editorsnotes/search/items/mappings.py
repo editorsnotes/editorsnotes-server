@@ -67,3 +67,9 @@ class ProjectDocType(BaseDocType):
     class Meta:
         index = settings.ELASTICSEARCH_PREFIX + '-items'
         doc_type = 'project'
+
+
+class TranscriptDocType(BaseDocType):
+    class Meta:
+        index = settings.ELASTICSEARCH_PREFIX + '-items'
+        doc_type = 'transcript'

@@ -26,6 +26,10 @@ DEFINED_TYPES = (
     (
         'Project',
         ['serialized.description']
+    ),
+    (
+        'Transcript',
+        ['serialized_markup_html']
     )
 )
 

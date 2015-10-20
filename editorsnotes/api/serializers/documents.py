@@ -90,7 +90,15 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         default=fields.CurrentProjectDefault())
     updaters = fields.UpdatersField()
 
-    transcript = serializers.SerializerMethodField('get_transcript_url')
+    transcript = fields.CustomLookupHyperlinkedField(
+        read_only=True,
+        view_name='api:transcripts-detail',
+        lookup_kwarg_attrs={
+            'project_slug': 'project.slug',
+            'document_id': 'id'
+        }
+    )
+
     zotero_data = ZoteroField(required=False)
     related_topics = fields.TopicAssignmentField(many=True)
     scans = ScanSerializer(many=True, required=False, read_only=True)
@@ -123,6 +131,7 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         embedded_fields = (
             'project',
             'updaters',
+            'transcript',
             'related_topics',
             'referenced_by',
         )
@@ -139,12 +148,11 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     def get_transcript_url(self, obj):
         if not obj.has_transcript():
             return None
-        return reverse('api:transcripts-detail',
-                       request=self.context.get('request', None),
-                       kwargs={
-                           'project_slug': obj.project.slug,
-                           'document_id': obj.id
-                       })
+        return reverse(
+            'api:transcripts-detail',
+            args=[obj.project.slug, obj.id],
+            request=self.context['request']
+        )
 
     def validate_description(self, value):
         description_stripped = Document.strip_description(value)
@@ -154,22 +162,33 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
         return value
 
 
-class TranscriptSerializer(serializers.ModelSerializer):
-    url = fields.CustomLookupHyperlinkedField(
-        lookup_kwarg_attrs={
-            'project_slug': 'document.project.slug',
-            'document_id': 'document.id'
-        },
-        read_only=True
-    )
+class TranscriptSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
+    url = fields.IdentityURLField()
+    project = fields.HyperlinkedAffiliatedProjectField()
     document = fields.CustomLookupHyperlinkedField(
+        read_only=True,
         view_name='api:documents-detail',
         lookup_kwarg_attrs={
             'project_slug': 'document.project.slug',
-            'document_id': 'document.id'
-        },
-        read_only=True
+            'pk': 'document.id'
+        }
     )
+    references = fields.UnqualifiedURLField(source='get_referenced_items')
 
     class Meta:
         model = Transcript
+        fields = (
+            'url',
+            'project',
+            'document',
+
+            'markup',
+            'markup_html',
+
+            'references'
+        )
+        embedded_fields = (
+            'project',
+            'document',
+            'references',
+        )
