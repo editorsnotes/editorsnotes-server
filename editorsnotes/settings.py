@@ -134,8 +134,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'editorsnotes.api.renderers.JSONLDRenderer',
+        'editorsnotes.api.renderers.BrowsableJSONLDRenderer',
         'editorsnotes.api.renderers.TurtleRenderer',
-        'editorsnotes.api.renderers.BrowsableJSONAPIRenderer',
+        'editorsnotes.api.renderers.BrowsableTurtleRenderer',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25
