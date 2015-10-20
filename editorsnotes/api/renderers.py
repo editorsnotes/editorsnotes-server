@@ -7,12 +7,24 @@ from rdflib import Graph
 from .ld import CONTEXT
 
 
-class BrowsableJSONAPIRenderer(renderers.BrowsableAPIRenderer):
+class BrowsableJSONLDRenderer(renderers.BrowsableAPIRenderer):
+    format = 'jsonld-browse'
+
     def get_default_renderer(self, view):
         return JSONLDRenderer()
 
 
+class BrowsableTurtleRenderer(renderers.BrowsableAPIRenderer):
+    format = 'ttl-browse'
+
+    def get_default_renderer(self, view):
+        return TurtleRenderer()
+
+
 class JSONLDRenderer(renderers.JSONRenderer):
+    media_type = 'application/ld+json'
+    format = 'jsonld'
+
     def render(self, data, accepted_media_type=None, renderer_context=None):
         data_with_context = OrderedDict()
 
