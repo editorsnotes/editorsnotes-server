@@ -55,19 +55,18 @@ def get_data_for_urls(item_urls):
     item_urls = list(item_urls)
     item_urls.sort()
 
+    request = make_dummy_request()
+
     for url in item_urls:
-        match = resolve(urlparse(url).path)
-
+        path = urlparse(url).path
+        match = resolve(path)
         model = match.func.cls.queryset.model
+
         doc_type = model._meta.verbose_name
-
-        pk = (
-            match.kwargs['project_slug']
-            if doc_type == 'project'
-            else match.kwargs['pk']
-        )
-
-        docs.append({'_type': doc_type, '_id': pk})
+        docs.append({
+            '_type': doc_type,
+            '_id': request.build_absolute_uri(path)
+        })
 
     resp = index.es.multi_get(docs, index=index.name)
 

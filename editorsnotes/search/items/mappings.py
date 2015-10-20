@@ -22,7 +22,8 @@ def base_serialized_field():
 
 class BaseDocType(DocType):
     serialized = base_serialized_field()
-    display_url = String(index='not_analyzed')
+    mapping.field('url', String(index='not_analyzed'))
+    mapping.field('pk', String(index='not_analyzed'))
     display_title = String(search_analyzer='analyzer_shingle',
                            index_analyzer='analyzer_shingle')
 
