@@ -2,6 +2,8 @@ from collections import OrderedDict
 
 from rest_framework import renderers
 
+from rdflib import Graph
+
 from .ld import CONTEXT
 
 
@@ -24,3 +26,15 @@ class JSONLDRenderer(renderers.JSONRenderer):
 
         return super(JSONLDRenderer, self)\
             .render(data_with_context, accepted_media_type, renderer_context)
+
+
+class TurtleRenderer(JSONLDRenderer):
+    media_type = 'text/turtle'
+    format = 'ttl'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        jsonld = super(TurtleRenderer, self)\
+            .render(data, accepted_media_type, renderer_context)
+        g = Graph()
+        g.parse(data=jsonld, format='json-ld')
+        return g.serialize(format='turtle')
