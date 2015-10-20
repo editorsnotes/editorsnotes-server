@@ -13,6 +13,9 @@ class BrowsableJSONAPIRenderer(renderers.BrowsableAPIRenderer):
 
 
 class JSONLDRenderer(renderers.JSONRenderer):
+    media_type = 'application/ld+json'
+    format = 'jsonld'
+
     def render(self, data, accepted_media_type=None, renderer_context=None):
         data_with_context = OrderedDict()
 
