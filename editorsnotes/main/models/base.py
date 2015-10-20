@@ -44,7 +44,7 @@ class ENMarkup(models.Model):
 
     def save(self, *args, **kwargs):
         if self.markup:
-            self.markup_html = render_markup(self.markup, self.project)
+            self.markup_html = render_markup(self.markup, self.get_affiliation())
         return super(ENMarkup, self).save(*args, **kwargs)
 
     def has_markup(self):

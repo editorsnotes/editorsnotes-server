@@ -204,7 +204,7 @@ class Transcript(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
     @models.permalink
     def get_absolute_url(self):
         return ('api:transcripts-detail',
-                [str(self.project.slug), str(self.document_id)])
+                [str(self.document.project.slug), str(self.document_id)])
 
     # FIXME
     def get_footnotes(self):

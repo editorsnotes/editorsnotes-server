@@ -94,7 +94,7 @@ class DocumentTestCase(TestCase):
 
         transcript = main_models.Transcript.objects.create(
             document_id=self.document.id, creator_id=self.user.id,
-            last_updater_id=self.user.id, content='<div>nothing</div>')
+            last_updater_id=self.user.id, markup='nothing')
         updated_document = main_models.Document.objects\
             .get(id=self.document.id)
         self.assertTrue(updated_document.has_transcript())
