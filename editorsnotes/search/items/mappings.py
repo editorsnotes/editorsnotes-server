@@ -1,5 +1,5 @@
 from django.conf import settings
-from elasticsearch_dsl import Date, String, Nested, DocType, Object
+from elasticsearch_dsl import Date, String, DocType, Object
 
 
 def base_serialized_field():
@@ -22,8 +22,8 @@ def base_serialized_field():
 
 class BaseDocType(DocType):
     serialized = base_serialized_field()
-    mapping.field('url', String(index='not_analyzed'))
-    mapping.field('pk', String(index='not_analyzed'))
+    url = String(index='not_analyzed')
+    pk = String(index='not_analyzed')
     display_title = String(search_analyzer='analyzer_shingle',
                            index_analyzer='analyzer_shingle')
 
@@ -54,6 +54,7 @@ class DocumentDocType(BaseDocType):
     class Meta:
         index = settings.ELASTICSEARCH_PREFIX + '-items'
         doc_type = 'document'
+
 
 class ProjectDocType(BaseDocType):
     serialized = Object()\
