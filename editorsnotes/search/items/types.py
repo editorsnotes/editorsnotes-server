@@ -13,33 +13,29 @@ from . import mappings
 DEFINED_TYPES = (
     (
         'Note',
-        'id',
-        'serialized.title',
         ['serialized.title', 'serialized.markup_html']
     ),
     (
         'Topic',
-        'id',
-        'serialized.preferred_name',
         ['serialized.preferred_name', 'serialized.markup_html']
     ),
     (
         'Document',
-        'id',
-        'serialized.description',
         ['serialized.description']
     ),
     (
         'Project',
-        'slug',
-        'serialized.descripton',
         ['serialized.description']
+    ),
+    (
+        'Transcript',
+        ['serialized_markup_html']
     )
 )
 
 
 class DocumentTypeConfig(object):
-    def __init__(self, es, index_name, model_name, id_field, display_field,
+    def __init__(self, es, index_name, model_name,
                  highlight_fields=None):
 
         from editorsnotes.api import serializers
@@ -48,8 +44,6 @@ class DocumentTypeConfig(object):
 
         self.es = es
         self.index_name = index_name
-        self.id_field = id_field
-        self.doc_id_field = 'serialized.{}'.format(self.id_field)
 
         try:
             self.model = main.get_model(model_name)
@@ -62,6 +56,8 @@ class DocumentTypeConfig(object):
 
         self.highlight_fields = highlight_fields or []
 
+        self.request = make_dummy_request()
+
     @property
     def type_label(self):
         return self.doctype._doc_type.name
@@ -71,6 +67,13 @@ class DocumentTypeConfig(object):
         mapping = self.doctype._doc_type.mapping.to_dict()
         return mapping
 
+    def make_type_kwargs(self, kwargs):
+        kwargs.update({
+            'index': self.index_name,
+            'doc_type': self.type_label
+        })
+        return kwargs
+
     def clear(self):
         try:
             self.es.delete_all(self.index_name, self.type_label)
@@ -79,58 +82,45 @@ class DocumentTypeConfig(object):
         except ElasticHttpNotFoundError:
             pass
 
-    def data_from_object(self, obj, request=None):
-        request = request or make_dummy_request()
+    def data_from_object(self, obj):
+        serializer = self.serializer(obj, context={'request': self.request})
+        json_data = JSONRenderer().render(serializer.data)
+        serialized = json.loads(json_data, object_pairs_hook=OrderedDict)
 
-        if not hasattr(obj, '_rest_serialized'):
-            serializer = self.serializer(obj, context={'request': request})
-            json_data = json.loads(JSONRenderer().render(serializer.data),
-                                   object_pairs_hook=OrderedDict)
-            obj._rest_serialized = json_data
-        else:
-            json_data = obj._rest_serialized.copy()
-            json_data.pop('embedded', None)
-
+        # All items' ES IDs will be the URLs. However, their PKs from the
+        # database will also be stored for convenience.
+        url = serialized['url']
         data = {
-            'id': getattr(obj, self.id_field),
-            'serialized': json_data,
-            'display_url': request.build_absolute_uri(obj.get_absolute_url()),
+            'pk': obj.pk,
+            'url': url,
+            'serialized': serialized,
             'display_title': obj.as_text()
         }
 
         return data
 
-    def get_object(self, instance=None, id_lookup=None):
-        if id_lookup is None and instance is None:
-            raise ValueError('Provide either an instance or a lookup value '
-                             'to retrieve a given {}'.format(self.type_label))
+    def index(self, instance):
+        doc = self.data_from_object(instance)
+        self.es.index(**self.make_type_kwargs({
+            'doc': doc,
+            'id': doc['url'],
+            'refresh': True
+        }))
 
-        if instance and not isinstance(instance, self.model):
-            raise ValueError('Instance must be a {} object'.format(self.model))
+    def update(self, instance):
+        doc = self.data_from_object(instance)
+        self.es.update(**self.make_type_kwargs({
+            'doc': doc,
+            'id': doc['url'],
+            'refresh': True
+        }))
 
-        obj = instance or self.model.objects.get({self.id_field: id_lookup})
-
-        return obj
-
-    def index(self, instance=None, id_lookup=None, request=None):
-        obj = self.get_object(instance, id_lookup)
-        doc = self.data_from_object(obj, request)
-        doc_id = getattr(obj, self.id_field)
-
-        self.es.index(self.index_name, self.type_label, doc, doc_id,
-                      refresh=True)
-
-    def update(self, instance=None, id_lookup=None, request=None):
-        obj = self.get_object(instance, id_lookup)
-        doc = self.data_from_object(obj, request)
-        doc_id = getattr(obj, self.id_field)
-        self.es.update(self.index_name, self.type_label, doc_id, doc=doc,
-                       refresh=True)
-
-    def remove(self, instance=None, id_lookup=None):
-        obj = self.get_object(instance, id_lookup)
-        doc_id = getattr(obj, self.id_field)
-        self.es.delete(self.index_name, self.type_label, doc_id, refresh=True)
+    def remove(self, instance):
+        doc_id = self.request.build_absolute_uri(instance.get_absolute_url())
+        self.es.delete(**self.make_type_kwargs({
+            'id': doc_id,
+            'refresh': True
+        }))
 
     def update_all(self, qs=None, chunk_size=300):
         i = 0

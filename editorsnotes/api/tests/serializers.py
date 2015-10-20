@@ -6,10 +6,12 @@ from rest_framework.renderers import JSONRenderer
 from django.test.client import RequestFactory
 
 from editorsnotes.auth.models import Project
+from editorsnotes.main import models as main_models
 
 from .views import ClearContentTypesTransactionTestCase
+
+from .. import serializers as en_serializers
 from ..serializers.mixins import EmbeddedItemsMixin
-from ..serializers import ProjectSerializer
 
 
 class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
@@ -25,7 +27,7 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
         project = Project.objects.get(slug='emma')
         project_url = self.dummy_request.build_absolute_uri(
             project.get_absolute_url())
-        project_serializer = ProjectSerializer(
+        project_serializer = en_serializers.ProjectSerializer(
             instance=project, context=context)
 
         class SimpleEmbeddingSerializer(EmbeddedItemsMixin,
@@ -39,7 +41,8 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
             def get_project_url(self, obj):
                 return project_url
 
-        test_serializer = SimpleEmbeddingSerializer({},
+        test_serializer = SimpleEmbeddingSerializer(
+            {},
             include_embeds=True,
             context=context
         )
@@ -51,3 +54,48 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
             'project_url': project_url,
             'embedded': {project_url: project_data}
         })
+
+
+class DocumentSerializerTestCase(ClearContentTypesTransactionTestCase):
+    fixtures = ['projects.json']
+
+    def setUp(self):
+        self.dummy_request = RequestFactory().get('/')
+        self.context = {'request': self.dummy_request}
+
+        self.project = Project.objects.get(slug='emma')
+        self.user = self.project.members.get()
+
+        self.document = main_models.Document.objects.create(
+            creator=self.user,
+            last_updater=self.user,
+            project=self.project,
+            description='<div>Title</div>'
+        )
+
+    def test_document_serializer(self):
+        serializer = en_serializers.DocumentSerializer(
+            instance=self.document, context=self.context,
+            include_embeds=True)
+
+        transcript_url = self.dummy_request.build_absolute_uri(
+            '/projects/emma/documents/{}/transcript/'.format(self.document.id))
+
+        self.assertEqual(serializer.data['transcript'], transcript_url)
+        self.assertEqual(serializer.data['embedded'][transcript_url], None)
+
+        transcript = main_models.Transcript.objects.create(
+            creator=self.user,
+            last_updater=self.user,
+            document=self.document,
+            markup='What the text says.'
+        )
+
+        self.assertEqual(
+            self.dummy_request.build_absolute_uri(transcript.get_absolute_url()),
+            transcript_url)
+
+        serializer = en_serializers.DocumentSerializer(
+            instance=self.document, context=self.context,
+            include_embeds=True)
+        self.assertNotEqual(serializer.data['embedded'][transcript_url], None)

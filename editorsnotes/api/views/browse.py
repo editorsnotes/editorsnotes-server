@@ -53,12 +53,12 @@ def root(request, format=None):
 
 def search_model(Model, query):
     query = query.to_dict()
-    query['fields'] = ['display_title', 'display_url']
+    query['fields'] = ['display_title', 'url']
     results = items_search.search_model(Model, query)
     return [
         {
             'title': result['fields']['display_title'][0],
-            'url': result['fields']['display_url'][0]
+            'url': result['fields']['url'][0]
         }
         for result in results['hits']['hits']
     ]
