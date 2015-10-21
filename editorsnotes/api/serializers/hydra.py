@@ -91,16 +91,18 @@ class HydraPropertySerializer(ReplaceLDFields, serializers.Serializer):
     hydra_writeonly = serializers.ReadOnlyField(source='write_only')
     hydra_readonly = serializers.ReadOnlyField(source='read_only')
 
-    def __init__(self, instance, property_name, domain=None, **kwargs):
-        self.domain = domain
+    def __init__(self, instance, property_name, domain=None, parent_model=None,
+                 **kwargs):
         self.property_name = property_name
+        self.domain = domain
+        self.parent_model = parent_model
         self.context_dict = kwargs.pop('context_dict', CONTEXT)
         super(HydraPropertySerializer, self).__init__(instance, **kwargs)
 
     def get_property(self, obj):
         if isinstance(obj, serializers.HyperlinkedRelatedField):
             return HyperlinkedHydraPropertySerializer(
-                obj, self.property_name, self.domain
+                obj, self.property_name, self.domain, self.parent_model
             ).data
         return self.context_dict[self.property_name]
 
@@ -125,9 +127,12 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
 
     hydra_supportedOperation = serializers.SerializerMethodField()
 
-    def __init__(self, instance, property_name, domain=None, **kwargs):
-        self.domain = domain
+    def __init__(self, instance, property_name, domain=None, parent_model=None,
+                 **kwargs):
         self.property_name = property_name
+        self.domain = domain
+        self.parent_model = parent_model
+
         self.view_class = self._get_view_class(instance)
         super(HyperlinkedHydraPropertySerializer, self)\
             .__init__(instance, **kwargs)
@@ -151,20 +156,35 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
 
         return pattern.callback.cls
 
+    @property
+    def is_collection(self):
+        return issubclass(self.view_class, mixins.ListModelMixin)
+
+    @property
+    def model(self):
+        return self.view_class.queryset.model
+
     def _get_retrieve_operation(self, obj):
+        parent_label = self.parent_model._meta.verbose_name
+        label = self.get_label(obj)
+
+        jsonld_id = '_:{}_{}_retrieve'.format(parent_label, label)
+
+        label = 'Retrieve {} for this {}.'.format(
+            ('all ' if self.is_collection else '') + label,
+            parent_label
+        )
+
         return {
-            '@id': '_:project_notes_retrieve',
+            '@id': jsonld_id,
             '@type': 'hydra:Operation',
             'hydra:method': 'GET',
-            'label': 'Retrieve all notes for this project.',
+            'label': label,
             'description': None,
             'expects': None,
             'returns': self.get_range(obj),
             'statusCodes': []
         }
-
-    def _is_collection_view(self):
-        return issubclass(self.view_class, mixins.ListModelMixin)
 
     def get_jsonld_id(self, obj):
         return self.domain + '/' + self.get_label(obj)
@@ -177,7 +197,7 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
 
     def get_range(self, obj):
         return (
-            'hydra:Collection' if self._is_collection_view() else
+            'hydra:Collection' if self.is_collection else
             (self.domain + '/' + self.get_label(obj).title())
         )
 

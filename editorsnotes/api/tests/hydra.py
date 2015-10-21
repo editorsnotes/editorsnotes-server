@@ -90,13 +90,15 @@ class HydraPropertySerializerTestCase(TestCase):
             'hydra:writeonly': False
         })
 
-    def test_hyperlinked_property(self):
+    def test_read_only_hyperlinked_collection_property(self):
         serializer = ProjectSerializer(
             self.project, context={'request': make_dummy_request()})
         field = serializer.get_fields()['notes']
 
         property_serializer = HydraPropertySerializer(
-            field, 'notes', 'emma:Project',
+            field, 'notes',
+            'emma:Project',
+            self.project
         )
 
         serialized_property = dict(property_serializer.data.items())
