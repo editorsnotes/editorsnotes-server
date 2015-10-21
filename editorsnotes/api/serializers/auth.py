@@ -17,6 +17,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     notes = CustomLookupHyperlinkedField(
         view_name='api:notes-list',
+        help_text='Notes for this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )

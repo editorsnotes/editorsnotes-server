@@ -5,7 +5,9 @@ from django.db import models
 from rest_framework import serializers
 
 from editorsnotes.auth.models import Project
+from editorsnotes.search.utils import make_dummy_request
 
+from ..serializers import ProjectSerializer
 from ..serializers.hydra import HydraPropertySerializer
 
 
@@ -35,9 +37,10 @@ TEST_CONTEXT = {
 }
 
 
-class HydraClassSerializerTestCase(TestCase):
+class HydraPropertySerializerTestCase(TestCase):
     def setUp(self):
         self.project = Project(slug='egp')
+        self.maxDiff = None
 
     def test_required_property(self):
         serializer = ExampleItemSerializer()
@@ -82,6 +85,47 @@ class HydraClassSerializerTestCase(TestCase):
             'property': 'http://schema.org/name',
             'hydra:description': 'Name that cannot be edited.',
             'hydra:title': 'read_only_name',
+            'hydra:required': False,
+            'hydra:readonly': True,
+            'hydra:writeonly': False
+        })
+
+    def test_hyperlinked_property(self):
+        serializer = ProjectSerializer(
+            self.project, context={'request': make_dummy_request()})
+        field = serializer.get_fields()['notes']
+
+        property_serializer = HydraPropertySerializer(
+            field, 'notes', 'emma:Project',
+        )
+
+        serialized_property = dict(property_serializer.data.items())
+        hydra_property = dict(serialized_property.pop('property').items())
+
+        self.assertDictEqual(hydra_property, {
+            '@id': 'emma:Project/notes',
+            '@type': 'hydra:Link',
+            'label': 'notes',
+            'hydra:description': 'Notes for this project.',
+            'domain': 'emma:Project',
+            'range': 'hydra:Collection',
+            'hydra:supportedOperation': [
+                {
+                    '@id': '_:project_notes_retrieve',
+                    '@type': 'hydra:Operation',
+                    'hydra:method': 'GET',
+                    'label': 'Retrieve all notes for this project.',
+                    'description': None,
+                    'expects': None,
+                    'returns': 'hydra:Collection',
+                    'statusCodes': []
+                }
+            ]
+        })
+
+        self.assertDictEqual(serialized_property, {
+            'hydra:description': 'Notes for this project.',
+            'hydra:title': 'notes',
             'hydra:required': False,
             'hydra:readonly': True,
             'hydra:writeonly': False
