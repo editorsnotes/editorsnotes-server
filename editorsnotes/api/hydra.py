@@ -29,9 +29,16 @@ def operation_from_perm(user, project, perm_label):
         'delete permissions.'
     )
 
-    perm = user._get_project_role(project)\
-        .get_permissions()\
-        .get(codename=codename)
+    has_perm = (
+        user.is_authenticated() and
+        user.has_project_perm(project, perm_label)
+    )
+
+    if not has_perm:
+        return None
+
+    perm, = filter(lambda perm: perm.codename == codename,
+                   user.get_project_permission_objects(project))
 
     model_opts = perm.content_type.model_class()._meta
 
@@ -40,11 +47,13 @@ def operation_from_perm(user, project, perm_label):
     method = PERM_TO_METHOD[perm_type]
 
     return OrderedDict((
-        ('type', hydra_type),
-        ('hydra:title', hydra_title.format(model_opts.verbose_name)),
+        ('@type', hydra_type),
         ('hydra:method', method),
-        ('hydra:expects', ROOT_NAMESPACE + model_opts.object_name),
-        ('hydra:returns', ROOT_NAMESPACE + model_opts.object_name)
+        ('label', hydra_title.format(model_opts.verbose_name)),
+        ('description', None),
+        ('expects', ROOT_NAMESPACE + model_opts.object_name),
+        ('returns', ROOT_NAMESPACE + model_opts.object_name),
+        ('statusCodes', [])
     ))
 
 

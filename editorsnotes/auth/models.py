@@ -75,7 +75,7 @@ class User(AbstractUser, URLAccessible):
             setattr(self, role_attr, project.get_role_for(self))
         return getattr(self, role_attr)
 
-    def _get_project_permissions(self, project):
+    def get_project_permission_objects(self, project):
         """
         Get all of a user's permissions within a project.
 
@@ -92,8 +92,14 @@ class User(AbstractUser, URLAccessible):
             perm_list = []
         else:
             perm_list = role.get_permissions()
-        return set(['{}.{}'.format(perm.content_type.app_label, perm.codename)
-                    for perm in perm_list])
+
+        return perm_list
+
+    def _get_project_permissions(self, project):
+        return {
+            '{}.{}'.format(perm.content_type.app_label, perm.codename)
+            for perm in self.get_project_permission_objects(project)
+        }
 
     def get_project_permissions(self, project):
         perms_attr = '_{}_permissions_cache'.format(project.slug)

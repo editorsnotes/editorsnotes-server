@@ -1,14 +1,15 @@
-from unittest import TestCase
-
 from django.db import models
 
 from rest_framework import serializers
+from rest_framework.request import Request
 
-from editorsnotes.auth.models import Project
+from editorsnotes.auth.models import Project, User
 from editorsnotes.search.utils import make_dummy_request
 
 from ..serializers import ProjectSerializer
 from ..serializers.hydra import HydraPropertySerializer
+
+from .views import ClearContentTypesTransactionTestCase
 
 
 class ExampleItem(models.Model):
@@ -37,7 +38,9 @@ TEST_CONTEXT = {
 }
 
 
-class HydraPropertySerializerTestCase(TestCase):
+class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
+    fixtures = ['projects.json']
+
     def setUp(self):
         self.project = Project(slug='egp')
         self.maxDiff = None
@@ -91,14 +94,16 @@ class HydraPropertySerializerTestCase(TestCase):
         })
 
     def test_read_only_hyperlinked_collection_property(self):
-        serializer = ProjectSerializer(
-            self.project, context={'request': make_dummy_request()})
+        request = Request(make_dummy_request())
+        context = {'request': request}
+        serializer = ProjectSerializer(self.project, context=context)
         field = serializer.get_fields()['notes']
 
         property_serializer = HydraPropertySerializer(
             field, 'notes',
-            'emma:Project',
-            self.project
+            'emma',
+            self.project,
+            context=context
         )
 
         serialized_property = dict(property_serializer.data.items())
@@ -131,4 +136,39 @@ class HydraPropertySerializerTestCase(TestCase):
             'hydra:required': False,
             'hydra:readonly': True,
             'hydra:writeonly': False
+        })
+
+    def test_read_write_hyperlinked_collection_property(self):
+        request = Request(make_dummy_request())
+        request._user = User(username='Patrick', is_superuser=True)
+
+        context = {'request': request}
+        serializer = ProjectSerializer(self.project, context=context)
+
+        field = serializer.get_fields()['notes']
+        property_serializer = HydraPropertySerializer(
+            field, 'notes',
+            'emma',
+            self.project,
+            context=context
+        )
+
+        supported_operations = property_serializer.data\
+            .get('property')\
+            .get('hydra:supportedOperation')
+
+        self.assertEqual(len(supported_operations), 2)
+
+        create_operation, = filter(lambda op: op.get('hydra:method') == 'POST',
+                                   supported_operations)
+
+        self.assertDictEqual(dict(create_operation), {
+            '@id': '_:project_note_create',
+            '@type': 'hydra:CreateResourceOperation',
+            'hydra:method': 'POST',
+            'label': 'Create a note for this project.',
+            'description': None,
+            'expects': 'emma:Note',
+            'returns': 'emma:Note',
+            'statusCodes': []
         })

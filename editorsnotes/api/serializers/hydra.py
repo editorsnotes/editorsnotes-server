@@ -8,6 +8,7 @@ from rest_framework import serializers
 from .. import serializers as en_serializers
 from ..hydra import operation_from_perm
 from ..ld import CONTEXT
+from ..permissions import ProjectSpecificPermissions
 
 
 def url_pattern_for_name(patterns, view_name):
@@ -25,15 +26,30 @@ def url_pattern_for_name(patterns, view_name):
     return found
 
 
-def view_permissions(view_obj, method):
+PERM_ERROR = (
+    'Can only generate permissions for a single ProjectSpecificPermission.')
+
+
+def get_view_permission(view_obj, method):
     request = namedtuple('FakeRequest', 'method')(method)
+    permissions = view_obj.get_permissions()
 
-    return [
-        permission.get_view_permissions(request, view_obj)
-        for permission in view_obj.get_permissions()
-    ]
+    assert len(permissions) == 1, PERM_ERROR
+    assert isinstance(permissions[0], ProjectSpecificPermissions), PERM_ERROR
 
-SUPPORTED_HYDRA_METHODS = ['GET', 'POST', 'PUT', 'DELETE']
+    permission, = permissions
+    view_permissions = permission.get_view_permissions(request, view_obj)
+
+    assert len(view_permissions) == 1, PERM_ERROR
+
+    return view_permissions[0]
+
+SUPPORTED_HYDRA_METHODS = {
+    'GET': 'retrieve',
+    'POST': 'create',
+    'PUT': 'update',
+    'DELETE': 'delete'
+}
 
 
 class ReplaceLDFields(object):
@@ -102,7 +118,8 @@ class HydraPropertySerializer(ReplaceLDFields, serializers.Serializer):
     def get_property(self, obj):
         if isinstance(obj, serializers.HyperlinkedRelatedField):
             return HyperlinkedHydraPropertySerializer(
-                obj, self.property_name, self.domain, self.parent_model
+                obj, self.property_name, self.domain, self.parent_model,
+                context=self.context
             ).data
         return self.context_dict[self.property_name]
 
@@ -187,7 +204,11 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
         }
 
     def get_jsonld_id(self, obj):
-        return self.domain + '/' + self.get_label(obj)
+        return '{}:{}/{}'.format(
+            self.domain,
+            self.parent_model._meta.verbose_name.title(),
+            self.get_label(obj)
+        )
 
     def get_jsonld_type(self, obj):
         return 'hydra:Link'
@@ -202,21 +223,51 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
         )
 
     def get_domain(self, obj):
-        return self.domain
+        return '{}:{}'.format(
+            self.domain ,
+            self.parent_model._meta.verbose_name.title()
+        )
 
     def get_hydra_supportedOperation(self, obj):
         operations = []
 
-        view_obj = self.view_class()
+        parent_label = self.parent_model._meta.verbose_name
+        child_label = self.view_class.queryset.model._meta.verbose_name
 
-        for method in SUPPORTED_HYDRA_METHODS:
+        view_obj = self.view_class()
+        request = self.context['request']
+
+        for method, op in SUPPORTED_HYDRA_METHODS.items():
             if method not in view_obj.allowed_methods:
                 continue
+
+            # FIXME: Not always true for notes... but that's OK. Maybe include
+            # whether private notes will be included/excluded in the
+            # description.
             if method == 'GET':
                 operations.append(self._get_retrieve_operation(obj))
                 continue
 
-            required_permissions = view_permissions(view_obj, method)
+            required_permission = get_view_permission(view_obj, method)
+
+            operation = operation_from_perm(
+                request.user, self.parent_model, required_permission)
+
+            if operation:
+                operation['@id'] = '_:{}_{}_{}'.format(
+                    parent_label, child_label, op
+                )
+                operation['label'] = '{} a {} for this {}.'.format(
+                    op.title(), child_label, parent_label)
+
+                if 'expects' in operation:
+                    operation['expects'] = \
+                        self.domain + ':' + child_label.title()
+
+                if 'returns' in operation:
+                    operation['returns'] = \
+                        self.domain + ':' + child_label.title()
+                operations.append(operation)
 
         return operations
 
