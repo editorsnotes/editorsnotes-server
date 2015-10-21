@@ -14,7 +14,7 @@ __all__ = ['TopicSerializer']
 
 class TopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                       serializers.ModelSerializer):
-    url = fields.IdentityURLField()
+    url = fields.IdentityURLField(view_name='api:topics-detail')
     type = serializers.SerializerMethodField()
     project = fields.HyperlinkedAffiliatedProjectField(
         default=fields.CurrentProjectDefault())

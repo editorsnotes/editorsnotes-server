@@ -36,7 +36,7 @@ class NoteStatusField(serializers.ReadOnlyField):
 # TODO: change license, fuller repr of updaters
 class NoteSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                      serializers.ModelSerializer):
-    url = fields.IdentityURLField()
+    url = fields.IdentityURLField(view_name='api:notes-detail')
     type = serializers.SerializerMethodField()
     project = fields.HyperlinkedAffiliatedProjectField(
         default=fields.CurrentProjectDefault())

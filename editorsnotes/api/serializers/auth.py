@@ -11,7 +11,10 @@ __all__ = ['ProjectSerializer', 'UserSerializer']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    url = IdentityURLField()
+    url = IdentityURLField(
+        view_name='api:projects-detail',
+        lookup_kwarg_attrs={'project_slug': 'slug'}
+    )
 
     type = serializers.SerializerMethodField()
 
@@ -65,7 +68,10 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
-    url = IdentityURLField()
+    url = IdentityURLField(
+        view_name='api:users-detail',
+        lookup_kwarg_attrs={'username': 'username'}
+    )
 
     type = serializers.SerializerMethodField()
 

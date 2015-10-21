@@ -84,7 +84,7 @@ class UniqueDocumentDescriptionValidator:
 
 class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
                          serializers.ModelSerializer):
-    url = fields.IdentityURLField()
+    url = fields.IdentityURLField(view_name='api:documents-detail')
     type = serializers.SerializerMethodField()
     project = fields.HyperlinkedAffiliatedProjectField(
         default=fields.CurrentProjectDefault())
@@ -163,7 +163,13 @@ class DocumentSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
 
 
 class TranscriptSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
-    url = fields.IdentityURLField()
+    url = fields.IdentityURLField(
+        view_name='api:transcripts-detail',
+        lookup_kwarg_attrs={
+            'project_slug': 'document.project.slug',
+            'document_id': 'document.id'
+        }
+    )
     project = fields.HyperlinkedAffiliatedProjectField()
     document = fields.CustomLookupHyperlinkedField(
         read_only=True,
