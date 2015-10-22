@@ -64,19 +64,28 @@ class ReplaceLDFields(object):
                 self.fields[jsonld_name] = self.fields.pop(field)
 
 
-class HydraClassSerializer(ReplaceLDFields, serializers.Serializer):
-    "Serializer to generate a hydra:Class based on a serializer."
+class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
+    """
+    Serializer to generate a hydra:Class based on a project and ModelSerializer
+    class.
+    """
     jsonld_id = serializers.SerializerMethodField()
     jsonld_type = serializers.SerializerMethodField()
 
     label = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
 
-    supportedProperty = serializers.SerializerMethodField()
+    hydra_supportedProperty = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+
+    def __init__(self, *args, **kwargs):
+        self.class_serializer = kwargs.pop('class_serializer')
+        super(HydraProjectClassSerializer, self).__init__(*args, **kwargs)
 
     def get_jsonld_id(self, obj):
-        project = self.root.project  # ?
-        return '{}:{}'.format(project.slug, self.get_label())
+        return '{}:{}'.format(obj.slug, self.get_label(obj))
 
     def get_jsonld_type(self, obj):
         return 'hydra:Class'
@@ -88,10 +97,24 @@ class HydraClassSerializer(ReplaceLDFields, serializers.Serializer):
     def get_description(self, obj):
         return
 
-    def get_supported_property(self):
+    def get_hydra_supportedProperty(self, obj):
+
+        ignored_fields = [
+            'id',
+            'url',
+            'type'
+        ]
+
         return [
-            HydraPropertySerializer(field, property_name, context=self.context)
-            for property_name, field in self.get_fields().items()
+            HydraPropertySerializer(
+                field, property_name,
+                parent_model=obj,
+                domain='wn',
+                context=self.context
+            ).data
+            for property_name, field
+            in self.class_serializer().get_fields().items()
+            if property_name not in ignored_fields
         ]
 
 
@@ -224,7 +247,7 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
 
     def get_domain(self, obj):
         return '{}:{}'.format(
-            self.domain ,
+            self.domain,
             self.parent_model._meta.verbose_name.title()
         )
 
@@ -272,16 +295,47 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
         return operations
 
 
-class ProjectHydraClassesSerializer(serializers.Serializer):
+class ProjectHydraClassesSerializer(serializers.ModelSerializer):
     "Serializer to generate Hydra documentation for a project."
-    project = HydraClassSerializer(en_serializers.ProjectSerializer)
+    project = HydraProjectClassSerializer(
+        source='*',
+        class_serializer=en_serializers.ProjectSerializer
+    )
 
-    user = HydraClassSerializer(en_serializers.NoteSerializer)
-    activity = HydraClassSerializer(en_serializers.ActivitySerializer)
+    # user = HydraProjectClassSerializer(
+    #     source='*',
+    #     class_serializer=en_serializers.NoteSerializer
+    # )
 
-    note = HydraClassSerializer(en_serializers.NoteSerializer)
-    topic = HydraClassSerializer(en_serializers.TopicSerializer)
+    # activity = HydraClassSerializer(
+    #     source='*',
+    #     class_serializer=en_serializers.ActivitySerializer
+    # )
 
-    document = HydraClassSerializer(en_serializers.DocumentSerializer)
-    scan = HydraClassSerializer(en_serializers.ScanSerializer)
-    transcript = HydraClassSerializer(en_serializers.TranscriptSerializer)
+    note = HydraProjectClassSerializer(
+        source='*',
+        class_serializer=en_serializers.NoteSerializer
+    )
+
+    # topic = HydraProjectClassSerializer(
+    #     source='*',
+    #     class_serializer=en_serializers.TopicSerializer
+    # )
+
+    # document = HydraProjectClassSerializer(
+    #     source='*',
+    #     class_serializer=en_serializers.DocumentSerializer
+    # )
+
+    # scan = HydraProjectClassSerializer(
+    #     source='*',
+    #     class_serializer=en_serializers.ScanSerializer
+    # )
+
+    # transcript = HydraProjectClassSerializer(
+    #     source='*',
+    #     class_serializer=en_serializers.TranscriptSerializer
+    # )
+
+    class Meta:
+        model = Project

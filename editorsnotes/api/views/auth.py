@@ -3,17 +3,18 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from editorsnotes.auth.models import Project, User
+from editorsnotes.auth.models import Project, User, LogActivity
 from editorsnotes.search import activity_index
 
 from ..filters import ActivityFilterBackend
 from ..hydra import project_links_for_request_user
 from ..serializers import ProjectSerializer, UserSerializer
+from ..serializers.hydra import ProjectHydraClassesSerializer
 
 from .mixins import ElasticSearchListMixin, EmbeddedMarkupReferencesMixin
 
-__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
-           'SelfUserDetail']
+__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail',
+           'ProjectAPIDocumentation', 'UserDetail', 'SelfUserDetail']
 
 
 class ProjectList(ListAPIView):
@@ -52,6 +53,16 @@ class ProjectDetail(RetrieveAPIView):
         return response
 
 
+class ProjectAPIDocumentation(RetrieveAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectHydraClassesSerializer
+
+    def get_object(self):
+        qs = self.get_queryset()
+        project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
+        return project
+
+
 class UserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -86,6 +97,7 @@ class ActivityView(ElasticSearchListMixin, ListAPIView):
     """
 
     es_filter_backends = (ActivityFilterBackend,)
+    queryset = LogActivity.objects.all()
 
     def get_object(self):
         username = self.kwargs.get('username', None)
