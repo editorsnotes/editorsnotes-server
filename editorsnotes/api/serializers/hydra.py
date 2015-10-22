@@ -53,6 +53,12 @@ SUPPORTED_HYDRA_METHODS = {
 
 
 class ReplaceLDFields(object):
+    """
+    Mixin to rename fields with reserved characters.
+
+      * jsonld_{FIELD} => @{FIELD}
+      * hydra_{FIELD} => hydra:FIELD
+    """
     def __init__(self, *args, **kwargs):
         super(ReplaceLDFields, self).__init__(*args, **kwargs)
         for field in self.fields:
