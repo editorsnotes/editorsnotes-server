@@ -27,18 +27,21 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     topics = CustomLookupHyperlinkedField(
         view_name='api:topics-list',
+        help_text='Topics for this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )
 
     documents = CustomLookupHyperlinkedField(
         view_name='api:documents-list',
+        help_text='Documents for this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )
 
     activity = CustomLookupHyperlinkedField(
         view_name='api:projects-activity',
+        help_text='Recent activity within this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )

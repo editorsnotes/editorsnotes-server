@@ -16,9 +16,14 @@ from ..utils.markup import render_markup
 
 class CreationMetadata(models.Model):
     creator = models.ForeignKey(
-        settings.AUTH_USER_MODEL, editable=False,
+        settings.AUTH_USER_MODEL,
+        help_text='The user who created this item.',
+        editable=False,
         related_name='created_%(class)s_set')
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(
+        'The time this item was created.',
+        auto_now_add=True
+    )
 
     class Meta:
         abstract = True
@@ -28,16 +33,32 @@ class CreationMetadata(models.Model):
 class LastUpdateMetadata(CreationMetadata):
     last_updater = models.ForeignKey(
         settings.AUTH_USER_MODEL, editable=False,
+        help_text='The last user to update this item.',
         related_name='last_to_update_%(class)s_set')
-    last_updated = models.DateTimeField(auto_now=True)
+    last_updated = models.DateTimeField(
+        'The last time this item was edited.',
+        auto_now=True)
 
     class Meta:
         abstract = True
 
 
 class ENMarkup(models.Model):
-    markup = models.TextField(blank=True, null=True)
-    markup_html = fields.XHTMLField(blank=True, null=True, editable=False)
+    markup = models.TextField(
+        blank=True, null=True,
+        help_text=(
+            'Text for this item that uses CommonMark syntax, with '
+            'Working Notes-specific additions for notes, topics, and '
+            'documents.'
+        )
+    )
+
+    markup_html = fields.XHTMLField(
+        blank=True, null=True, editable=False,
+        help_text=(
+            'The markup text for this item rendered into HTML.'
+        )
+    )
 
     class Meta:
         abstract = True

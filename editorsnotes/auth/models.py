@@ -37,7 +37,10 @@ class User(AbstractUser, URLAccessible):
     # suggests that is_active should be used as a way to make someone's account
     # "inactive" without deleting it (which would ruin foreign keys, etc.)
     confirmed = models.BooleanField(default=False)
-    profile = models.CharField(max_length=1000, blank=True, null=True)
+    profile = models.CharField(
+        help_text='Profile text for a user.',
+        max_length=1000,
+        blank=True, null=True)
 
     class Meta:
         app_label = 'main'
@@ -161,7 +164,11 @@ class ProjectManager(models.Manager):
 
 
 class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
-    name = models.CharField(max_length='80')
+    name = models.CharField(
+        max_length='80',
+        help_text='The name of the project.'
+    )
+
     slug = models.SlugField(
         help_text=(
             'Used for project-specific URLs and groups. '
@@ -169,7 +176,9 @@ class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
         ),
         unique=True
     )
+
     image = models.ImageField(
+        'An image representing this project.',
         upload_to='project_images',
         blank=True,
         null=True
