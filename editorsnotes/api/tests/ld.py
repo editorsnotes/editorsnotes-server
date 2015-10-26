@@ -13,7 +13,7 @@ NOTE_CREATE_OPERATION = {
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Note',
     'hydra:returns': 'https://workingnotes.org/v#Note',
-    'hydra:statusCode': []
+    'hydra:possibleStatus': []
 }
 
 DOCUMENT_CREATE_OPERATION = {
@@ -23,7 +23,7 @@ DOCUMENT_CREATE_OPERATION = {
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Document',
     'hydra:returns': 'https://workingnotes.org/v#Document',
-    'hydra:statusCode': []
+    'hydra:possibleStatus': []
 }
 
 TOPIC_CREATE_OPERATION = {
@@ -33,7 +33,7 @@ TOPIC_CREATE_OPERATION = {
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Topic',
     'hydra:returns': 'https://workingnotes.org/v#Topic',
-    'hydra:statusCode': []
+    'hydra:possibleStatus': []
 }
 
 

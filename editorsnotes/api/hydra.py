@@ -53,7 +53,7 @@ def operation_from_perm(user, project, perm_label):
         ('hydra:method', method),
         ('hydra:expects', ROOT_NAMESPACE + model_opts.object_name),
         ('hydra:returns', ROOT_NAMESPACE + model_opts.object_name),
-        ('hydra:statusCode', [])
+        ('hydra:possibleStatus', [])
     ))
 
 

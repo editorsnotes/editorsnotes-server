@@ -245,7 +245,7 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
             'hydra:method': 'GET',
             'hydra:expects': None,
             'hydra:returns': self.get_range(obj),
-            'hydra:statusCode': []
+            'hydra:possibleStatus': []
         }
 
     def get_jsonld_id(self, obj):

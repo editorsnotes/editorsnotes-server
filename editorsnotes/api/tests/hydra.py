@@ -125,7 +125,7 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
                     'hydra:method': 'GET',
                     'hydra:expects': None,
                     'hydra:returns': 'hydra:Collection',
-                    'hydra:statusCode': []
+                    'hydra:possibleStatus': []
                 }
             ]
         })
@@ -170,5 +170,5 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
             'hydra:method': 'POST',
             'hydra:expects': 'emma:Note',
             'hydra:returns': 'emma:Note',
-            'hydra:statusCode': []
+            'hydra:possibleStatus': []
         })
