@@ -80,9 +80,11 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
     jsonld_id = serializers.SerializerMethodField()
     jsonld_type = serializers.SerializerMethodField()
 
+    # TODO: rdfs:subClassOf
     label = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
 
+    hydra_supportedOperation = serializers.SerializerMethodField()
     hydra_supportedProperty = serializers.SerializerMethodField()
 
     class Meta:
@@ -104,6 +106,14 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
 
     def get_description(self, obj):
         return
+
+    def get_hydra_supportedOperation(self, obj):
+        url_field = self.class_serializer().get_fields().get('url')
+        identity_serializer = HyperlinkedHydraPropertySerializer(
+            url_field, self.get_label(obj).lower(),
+            domain=obj.slug, parent_model=obj,
+            context=self.context)
+        return identity_serializer.data.get('hydra:supportedOperation')
 
     def get_hydra_supportedProperty(self, obj):
 
