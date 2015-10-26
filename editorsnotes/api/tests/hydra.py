@@ -101,7 +101,7 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
 
         property_serializer = HydraPropertySerializer(
             field, 'notes',
-            'emma',
+            'projectns:',
             self.project,
             context=context
         )
@@ -110,11 +110,11 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
         hydra_property = dict(serialized_property.pop('property').items())
 
         self.assertDictEqual(hydra_property, {
-            '@id': 'emma:Project/notes',
+            '@id': 'projectns:Project/notes',
             '@type': 'hydra:Link',
             'label': 'notes',
             'hydra:description': 'Notes for this project.',
-            'domain': 'emma:Project',
+            'domain': 'projectns:Project',
             'range': 'hydra:Collection',
             'hydra:supportedOperation': [
                 {
@@ -148,7 +148,7 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
         field = serializer.get_fields()['notes']
         property_serializer = HydraPropertySerializer(
             field, 'notes',
-            'emma',
+            'projectns:',
             self.project,
             context=context
         )
@@ -168,7 +168,7 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
             'label': 'Create a note for this project.',
             'description': None,
             'hydra:method': 'POST',
-            'hydra:expects': 'emma:Note',
-            'hydra:returns': 'emma:Note',
+            'hydra:expects': 'projectns:Note',
+            'hydra:returns': 'projectns:Note',
             'hydra:possibleStatus': []
         })

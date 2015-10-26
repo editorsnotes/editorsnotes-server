@@ -4,6 +4,7 @@ from django.core import urlresolvers
 
 from rest_framework import mixins
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from editorsnotes.auth.models import Project
 
@@ -94,17 +95,17 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         self.class_serializer = kwargs.pop('class_serializer')
+        self.vocab_base = kwargs.pop('vocab_base')
         super(HydraProjectClassSerializer, self).__init__(*args, **kwargs)
 
     def get_jsonld_id(self, obj):
-        return '{}:{}'.format(obj.slug, self.get_label(obj))
+        return '{}{}'.format(self.vocab_base, self.get_label(obj))
 
     def get_jsonld_type(self, obj):
         return 'hydra:Class'
 
     def get_label(self, obj):
-        words = self.field_name.split('_')
-        return ''.join(map(str.title, words))
+        return self.class_serializer.__name__.replace('Serializer', '')
 
     def get_description(self, obj):
         return
@@ -113,7 +114,7 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
         url_field = self.class_serializer().get_fields().get('url')
         identity_serializer = HyperlinkedHydraPropertySerializer(
             url_field, self.get_label(obj).lower(),
-            domain=obj.slug, parent_model=obj,
+            domain=self.vocab_base, parent_model=obj,
             context=self.context)
         return identity_serializer.data.get('hydra:supportedOperation')
 
@@ -129,7 +130,7 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
             HydraPropertySerializer(
                 field, property_name,
                 parent_model=obj,
-                domain=obj.slug,
+                domain=self.vocab_base,
                 context=self.context
             ).data
             for property_name, field
@@ -249,7 +250,7 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
         }
 
     def get_jsonld_id(self, obj):
-        return '{}:{}/{}'.format(
+        return '{}{}/{}'.format(
             self.domain,
             self.parent_model._meta.verbose_name.title(),
             self.get_label(obj)
@@ -264,11 +265,11 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
     def get_range(self, obj):
         return (
             'hydra:Collection' if self.is_collection else
-            (self.domain + '/' + self.get_label(obj).title())
+            (self.domain + self.get_label(obj).title())
         )
 
     def get_domain(self, obj):
-        return '{}:{}'.format(
+        return '{}{}'.format(
             self.domain,
             self.parent_model._meta.verbose_name.title()
         )
@@ -307,11 +308,11 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
 
                 if 'hydra:expects' in operation:
                     operation['hydra:expects'] = \
-                        self.domain + ':' + child_label.title()
+                        self.domain + child_label.title()
 
                 if 'hydra:returns' in operation:
                     operation['hydra:returns'] = \
-                        self.domain + ':' + child_label.title()
+                        self.domain + child_label.title()
                 operations.append(operation)
 
         return operations
