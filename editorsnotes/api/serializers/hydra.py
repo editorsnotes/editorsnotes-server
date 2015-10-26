@@ -5,6 +5,8 @@ from django.core import urlresolvers
 from rest_framework import mixins
 from rest_framework import serializers
 
+from editorsnotes.auth.models import Project
+
 from .. import serializers as en_serializers
 from ..hydra import operation_from_perm
 from ..ld import CONTEXT
@@ -115,7 +117,7 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
             HydraPropertySerializer(
                 field, property_name,
                 parent_model=obj,
-                domain='wn',
+                domain=obj.slug,
                 context=self.context
             ).data
             for property_name, field
@@ -147,10 +149,11 @@ class HydraPropertySerializer(ReplaceLDFields, serializers.Serializer):
     def get_property(self, obj):
         if isinstance(obj, serializers.HyperlinkedRelatedField):
             return HyperlinkedHydraPropertySerializer(
-                obj, self.property_name, self.domain, self.parent_model,
+                obj, self.property_name,
+                self.domain, self.parent_model,
                 context=self.context
             ).data
-        return self.context_dict[self.property_name]
+        return self.context_dict.get(self.property_name)
 
     def get_hydra_title(self, obj):
         return self.property_name
@@ -323,15 +326,15 @@ class ProjectHydraClassesSerializer(serializers.ModelSerializer):
         class_serializer=en_serializers.NoteSerializer
     )
 
-    # topic = HydraProjectClassSerializer(
-    #     source='*',
-    #     class_serializer=en_serializers.TopicSerializer
-    # )
+    topic = HydraProjectClassSerializer(
+        source='*',
+        class_serializer=en_serializers.TopicSerializer
+    )
 
-    # document = HydraProjectClassSerializer(
-    #     source='*',
-    #     class_serializer=en_serializers.DocumentSerializer
-    # )
+    document = HydraProjectClassSerializer(
+        source='*',
+        class_serializer=en_serializers.DocumentSerializer
+    )
 
     # scan = HydraProjectClassSerializer(
     #     source='*',
