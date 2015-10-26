@@ -81,9 +81,11 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
     jsonld_type = serializers.SerializerMethodField()
 
     # TODO: rdfs:subClassOf
-    label = serializers.SerializerMethodField()
+
+    # This would be, i.e. "A Note is material created by a researcher."
     description = serializers.SerializerMethodField()
 
+    label = serializers.SerializerMethodField()
     hydra_supportedOperation = serializers.SerializerMethodField()
     hydra_supportedProperty = serializers.SerializerMethodField()
 
@@ -143,6 +145,7 @@ class HydraPropertySerializer(ReplaceLDFields, serializers.Serializer):
     """
     property = serializers.SerializerMethodField()
     hydra_title = serializers.SerializerMethodField()
+
     hydra_description = serializers.ReadOnlyField(source='help_text')
     hydra_required = serializers.ReadOnlyField(source='required')
     hydra_writeonly = serializers.ReadOnlyField(source='write_only')
@@ -237,12 +240,12 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
         return {
             '@id': jsonld_id,
             '@type': 'hydra:Operation',
-            'hydra:method': 'GET',
             'label': label,
             'description': None,
-            'expects': None,
-            'returns': self.get_range(obj),
-            'statusCodes': []
+            'hydra:method': 'GET',
+            'hydra:expects': None,
+            'hydra:returns': self.get_range(obj),
+            'hydra:statusCode': []
         }
 
     def get_jsonld_id(self, obj):
@@ -302,12 +305,12 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
                 operation['label'] = '{} a {} for this {}.'.format(
                     op.title(), child_label, parent_label)
 
-                if 'expects' in operation:
-                    operation['expects'] = \
+                if 'hydra:expects' in operation:
+                    operation['hydra:expects'] = \
                         self.domain + ':' + child_label.title()
 
-                if 'returns' in operation:
-                    operation['returns'] = \
+                if 'hydra:returns' in operation:
+                    operation['hydra:returns'] = \
                         self.domain + ':' + child_label.title()
                 operations.append(operation)
 

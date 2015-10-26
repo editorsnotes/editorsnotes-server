@@ -7,27 +7,33 @@ from .views import ClearContentTypesTransactionTestCase
 
 
 NOTE_CREATE_OPERATION = {
-    'type': 'hydra:CreateResourceOperation',
-    'hydra:title': 'Create a new note',
+    '@type': 'hydra:CreateResourceOperation',
+    'label': 'Create a new note',
+    'description': None,
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Note',
-    'hydra:returns': 'https://workingnotes.org/v#Note'
+    'hydra:returns': 'https://workingnotes.org/v#Note',
+    'hydra:statusCode': []
 }
 
 DOCUMENT_CREATE_OPERATION = {
-    'type': 'hydra:CreateResourceOperation',
-    'hydra:title': 'Create a new document',
+    '@type': 'hydra:CreateResourceOperation',
+    'label': 'Create a new document',
+    'description': None,
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Document',
-    'hydra:returns': 'https://workingnotes.org/v#Document'
+    'hydra:returns': 'https://workingnotes.org/v#Document',
+    'hydra:statusCode': []
 }
 
 TOPIC_CREATE_OPERATION = {
-    'type': 'hydra:CreateResourceOperation',
-    'hydra:title': 'Create a new topic',
+    '@type': 'hydra:CreateResourceOperation',
+    'label': 'Create a new topic',
+    'description': None,
     'hydra:method': 'POST',
     'hydra:expects': 'https://workingnotes.org/v#Topic',
-    'hydra:returns': 'https://workingnotes.org/v#Topic'
+    'hydra:returns': 'https://workingnotes.org/v#Topic',
+    'hydra:statusCode': []
 }
 
 
@@ -72,23 +78,23 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(response.data.get('links'), [
             {
-                'url': dummy_req.build_absolute_uri(
+                '@id': dummy_req.build_absolute_uri(
                     '/projects/emma/doc/#notes'),
-                'type': 'hydra:Link',
+                '@type': 'hydra:Link',
                 'hydra:title': 'Note list',
                 'hydra:supportedOperation': [NOTE_CREATE_OPERATION]
             },
             {
-                'url': dummy_req.build_absolute_uri(
+                '@id': dummy_req.build_absolute_uri(
                     '/projects/emma/doc/#topics'),
-                'type': 'hydra:Link',
+                '@type': 'hydra:Link',
                 'hydra:title': 'Topic list',
                 'hydra:supportedOperation': [TOPIC_CREATE_OPERATION]
             },
             {
-                'url': dummy_req.build_absolute_uri(
+                '@id': dummy_req.build_absolute_uri(
                     '/projects/emma/doc/#documents'),
-                'type': 'hydra:Link',
+                '@type': 'hydra:Link',
                 'hydra:title': 'Document list',
                 'hydra:supportedOperation': [DOCUMENT_CREATE_OPERATION]
             }

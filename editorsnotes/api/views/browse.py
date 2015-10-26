@@ -32,8 +32,8 @@ def root(request, format=None):
                 instance=project, context={'request': request})
             serializer.data
             serializer._data['@context'] = {
-                link['url'].split('#')[1]: {
-                    '@id': link['url'],
+                link['@id'].split('#')[1]: {
+                    '@id': link['@id'],
                     '@type': '@id',
                 }
                 for link in links

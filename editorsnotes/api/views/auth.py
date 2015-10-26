@@ -40,8 +40,8 @@ class ProjectDetail(RetrieveAPIView):
         links = project_links_for_request_user(project, request)
         context = {
             # FIXME: OrderedDict
-            link['url'].split('#')[1]: {
-                '@id': link['url'],
+            link['@id'].split('#')[1]: {
+                '@id': link['@id'],
                 '@type': '@id',
             }
             for link in links

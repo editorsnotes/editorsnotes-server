@@ -120,12 +120,12 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
                 {
                     '@id': '_:project_notes_retrieve',
                     '@type': 'hydra:Operation',
-                    'hydra:method': 'GET',
                     'label': 'Retrieve all notes for this project.',
                     'description': None,
-                    'expects': None,
-                    'returns': 'hydra:Collection',
-                    'statusCodes': []
+                    'hydra:method': 'GET',
+                    'hydra:expects': None,
+                    'hydra:returns': 'hydra:Collection',
+                    'hydra:statusCode': []
                 }
             ]
         })
@@ -165,10 +165,10 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
         self.assertDictEqual(dict(create_operation), {
             '@id': '_:project_note_create',
             '@type': 'hydra:CreateResourceOperation',
-            'hydra:method': 'POST',
             'label': 'Create a note for this project.',
             'description': None,
-            'expects': 'emma:Note',
-            'returns': 'emma:Note',
-            'statusCodes': []
+            'hydra:method': 'POST',
+            'hydra:expects': 'emma:Note',
+            'hydra:returns': 'emma:Note',
+            'hydra:statusCode': []
         })
