@@ -9,20 +9,17 @@ from editorsnotes.auth.models import Project, LogActivity
 from editorsnotes.main.models.base import Administered
 from editorsnotes.search import items_index
 
-from ..hydra import operation_from_perm
+from ..serializers.hydra import hydra_class_for_type
 from ..pagination import ESLimitOffsetPagination
 
 
-class HydraProjectPermissionsMixin(object):
-    hydra_project_perms = []
-
+class EmbeddedHydraClassMixin(object):
     # Putting this in finalize_response instead of get_serializer because we
     # don't call that method when using Elasticsearch.
     def finalize_response(self, request, response, *args, **kwargs):
-        response = super(HydraProjectPermissionsMixin, self)\
+        response = super(EmbeddedHydraClassMixin, self)\
             .finalize_response(request, response, *args, **kwargs)
 
-        user = self.request.user
         project = self.request.project
 
         # Don't add anything if there's no content (i.e. in a successful
@@ -30,12 +27,21 @@ class HydraProjectPermissionsMixin(object):
         if not response.data:
             return response
 
-        if user.is_authenticated():
-            response.data['hydra:operation'] = [
-                operation_from_perm(user, project, perm)
-                for perm in self.hydra_project_perms
-                if user.has_project_perm(project, perm)
-            ]
+        hydra_class = hydra_class_for_type(
+            self.queryset.model.__name__, project, request)
+
+        new_data = OrderedDict()
+
+        for key, val in response.data.items():
+            new_data[key] = val
+            if key == 'type':
+                new_data['hydra_type'] = hydra_class['@id']
+
+        if 'embedded' not in response.data:
+            new_data['embedded'] = OrderedDict()
+
+        new_data['embedded'][hydra_class['@id']] = hydra_class
+        response.data = new_data
 
         return response
 

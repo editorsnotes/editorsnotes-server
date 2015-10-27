@@ -1,19 +1,23 @@
+from collections import OrderedDict
+
 from django.shortcuts import get_object_or_404
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from editorsnotes.auth.models import Project, User
+from editorsnotes.auth.models import Project, User, LogActivity
 from editorsnotes.search import activity_index
 
 from ..filters import ActivityFilterBackend
-from ..hydra import project_links_for_request_user
 from ..serializers import ProjectSerializer, UserSerializer
+from ..serializers.hydra import (ProjectHydraClassesSerializer,
+                                 link_properties_for_project)
 
-from .mixins import ElasticSearchListMixin, EmbeddedMarkupReferencesMixin
+from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+                     EmbeddedHydraClassMixin)
 
-__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail', 'UserDetail',
-           'SelfUserDetail']
+__all__ = ['ActivityView', 'ProjectList', 'ProjectDetail',
+           'ProjectAPIDocumentation', 'UserDetail', 'SelfUserDetail']
 
 
 class ProjectList(ListAPIView):
@@ -21,13 +25,14 @@ class ProjectList(ListAPIView):
     serializer_class = ProjectSerializer
 
 
-class ProjectDetail(RetrieveAPIView):
+class ProjectDetail(EmbeddedHydraClassMixin, RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
     def get_object(self):
         qs = self.get_queryset()
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
+        self.request.project = project
         return project
 
     def finalize_response(self, request, response, *args, **kwargs):
@@ -36,20 +41,34 @@ class ProjectDetail(RetrieveAPIView):
         response = super(ProjectDetail, self)\
             .finalize_response(request, response, *args, **kwargs)
 
-        links = project_links_for_request_user(project, request)
+        links = link_properties_for_project(project, request)
         context = {
             # FIXME: OrderedDict
-            link['url'].split('#')[1]: {
-                '@id': link['url'],
+            link['label']: {
+                '@id': link['@id'],
                 '@type': '@id',
             }
             for link in links
         }
 
-        response.data['links'] = links
+        embedded = response.data.get('embedded', OrderedDict())
+        for link in links:
+            embedded[link['@id']] = link
+
         response.data['@context'] = context
+        response.data['embedded'] = embedded
 
         return response
+
+
+class ProjectAPIDocumentation(RetrieveAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectHydraClassesSerializer
+
+    def get_object(self):
+        qs = self.get_queryset()
+        project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
+        return project
 
 
 class UserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
@@ -86,6 +105,7 @@ class ActivityView(ElasticSearchListMixin, ListAPIView):
     """
 
     es_filter_backends = (ActivityFilterBackend,)
+    queryset = LogActivity.objects.all()
 
     def get_object(self):
         username = self.kwargs.get('username', None)

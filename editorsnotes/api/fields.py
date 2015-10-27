@@ -45,18 +45,6 @@ class UnqualifiedURLField(ReadOnlyField):
         )
 
 
-class IdentityURLField(ReadOnlyField):
-    """
-    URL field that will use an object's get_absolute_url function to create a
-    fully qualified URL.
-    """
-    def get_attribute(self, obj):
-        return obj.get_absolute_url()
-
-    def to_representation(self, value):
-        return self.context['request'].build_absolute_uri(value)
-
-
 class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     """
     HyperlinkedRelatedField that allows custom URL lookup definitions
@@ -69,18 +57,9 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     read_only = True
 
     def __init__(self, *args, **kwargs):
-        self.lookup_kwarg_attrs = kwargs.pop('lookup_kwarg_attrs', {
-            'project_slug': 'project.slug',
-            'pk': 'id'
-        })
-
-        # View name will be figured out later, once the instance is known.
-        self.view_name = kwargs.pop('view_name', None)
+        self.lookup_kwarg_attrs = kwargs.pop('lookup_kwarg_attrs')
+        self.view_name = kwargs.pop('view_name')
         super(HyperlinkedRelatedField, self).__init__(*args, **kwargs)
-
-    def get_default_view_name(self, obj):
-        class_name = obj.__class__._meta.verbose_name_plural[:]
-        return 'api:{}-detail'.format(class_name)
 
     def get_lookup_kwargs(self, obj):
         return dict(
@@ -91,10 +70,26 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
         return instance
 
     def get_url(self, obj, view_name, request, format):
-        view_name = self.view_name or self.get_default_view_name(obj)
         url_kwargs = self.get_lookup_kwargs(obj)
-        return reverse(view_name, kwargs=url_kwargs,
+        return reverse(self.view_name, kwargs=url_kwargs,
                        request=request, format=format)
+
+
+class IdentityURLField(CustomLookupHyperlinkedField):
+    """
+    CustomLookupHyperlinkedField meant to be used as an identity field.
+
+    Provides a default that will be appropriate for notes, topics, and
+    documents.
+    """
+    def __init__(self, *args, **kwargs):
+        if 'lookup_kwarg_attrs' not in kwargs:
+            kwargs['lookup_kwarg_attrs'] = {
+                'project_slug': 'project.slug',
+                'pk': 'id'
+            }
+        kwargs['read_only'] = True
+        super(IdentityURLField, self).__init__(*args, **kwargs)
 
 
 class UpdatersField(ReadOnlyField):

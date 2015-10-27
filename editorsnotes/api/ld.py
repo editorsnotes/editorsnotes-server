@@ -30,6 +30,7 @@ CONTEXT.update(OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
     ))),
+    ('hydra_type', '@type'),
     ('last_updated', OrderedDict((
         ('@id', 'schema:dateModified'),
         ('@type', 'xsd:dateTimeStamp'),

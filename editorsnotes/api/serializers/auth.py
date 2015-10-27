@@ -11,30 +11,37 @@ __all__ = ['ProjectSerializer', 'UserSerializer']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    url = IdentityURLField()
+    url = IdentityURLField(
+        view_name='api:projects-detail',
+        lookup_kwarg_attrs={'project_slug': 'slug'}
+    )
 
     type = serializers.SerializerMethodField()
 
     notes = CustomLookupHyperlinkedField(
         view_name='api:notes-list',
+        help_text='Notes for this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )
 
     topics = CustomLookupHyperlinkedField(
         view_name='api:topics-list',
+        help_text='Topics for this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )
 
     documents = CustomLookupHyperlinkedField(
         view_name='api:documents-list',
+        help_text='Documents for this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )
 
     activity = CustomLookupHyperlinkedField(
         view_name='api:projects-activity',
+        help_text='Recent activity within this project.',
         lookup_kwarg_attrs={'project_slug': 'slug'},
         read_only=True
     )
@@ -64,7 +71,10 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
-    url = IdentityURLField()
+    url = IdentityURLField(
+        view_name='api:users-detail',
+        lookup_kwarg_attrs={'username': 'username'}
+    )
 
     type = serializers.SerializerMethodField()
 

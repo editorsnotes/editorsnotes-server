@@ -25,3 +25,11 @@ class CustomTestSuiteRunner(NoseTestSuiteRunner):
 
         for index in ES_INDICES:
             index.delete()
+
+class NoDBTestSuiteRunner(NoseTestSuiteRunner):
+    "Test runner without database creation."
+    def setup_databases(self, **kwargs):
+        pass
+
+    def teardown_databases(self, old_config, **kwargs):
+        pass

@@ -25,16 +25,52 @@ class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
     so it may have hyperlinks and all the other features that XHTML
     enables.
     """
-    title = models.CharField(max_length='80')
+    title = models.CharField(
+        max_length='80',
+        help_text=(
+            'The title of the note.'
+        )
+    )
 
-    project = models.ForeignKey('Project', related_name='notes')
-    assigned_users = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                            blank=True)
-    status = models.CharField(choices=NOTE_STATUS_CHOICES, max_length=1,
-                              default='1')
-    is_private = models.BooleanField(default=False)
-    license = models.ForeignKey(License, blank=True, null=True)
-    related_topics = GenericRelation('TopicAssignment')
+    project = models.ForeignKey(
+        'Project',
+        related_name='notes',
+        help_text=(
+            'The project to which this note belongs.'
+        )
+    )
+    assigned_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True,
+        help_text=(
+            'Users who have been assigned to this note.'
+        )
+    )
+    status = models.CharField(
+        choices=NOTE_STATUS_CHOICES, max_length=1, default='1',
+        help_text=(
+            'The status of the note. "Open" for outstanding, "Closed" for '
+            'finished, or "Hibernating" for somewhere in between.'
+        )
+    )
+    is_private = models.BooleanField(
+        default=False,
+        help_text=(
+            'If true, will only be be viewable to users who belong to the '
+            'note\'s project.'
+        )
+    )
+    license = models.ForeignKey(
+        License, blank=True, null=True,
+        help_text=(
+            'The license under which this note is available.'
+        )
+    )
+    related_topics = GenericRelation(
+        'TopicAssignment',
+        help_text=(
+            'Topics under which this note is indexed.'
+        )
+    )
 
     class Meta:
         app_label = 'main'
