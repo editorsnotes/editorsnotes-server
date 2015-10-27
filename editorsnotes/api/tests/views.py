@@ -21,6 +21,7 @@ def flush_es_indexes():
             index.delete()
         index.initialize()
 
+
 def delete_es_indexes():
     for index in [activity_index, items_index]:
         if index.exists():
@@ -224,8 +225,6 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
 
-        self.assertEqual(len(response.data['hydra:operation']), 1)
-
         topic_data = response.data['results'][0]
 
         self.assertEqual(topic_obj.id, topic_data['id'])
@@ -265,7 +264,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        updated_topic_obj = main_models.Topic.objects.get(id=response.data['id'])
+        updated_topic_obj = main_models.Topic.objects.get(
+            id=response.data['id'])
         self.assertEqual(topic_obj, updated_topic_obj)
         self.assertEqual(data['markup'], response.data['markup'])
         self.assertEqual('<div><p>Still writing tests.</p></div>',
@@ -481,7 +481,6 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                          etree.tostring(document_obj.description))
 
         original_response_content = response.data
-        member_operation = original_response_content.pop('hydra:operation')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -489,16 +488,10 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
-        nonmember_operation = response.data.pop('hydra:operation')
 
         self.assertEqual(
             response.data,
             original_response_content
-        )
-
-        self.assertNotEqual(
-            member_operation,
-            nonmember_operation
         )
 
         self.client.logout()
@@ -660,7 +653,8 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['status'], data['status'])
         self.assertEqual(response.data['markup'], data['markup'])
         self.assertEqual(response.data['markup_html'], (
-            u'<div><p>We need to figure out if it\'s worth it to write tests.</p></div>'
+            u'<div><p>We need to figure out if it\'s worth it to '
+            'write tests.</p></div>'
         ))
         self.assertEqual(response.data['title'], new_note_obj.title)
 
@@ -727,7 +721,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['results'][0]['title'], note_obj.title)
 
         original_response_content = response.data
-        member_operation = original_response_content.pop('hydra:operation')
 
         self.client.logout()
         self.client.login(username='esther', password='esther')
@@ -736,7 +729,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
                                    HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, 200)
 
-        nonmember_operation = response.data.pop('hydra:operation')
         self.assertEqual(response.data, original_response_content)
 
         self.client.logout()
@@ -746,7 +738,6 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(response.data, original_response_content)
-        self.assertNotEqual(member_operation, nonmember_operation)
 
     def test_note_api_update(self):
         "Updating a note in your own project is ok"
