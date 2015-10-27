@@ -6,10 +6,9 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from editorsnotes.api.serializers import ProjectSerializer
+from editorsnotes.api.serializers.hydra import link_properties_for_project
 from editorsnotes.main.models import Note, Topic, Document
 from editorsnotes.search import items as items_search
-
-from ..hydra import project_links_for_request_user
 
 
 __all__ = ['root', 'browse_items']
@@ -19,34 +18,36 @@ __all__ = ['root', 'browse_items']
 def root(request, format=None):
     data = OrderedDict()
 
-    if request.user.is_authenticated():
-        data['affiliated_projects'] = {}
-
-        projects = request.user.get_affiliated_projects()
-        all_project_links = []
-
-        for project in projects:
-            links = project_links_for_request_user(project, request)
-
-            serializer = ProjectSerializer(
-                instance=project, context={'request': request})
-            serializer.data
-            serializer._data['@context'] = {
-                link['@id'].split('#')[1]: {
-                    '@id': link['@id'],
-                    '@type': '@id',
-                }
-                for link in links
-            }
-
-            url = request.build_absolute_uri(project.get_absolute_url())
-            data['affiliated_projects'][url] = serializer.data
-
-            all_project_links += links
-        data['links'] = all_project_links
-
     data['projects'] = reverse('api:projects-list', request=request)
     data['search'] = reverse('api:search', request=request)
+
+    if request.user.is_authenticated():
+        data['affiliated_projects'] = OrderedDict()
+        data['embedded'] = OrderedDict()
+
+        projects = request.user.get_affiliated_projects()
+
+        for project in projects:
+            project_serializer = ProjectSerializer(project, context={
+                'request': request
+            })
+
+            url = request.build_absolute_uri(project.get_absolute_url())
+
+            project_data = OrderedDict()
+            project_data['@context'] = {
+                'notes': url + 'vocab#Project/notes',
+                'topics': url + 'vocab#Project/topics',
+                'documents': url + 'vocab#Project/documents',
+            }
+
+            project_data.update(project_serializer.data)
+
+            data['affiliated_projects'][url] = project_data
+            link_properties = link_properties_for_project(project, request)
+
+            for link in link_properties:
+                data['embedded'][link['@id']] = link
 
     return Response(data)
 

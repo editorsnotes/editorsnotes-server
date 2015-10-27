@@ -55,31 +55,3 @@ def operation_from_perm(user, project, perm_label):
         ('hydra:returns', ROOT_NAMESPACE + model_opts.object_name),
         ('hydra:possibleStatus', [])
     ))
-
-
-def project_links_for_request_user(project, request):
-    user = request.user
-
-    add_perms = user._get_project_role(project)\
-        .get_permissions()\
-        .filter(codename__in=('add_note', 'add_topic', 'add_document'))
-
-    available_add_perms_by_model = {
-        perm.codename.split('_')[1]: ['main.' + perm.codename]
-        for perm in add_perms
-    }
-
-    project_url = request.build_absolute_uri(project.get_absolute_url())
-
-    return [
-        OrderedDict((
-            ('@id', '{}doc/#{}s'.format(project_url, model)),
-            ('@type', 'hydra:Link'),
-            ('hydra:title', '{} list'.format(model.title())),
-            ('hydra:supportedOperation', [
-                operation_from_perm(user, project, codename)
-                for codename in available_add_perms_by_model.get(model, [])
-            ])
-        ))
-        for model in ('note', 'topic', 'document')
-    ]

@@ -14,6 +14,25 @@ from ..ld import CONTEXT
 from ..permissions import ProjectSpecificPermissions
 
 
+def link_properties_for_project(project, request):
+    project_hydra_class, = filter(
+        lambda hydra_class: hydra_class['label'] == 'Project',
+        ProjectHydraClassesSerializer(
+            project, context={'request': request}
+        ).data['hydra:supportedClass'])
+
+    supported_properties = [
+        prop['property'] for prop in
+        project_hydra_class['hydra:supportedProperty']
+    ]
+
+    return [
+        prop for prop in supported_properties
+        if isinstance(prop, dict)
+        and prop.get('label') in ('notes', 'topics', 'documents')
+    ]
+
+
 def url_pattern_for_name(patterns, view_name):
     found = None
 
@@ -46,6 +65,7 @@ def get_view_permission(view_obj, method):
     assert len(view_permissions) == 1, PERM_ERROR
 
     return view_permissions[0]
+
 
 SUPPORTED_HYDRA_METHODS = {
     'GET': 'retrieve',

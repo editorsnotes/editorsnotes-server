@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.shortcuts import get_object_or_404
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -7,9 +9,9 @@ from editorsnotes.auth.models import Project, User, LogActivity
 from editorsnotes.search import activity_index
 
 from ..filters import ActivityFilterBackend
-from ..hydra import project_links_for_request_user
 from ..serializers import ProjectSerializer, UserSerializer
-from ..serializers.hydra import ProjectHydraClassesSerializer
+from ..serializers.hydra import (ProjectHydraClassesSerializer,
+                                 link_properties_for_project)
 
 from .mixins import ElasticSearchListMixin, EmbeddedMarkupReferencesMixin
 
@@ -37,18 +39,22 @@ class ProjectDetail(RetrieveAPIView):
         response = super(ProjectDetail, self)\
             .finalize_response(request, response, *args, **kwargs)
 
-        links = project_links_for_request_user(project, request)
+        links = link_properties_for_project(project, request)
         context = {
             # FIXME: OrderedDict
-            link['@id'].split('#')[1]: {
+            link['label']: {
                 '@id': link['@id'],
                 '@type': '@id',
             }
             for link in links
         }
 
-        response.data['links'] = links
+        embedded = OrderedDict()
+        for link in links:
+            embedded[link['@id']] = link
+
         response.data['@context'] = context
+        response.data['embedded'] = embedded
 
         return response
 
