@@ -317,48 +317,46 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
 
         return operations
 
+SUPPORTED_CLASS_SERIALIZERS = (
+    en_serializers.ProjectSerializer,
+    en_serializers.NoteSerializer,
+    en_serializers.TopicSerializer,
+    en_serializers.DocumentSerializer,
+    # en_serializers.UserSerializer,
+    # en_serializers.ActivitySerializer,
+    # en_serializers.ScanSerializer,
+    # en_serializers.TranscriptSerializer,
+)
 
-class ProjectHydraClassesSerializer(serializers.ModelSerializer):
+
+class ProjectHydraClassesSerializer(ReplaceLDFields,
+                                    serializers.ModelSerializer):
     "Serializer to generate Hydra documentation for a project."
-    project = HydraProjectClassSerializer(
-        source='*',
-        class_serializer=en_serializers.ProjectSerializer
-    )
-
-    # user = HydraProjectClassSerializer(
-    #     source='*',
-    #     class_serializer=en_serializers.NoteSerializer
-    # )
-
-    # activity = HydraClassSerializer(
-    #     source='*',
-    #     class_serializer=en_serializers.ActivitySerializer
-    # )
-
-    note = HydraProjectClassSerializer(
-        source='*',
-        class_serializer=en_serializers.NoteSerializer
-    )
-
-    topic = HydraProjectClassSerializer(
-        source='*',
-        class_serializer=en_serializers.TopicSerializer
-    )
-
-    document = HydraProjectClassSerializer(
-        source='*',
-        class_serializer=en_serializers.DocumentSerializer
-    )
-
-    # scan = HydraProjectClassSerializer(
-    #     source='*',
-    #     class_serializer=en_serializers.ScanSerializer
-    # )
-
-    # transcript = HydraProjectClassSerializer(
-    #     source='*',
-    #     class_serializer=en_serializers.TranscriptSerializer
-    # )
+    jsonld_id = serializers.SerializerMethodField()
+    jsonld_type = serializers.SerializerMethodField()
+    hydra_supportedClass = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
+        fields = (
+            'jsonld_id',
+            'jsonld_type',
+            'hydra_supportedClass',
+        )
+
+    def get_jsonld_id(self, obj):
+        return reverse('api:projects-api-documentation', [obj.slug],
+                       request=self.context['request'])
+
+    def get_jsonld_type(self, obj):
+        return 'hydra:ApiDocumentation'
+
+    def get_hydra_supportedClass(self, obj):
+        return [
+            HydraProjectClassSerializer(
+                obj, source='*', class_serializer=Serializer,
+                vocab_base='{}#'.format(self.get_jsonld_id(obj)),
+                context=self.context
+            ).data
+            for Serializer in SUPPORTED_CLASS_SERIALIZERS
+        ]
