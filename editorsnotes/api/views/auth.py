@@ -13,7 +13,8 @@ from ..serializers import ProjectSerializer, UserSerializer
 from ..serializers.hydra import (ProjectHydraClassesSerializer,
                                  link_properties_for_project)
 
-from .mixins import ElasticSearchListMixin, EmbeddedMarkupReferencesMixin
+from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+                     EmbeddedHydraClassMixin)
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail',
            'ProjectAPIDocumentation', 'UserDetail', 'SelfUserDetail']
@@ -24,13 +25,14 @@ class ProjectList(ListAPIView):
     serializer_class = ProjectSerializer
 
 
-class ProjectDetail(RetrieveAPIView):
+class ProjectDetail(EmbeddedHydraClassMixin, RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
     def get_object(self):
         qs = self.get_queryset()
         project = get_object_or_404(qs, slug=self.kwargs['project_slug'])
+        self.request.project = project
         return project
 
     def finalize_response(self, request, response, *args, **kwargs):
@@ -49,7 +51,7 @@ class ProjectDetail(RetrieveAPIView):
             for link in links
         }
 
-        embedded = OrderedDict()
+        embedded = response.data.get('embedded', OrderedDict())
         for link in links:
             embedded[link['@id']] = link
 

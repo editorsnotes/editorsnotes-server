@@ -9,7 +9,7 @@ from ..serializers.notes import NoteSerializer
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
 from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
-                     HydraProjectPermissionsMixin)
+                     EmbeddedHydraClassMixin)
 
 __all__ = ['NoteList', 'NoteDetail', 'AllProjectNoteList',
            'NoteConfirmDelete']
@@ -34,8 +34,7 @@ class NotePermissions(ProjectSpecificPermissions):
         return False
 
 
-class NoteList(ElasticSearchListMixin, HydraProjectPermissionsMixin,
-               BaseListAPIView):
+class NoteList(ElasticSearchListMixin, BaseListAPIView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     es_filter_backends = (
@@ -43,15 +42,13 @@ class NoteList(ElasticSearchListMixin, HydraProjectPermissionsMixin,
         es_filters.QFilterBackend,
         es_filters.UpdaterFilterBackend,
     )
-    hydra_project_perms = ('main.add_note',)
 
 
-class NoteDetail(EmbeddedMarkupReferencesMixin, HydraProjectPermissionsMixin,
+class NoteDetail(EmbeddedMarkupReferencesMixin, EmbeddedHydraClassMixin,
                  BaseDetailView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permission_classes = (NotePermissions,)
-    hydra_project_perms = ('main.change_note', 'main.delete_note')
 
 
 class AllProjectNoteList(ElasticSearchListMixin, ListAPIView):

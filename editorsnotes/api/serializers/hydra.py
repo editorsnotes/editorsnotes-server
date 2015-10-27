@@ -14,12 +14,22 @@ from ..ld import CONTEXT
 from ..permissions import ProjectSpecificPermissions
 
 
-def link_properties_for_project(project, request):
-    project_hydra_class, = filter(
-        lambda hydra_class: hydra_class['label'] == 'Project',
+def hydra_class_for_type(item_type, project, request):
+    project_hydra_class = filter(
+        lambda hydra_class: hydra_class['label'] == item_type,
         ProjectHydraClassesSerializer(
             project, context={'request': request}
         ).data['hydra:supportedClass'])
+
+    if not len(project_hydra_class):
+        raise ValueError('No project hydra class exists for '
+                         'item type {}'.format(item_type))
+
+    return project_hydra_class[0]
+
+
+def link_properties_for_project(project, request):
+    project_hydra_class = hydra_class_for_type('Project', project, request)
 
     supported_properties = [
         prop['property'] for prop in
