@@ -9,7 +9,7 @@ from ..serializers.notes import NoteSerializer
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
 from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
-                     EmbeddedHydraClassMixin)
+                     HydraAffordancesMixin)
 
 __all__ = ['NoteList', 'NoteDetail', 'AllProjectNoteList',
            'NoteConfirmDelete']
@@ -44,7 +44,7 @@ class NoteList(ElasticSearchListMixin, BaseListAPIView):
     )
 
 
-class NoteDetail(EmbeddedMarkupReferencesMixin, EmbeddedHydraClassMixin,
+class NoteDetail(EmbeddedMarkupReferencesMixin, HydraAffordancesMixin,
                  BaseDetailView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer

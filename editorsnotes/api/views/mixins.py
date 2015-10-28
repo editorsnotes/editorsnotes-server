@@ -13,11 +13,18 @@ from ..serializers.hydra import hydra_class_for_type
 from ..pagination import ESLimitOffsetPagination
 
 
-class EmbeddedHydraClassMixin(object):
-    # Putting this in finalize_response instead of get_serializer because we
-    # don't call that method when using Elasticsearch.
+class HydraAffordancesMixin(object):
+    """
+    Adds Hydra affordances to the representation.
+
+    Operations are determined based on the hydra:supportedOperation values
+    present on the View model's corresponding Hydra class for the given user.
+
+    For now, this is only meant to be used on views that represent a single
+    item (i.e., they are instances of rest_framework.generics.RetrieveAPIView)
+    """
     def finalize_response(self, request, response, *args, **kwargs):
-        response = super(EmbeddedHydraClassMixin, self)\
+        response = super(HydraAffordancesMixin, self)\
             .finalize_response(request, response, *args, **kwargs)
 
         project = self.request.project
@@ -29,19 +36,8 @@ class EmbeddedHydraClassMixin(object):
 
         hydra_class = hydra_class_for_type(
             self.queryset.model.__name__, project, request)
-
-        new_data = OrderedDict()
-
-        for key, val in response.data.items():
-            new_data[key] = val
-            if key == 'type':
-                new_data['hydra_type'] = hydra_class['@id']
-
-        if 'embedded' not in response.data:
-            new_data['embedded'] = OrderedDict()
-
-        new_data['embedded'][hydra_class['@id']] = hydra_class
-        response.data = new_data
+        operations = hydra_class['hydra:supportedOperation']
+        response.data['hydra:operation'] = operations
 
         return response
 
