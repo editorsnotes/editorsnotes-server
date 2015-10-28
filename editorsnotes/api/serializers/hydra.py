@@ -308,7 +308,7 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
         operations = []
 
         parent_label = self.parent_model._meta.verbose_name
-        child_label = self.view_class.queryset.model._meta.verbose_name
+        child_label = self.model._meta.verbose_name
 
         view_obj = self.view_class()
         request = self.context['request']

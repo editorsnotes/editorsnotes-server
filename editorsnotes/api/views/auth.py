@@ -14,7 +14,7 @@ from ..serializers.hydra import (ProjectHydraClassesSerializer,
                                  link_properties_for_project)
 
 from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
-                     EmbeddedHydraClassMixin)
+                     HydraAffordancesMixin)
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail',
            'ProjectAPIDocumentation', 'UserDetail', 'SelfUserDetail']
@@ -25,7 +25,7 @@ class ProjectList(ListAPIView):
     serializer_class = ProjectSerializer
 
 
-class ProjectDetail(EmbeddedHydraClassMixin, RetrieveAPIView):
+class ProjectDetail(HydraAffordancesMixin, RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
