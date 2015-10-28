@@ -133,5 +133,6 @@ class DocumentTypeConfig(object):
             if not chunk:
                 break
             data = [self.data_from_object(obj) for obj in chunk]
-            self.es.bulk_index(self.index_name, self.type_label, data)
+            self.es.bulk_index(self.index_name, self.type_label, data,
+                               id_field='url')
             i += chunk_size

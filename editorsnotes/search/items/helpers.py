@@ -40,9 +40,9 @@ def get_referencing_items(item_url):
 
     query = index.make_search()\
         .filter(query_filter)\
-        .fields(['display_url'])
+        .fields(['url'])
 
-    return [(result.display_url[0]) for result in query.execute().hits]
+    return [(result.url[0]) for result in query.execute().hits]
 
 
 def get_data_for_urls(item_urls):
