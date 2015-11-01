@@ -147,8 +147,8 @@ class MarkupUtilsTestCase(TestCase):
                                     self.project)
         self.assertEqual(etree.tostring(html), (
             u'<div><p>I am citing <cite>('
-            '<a rel="http://editorsnotes.org/v#document" '
-            'href="/projects/emma/documents/{}/">'
+            '<a href="/projects/emma/documents/{}/" '
+            'class="ENInlineReference ENInlineReference-document">'
             'Shaw 2010'
             '</a>)</cite></p></div>'.format(document.id)
         ))

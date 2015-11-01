@@ -18,23 +18,23 @@ def models_by_id(Model, ids):
     return Model.objects.filter(id__in=ids)
 
 
-def rel_els_from_tree(item_type, tree):
-    return tree.xpath('//*[@rel="{rel_base}{item_type}"]'.format(
-        rel_base='http://editorsnotes.org/v#',
-        item_type=item_type
-    ))
+def referenced_els_from_tree(item_type, tree):
+    reference_classname = 'ENInlineReference-' + item_type
+    return tree.xpath('//*[contains(@class, "{}")]'
+                      .format(reference_classname))
 
 
-def kwargs_from_rel_els(rel_els):
+def kwargs_from_referenced_els(referenced_els):
     "Resolve the URLs of embedded items, and return their url config kwargs"
-    urls = {el.attrib['href'] for el in rel_els}
+    urls = {el.attrib['href'] for el in referenced_els}
     return [resolve(url).kwargs for url in urls]
 
 
 def get_embedded_item_urls(tree):
     return {
         item_type: [
-            el.attrib['href'] for el in rel_els_from_tree(item_type, tree)
+            el.attrib['href'] for el in
+            referenced_els_from_tree(item_type, tree)
         ]
         for item_type in ('note', 'topic', 'document')
     }
