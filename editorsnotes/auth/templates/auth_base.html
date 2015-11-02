@@ -3,17 +3,19 @@
 <!doctype html>
 <html>
   <head>
-    <link rel="stylesheet" href="{% static "admin_compiled.css" %}">
+    <link rel="stylesheet" href="{% static "style.css" %}">
   </head>
   <body>
-    <nav class="bg-darken-1 border-bottom px3 py2">
-      <div class="container flex flex-center flex-justify">
-        <div class="h3"><a href="/">Editors' Notes</a></div>
-        {% if request.user and request.user.is_authenticated %}
-          <div>Signed in as {{ request.user }} (<a href="{% url 'auth:signout' %}">Sign out</a>)</div>
-        {% else %}
-          <div><a href="{% url 'auth:signin' %}">Sign in</a></div>
-        {% endif %}
+    <nav class="bg-black">
+     <div class="bg-lighten-1 border-bottom px3 py2">
+        <div class="silver container flex flex-center flex-justify">
+          <div class="h3"><a class="silver" href="/">Working Notes</a></div>
+          {% if request.user and request.user.is_authenticated %}
+            <div>Logged in as {{ request.user }} (<a class="silver" href="{% url 'auth:signout' %}">Sign out</a>)</div>
+          {% else %}
+            <div><a class="silver" href="{% url 'auth:signin' %}">Sign in</a></div>
+          {% endif %}
+        </div>
       </div>
     </nav>
     <div class="container px3">
