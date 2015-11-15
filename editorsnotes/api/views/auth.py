@@ -13,7 +13,7 @@ from ..serializers import ProjectSerializer, UserSerializer
 from ..serializers.hydra import (ProjectHydraClassesSerializer,
                                  link_properties_for_project)
 
-from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+from .mixins import (ElasticSearchListMixin, EmbeddedReferencesMixin,
                      HydraAffordancesMixin)
 
 __all__ = ['ActivityView', 'ProjectList', 'ProjectDetail',
@@ -71,13 +71,13 @@ class ProjectAPIDocumentation(RetrieveAPIView):
         return project
 
 
-class UserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
+class UserDetail(EmbeddedReferencesMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
 
 
-class SelfUserDetail(EmbeddedMarkupReferencesMixin, RetrieveAPIView):
+class SelfUserDetail(EmbeddedReferencesMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)

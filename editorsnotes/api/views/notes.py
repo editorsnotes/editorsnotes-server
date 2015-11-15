@@ -8,7 +8,7 @@ from ..permissions import ProjectSpecificPermissions
 from ..serializers.notes import NoteSerializer
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
-from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+from .mixins import (ElasticSearchListMixin, EmbeddedReferencesMixin,
                      HydraAffordancesMixin)
 
 __all__ = ['NoteList', 'NoteDetail', 'AllProjectNoteList',
@@ -44,7 +44,7 @@ class NoteList(ElasticSearchListMixin, BaseListAPIView):
     )
 
 
-class NoteDetail(EmbeddedMarkupReferencesMixin, HydraAffordancesMixin,
+class NoteDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
                  BaseDetailView):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer

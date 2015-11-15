@@ -4,7 +4,7 @@ from .. import filters as es_filters
 from ..serializers.topics import TopicSerializer
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
-from .mixins import (ElasticSearchListMixin, EmbeddedMarkupReferencesMixin,
+from .mixins import (ElasticSearchListMixin, EmbeddedReferencesMixin,
                      HydraAffordancesMixin)
 
 __all__ = ['TopicList', 'TopicDetail', 'TopicConfirmDelete']
@@ -21,7 +21,7 @@ class TopicList(ElasticSearchListMixin, BaseListAPIView):
     hydra_project_perms = ('main.add_topic',)
 
 
-class TopicDetail(EmbeddedMarkupReferencesMixin, HydraAffordancesMixin,
+class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
                   BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer

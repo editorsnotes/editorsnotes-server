@@ -42,10 +42,10 @@ class HydraAffordancesMixin(object):
         return response
 
 
-class EmbeddedMarkupReferencesMixin(object):
+class EmbeddedReferencesMixin(object):
     def get_serializer(self, *args, **kwargs):
         kwargs['include_embeds'] = True
-        return super(EmbeddedMarkupReferencesMixin, self)\
+        return super(EmbeddedReferencesMixin, self)\
             .get_serializer(*args, **kwargs)
 
 

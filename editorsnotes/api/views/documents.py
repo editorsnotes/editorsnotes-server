@@ -8,7 +8,8 @@ from ..serializers import (DocumentSerializer, ScanSerializer,
                            TranscriptSerializer)
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
-from .mixins import ElasticSearchListMixin, HydraAffordancesMixin
+from .mixins import (ElasticSearchListMixin, EmbeddedReferencesMixin,
+                     HydraAffordancesMixin)
 
 __all__ = ['DocumentList', 'DocumentDetail', 'DocumentConfirmDelete',
            'ScanList', 'ScanDetail', 'Transcript']
@@ -25,7 +26,8 @@ class DocumentList(ElasticSearchListMixin, BaseListAPIView):
     hydra_project_perms = ('main.add_document',)
 
 
-class DocumentDetail(HydraAffordancesMixin, BaseDetailView):
+class DocumentDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
+                     BaseDetailView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     hydra_project_perms = ('main.change_document', 'main.delete_document')
