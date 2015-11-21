@@ -17,12 +17,13 @@ def send_activation_email(request, user):
 
         'This email was used to create an account at {site_url}.\n\n'
         'To activate your account, visit the following link:\n\n'
-        '\t{site_url}{activation_url}\n\n'
+        '\t{activation_url}\n\n'
         'If you did not request an account, please ignore this email.'.format(
-            site_url=settings.SITE_URL,
-            activation_url=reverse('auth:activate_account', args=[b64uid, token]),
+            site_url=request.build_absolute_uri('/'),
+            activation_url=request.build_absolute_uri(
+                reverse('auth:activate_account', args=[b64uid, token])
+            ),
             activation_token=token),
-
         settings.SERVER_EMAIL,
         [user.email]
     )
