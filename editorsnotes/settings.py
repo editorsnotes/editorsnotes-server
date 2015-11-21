@@ -33,7 +33,6 @@ SOUTH_TESTS_MIGRATE = False
 # Site settings #
 #################
 
-SITE_ID = 1
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 ROOT_URLCONF = 'editorsnotes.urls'
@@ -106,7 +105,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.staticfiles',
     'reversion',
     'licensing',
