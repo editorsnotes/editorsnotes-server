@@ -31,14 +31,12 @@ ELASTICSEARCH_URLS = 'http://127.0.0.1:9200'
 # The base URL for your site, with protocol, hostname, and port (if not 80 for
 # http or 443 for https). This will be used to construct fully-qualified URLs
 # from hyperlinks in the Elasticsearch index.
-ELASTICSEARCH_SITE = 'http://127.0.0.1:8000'
+SITE_URL = 'http://127.0.0.1:8000'
 
 # The URL where an Editors' Notes Markup Renderer server is running.
 # (https://github.com/editorsnotes/editorsnotes-markup-renderer)
 EDITORSNOTES_MARKUP_RENDERER_URL = 'http://127.0.0.1:9393'
 
-
-SITE_URL = 'http://127.0.0.1'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

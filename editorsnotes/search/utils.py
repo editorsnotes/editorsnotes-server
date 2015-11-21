@@ -22,25 +22,14 @@ def clean_query_string(query):
 
 
 def make_dummy_request():
-    base_url = settings.ELASTICSEARCH_SITE
-    parsed = urlparse(base_url)
-
-    secure = parsed.scheme is 'https'
-    hostname = parsed.hostname
-    port = parsed.port or (443 if secure else 80)
+    parsed = urlparse(settings.SITE_URL)
 
     request = WSGIRequest({
-        'REQUEST_METHOD': 'GET',
         'wsgi.input': '',
-        'SERVER_NAME': hostname,
-        'SERVER_PORT': port
+        'wsgi.url_scheme': parsed.scheme,
+        'REQUEST_METHOD': 'GET',
+        'SERVER_NAME': parsed.hostname,
+        'SERVER_PORT': parsed.port or (443 if parsed.scheme == 'https' else 80)
     })
-
-    if secure:
-        request._get_scheme = lambda: 'https'
-        request._is_secure = lambda: True
-    else:
-        request._get_scheme = lambda: 'http'
-        request._is_secure = lambda: False
 
     return request

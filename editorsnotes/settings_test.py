@@ -3,7 +3,7 @@ import sys
 from settings import *
 
 ELASTICSEARCH_PREFIX = '-test-' + ELASTICSEARCH_PREFIX
-ELASTICSEARCH_SITE = 'http://testserver/'
+SITE_URL = 'http://testserver/'
 
 NO_DB_TEST = (
     len(sys.argv) > 1 and
