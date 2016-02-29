@@ -6,23 +6,6 @@
 <h2>Projects</h2>
 
 <section>
-  <h3>Current projects</h3>
-  {% for project, role in user.get_affiliated_projects_with_roles %}
-    <div>
-      <a href="{% url "auth:project_settings" project.slug %}">
-        {{ project.name }}
-      </a> ({{ role.role }})
-    </div>
-  {% empty %}
-    <p>None</p>
-  {% endfor %}
-</section>
-
-<section>
-  <h3>Project invitations</h3>
-</section>
-
-<section>
   <h3>Create new project</h3>
 
   <form method="POST">
@@ -37,7 +20,7 @@
       </div>
     {% endfor %}
 
-    <input type="submit" class="btn btn-primary" value="Add projet" />
+    <input type="submit" class="btn btn-primary" value="Add project" />
   </form>
 </section>
 {% endblock %}

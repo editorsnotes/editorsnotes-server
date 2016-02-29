@@ -3,7 +3,7 @@
 {% block content %}
 <div class="clearfix">
   <div class="md-col md-col-3">
-    <h2>Settings</h2>
+    <h2>User settings</h2>
     <ul class="list-reset mr3">
       <li class="p1 {% if page == 'profile' %}bg-darken-1{% endif %}">
         <a href="{% url "auth:user_home" %}">Profile</a>
@@ -11,8 +11,22 @@
       <li class="p1 {% if page == 'account' %}bg-darken-1{% endif %}">
         <a href="{% url "auth:user_account_settings" %}">Account</a>
       </li>
-      <li class="p1 {% if page == 'projects' %}bg-darken-1{% endif %}">
-        <a href="{% url "auth:user_project_settings" %}">Projects</a>
+    </ul>
+
+    <h2>Project settings</h2>
+    <ul class="list-reset mr3">
+    {% for project in user.get_affiliated_projects %}
+      <li class="p1 {% if project_page == project.slug %}bg-darken-1{% endif %}">
+        <a href="{% url "auth:project_settings" project.slug %}">
+          {{ project.name }}
+        </a>
+      </li>
+    {% empty %}
+      <li class="p1 muted">No projects</li>
+    {% endfor %}
+      <li class="border mt1 mb1"></li>
+      <li class="p1 {% if page  == 'create_project' %}bg-darken-1{% endif %}">
+        <a href="{% url "auth:user_project_settings" %}">Create project</a>
       </li>
     </ul>
   </div>
