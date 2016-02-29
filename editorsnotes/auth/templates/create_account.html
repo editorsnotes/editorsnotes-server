@@ -8,14 +8,17 @@
 <form method="POST">
   {% csrf_token %}
 
-  {{ form.username.label_tag }}
-  {% include "field_errors.html" with errors=form.username.errors %}
-  {{ form.username|add_class:"field block" }}
-  <p class="muted">{{ form.username.help_text }}</p>
+  <div>
+    {{ form.display_name.label_tag }}
+    {% include "field_errors.html" with errors=form.display_name.errors %}
+    {{ form.display_name|add_class:"field block" }}
+  </div>
 
-  {{ form.email.label_tag }}
-  {% include "field_errors.html" with errors=form.email.errors %}
-  {{ form.email|add_class:"field block" }}
+  <div>
+    {{ form.email.label_tag }}
+    {% include "field_errors.html" with errors=form.email.errors %}
+    {{ form.email|add_class:"field block" }}
+  </div>
 
   {{ form.non_field_errors }}
   <div class="mt3 mb3">

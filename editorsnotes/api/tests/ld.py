@@ -24,7 +24,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.user = User.objects.get(username='barry')
+        self.user = User.objects.get(email='barry@example.com')
         self.project = Project.objects.get(slug='emma')
         self.note = Note.objects.create(
             title='A test note',
@@ -52,7 +52,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
         An authenticated request with sufficient permissions should know about
         "GET", "PUT", and "POST" operations on a project item.
         """
-        self.client.login(username='barry', password='barry')
+        self.client.login(username='barry@example.com', password='barry')
 
         response = self.client.get(
             reverse('api:notes-detail',
@@ -69,7 +69,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
         The project resource for an authenticated user should show links to
         add items to all projects.
         """
-        self.client.login(username='barry', password='barry')
+        self.client.login(username='barry@example.com', password='barry')
         response = self.client.get(
             reverse('api:projects-detail', args=[self.project.slug]),
             HTTP_ACCEPT='application/json')
@@ -115,7 +115,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
         })
 
     def test_authenticated_user_home(self):
-        self.client.login(username='barry', password='barry')
+        self.client.login(username='barry@example.com', password='barry')
         response = self.client.get('/', HTTP_ACCEPT='application/json')
 
         project_url = self.dummy_req.build_absolute_uri(

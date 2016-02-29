@@ -3,11 +3,13 @@
 from collections import Counter
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import (
+    AbstractBaseUser, BaseUserManager, Group, PermissionsMixin)
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.dispatch import receiver
+from django.utils import timezone
 
 import reversion
 from licensing.models import License
@@ -31,37 +33,81 @@ __all__ = [
 ]
 
 
-class User(AbstractUser, URLAccessible):
-    # Has gone through the email verification rigmarole. I'm keeping this
+class UserManager(BaseUserManager):
+    def create_user(self, email, display_name, password=None):
+        if not email:
+            raise ValueError('Users must have an email address')
+
+        user = self.model(
+            email=self.normalize_email(email),
+            display_name=display_name)
+        user.set_password(password)
+        user.save(using=self._db)
+
+        return user
+
+    def create_superuser(self, email, display_name, password):
+        user = self.create_user(email, display_name, password)
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
+
+
+class User(AbstractBaseUser, PermissionsMixin, URLAccessible):
+    objects = UserManager()
+
+    email = models.EmailField(
+        verbose_name='email address',
+        max_length=255,
+        unique=True)
+    display_name = models.CharField(
+        help_text='Display name for a user',
+        max_length=200)
+
+    date_joined = models.DateTimeField(
+        'date joined',
+        default=timezone.now)
+
     # separate from is_active because they are semantically different. Django
     # suggests that is_active should be used as a way to make someone's account
     # "inactive" without deleting it (which would ruin foreign keys, etc.)
-    confirmed = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_confirmed = models.BooleanField(default=False)
+
+    # TODO: should this be EN markup?
     profile = models.CharField(
         help_text='Profile text for a user.',
         max_length=1000,
         blank=True, null=True)
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['display_name']
+
     class Meta:
         app_label = 'main'
-
-    def _get_display_name(self):
-        "Returns the full name if available, or the username if not."
-        display_name = self.username
-        if self.first_name:
-            display_name = self.first_name
-            if self.last_name:
-                display_name = '%s %s' % (self.first_name, self.last_name)
-        return display_name
-    display_name = property(_get_display_name)
 
     @models.permalink
     def get_absolute_url(self):
         return ('api:users-detail', [str(self.username)])
 
+    def __unicode__(self):
+        return self.display_name
+
     def as_text(self):
         return self.display_name
 
+    #####################################################
+    # Properties required for custom Django user models #
+    #####################################################
+    def get_full_name(self):
+        return self.display_name
+
+    def get_short_name(self):
+        return self.display_name
+
+    ###################################
+    # Properties relating to projects #
+    ###################################
     def belongs_to(self, project):
         return project.get_role_for(self) is not None
 

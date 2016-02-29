@@ -6,7 +6,10 @@ from django.test import TestCase
 from ..models import Project, User, ProjectInvitation
 
 def create_user():
-    user = User(username='testuser', is_staff=True, is_superuser=True)
+    user = User(
+        display_name='testuser',
+        email='testuser@example.com',
+        is_superuser=True)
     user.set_password('testuser')
     user.save()
     return user
@@ -45,9 +48,8 @@ class ProjectSpecificPermissionsTestCase(TestCase):
             name='Alexander Berkman Papers Project',
             slug='abpp')
         self.user = User.objects.create(
-            username='jd',
-            first_name='John',
-            last_name='Doe',
+            email='jd@example.com',
+            display_name='John Doe',
             is_superuser=False)
         role = self.project.roles.get_or_create_by_name(
             'Editor', is_super_role=True)
@@ -83,7 +85,9 @@ class ProjectSpecificPermissionsTestCase(TestCase):
     def test_limited_role(self):
         # Make a role with only one permission & make sure users of that role
         # can only do that.
-        researcher = User.objects.create(username='a_researcher')
+        researcher = User.objects.create(
+            email='a_researcher@example.com',
+            display_name='a_researcher')
         new_role = self.project.roles\
             .get_or_create_by_name('Researcher')
         note_perm = Permission.objects\
