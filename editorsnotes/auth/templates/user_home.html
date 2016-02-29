@@ -3,9 +3,9 @@
 {% load widget_tweaks %}
 
 {% block setting_content %}
-<h2>Profile</h2>
+<h2>Account settings</h2>
 
-<p>{{ request.user }}</p>
+<p>{{ request.user.display_name }}</p>
 <p>Last login: {{ request.user.last_login }}</p>
 
 {% if successful_change %}
