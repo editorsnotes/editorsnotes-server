@@ -14,7 +14,7 @@ VERSION_ACTIONS = {
 
 # TODO: make these fields nested, maybe
 class ActivitySerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+    user_id = serializers.ReadOnlyField(source='user.id')
     project = serializers.ReadOnlyField(source='project.slug')
     type = serializers.ReadOnlyField(source='content_type.model')
     url = serializers.SerializerMethodField('get_object_url')
@@ -23,7 +23,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LogActivity
-        fields = ('user', 'project', 'time', 'type', 'url', 'title', 'action',)
+        fields = ('user_id', 'project', 'time', 'type', 'url', 'title', 'action',)
 
     def get_object_url(self, obj):
         if obj.action == DELETION or obj.content_object is None:

@@ -154,7 +154,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # 'time': ???,
         expected = {
-            'user': 'barry',
+            'user_id': 1,
             'project': 'emma',
             'type': topic_obj._meta.model_name,
             'url': topic_obj.get_absolute_url(),
@@ -283,7 +283,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # 'time': ???,
         expected = {
-            'user': 'barry',
+            'user_id': 1,
             'project': 'emma',
             'type': updated_topic_obj._meta.model_name,
             'url': updated_topic_obj.get_absolute_url(),
@@ -352,7 +352,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # 'time': ???,
         expected = {
-            'user': 'barry',
+            'user_id': 1,
             'project': 'emma',
             'type': topic_obj._meta.model_name,
             'url': None,

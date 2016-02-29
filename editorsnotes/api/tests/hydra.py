@@ -140,7 +140,7 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
 
     def test_read_write_hyperlinked_collection_property(self):
         request = Request(make_dummy_request())
-        request._user = User(username='Patrick', is_superuser=True)
+        request._user = User(is_superuser=True)
 
         context = {'request': request}
         serializer = ProjectSerializer(self.project, context=context)
