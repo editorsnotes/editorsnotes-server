@@ -89,6 +89,7 @@ class IdentityURLField(CustomLookupHyperlinkedField):
                 'pk': 'id'
             }
         kwargs['read_only'] = True
+        self.format = None
         super(IdentityURLField, self).__init__(*args, **kwargs)
 
 
