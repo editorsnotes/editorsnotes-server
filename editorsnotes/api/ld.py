@@ -25,7 +25,7 @@ CONTEXT.update(OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
     ))),
-    ('display_name', 'schame:name'),
+    ('display_name', 'schema:name'),
     ('embedded', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
