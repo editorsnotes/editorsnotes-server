@@ -7,7 +7,13 @@ from django.db import migrations, models
 def populate_usernames(apps, schema_editor):
     User = apps.get_model('main', 'User')
     for user in User.objects.all():
-        user.display_name = user._get_display_name()
+        if user.first_name or user.last_name:
+            display_name = user.first_name + ' ' + user.last_name
+            display_name = display_name.strip().rstrip()
+        else:
+            display_name = user.username
+
+        user.display_name = display_name
         user.save()
 
 class Migration(migrations.Migration):
