@@ -1,0 +1,79 @@
+{% extends "user_settings_base.html" %}
+
+{% load widget_tweaks %}
+
+{% block setting_content %}
+<h2>Profile settings</h2>
+
+{% if successful_change %}
+  <p class="white bg-olive rounded p2">Profile saved.</p>
+{% endif %}
+
+
+<form method="POST">
+  {% csrf_token %}
+
+  <div class="mb3">
+    {{ form.display_name.label_tag }}
+    {% include "field_errors.html" with errors=form.display_name.errors %}
+    {{ form.display_name|add_class:"field block mb2" }}
+
+    {{ form.email.label_tag }}
+    {% include "field_errors.html" with errors=form.email.errors %}
+    {{ form.email|add_class:"field block mb2" }}
+
+    <p class="muted">Last login: {{ request.user.last_login }}</p>
+  </div>
+
+  <h3>API token</h3>
+  {% with token=form.EXISTING_TOKEN %}
+  <div class="block mb3">
+    <div class="mt1 mb2">
+      {% if token %}
+        <input
+            class="field col-8"
+            type="text"
+            readonly="readonly"
+            onfocus="this.select();"
+            onmouseup="return false;"
+            value="{{ token }}" />
+      {% else %}
+        <span class="muted">None</span>
+      {% endif %}
+    </div>
+
+    <label class="block">
+      {{ form.create_token }}
+      {% if token %}Change{% else %}Create new{% endif %} token
+    </label>
+  </div>
+  {% endwith %}
+
+
+
+
+  {% comment %}
+<section>
+  <h3>Project invitations</h3>
+</section>
+  {% endcomment %}
+
+  <section class="mb3 mt3">
+    <h3>Current projects</h3>
+    {% for project, role in user.get_affiliated_projects_with_roles %}
+      <div>
+        <a href="{% url "auth:project_settings" project.slug %}">
+          {{ project.name }}
+        </a> ({{ role.role }})
+      </div>
+    {% empty %}
+      <p>None</p>
+    {% endfor %}
+  </section>
+
+  <div class="mt3">
+    <input type="submit" class="btn btn-primary" value="Save" />
+  </div>
+</form>
+
+{% endblock %}

@@ -60,9 +60,9 @@ urlpatterns = patterns('',
     url(r'^search/$', views.SearchView.as_view(), name='search'),
     url(r'^notes/$', views.AllProjectNoteList.as_view(), name='all-projects-notes-list'),
     url(r'^projects/$', views.ProjectList.as_view(), name='projects-list'),
-    url(r'^projects/(?P<project_slug>\w+)', include(project_specific_patterns)),
-    url(r'^users/(?P<username>[\w@\+\.\-]+)/$', views.UserDetail.as_view(), name='users-detail'),
-    url(r'^users/(?P<username>[\w@\+\.\-]+)/activity/$', views.ActivityView.as_view(), name='users-activity'),
+    url(r'^projects/(?P<project_slug>[\w\-]+)', include(project_specific_patterns)),
+    url(r'^users/(?P<pk>\d+)/$', views.UserDetail.as_view(), name='users-detail'),
+    url(r'^users/(?P<pk>\d+)/activity/$', views.ActivityView.as_view(), name='users-activity'),
     url(r'^me/$', views.SelfUserDetail.as_view(), name='users-detail-self'),
 
 )

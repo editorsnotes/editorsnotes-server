@@ -74,7 +74,6 @@ class ProjectAPIDocumentation(RetrieveAPIView):
 class UserDetail(EmbeddedReferencesMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    lookup_field = 'username'
 
 
 class SelfUserDetail(EmbeddedReferencesMixin, RetrieveAPIView):
@@ -108,11 +107,11 @@ class ActivityView(ElasticSearchListMixin, ListAPIView):
     queryset = LogActivity.objects.all()
 
     def get_object(self):
-        username = self.kwargs.get('username', None)
+        user_id = self.kwargs.get('id', None)
         project_slug = self.kwargs.get('project_slug', None)
 
-        if username is not None:
-            obj = get_object_or_404(User, username=username)
+        if user_id is not None:
+            obj = get_object_or_404(User, id=user_id)
         elif project_slug is not None:
             obj = get_object_or_404(Project, slug=project_slug)
         else:
@@ -129,7 +128,7 @@ class ActivityView(ElasticSearchListMixin, ListAPIView):
         # FIXME FIXME FIXME: Users' and projects' actions should be indexed by
         # their URLs, not their usernames/slugs
         if isinstance(obj, User):
-            search = search.filter('term', **{'data.user': obj.username})
+            search = search.filter('term', **{'data.user_id': obj.id})
         else:
             search = search.filter('term', **{'data.project': obj.slug})
 

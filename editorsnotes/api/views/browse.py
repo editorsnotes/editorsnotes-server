@@ -7,8 +7,9 @@ from rest_framework.reverse import reverse
 
 from editorsnotes.api.serializers import ProjectSerializer
 from editorsnotes.api.serializers.hydra import link_properties_for_project
+from editorsnotes.auth.models import Project
 from editorsnotes.main.models import Note, Topic, Document
-from editorsnotes.search import items as items_search
+from editorsnotes.search import items_index
 
 
 __all__ = ['root', 'browse_items']
@@ -53,15 +54,15 @@ def root(request, format=None):
 
 
 def search_model(Model, query):
-    query = query.to_dict()
-    query['fields'] = ['display_title', 'url']
-    results = items_search.search_model(Model, query)
+    es_query = items_index\
+        .make_search_for_model(Model)\
+        .fields(['display_title', 'url'])
+
+    results = es_query.execute()
+
     return [
-        {
-            'title': result['fields']['display_title'][0],
-            'url': result['fields']['url'][0]
-        }
-        for result in results['hits']['hits']
+        { 'title': result.display_title[0], 'url': result.url[0] }
+        for result in results.hits
     ]
 
 
@@ -75,5 +76,6 @@ def browse_items(request, format=None):
     ret['notes'] = search_model(Note, es_query.filter(
         'term', **{'serialized.is_private': 'false'}
     ))
+    ret['projects'] = search_model(Project, es_query)
 
     return Response(ret)

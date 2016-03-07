@@ -105,9 +105,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.user = User.objects.get(username='barry')
+        self.user = User.objects.get(email='barry@example.com')
         self.project = Project.objects.get(slug='emma')
-        self.client.login(username='barry', password='barry')
+        self.client.login(username='barry@example.com', password='barry')
 
     def create_test_topic(self):
         data = TEST_TOPIC.copy()
@@ -154,7 +154,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # 'time': ???,
         expected = {
-            'user': 'barry',
+            'user_id': 1,
             'project': 'emma',
             'type': topic_obj._meta.model_name,
             'url': topic_obj.get_absolute_url(),
@@ -175,7 +175,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_create_bad_permissions(self):
         "Creating a topic in an outside project is NOT OK"
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.post(
             reverse('api:topics-list', args=[self.project.slug]),
             json.dumps(TEST_TOPIC),
@@ -236,7 +236,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
     def test_topic_api_list_other_projects(self):
         "Other projects' topic lists should be viewable, even if logged out"
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.get(reverse('api:topics-list',
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
@@ -283,7 +283,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # 'time': ???,
         expected = {
-            'user': 'barry',
+            'user_id': 1,
             'project': 'emma',
             'type': updated_topic_obj._meta.model_name,
             'url': updated_topic_obj.get_absolute_url(),
@@ -303,7 +303,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         data['markup'] = u'a bad, garbage guy'
 
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
 
         response = self.client.put(
             reverse('api:topics-detail',
@@ -352,7 +352,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         # 'time': ???,
         expected = {
-            'user': 'barry',
+            'user_id': 1,
             'project': 'emma',
             'type': topic_obj._meta.model_name,
             'url': None,
@@ -367,7 +367,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         "Deleting a topic in an outside project is NOT OK"
         topic_obj = create_topic(user=self.user, project=self.project)
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
 
         response = self.client.delete(
             reverse('api:topics-detail',
@@ -393,9 +393,9 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.user = User.objects.get(username='barry')
+        self.user = User.objects.get(email='barry@example.com')
         self.project = Project.objects.get(slug='emma')
-        self.client.login(username='barry', password='barry')
+        self.client.login(username='barry@example.com', password='barry')
 
     def create_test_document(self):
         data = TEST_DOCUMENT
@@ -426,7 +426,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         "Creating a document in another project is NOT OK"
         data = TEST_DOCUMENT.copy()
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.post(
             reverse('api:documents-list', args=[self.project.slug]),
             json.dumps(data),
@@ -483,7 +483,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         original_response_content = response.data
 
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.get(reverse('api:documents-list',
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
@@ -533,7 +533,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
 
         data = TEST_DOCUMENT.copy()
         data['description'] = u'a stupid book!!!!!!!'
@@ -581,7 +581,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         document_obj = create_document(
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.delete(
             reverse('api:documents-detail',
                     args=[self.project.slug, document_obj.id]),
@@ -608,9 +608,9 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
-        self.user = User.objects.get(username='barry')
+        self.user = User.objects.get(email='barry@example.com')
         self.project = Project.objects.get(slug='emma')
-        self.client.login(username='barry', password='barry')
+        self.client.login(username='barry@example.com', password='barry')
 
     def create_test_note(self):
         data = TEST_NOTE
@@ -670,7 +670,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         "Creating a note in an outside project is NOT OK"
         data = TEST_NOTE.copy()
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.post(
             reverse('api:notes-list', args=[self.project.slug]),
             json.dumps(data),
@@ -723,7 +723,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         original_response_content = response.data
 
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.get(reverse('api:notes-list',
                                            args=[self.project.slug]),
                                    HTTP_ACCEPT='application/json')
@@ -764,7 +764,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         "Updating a note in an outside project is NOT OK"
         note_obj = self.create_test_note()
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         data = TEST_NOTE.copy()
         data['title'] = u'Нет!!!!!!'
         response = self.client.put(
@@ -818,7 +818,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         "Deleting a note in an outside project is NOT OK"
         note_obj = self.create_test_note()
         self.client.logout()
-        self.client.login(username='esther', password='esther')
+        self.client.login(username='esther@example.com', password='esther')
         response = self.client.delete(
             reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             content_type='application/json'

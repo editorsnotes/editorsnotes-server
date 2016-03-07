@@ -18,69 +18,65 @@
   },
 
   {
-      "pk": 1, 
-      "model": "main.user", 
+      "pk": 1,
+      "model": "main.user",
       "fields": {
-          "username": "barry", 
-          "first_name": "Barry", 
-          "last_name": "Pateman", 
-          "is_active": true, 
-          "is_superuser": false, 
-          "is_staff": true, 
-          "last_login": "2013-04-05T11:13:49.329", 
+          "display_name": "Barry Pateman",
+          "is_active": true,
+          "is_superuser": false,
+          "is_confirmed": true,
+          "last_login": "2013-04-05T11:13:49.329",
           "groups": [
             [
               "emma-Editor"
             ]
-          ], 
-          "user_permissions": [], 
+          ],
+          "user_permissions": [],
           "password": "pbkdf2_sha256$10000$VcD9Mj2AtdVS$K7YHU0wf5dUsDozJ6U9EnflPATW3R+nge2YAJCl9CJc=",
-          "email": "fake2@example.com", 
+          "email": "barry@example.com",
           "date_joined": "2013-04-01T14:26:46"
       }
   },
   {
-      "pk": 2, 
-      "model": "main.user", 
+      "pk": 2,
+      "model": "main.user",
       "fields": {
-          "username": "esther", 
-          "first_name": "Esther", 
-          "last_name": "Katz", 
-          "is_active": true, 
-          "is_superuser": false, 
-          "is_staff": true, 
-          "last_login": "2013-04-05T11:13:49.329", 
+          "display_name": "Esther Katz",
+          "is_active": true,
+          "is_superuser": false,
+          "is_confirmed": true,
+          "last_login": "2013-04-05T11:13:49.329",
           "groups": [
               [
                 "sanger-Editor"
               ]
             ],
-          "user_permissions": [], 
+          "user_permissions": [],
           "password": "pbkdf2_sha256$10000$Y3E5kejpOLr0$Aj9kBn1R2WD37qEcPmxhCfSFt0SmjiuI92QdyEv8Nro=",
-          "email": "fake3@example.com", 
+          "email": "esther@example.com",
           "date_joined": "2013-04-01T14:26:46"
       }
   },
 
   {
-    "pk": 1, 
-    "model": "main.project", 
+    "pk": 1,
+    "model": "main.project",
     "fields": {
-      "image": "", 
+      "image": "",
       "markup": "We are collecting the papers of Emma Goldman.",
       "markup_html": "<p>We are collecting the papers of Emma Goldman.</p>",
-      "name": "The Emma Goldman Papers", 
+      "name": "The Emma Goldman Papers",
       "slug": "emma"
     }
-  }, 
+  },
   {
-    "pk": 2, 
-    "model": "main.project", 
+    "pk": 2,
+    "model": "main.project",
     "fields": {
-      "image": "", 
+      "image": "",
       "markup": "We are collecting the papers of Margaret Sanger.",
       "markup_html": "<p>We are collecting the papers of Margaret Sanger.</p>",
-      "name": "The Margaret Sanger Papers", 
+      "name": "The Margaret Sanger Papers",
       "slug": "sanger"
     }
   },

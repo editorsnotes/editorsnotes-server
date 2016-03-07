@@ -1,27 +1,29 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
+from rest_framework.authtoken.models import Token
+
 from .models import User, Project
 
+
 class ENUserCreationForm(UserCreationForm):
-    def __init__(self, *args, **kwargs):
-        super(ENUserCreationForm, self).__init__(*args, **kwargs)
-        self.fields['email'].required = True
     class Meta:
         model = User
-        fields = ('username', 'email',)
-    def clean_username(self):
-        # Since User.username is unique, this check is redundant,
+        fields = ('email', 'display_name')
+
+    def clean_email(self):
+        # Since User.email is unique, this check is redundant,
         # but it sets a nicer error message than the ORM. See #13147.
-        username = self.cleaned_data["username"]
+        email = self.cleaned_data["email"]
         try:
-            User._default_manager.get(username=username)
+            User._default_manager.get(email=email)
         except User.DoesNotExist:
-            return username
+            return email
         raise forms.ValidationError(
-            self.error_messages['duplicate_username'],
-            code='duplicate_username',
+            self.error_messages['duplicate_email'],
+            code='duplicate_email',
         )
+
 
 class ENAuthenticationForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
@@ -29,10 +31,34 @@ class ENAuthenticationForm(AuthenticationForm):
             if user.confirmed:
                 raise forms.ValidationError('This account is inactive.')
 
+
 class UserProfileForm(forms.ModelForm):
+    create_token = forms.BooleanField(required=False)
+
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email',)
+        fields = ('display_name', 'email', 'create_token',)
+
+    def __init__(self, *args, **kwargs):
+        super(UserProfileForm, self).__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs['readonly'] = True
+
+        try:
+            token = Token.objects.get(user=self.instance)
+        except Token.DoesNotExist:
+            token = None
+
+        self.EXISTING_TOKEN = token
+
+    def clean_email(self):
+        return self.instance.email
+
+    def save(self):
+        super(UserProfileForm, self).save()
+        if self.cleaned_data['create_token']:
+            Token.objects.filter(user=self.instance).delete()
+            token, created = Token.objects.get_or_create(user=self.instance)
+
 
 class ProjectForm(forms.ModelForm):
     class Meta:

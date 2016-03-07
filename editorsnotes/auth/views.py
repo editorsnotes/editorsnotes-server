@@ -80,10 +80,11 @@ def user_home(request):
         if form.is_valid():
             successful_change = True
             form.save()
-    else:
-        form = UserProfileForm(instance=request.user)
+
+    form = UserProfileForm(instance=request.user)
+
     return render_to_response(
-        'user_home.html',
+        'user_profile_settings.html',
         {
             'page': 'profile',
             'form': form,
@@ -117,7 +118,7 @@ def user_project_settings(request):
     return render_to_response(
         'user_project_settings.html',
         {
-            'page': 'projects',
+            'page': 'create_project',
             'form': form
         },
         RequestContext(request))
@@ -130,6 +131,7 @@ def project_settings(request, project_slug):
     return render_to_response(
         'project_settings.html',
         {
+            'project_page': project.slug,
             'project': project
         },
         RequestContext(request))

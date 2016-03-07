@@ -50,12 +50,12 @@ class EmbeddedItemsMixin(object):
         if not urls:
             return {}
 
-        usernames = [
-            resolve(urlparse(url).path).kwargs['username']
+        user_ids = [
+            resolve(urlparse(url).path).kwargs['id']
             for url in urls
         ]
 
-        qs = User.objects.filter(username__in=usernames)
+        qs = User.objects.filter(id__in=user_ids)
 
         serializer = UserSerializer(instance=qs, many=True,
                                     context=self.context)

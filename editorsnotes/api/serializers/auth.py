@@ -73,7 +73,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     url = IdentityURLField(
         view_name='api:users-detail',
-        lookup_kwarg_attrs={'username': 'username'}
+        lookup_kwarg_attrs={'pk': 'pk'}
     )
 
     type = serializers.SerializerMethodField()
@@ -91,8 +91,8 @@ class UserSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
         source='*',
         read_only=True,
         view_name='api:users-activity',
-        lookup_field='username',
-        lookup_url_kwarg='username'
+        lookup_field='pk',
+        lookup_url_kwarg='pk'
     )
 
     class Meta:
