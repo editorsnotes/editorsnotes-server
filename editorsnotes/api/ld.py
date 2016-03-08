@@ -10,6 +10,7 @@ NAMESPACES = OrderedDict((
     ('itm', 'http://spi-fm.uca.es/spdef/models/genericTools/itm/1.0#'),
     ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'),
     ('schema', 'http://schema.org/'),
+    ('vaem', 'http://www.linkedmodel.org/schema/vaem#'),
     ('xsd', 'http://www.w3.org/2001/XMLSchema#'),
     ('wn', ROOT_NAMESPACE),
 ))
@@ -22,6 +23,11 @@ CONTEXT.update(OrderedDict((
         ('@type', '@id')
     ))),
     ('affilated_projects', OrderedDict((
+        ('@id', '@graph'),
+        ('@container', '@index'),
+    ))),
+    ('aspects', 'vaem:hasAspect'),
+    ('data', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
     ))),

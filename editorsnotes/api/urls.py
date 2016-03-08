@@ -35,6 +35,8 @@ project_specific_patterns = patterns('',
     ### Topics ###
     url(r'^/topics/$', views.TopicList.as_view(), name='topics-list'),
     url(r'^/topics/(?P<pk>\d+)/$', views.TopicDetail.as_view(), name='topics-detail'),
+    url(r'^/topics/(?P<pk>\d+)/w/$', views.ENTopicDetail.as_view(), name='topics-wn-detail'),
+    url(r'^/topics/(?P<pk>\d+)/p/$', views.TopicDetail.as_view(), name='topics-proj-detail'),
     url(r'^/topics/(?P<pk>\d+)/confirm_delete$', views.TopicConfirmDelete.as_view(), name='topics-confirm-delete'),
 
     ### Notes ###
