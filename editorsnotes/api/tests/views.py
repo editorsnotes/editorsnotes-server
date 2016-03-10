@@ -128,12 +128,22 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data, None)
+
+        location = response.get('Location').replace('http://testserver', '')
+        response = self.client.get(location)
 
         new_topic_id = response.data.get('id')
         topic_obj = main_models.Topic.objects.get(id=new_topic_id)
+        topic_url = self.client.request()\
+            .wsgi_request\
+            .build_absolute_uri(topic_obj.get_absolute_url())
+
         self.assertEqual(response.data.get('id'), topic_obj.id)
-        self.assertEqual(etree.tostring(topic_obj.markup_html),
-                         response.data.get('markup_html'))
+
+        self.assertEqual(
+            etree.tostring(topic_obj.markup_html),
+            response.data['data'][topic_url + 'w/']['@graph']['markup_html'])
 
         # Make sure a revision was created
         self.assertEqual(Revision.objects.count(), 1)
@@ -226,11 +236,17 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(len(response.data['results']), 1)
 
         topic_data = response.data['results'][0]
+        topic_url = self.client.request()\
+            .wsgi_request\
+            .build_absolute_uri(topic_obj.get_absolute_url())
 
-        self.assertEqual(topic_obj.id, topic_data['id'])
+        self.assertEqual(topic_data.get('id'), topic_obj.id)
+
+        self.assertEqual(
+            topic_obj.preferred_name,
+            topic_data['data'][topic_url + 'w/']['@graph']['preferred_name'])
+
         self.assertEqual(topic_obj.preferred_name,
-                         topic_data['preferred_name'])
-        self.assertEqual(topic_data['preferred_name'],
                          TEST_TOPIC['preferred_name'])
 
     def test_topic_api_list_other_projects(self):
@@ -257,7 +273,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         data['markup'] = u'Still writing tests.'
 
         response = self.client.put(
-            reverse('api:topics-detail',
+            reverse('api:topics-wn-detail',
                     args=[self.project.slug, topic_obj.id]),
             json.dumps(data),
             content_type='application/json'
@@ -265,8 +281,9 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         updated_topic_obj = main_models.Topic.objects.get(
-            id=response.data['id'])
+            id=int(response.data['url'][-3:-1]))
         self.assertEqual(topic_obj, updated_topic_obj)
+
         self.assertEqual(data['markup'], response.data['markup'])
         self.assertEqual('<div><p>Still writing tests.</p></div>',
                          etree.tostring(updated_topic_obj.markup_html))

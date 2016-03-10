@@ -23,6 +23,7 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     class Meta:
         model = Topic
         fields = (
+            'id',
             'url',
             'project',
             'updaters',
