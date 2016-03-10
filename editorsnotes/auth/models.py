@@ -43,7 +43,6 @@ class UserManager(BaseUserManager):
             display_name=display_name)
         user.set_password(password)
         user.save(using=self._db)
-
         return user
 
     def create_superuser(self, email, display_name, password):
@@ -88,7 +87,7 @@ class User(AbstractBaseUser, PermissionsMixin, URLAccessible):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('api:users-detail', [str(self.username)])
+        return ('api:users-detail', [str(self.pk)])
 
     def __unicode__(self):
         return self.display_name

@@ -51,7 +51,7 @@ class EmbeddedItemsMixin(object):
             return {}
 
         user_ids = [
-            resolve(urlparse(url).path).kwargs['id']
+            resolve(urlparse(url).path).kwargs['pk']
             for url in urls
         ]
 
