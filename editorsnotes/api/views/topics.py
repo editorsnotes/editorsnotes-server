@@ -17,13 +17,22 @@ __all__ = [
 
 class TopicList(ElasticSearchListMixin, BaseListAPIView):
     queryset = Topic.objects.all()
-    serializer_class = TopicSerializer
     es_filter_backends = (
         es_filters.ProjectFilterBackend,
         es_filters.QFilterBackend,
         es_filters.UpdaterFilterBackend,
     )
     hydra_project_perms = ('main.add_topic',)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ENTopicSerializer
+        return TopicSerializer
+
+    def create(self, *args, **kwargs):
+        resp = super(TopicList, self).create(*args, **kwargs)
+        resp.data = None
+        return resp
 
 
 class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
