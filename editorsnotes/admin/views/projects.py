@@ -7,7 +7,7 @@ from django.http import (
     HttpResponseForbidden, HttpResponseRedirect, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
-import reversion
+from reversion import revisions as reversion
 
 from editorsnotes.auth.models import Project
 

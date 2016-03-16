@@ -11,7 +11,7 @@ from django.db import models
 from django.dispatch import receiver
 from django.utils import timezone
 
-import reversion
+from reversion.models import Revision
 from licensing.models import License
 
 from editorsnotes.main.management import get_all_project_permissions
@@ -176,7 +176,7 @@ class UpdatersMixin(object):
     """
     def get_all_updaters(self):
         ct = ContentType.objects.get_for_model(self.__class__)
-        qs = reversion.models.Revision.objects\
+        qs = Revision.objects\
             .select_related('user')\
             .filter(version__content_type_id=ct.id,
                     version__object_id_int=self.id)
@@ -210,7 +210,7 @@ class ProjectManager(models.Manager):
 
 class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
     name = models.CharField(
-        max_length='80',
+        max_length=80,
         help_text='The name of the project.'
     )
 
@@ -445,7 +445,7 @@ class FeaturedItem(CreationMetadata, ProjectPermissionsMixin):
 
 
 class RevisionProject(models.Model):
-    revision = models.OneToOneField(reversion.models.Revision,
+    revision = models.OneToOneField(Revision,
                                     related_name='project_metadata')
     project = models.ForeignKey(Project)
 
@@ -499,7 +499,7 @@ class LogActivity(models.Model):
 
 class RevisionLogActivity(models.Model):
     revision = models.ForeignKey(
-        reversion.models.Revision, related_name='logactivity_metadata')
+        Revision, related_name='logactivity_metadata')
     log_activity = models.OneToOneField(
         LogActivity, related_name='revision_metadata')
 

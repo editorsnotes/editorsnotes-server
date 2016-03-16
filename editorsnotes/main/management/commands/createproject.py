@@ -3,7 +3,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-import reversion
+from reversion import revisions as reversion
 
 from editorsnotes.auth.models import Project, User
 

@@ -8,7 +8,7 @@ from rest_framework.generics import (
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.utils import formatting, model_meta
-import reversion
+from reversion import revisions as reversion
 
 from editorsnotes.auth.models import (RevisionProject, RevisionLogActivity,
                                       ADDITION, CHANGE, DELETION)
