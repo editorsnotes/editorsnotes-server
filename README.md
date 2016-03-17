@@ -9,8 +9,8 @@ This Django application runs the Editors' Notes API and authentication server.
 
 ## Required services
 
-Editors' Notes uses [PostgreSQL] and [Elasticsearch]. Consult the documentation
-of those applications for installation instructions.
+Editors' Notes uses [PostgreSQL] (9.4+) and [Elasticsearch]. Consult the
+documentation of those applications for installation instructions.
 
 
 ## Dependencies
