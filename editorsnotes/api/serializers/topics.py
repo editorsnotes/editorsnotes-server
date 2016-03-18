@@ -5,6 +5,7 @@ from editorsnotes.main.models import Topic
 
 from .. import fields
 from ..validators import UniqueToProjectValidator
+from ..ld import ROOT_NAMESPACE
 
 from .mixins import EmbeddedItemsMixin, RelatedTopicSerializerMixin
 
@@ -14,6 +15,7 @@ __all__ = ['TopicSerializer', 'ENTopicSerializer']
 
 class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     url = fields.IdentityURLField(view_name='api:topics-detail')
+    type = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
     aspects = serializers.SerializerMethodField()
     project = fields.HyperlinkedAffiliatedProjectField(
@@ -25,6 +27,7 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
         fields = (
             'id',
             'url',
+            'type',
             'project',
             'updaters',
             'created',
@@ -37,6 +40,9 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             'project',
             'updaters',
         )
+
+    def get_type(self, obj):
+        return ROOT_NAMESPACE + 'Topic'
 
     def get_aspects(self, obj):
         return [
