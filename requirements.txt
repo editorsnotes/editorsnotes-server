@@ -1,6 +1,6 @@
 # Django-specific packages
 Django==1.9.4
-django-licensing==0.2.4
+django-licensing==1.0.1
 django-reversion==1.10.1
 django-widget-tweaks==1.4.1
 djangorestframework==3.2.4
