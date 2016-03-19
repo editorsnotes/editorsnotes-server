@@ -25,5 +25,5 @@ before_script:
 script:
   - python manage.py test
 
-script:
+addons:
   postgresql: "9.4"
