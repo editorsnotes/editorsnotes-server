@@ -4,6 +4,7 @@ django-licensing==1.0.1
 django-reversion==1.10.1
 django-widget-tweaks==1.4.1
 djangorestframework==3.3.3
+django-cors-headers==1.1.0
 
 # Testing/Development
 ipython==4.0.0
