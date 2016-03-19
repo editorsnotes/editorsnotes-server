@@ -1,10 +1,11 @@
 # vim: set tw=0:
 
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from django.core.urlresolvers import RegexURLPattern
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.authtoken.views import obtain_auth_token
 import views
+
 
 def format_patterns(urlpatterns):
     "If a URL pattern ends in a slash, it should be able to be rendered as different types"
@@ -26,6 +27,7 @@ def format_patterns(urlpatterns):
                 ret.append(format_suffix_patterns([stripped_url], True, suffixes)[0])
         ret.append(urlpattern)
     return ret
+
 
 project_specific_patterns = [
     ### Project (general) ###
