@@ -1,8 +1,10 @@
+import json
+
 from django.core.urlresolvers import reverse
 from django.test.client import RequestFactory
 
 from editorsnotes.auth.models import Project, User
-from editorsnotes.main.models import Note
+from editorsnotes.main.models import Note, Topic
 
 from .views import ClearContentTypesTransactionTestCase
 
@@ -127,3 +129,49 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
             len(response.data['affiliated_projects'].values()[0]['@context']),
             3)
         self.assertEqual(len(response.data.get('embedded')), 3)
+
+class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
+    fixtures = ['projects.json']
+
+    def setUp(self):
+        self.user = User.objects.get(email='barry@example.com')
+        self.project = Project.objects.get(slug='emma')
+        self.dummy_req = RequestFactory().get('/')
+        self.client.login(username='barry@example.com', password='barry')
+
+    def test_topic_ld(self):
+        topic = Topic.objects.create(
+            preferred_name=u'Hippolyte Havel',
+            project=self.project,
+            creator=self.user,
+            last_updater=self.user)
+
+        absolute_url = self.dummy_req.build_absolute_uri(topic.get_absolute_url())
+
+
+        response = self.client.put(
+            reverse('api:topics-proj-detail', args=[self.project.slug, topic.id]),
+            json.dumps({ 'should': 'disappear' }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        topic.refresh_from_db()
+        self.assertEqual(topic.ld, {})
+
+
+        response = self.client.put(
+            reverse('api:topics-proj-detail', args=[self.project.slug, topic.id]),
+            json.dumps({
+                'should': 'disappear',
+                '@id': absolute_url,
+                'http://example.com/name': 'Hippolyte Havel'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        topic.refresh_from_db()
+        self.assertEqual(topic.ld, {
+            '@id': absolute_url,
+            'http://example.com/name': 'Hippolyte Havel'
+        })

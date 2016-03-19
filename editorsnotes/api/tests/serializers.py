@@ -48,7 +48,8 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
         )
 
         data = json.loads(JSONRenderer().render(test_serializer.data))
-        project_data = json.loads(JSONRenderer().render(project_serializer.data))
+        project_data = json.loads(
+            JSONRenderer().render(project_serializer.data))
 
         self.assertEqual(data, {
             'project_url': project_url,
@@ -92,10 +93,66 @@ class DocumentSerializerTestCase(ClearContentTypesTransactionTestCase):
         )
 
         self.assertEqual(
-            self.dummy_request.build_absolute_uri(transcript.get_absolute_url()),
+            self.dummy_request.build_absolute_uri(
+                transcript.get_absolute_url()),
             transcript_url)
 
         serializer = en_serializers.DocumentSerializer(
             instance=self.document, context=self.context,
             include_embeds=True)
         self.assertNotEqual(serializer.data['embedded'][transcript_url], None)
+
+
+class TopicSerializerTestCase(ClearContentTypesTransactionTestCase):
+    fixtures = ['projects.json']
+
+    def setUp(self):
+        self.dummy_request = RequestFactory().get('/')
+        self.context = {'request': self.dummy_request}
+
+        self.project = Project.objects.get(slug='emma')
+        self.user = self.project.members.get()
+
+        self.topic = main_models.Topic.objects.create(
+            creator=self.user,
+            last_updater=self.user,
+            project=self.project,
+            preferred_name='Emma Goldman'
+        )
+
+    def test_topic_serializer(self):
+        serializer = en_serializers.TopicSerializer(
+            instance=self.topic,
+            context=self.context,
+            include_embeds=True
+        )
+
+        base_url = self.dummy_request.build_absolute_uri(
+            self.topic.get_absolute_url())
+        wn_topic_url = base_url + 'w/'
+        project_topic_url = base_url + 'p/'
+
+        self.assertEqual(serializer.data['url'], base_url)
+        self.assertListEqual(serializer.data['aspects'], [
+            wn_topic_url,
+            project_topic_url
+        ])
+
+        self.assertDictEqual(serializer.data['data'][wn_topic_url], {
+            "@id": wn_topic_url,
+            "@graph": {
+                "url": base_url,
+                "preferred_name": "Emma Goldman",
+                "alternate_names": [],
+                "related_topics": [],
+                "markup": None,
+                "markup_html": None,
+                "references": [],
+                "referenced_by": []
+            }
+        })
+
+        self.assertDictEqual(serializer.data['data'][project_topic_url], {
+            "@id": project_topic_url,
+            "@graph": {}
+        })

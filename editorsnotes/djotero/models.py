@@ -7,11 +7,21 @@ from django.utils.translation import ugettext as _
 from . import utils
 from .fields import ZoteroField
 
+class ZoteroLink(models.Model):
+    zotero_url = models.URLField(blank=True)
+    date_information = models.TextField(blank=True)
+    modified = models.DateTimeField(editable=False)
+    last_synced = models.DateTimeField(blank=True, null=True)
+
+    def save(self, update_modified=True, *args, **kwargs):
+        if update_modified:
+            self.modified = datetime.datetime.now()
+        super(ZoteroLink, self).save(*args, **kwargs)
 
 class ZoteroItem(models.Model):
     zotero_data = ZoteroField(blank=True, null=True)
-    zotero_link = models.OneToOneField('ZoteroLink', blank=True, null=True,
-                                       related_name='zotero_item')
+    zotero_link = models.OneToOneField(
+        ZoteroLink, blank=True, null=True, related_name='zotero_item')
 
     class Meta:
         abstract = True
@@ -36,13 +46,3 @@ class ZoteroItem(models.Model):
         return output
 
 
-class ZoteroLink(models.Model):
-    zotero_url = models.URLField(blank=True)
-    date_information = models.TextField(blank=True)
-    modified = models.DateTimeField(editable=False)
-    last_synced = models.DateTimeField(blank=True, null=True)
-
-    def save(self, update_modified=True, *args, **kwargs):
-        if update_modified:
-            self.modified = datetime.datetime.now()
-        super(ZoteroLink, self).save(*args, **kwargs)

@@ -14,7 +14,7 @@ from django.db import models
 from django.utils.html import strip_tags, strip_entities
 from lxml import etree, html
 from PIL import Image
-import reversion
+from reversion import revisions as reversion
 
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from editorsnotes.djotero.models import ZoteroItem

@@ -155,3 +155,23 @@ class MarkupUtilsTestCase(TestCase):
 
         related_items = markup_html.get_embedded_models(html)
         self.assertEqual(len(related_items['document']), 1)
+
+    def test_render_topic_reference(self):
+        from ..utils import markup, markup_html
+
+        topic = main_models.Topic.objects.create(
+            preferred_name='Ryan Shaw',
+            creator=self.user, last_updater=self.user, project=self.project)
+
+        html = markup.render_markup(u'This is about @@t{}.'.format(topic.id),
+                                    self.project)
+        self.assertEqual(etree.tostring(html), (
+            u'<div><p>This is about '
+            '<a href="/projects/emma/topics/{}/" '
+            'class="ENInlineReference ENInlineReference-topic">'
+            'Ryan Shaw'
+            '</a>.</p></div>'.format(topic.id)
+        ))
+
+        related_items = markup_html.get_embedded_models(html)
+        self.assertEqual(len(related_items['topic']), 1)

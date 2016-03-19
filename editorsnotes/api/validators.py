@@ -11,6 +11,7 @@ class UniqueToProjectValidator:
     def set_context(self, serializer):
         self.ModelClass = serializer.Meta.model
         self.instance = getattr(serializer, 'instance', None)
+        self.project = serializer.context['request'].project
 
     def __call__(self, attrs):
         # Assuming that the field is always required
@@ -20,7 +21,7 @@ class UniqueToProjectValidator:
         else:
             value = attrs[self.field_name]
 
-        kwargs = {'project': attrs['project'], self.field_name: value}
+        kwargs = {'project': self.project, self.field_name: value}
         qs = self.ModelClass.objects.filter(**kwargs)
         if self.instance is not None:
             qs = qs.exclude(id=self.instance.id)

@@ -3,9 +3,9 @@
 from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
-import reversion
+from reversion import revisions as reversion
 
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 
@@ -33,6 +33,8 @@ class Topic(LastUpdateMetadata, URLAccessible, ProjectPermissionsMixin,
     same_as = ArrayField(models.URLField(), default=list)
     alternate_names = ArrayField(models.CharField(max_length=200),
                                  default=list)
+
+    ld = JSONField(default=dict)
 
     preferred_name = models.CharField(max_length=200)
     related_topics = GenericRelation('TopicAssignment',

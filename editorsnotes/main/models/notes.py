@@ -3,7 +3,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 
 from licensing.models import License
-import reversion
+from reversion import revisions as reversion
 
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from base import (Administered, LastUpdateMetadata, URLAccessible,
@@ -26,7 +26,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
     enables.
     """
     title = models.CharField(
-        max_length='80',
+        max_length=80,
         help_text=(
             'The title of the note.'
         )
