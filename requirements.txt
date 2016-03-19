@@ -3,7 +3,7 @@ Django==1.9.4
 django-licensing==1.0.1
 django-reversion==1.10.1
 django-widget-tweaks==1.4.1
-djangorestframework==3.2.4
+djangorestframework==3.3.3
 
 # Testing/Development
 ipython==4.0.0
@@ -18,6 +18,7 @@ Pillow==2.3.0
 psycopg2==2.6.1
 pyelasticsearch==0.6
 pytz==2012h
+PyLD==0.7.0
 rdflib==4.2.1
 rdflib-jsonld==0.3
 requests===2.8.1

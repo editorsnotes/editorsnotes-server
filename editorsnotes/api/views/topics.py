@@ -1,17 +1,24 @@
+from pyld import jsonld
+
+from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
+
 from editorsnotes.main.models import Topic
 
 from .. import filters as es_filters
+from ..permissions import ProjectSpecificPermissions
 from ..serializers.topics import TopicSerializer, ENTopicSerializer
 
 from .base import BaseListAPIView, BaseDetailView, DeleteConfirmAPIView
 from .mixins import (ElasticSearchListMixin, EmbeddedReferencesMixin,
-                     HydraAffordancesMixin)
+                     ProjectSpecificMixin, HydraAffordancesMixin)
 
 __all__ = [
     'TopicList',
     'TopicDetail',
     'ENTopicDetail',
-    'TopicConfirmDelete'
+    'TopicLDDetail',
+    'TopicConfirmDelete',
 ]
 
 
@@ -42,11 +49,9 @@ class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
     hydra_project_perms = ('main.change_topic', 'main.delete_topic',)
 
 
-class ENTopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
-                    BaseDetailView):
+class ENTopicDetail(BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = ENTopicSerializer
-    hydra_project_perms = ('main.change_topic', 'main.delete_topic',)
 
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
@@ -55,3 +60,28 @@ class TopicConfirmDelete(DeleteConfirmAPIView):
         'GET': ('main.delete_topic',),
         'HEAD': ('main.delete_topic',)
     }
+
+
+class TopicLDDetail(ProjectSpecificMixin, GenericAPIView):
+    permission_classes = (ProjectSpecificPermissions,)
+    permissions = {
+        'PUT': ('main.change_topic',)
+    }
+    queryset = Topic.objects.all()
+
+    def get(self, request, **kwargs):
+        topic = self.get_object()
+        return Response(topic.ld)
+
+    def put(self, request, **kwargs):
+        data = request.data
+        topic = self.get_object()
+
+        url = request.build_absolute_uri(topic.get_absolute_url())
+        framed = jsonld.frame(data, {'@id': url})
+        topic.ld = framed['@graph'][0] if framed['@graph'] else {}
+
+        # TODO: make revision
+        topic.save()
+
+        return Response(topic.ld)

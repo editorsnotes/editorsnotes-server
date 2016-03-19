@@ -63,7 +63,7 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             },
             project_topic_url: {
                 "@id": project_topic_url,
-                "@graph": {}
+                "@graph": obj.ld
             }
         }
 
