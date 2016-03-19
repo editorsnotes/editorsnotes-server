@@ -45,6 +45,9 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_REDIRECT_URL = '/auth/'
 LOGIN_URL = '/auth/signin'
 
+CORS_URLS_REGEX = r'^/(?!auth).*$'
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 #################
 # Path settings #
@@ -93,12 +96,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
 )
 
 INSTALLED_APPS = (
@@ -106,6 +108,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'corsheaders',
     'reversion',
     'licensing',
     'rest_framework',
