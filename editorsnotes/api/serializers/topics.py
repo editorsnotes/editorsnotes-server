@@ -16,8 +16,8 @@ __all__ = ['TopicSerializer', 'ENTopicSerializer']
 class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     url = fields.IdentityURLField(view_name='api:topics-detail')
     type = serializers.SerializerMethodField()
-    data = serializers.SerializerMethodField()
-    aspects = serializers.SerializerMethodField()
+    wn_aspect = serializers.SerializerMethodField()
+    project_aspect = serializers.SerializerMethodField()
     project = fields.HyperlinkedAffiliatedProjectField(
         default=fields.CurrentProjectDefault())
     updaters = fields.UpdatersField()
@@ -32,8 +32,8 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             'updaters',
             'created',
             'last_updated',
-            'aspects',
-            'data',
+            'wn_aspect',
+            'project_aspect',
 
         )
         embedded_fields = (
@@ -46,24 +46,29 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
 
     def get_aspects(self, obj):
         return [
-            reverse('api:topics-wn-detail',
-                    args=[obj.project.slug, obj.pk],
-                    request=self.context['request']),
-            reverse('api:topics-proj-detail',
-                    args=[obj.project.slug, obj.pk],
-                    request=self.context['request'])
         ]
 
-    def get_data(self, obj):
-        en_topic_url, project_topic_url = self.get_aspects(obj)
+    def get_wn_aspect(self, obj):
+        url = reverse(
+            'api:topics-wn-detail',
+            args=[obj.project.slug, obj.pk],
+            request=self.context['request'])
         return {
-            en_topic_url: {
-                "@id": en_topic_url,
-                "@graph": ENTopicSerializer(obj, context=self.context).data
-            },
-            project_topic_url: {
-                "@id": project_topic_url,
-                "@graph": obj.ld
+            '@graph': {
+                '@id': url,
+                '@graph': ENTopicSerializer(obj, context=self.context).data
+            }
+        }
+
+    def get_project_aspect(self, obj):
+        url = reverse(
+            'api:topics-proj-detail',
+            args=[obj.project.slug, obj.pk],
+            request=self.context['request'])
+        return {
+            '@graph': {
+                '@id': url,
+                '@graph': obj.ld
             }
         }
 

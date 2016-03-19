@@ -46,7 +46,10 @@ class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
                   BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
-    hydra_project_perms = ('main.change_topic', 'main.delete_topic',)
+    hydra_project_perms = (
+        'main.change_topic',
+        'main.delete_topic',
+    )
 
 
 class ENTopicDetail(BaseDetailView):

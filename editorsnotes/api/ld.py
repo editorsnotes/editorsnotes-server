@@ -55,6 +55,10 @@ CONTEXT.update(OrderedDict((
     ))),
     ('name', 'schema:name'),
     ('project', 'schema:isPartOf'),
+    ('project_aspect', OrderedDict((
+        ('@container', '@index'),
+        ('@id', 'vaem:hasAspect'),
+    ))),
     ('referenced_by', OrderedDict((
         ('@reverse', 'schema:mentions'),
         ('@type', '@id'),
@@ -78,4 +82,8 @@ CONTEXT.update(OrderedDict((
         ('@type', '@id'),
     ))),
     ('url', '@id'),
+    ('wn_aspect', OrderedDict((
+        ('@container', '@index'),
+        ('@id', 'vaem:hasAspect'),
+    ))),
 )))

@@ -2,9 +2,10 @@ from collections import OrderedDict
 
 from rest_framework import renderers
 
-from rdflib import Graph
+from rdflib import ConjunctiveGraph
+from rdflib.namespace import Namespace
 
-from .ld import CONTEXT
+from .ld import CONTEXT, NAMESPACES
 
 
 class BrowsableJSONLDRenderer(renderers.BrowsableAPIRenderer):
@@ -47,6 +48,11 @@ class TurtleRenderer(JSONLDRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
         jsonld = super(TurtleRenderer, self)\
             .render(data, accepted_media_type, renderer_context)
-        g = Graph()
+
+        g = ConjunctiveGraph()
+        for ns, uri in NAMESPACES.items():
+            g.bind(ns, Namespace(uri))
+
         g.parse(data=jsonld, format='json-ld')
+
         return g.serialize(format='turtle')
