@@ -1,7 +1,8 @@
 from pyld import jsonld
 
-from rest_framework.response import Response
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 
 from editorsnotes.main.models import Topic
 
@@ -46,12 +47,11 @@ class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
                   BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
-    hydra_project_perms = ('main.change_topic', 'main.delete_topic',)
 
-
-class ENTopicDetail(BaseDetailView):
-    queryset = Topic.objects.all()
-    serializer_class = ENTopicSerializer
+    # FIXME: remove PUT altogether when hydra links are workin for topic aspects
+    # allowed_methods = ('GET', 'DELETE',)
+    def put(self, *args, **kwargs):
+        raise MethodNotAllowed()
 
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
@@ -62,12 +62,22 @@ class TopicConfirmDelete(DeleteConfirmAPIView):
     }
 
 
+class ENTopicDetail(BaseDetailView):
+    queryset = Topic.objects.all()
+    serializer_class = ENTopicSerializer
+    permissions = {
+        'PUT': ('main.change_topic',)
+    }
+    allowed_methods = ('GET', 'PUT',)
+
+
 class TopicLDDetail(ProjectSpecificMixin, GenericAPIView):
+    queryset = Topic.objects.all()
     permission_classes = (ProjectSpecificPermissions,)
     permissions = {
         'PUT': ('main.change_topic',)
     }
-    queryset = Topic.objects.all()
+    allowed_methods = ('GET', 'PUT',)
 
     def get(self, request, **kwargs):
         topic = self.get_object()

@@ -41,6 +41,10 @@ CONTEXT.update(OrderedDict((
         ('@type', 'xsd:dateTimeStamp'),
     ))),
     ('license', 'schema:license'),
+    ('linked_data', OrderedDict((
+        ('@container', '@index'),
+        ('@id', 'vaem:hasAspect'),
+    ))),
     ('links', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@set'),
@@ -78,4 +82,8 @@ CONTEXT.update(OrderedDict((
         ('@type', '@id'),
     ))),
     ('url', '@id'),
+    ('wn_data', OrderedDict((
+        ('@container', '@index'),
+        ('@id', 'vaem:hasAspect'),
+    ))),
 )))
