@@ -67,6 +67,7 @@ class ENTopicDetail(BaseDetailView):
 
 
 class TopicLDDetail(ProjectSpecificMixin, GenericAPIView):
+    queryset = Topic.objects.all()
     permission_classes = (ProjectSpecificPermissions,)
     permissions = {
         'PUT': ('main.change_topic',)

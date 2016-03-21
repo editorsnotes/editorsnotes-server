@@ -133,26 +133,26 @@ class TopicSerializerTestCase(ClearContentTypesTransactionTestCase):
         project_topic_url = base_url + 'p/'
 
         self.assertEqual(serializer.data['url'], base_url)
-        self.assertListEqual(serializer.data['aspects'], [
-            wn_topic_url,
-            project_topic_url
-        ])
 
-        self.assertDictEqual(serializer.data['data'][wn_topic_url], {
-            "@id": wn_topic_url,
+        self.assertDictEqual(serializer.data['wn_data'], {
             "@graph": {
-                "url": base_url,
-                "preferred_name": "Emma Goldman",
-                "alternate_names": [],
-                "related_topics": [],
-                "markup": None,
-                "markup_html": None,
-                "references": [],
-                "referenced_by": []
+                "@id": wn_topic_url,
+                "@graph": {
+                    "url": base_url,
+                    "preferred_name": "Emma Goldman",
+                    "alternate_names": [],
+                    "related_topics": [],
+                    "markup": None,
+                    "markup_html": None,
+                    "references": [],
+                    "referenced_by": []
+                }
             }
         })
 
-        self.assertDictEqual(serializer.data['data'][project_topic_url], {
-            "@id": project_topic_url,
-            "@graph": {}
+        self.assertDictEqual(serializer.data['linked_data'], {
+            "@graph": {
+                "@id": project_topic_url,
+                "@graph": {}
+            }
         })

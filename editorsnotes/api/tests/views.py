@@ -143,7 +143,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(
             etree.tostring(topic_obj.markup_html),
-            response.data['data'][topic_url + 'w/']['@graph']['markup_html'])
+            response.data['wn_data']['@graph']['@graph']['markup_html'])
 
         # Make sure a revision was created
         self.assertEqual(Revision.objects.count(), 1)
@@ -244,7 +244,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(
             topic_obj.preferred_name,
-            topic_data['data'][topic_url + 'w/']['@graph']['preferred_name'])
+            topic_data['wn_data']['@graph']['@graph']['preferred_name'])
 
         self.assertEqual(topic_obj.preferred_name,
                          TEST_TOPIC['preferred_name'])

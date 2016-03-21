@@ -16,8 +16,8 @@ __all__ = ['TopicSerializer', 'ENTopicSerializer']
 class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     url = fields.IdentityURLField(view_name='api:topics-detail')
     type = serializers.SerializerMethodField()
-    wn_aspect = serializers.SerializerMethodField()
-    project_aspect = serializers.SerializerMethodField()
+    wn_data = serializers.SerializerMethodField()
+    linked_data = serializers.SerializerMethodField()
     project = fields.HyperlinkedAffiliatedProjectField(
         default=fields.CurrentProjectDefault())
     updaters = fields.UpdatersField()
@@ -32,8 +32,8 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             'updaters',
             'created',
             'last_updated',
-            'wn_aspect',
-            'project_aspect',
+            'wn_data',
+            'linked_data',
 
         )
         embedded_fields = (
@@ -44,11 +44,7 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
     def get_type(self, obj):
         return ROOT_NAMESPACE + 'Topic'
 
-    def get_aspects(self, obj):
-        return [
-        ]
-
-    def get_wn_aspect(self, obj):
+    def get_wn_data(self, obj):
         url = reverse(
             'api:topics-wn-detail',
             args=[obj.project.slug, obj.pk],
@@ -60,7 +56,7 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             }
         }
 
-    def get_project_aspect(self, obj):
+    def get_linked_data(self, obj):
         url = reverse(
             'api:topics-proj-detail',
             args=[obj.project.slug, obj.pk],

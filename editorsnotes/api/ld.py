@@ -41,6 +41,10 @@ CONTEXT.update(OrderedDict((
         ('@type', 'xsd:dateTimeStamp'),
     ))),
     ('license', 'schema:license'),
+    ('linked_data', OrderedDict((
+        ('@container', '@index'),
+        ('@id', 'vaem:hasAspect'),
+    ))),
     ('links', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@set'),
@@ -55,10 +59,6 @@ CONTEXT.update(OrderedDict((
     ))),
     ('name', 'schema:name'),
     ('project', 'schema:isPartOf'),
-    ('project_aspect', OrderedDict((
-        ('@container', '@index'),
-        ('@id', 'vaem:hasAspect'),
-    ))),
     ('referenced_by', OrderedDict((
         ('@reverse', 'schema:mentions'),
         ('@type', '@id'),
@@ -82,7 +82,7 @@ CONTEXT.update(OrderedDict((
         ('@type', '@id'),
     ))),
     ('url', '@id'),
-    ('wn_aspect', OrderedDict((
+    ('wn_data', OrderedDict((
         ('@container', '@index'),
         ('@id', 'vaem:hasAspect'),
     ))),
