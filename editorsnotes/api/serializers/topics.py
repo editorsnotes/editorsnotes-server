@@ -22,6 +22,26 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
         default=fields.CurrentProjectDefault())
     updaters = fields.UpdatersField()
 
+    wn_aspect = fields.CustomLookupHyperlinkedField(
+        view_name='api:topics-wn-detail',
+        help_text='Working Notes-defined data for this topic.',
+        lookup_kwarg_attrs={
+            'project_slug': 'project.slug',
+            'pk': 'pk'
+        },
+        read_only=True
+    )
+
+    project_aspect = fields.CustomLookupHyperlinkedField(
+        view_name='api:topics-proj-detail',
+        help_text='Project-defined data for this topic.',
+        lookup_kwarg_attrs={
+            'project_slug': 'project.slug',
+            'pk': 'pk'
+        },
+        read_only=True
+    )
+
     class Meta:
         model = Topic
         fields = (
@@ -32,6 +52,8 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             'updaters',
             'created',
             'last_updated',
+            'wn_aspect',
+            'project_aspect',
             'wn_data',
             'linked_data',
 
