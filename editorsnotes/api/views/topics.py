@@ -46,15 +46,7 @@ class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
                   BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
-    hydra_project_perms = (
-        'main.change_topic',
-        'main.delete_topic',
-    )
-
-
-class ENTopicDetail(BaseDetailView):
-    queryset = Topic.objects.all()
-    serializer_class = ENTopicSerializer
+    allowed_methods = ('GET', 'DELETE',)
 
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
@@ -65,12 +57,21 @@ class TopicConfirmDelete(DeleteConfirmAPIView):
     }
 
 
+class ENTopicDetail(BaseDetailView):
+    queryset = Topic.objects.all()
+    serializer_class = ENTopicSerializer
+    permissions = {
+        'PUT': ('main.change_topic',)
+    }
+    allowed_methods = ('GET', 'PUT',)
+
+
 class TopicLDDetail(ProjectSpecificMixin, GenericAPIView):
     permission_classes = (ProjectSpecificPermissions,)
     permissions = {
         'PUT': ('main.change_topic',)
     }
-    queryset = Topic.objects.all()
+    allowed_methods = ('GET', 'PUT',)
 
     def get(self, request, **kwargs):
         topic = self.get_object()
