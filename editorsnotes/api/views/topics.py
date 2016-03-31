@@ -3,6 +3,7 @@ from pyld import jsonld
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
 from editorsnotes.main.models import Topic
 
@@ -47,11 +48,44 @@ class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
                   BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
+    allowed_methods = ('GET', 'DELETE',)
 
-    # FIXME: remove PUT altogether when hydra links are workin for topic aspects
-    # allowed_methods = ('GET', 'DELETE',)
     def put(self, *args, **kwargs):
         raise MethodNotAllowed()
+
+    def finalize_response(self, request, *args, **kwargs):
+        response = super(TopicDetail, self).finalize_response(request, *args, **kwargs)
+
+        hydra_class = self.get_hydra_class(request)
+
+        wn_aspect = next(
+            p for p in hydra_class['hydra:supportedProperty']
+            if p['hydra:title'] == 'wn_aspect'
+        )['property']
+
+        project_aspect = next(
+            p for p in hydra_class['hydra:supportedProperty']
+            if p['hydra:title'] == 'project_aspect'
+        )['property']
+
+        response.data['embedded'][wn_aspect['@id']] = wn_aspect
+        response.data['embedded'][project_aspect['@id']] = project_aspect
+
+        # Add hydra links for different aspects
+        response.data['@context'] = {
+            'wn_aspect': {
+                '@type': '@id',
+                '@id': wn_aspect['@id'],
+            },
+            'project_aspect': {
+                '@type': '@id',
+                '@id': project_aspect['@id'],
+            }
+        }
+
+        # Change @context to point aspects toward links
+
+        return response
 
 
 class TopicConfirmDelete(DeleteConfirmAPIView):
@@ -66,7 +100,10 @@ class ENTopicDetail(BaseDetailView):
     queryset = Topic.objects.all()
     serializer_class = ENTopicSerializer
     permissions = {
-        'PUT': ('main.change_topic',)
+        'PUT': (
+            # FIXME: make this change_wn_aspect
+            'main.change_topic',
+        )
     }
     allowed_methods = ('GET', 'PUT',)
 
@@ -75,7 +112,10 @@ class TopicLDDetail(ProjectSpecificMixin, GenericAPIView):
     queryset = Topic.objects.all()
     permission_classes = (ProjectSpecificPermissions,)
     permissions = {
-        'PUT': ('main.change_topic',)
+        'PUT': (
+            # FIXME: make this change_project_aspect
+            'main.change_topic',
+        )
     }
     allowed_methods = ('GET', 'PUT',)
 
