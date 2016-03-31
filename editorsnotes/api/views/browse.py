@@ -23,7 +23,6 @@ def root(request, format=None):
     data['search'] = reverse('api:search', request=request)
 
     if request.user.is_authenticated():
-        data['affiliated_projects'] = OrderedDict()
         data['embedded'] = OrderedDict()
 
         projects = request.user.get_affiliated_projects()
@@ -37,14 +36,23 @@ def root(request, format=None):
 
             project_data = OrderedDict()
             project_data['@context'] = {
-                'notes': url + 'vocab#Project/notes',
-                'topics': url + 'vocab#Project/topics',
-                'documents': url + 'vocab#Project/documents',
+                'notes': {
+                    "@type": "@id",
+                    "@id": url + 'vocab#Project/notes'
+                },
+                'topics': {
+                    "@type": "@id",
+                    "@id": url + 'vocab#Project/topics'
+                },
+                'documents': {
+                    "@type": "@id",
+                    "@id": url + 'vocab#Project/documents'
+                },
             }
 
             project_data.update(project_serializer.data)
 
-            data['affiliated_projects'][url] = project_data
+            data['embedded'][url] = project_data
             link_properties = link_properties_for_project(project, request)
 
             for link in link_properties:

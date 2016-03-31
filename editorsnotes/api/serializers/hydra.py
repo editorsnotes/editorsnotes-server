@@ -338,11 +338,11 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
 
                 if 'hydra:expects' in operation:
                     operation['hydra:expects'] = \
-                        self.domain + child_label.title()
+                        { "@id": self.domain + child_label.title() }
 
                 if 'hydra:returns' in operation:
                     operation['hydra:returns'] = \
-                        self.domain + child_label.title()
+                        { "@id": self.domain + child_label.title() }
                 operations.append(operation)
 
         return operations
