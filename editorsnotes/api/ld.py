@@ -9,6 +9,7 @@ NAMESPACES = OrderedDict((
     ('hydra', 'http://www.w3.org/ns/hydra/core#'),
     ('itm', 'http://spi-fm.uca.es/spdef/models/genericTools/itm/1.0#'),
     ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'),
+    ('rdfs', 'http://www.w3.org/2000/01/rdf-schema#'),
     ('schema', 'http://schema.org/'),
     ('vaem', 'http://www.linkedmodel.org/schema/vaem#'),
     ('xsd', 'http://www.w3.org/2001/XMLSchema#'),
@@ -32,6 +33,10 @@ CONTEXT.update(OrderedDict((
         ('@container', '@index'),
     ))),
     ('display_name', 'schema:name'),
+    ('domain', OrderedDict((
+        ('@id', 'rdfs:domain'),
+        ('@type', '@id'),
+    ))),
     ('embedded', OrderedDict((
         ('@id', '@graph'),
         ('@container', '@index'),
@@ -40,6 +45,7 @@ CONTEXT.update(OrderedDict((
         ('@id', 'schema:dateModified'),
         ('@type', 'xsd:dateTimeStamp'),
     ))),
+    ('label', 'rdfs:label'),
     ('license', 'schema:license'),
     ('linked_data', OrderedDict((
         ('@container', '@index'),
@@ -59,6 +65,10 @@ CONTEXT.update(OrderedDict((
     ))),
     ('name', 'schema:name'),
     ('project', 'schema:isPartOf'),
+    ('range', OrderedDict((
+        ('@id', 'rdfs:range'),
+        ('@type', '@id'),
+    ))),
     ('referenced_by', OrderedDict((
         ('@reverse', 'schema:mentions'),
         ('@type', '@id'),
