@@ -131,7 +131,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data, None)
 
         location = response.get('Location').replace('http://testserver', '')
-        response = self.client.get(location)
+        response = self.client.get(location, content_type='application/json')
 
         new_topic_id = response.data.get('id')
         topic_obj = main_models.Topic.objects.get(id=new_topic_id)

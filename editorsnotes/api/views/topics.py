@@ -56,34 +56,36 @@ class TopicDetail(EmbeddedReferencesMixin, HydraAffordancesMixin,
     def finalize_response(self, request, *args, **kwargs):
         response = super(TopicDetail, self).finalize_response(request, *args, **kwargs)
 
-        hydra_class = self.get_hydra_class(request)
+        if request.method == 'GET':
+            hydra_class = self.get_hydra_class(request)
 
-        wn_aspect = next(
-            p for p in hydra_class['hydra:supportedProperty']
-            if p['hydra:title'] == 'wn_aspect'
-        )['property']
+            wn_aspect = next(
+                p for p in hydra_class['hydra:supportedProperty']
+                if p['hydra:title'] == 'wn_aspect'
+            )['property']
 
-        project_aspect = next(
-            p for p in hydra_class['hydra:supportedProperty']
-            if p['hydra:title'] == 'project_aspect'
-        )['property']
+            project_aspect = next(
+                p for p in hydra_class['hydra:supportedProperty']
+                if p['hydra:title'] == 'project_aspect'
+            )['property']
 
-        response.data['embedded'][wn_aspect['@id']] = wn_aspect
-        response.data['embedded'][project_aspect['@id']] = project_aspect
+            response.data['embedded'][wn_aspect['@id']] = wn_aspect
+            response.data['embedded'][project_aspect['@id']] = project_aspect
 
-        # Add hydra links for different aspects
-        response.data['@context'] = {
-            'wn_aspect': {
-                '@type': '@id',
-                '@id': wn_aspect['@id'],
-            },
-            'project_aspect': {
-                '@type': '@id',
-                '@id': project_aspect['@id'],
+            # Add hydra links for different aspects
+            response.data['@context'] = {
+                'wn_aspect': {
+                    '@type': '@id',
+                    '@id': wn_aspect['@id'],
+                },
+                'project_aspect': {
+                    '@type': '@id',
+                    '@id': project_aspect['@id'],
+                }
             }
-        }
 
-        # Change @context to point aspects toward links
+
+            # Change @context to point aspects toward links
 
         return response
 
