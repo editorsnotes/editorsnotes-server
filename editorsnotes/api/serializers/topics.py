@@ -42,6 +42,12 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
         read_only=True
     )
 
+    references = fields.UnqualifiedURLField(
+        source='get_referenced_items')
+    referenced_by = fields.UnqualifiedURLField(
+        source='get_referencing_items')
+
+
     class Meta:
         model = Topic
         fields = (
@@ -56,11 +62,14 @@ class TopicSerializer(EmbeddedItemsMixin, serializers.ModelSerializer):
             'project_aspect',
             'wn_data',
             'linked_data',
-
+            'references',
+            'referenced_by',
         )
         embedded_fields = (
             'project',
             'updaters',
+            'references',
+            'referenced_by',
         )
 
     def get_type(self, obj):
@@ -96,11 +105,6 @@ class ENTopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
     url = fields.IdentityURLField(view_name='api:topics-detail')
     related_topics = fields.TopicAssignmentField(many=True)
 
-    references = fields.UnqualifiedURLField(
-        source='get_referenced_items')
-    referenced_by = fields.UnqualifiedURLField(
-        source='get_referencing_items')
-
     class Meta:
         model = Topic
         fields = (
@@ -112,13 +116,8 @@ class ENTopicSerializer(RelatedTopicSerializerMixin, EmbeddedItemsMixin,
 
             'markup',
             'markup_html',
-
-            'references',
-            'referenced_by',
         )
         embedded_fields = (
             'related_topics',
-            'references',
-            'referenced_by',
         )
         validators = [UniqueToProjectValidator('preferred_name')]
