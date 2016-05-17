@@ -14,7 +14,7 @@ install:
 
 before_script:
   - "nvm use 4.2.0 && ./node_modules/.bin/editorsnotes_renderer --port=9393 &"
-  - fab make_settings
+  - make editorsnotes/settings_local.py
   - "sed -i -e \"s/'NAME': '',/'NAME': 'testdb',/\" editorsnotes/settings_local.py"
   - "sed -i -e \"s/'USER': '',/'USER': 'postgres',/\" editorsnotes/settings_local.py"
   - "sed -i -e \"s|# STORAGE_PATH: ''|STORAGE_PATH: '$TRAVIS_BUILD_DIR/editorsnotes/static'|\" editorsnotes/settings_local.py"
