@@ -66,13 +66,11 @@ class DeleteConfirmAPIView(ProjectSpecificMixin, GenericAPIView):
 
         ret = {'items': []}
 
-        for model, instances in collector.data.items():
+        for model, instances in list(collector.data.items()):
             display_obj = rel_model.get(model._meta.model_name,
                                         lambda original, related: related)
             instances = [display_obj(obj, instance) for instance in instances]
-            instances = filter(
-                lambda instance: hasattr(instance, 'get_absolute_url'),
-                instances)
+            instances = [instance for instance in instances if hasattr(instance, 'get_absolute_url')]
             counter = Counter(instances)
             ret['items'] += [{
                 'name': force_text(instance),
@@ -80,7 +78,7 @@ class DeleteConfirmAPIView(ProjectSpecificMixin, GenericAPIView):
                     instance.get_absolute_url()),
                 'type': model._meta.verbose_name,
                 'count': count
-            } for instance, count in counter.items()]
+            } for instance, count in list(counter.items())]
 
         ret['items'].sort(
             key=lambda item: item['type'] != obj._meta.verbose_name)

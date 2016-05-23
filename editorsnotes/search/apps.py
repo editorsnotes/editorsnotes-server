@@ -32,7 +32,7 @@ class SearchAppConfig(AppConfig):
                 raise err
 
             logger.critical(
-                u'Encountered error updating mappings in Elasticsearch. '
+                'Encountered error updating mappings in Elasticsearch. '
                 'You likely need to run `rebuild_es_index`, or else '
                 'Elasticsearch will not run properly.\n\n'
                 'Original error was:\n{}\n'.format(err.error))

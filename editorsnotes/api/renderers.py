@@ -50,7 +50,7 @@ class TurtleRenderer(JSONLDRenderer):
             .render(data, accepted_media_type, renderer_context)
 
         g = ConjunctiveGraph()
-        for ns, uri in NAMESPACES.items():
+        for ns, uri in list(NAMESPACES.items()):
             g.bind(ns, Namespace(uri))
 
         g.parse(data=jsonld, format='json-ld')

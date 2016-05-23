@@ -2,7 +2,7 @@ from rest_framework.serializers import ValidationError
 
 
 class UniqueToProjectValidator:
-    message = u'{model_name} with this {field_name} already exists.'
+    message = '{model_name} with this {field_name} already exists.'
 
     def __init__(self, field, message=None):
         self.field_name = field

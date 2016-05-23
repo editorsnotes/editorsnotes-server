@@ -11,7 +11,7 @@ textify = etree.XSLT(etree.parse(
 def xhtml_to_text(xhtml):
     if xhtml is None: 
         return ''
-    string = etree.tostring(textify(xhtml), method='text', encoding=unicode)
+    string = etree.tostring(textify(xhtml), method='text', encoding='unicode')
     if string is None:
         return ''
     return string.strip()
@@ -19,13 +19,13 @@ def xhtml_to_text(xhtml):
 def truncate(text, length=120):
     if len(text) <= length:
         return text
-    l = text[:(length/2)].rsplit(' ', 1)[0]
-    r = text[-(length/2):].split(' ', 1)
+    l = text[:(length//2)].rsplit(' ', 1)[0]
+    r = text[-(length//2):].split(' ', 1)
     if len(r) == 1:
         r = r[0]
     else:
         r = r[1]
-    return l + u'... ' + r
+    return l + '... ' + r
 
 def prepend_space(element):
     element.addprevious(etree.Entity('nbsp'))
@@ -50,7 +50,7 @@ def remove_stray_brs(tree):
     # Check if there's a leading line break without text before it.
     if not len([text for text in tree.xpath('//text()') if not text.is_tail]):
         try:
-            first_child = tree.iterchildren().next()
+            first_child = next(tree.iterchildren())
             if first_child.tag == 'br':
                 first_child.drop_tag()
         except StopIteration:

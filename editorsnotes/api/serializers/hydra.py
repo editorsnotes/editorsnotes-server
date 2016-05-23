@@ -15,11 +15,9 @@ from ..permissions import ProjectSpecificPermissions
 
 
 def hydra_class_for_type(item_type, project, request):
-    project_hydra_class = filter(
-        lambda hydra_class: hydra_class['label'] == item_type,
-        ProjectHydraClassesSerializer(
+    project_hydra_class = [hydra_class for hydra_class in ProjectHydraClassesSerializer(
             project, context={'request': request}
-        ).data['hydra:supportedClass'])
+        ).data['hydra:supportedClass'] if hydra_class['label'] == item_type]
 
     if not len(project_hydra_class):
         raise ValueError('No project hydra class exists for '
@@ -94,7 +92,7 @@ class ReplaceLDFields(object):
     """
     def __init__(self, *args, **kwargs):
         super(ReplaceLDFields, self).__init__(*args, **kwargs)
-        for field in self.fields:
+        for field in list(self.fields):
             if field.startswith('hydra_'):
                 hydra_name = field.replace('hydra_', 'hydra:')
                 self.fields[hydra_name] = self.fields.pop(field)
@@ -164,7 +162,7 @@ class HydraProjectClassSerializer(ReplaceLDFields, serializers.Serializer):
                 context=self.context
             ).data
             for property_name, field
-            in self.class_serializer().get_fields().items()
+            in list(self.class_serializer().get_fields().items())
             if property_name not in ignored_fields
         ]
 
@@ -313,7 +311,7 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
         view_obj = self.view_class()
         request = self.context['request']
 
-        for method, op in SUPPORTED_HYDRA_METHODS.items():
+        for method, op in list(SUPPORTED_HYDRA_METHODS.items()):
             if method not in view_obj.allowed_methods:
                 continue
 

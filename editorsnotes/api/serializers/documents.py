@@ -59,7 +59,7 @@ class ScanSerializer(serializers.ModelSerializer):
 
 
 class UniqueDocumentDescriptionValidator:
-    message = u'Document with this description already exists.'
+    message = 'Document with this description already exists.'
 
     def set_context(self, serializer):
         self.instance = getattr(self, 'instance', None)

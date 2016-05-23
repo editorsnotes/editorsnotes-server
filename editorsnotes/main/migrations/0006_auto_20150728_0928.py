@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='project',
             name='default_license',
-            field=models.ForeignKey(default=1, to='licensing.License', help_text=b'Default license for project notes. Licenses can also be set on a note-by-note basis.'),
+            field=models.ForeignKey(default=1, to='licensing.License', help_text='Default license for project notes. Licenses can also be set on a note-by-note basis.'),
         ),
         migrations.AlterField(
             model_name='project',
             name='slug',
-            field=models.SlugField(help_text=b'Used for project-specific URLs and groups. Valid characters: letters, numbers, or _-', unique=True),
+            field=models.SlugField(help_text='Used for project-specific URLs and groups. Valid characters: letters, numbers, or _-', unique=True),
         ),
     ]

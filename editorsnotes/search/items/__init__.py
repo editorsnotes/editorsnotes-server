@@ -31,7 +31,7 @@ class ItemsIndex(ElasticSearchIndex):
 
     def get_mappings(self):
         mappings = {}
-        for type_config in self.document_types.values():
+        for type_config in list(self.document_types.values()):
             mappings.update(type_config.type_mapping)
         return mappings
 

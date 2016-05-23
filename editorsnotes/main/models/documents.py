@@ -20,7 +20,7 @@ from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 from editorsnotes.djotero.models import ZoteroItem
 
 from .. import fields, utils
-from base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
+from .base import (CreationMetadata, LastUpdateMetadata, URLAccessible,
                   Administered, IsReferenced, ENMarkup)
 
 __all__ = ['Document', 'Transcript', 'Scan']
@@ -48,7 +48,7 @@ FROM main_transcript WHERE main_transcript.document_id = main_document.id )
 
 class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
                ProjectPermissionsMixin, UpdatersMixin, ZoteroItem):
-    u"""
+    """
     Anything that can be taken as evidence for (documentation of) something.
 
     Documents are best defined by example: letters, newspaper articles,
@@ -78,7 +78,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
 
     @staticmethod
     def strip_description(description):
-        description_str = etree.tostring(description) \
+        description_str = etree.tostring(description, encoding='unicode') \
             if isinstance(description, html.HtmlElement) \
             else description
         return ''.join(
@@ -88,7 +88,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
     @staticmethod
     def hash_description(description):
         string_to_hash = Document.strip_description(description).lower()
-        return md5(string_to_hash).hexdigest()
+        return md5(string_to_hash.encode()).hexdigest()
 
     def validate_unique(self, exclude=None):
         super(Document, self).validate_unique(exclude)
@@ -100,7 +100,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
         if qs.exists():
             raise ValidationError({
                 'description': [
-                    u'Document with this description already exists.'
+                    'Document with this description already exists.'
                 ]
             })
 
@@ -185,7 +185,7 @@ class TranscriptManager(models.Manager):
 
 class Transcript(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
                  ProjectPermissionsMixin):
-    u"""
+    """
     A text transcript of a document.
     """
     document = models.OneToOneField(Document, related_name='_transcript')
@@ -213,7 +213,7 @@ reversion.register(Transcript)
 
 
 class Scan(CreationMetadata, ProjectPermissionsMixin):
-    u"""
+    """
     A scanned image of (part of) a document.
     """
     document = models.ForeignKey(Document, related_name='scans')
@@ -227,7 +227,7 @@ class Scan(CreationMetadata, ProjectPermissionsMixin):
         ordering = ['ordering', '-created']
 
     def __unicode__(self):
-        return u'Scan for %s (order: %s)' % (self.document, self.ordering)
+        return 'Scan for %s (order: %s)' % (self.document, self.ordering)
 
     def generate_thumbnail(self, save=True):
         size = 256, 256

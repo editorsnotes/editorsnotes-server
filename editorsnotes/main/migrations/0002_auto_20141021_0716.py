@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 import editorsnotes.djotero.fields
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('name', models.CharField(max_length=200)),
-                ('creator', models.ForeignKey(related_name=b'created_alternatename_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_alternatename_set', editable=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('notes', editorsnotes.main.fields.XHTMLField(null=True, blank=True)),
                 ('object_id', models.PositiveIntegerField()),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('creator', models.ForeignKey(related_name=b'created_citation_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_citation_set', editable=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['ordering'],
@@ -61,11 +61,11 @@ class Migration(migrations.Migration):
                 ('description', editorsnotes.main.fields.XHTMLField()),
                 ('description_digest', models.CharField(max_length=32, editable=False)),
                 ('ordering', models.CharField(max_length=32, editable=False)),
-                ('language', models.CharField(default=b'English', max_length=32)),
+                ('language', models.CharField(default='English', max_length=32)),
                 ('edtf_date', models.TextField(null=True, blank=True)),
-                ('collection', models.ForeignKey(related_name=b'parts', blank=True, to='main.Document', null=True)),
-                ('creator', models.ForeignKey(related_name=b'created_document_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('last_updater', models.ForeignKey(related_name=b'last_to_update_document_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('collection', models.ForeignKey(related_name='parts', blank=True, to='main.Document', null=True)),
+                ('creator', models.ForeignKey(related_name='created_document_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('last_updater', models.ForeignKey(related_name='last_to_update_document_set', editable=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['ordering', 'import_id'],
@@ -79,8 +79,8 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('url', models.URLField()),
                 ('description', models.TextField(blank=True)),
-                ('creator', models.ForeignKey(related_name=b'created_documentlink_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('document', models.ForeignKey(related_name=b'links', to='main.Document')),
+                ('creator', models.ForeignKey(related_name='created_documentlink_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('document', models.ForeignKey(related_name='links', to='main.Document')),
             ],
             options={
             },
@@ -93,8 +93,8 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('key', models.CharField(max_length=32)),
                 ('value', models.TextField()),
-                ('creator', models.ForeignKey(related_name=b'created_documentmetadata_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('document', models.ForeignKey(related_name=b'metadata', to='main.Document')),
+                ('creator', models.ForeignKey(related_name='created_documentmetadata_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('document', models.ForeignKey(related_name='metadata', to='main.Document')),
             ],
             options={
             },
@@ -107,7 +107,7 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('object_id', models.PositiveIntegerField()),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('creator', models.ForeignKey(related_name=b'created_featureditem_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_featureditem_set', editable=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -120,8 +120,8 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('last_updated', models.DateTimeField(auto_now=True)),
                 ('content', editorsnotes.main.fields.XHTMLField()),
-                ('creator', models.ForeignKey(related_name=b'created_footnote_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('last_updater', models.ForeignKey(related_name=b'last_to_update_footnote_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_footnote_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('last_updater', models.ForeignKey(related_name='last_to_update_footnote_set', editable=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -131,8 +131,8 @@ class Migration(migrations.Migration):
             name='LegacyTopic',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('preferred_name', models.CharField(unique=True, max_length=b'80')),
-                ('slug', models.CharField(unique=True, max_length=b'80', editable=False, db_index=True)),
+                ('preferred_name', models.CharField(unique=True, max_length='80')),
+                ('slug', models.CharField(unique=True, max_length='80', editable=False, db_index=True)),
             ],
             options={
                 'ordering': ['slug'],
@@ -161,14 +161,14 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('last_updated', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(unique=True, max_length=b'80')),
+                ('title', models.CharField(unique=True, max_length='80')),
                 ('content', editorsnotes.main.fields.XHTMLField()),
-                ('status', models.CharField(default=b'1', max_length=1, choices=[(b'0', b'closed'), (b'1', b'open'), (b'2', b'hibernating')])),
+                ('status', models.CharField(default='1', max_length=1, choices=[('0', 'closed'), ('1', 'open'), ('2', 'hibernating')])),
                 ('is_private', models.BooleanField(default=False)),
                 ('sections_counter', models.PositiveIntegerField(default=0)),
                 ('assigned_users', models.ManyToManyField(to=settings.AUTH_USER_MODEL, null=True, blank=True)),
-                ('creator', models.ForeignKey(related_name=b'created_note_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('last_updater', models.ForeignKey(related_name=b'last_to_update_note_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_note_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('last_updater', models.ForeignKey(related_name='last_to_update_note_set', editable=False, to=settings.AUTH_USER_MODEL)),
                 ('license', models.ForeignKey(blank=True, to='licensing.License', null=True)),
             ],
             options={
@@ -217,9 +217,9 @@ class Migration(migrations.Migration):
             name='Project',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=b'80')),
-                ('slug', models.SlugField(help_text=b'Used for project-specific URLs and groups', unique=True)),
-                ('image', models.ImageField(null=True, upload_to=b'project_images', blank=True)),
+                ('name', models.CharField(max_length='80')),
+                ('slug', models.SlugField(help_text='Used for project-specific URLs and groups', unique=True)),
+                ('image', models.ImageField(null=True, upload_to='project_images', blank=True)),
                 ('description', editorsnotes.main.fields.XHTMLField(null=True, blank=True)),
                 ('default_license', models.ForeignKey(default=1, to='licensing.License')),
             ],
@@ -234,7 +234,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('email', models.EmailField(max_length=75)),
-                ('creator', models.ForeignKey(related_name=b'created_projectinvitation_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_projectinvitation_set', editable=False, to=settings.AUTH_USER_MODEL)),
                 ('project', models.ForeignKey(to='main.Project')),
             ],
             options={
@@ -248,7 +248,7 @@ class Migration(migrations.Migration):
                 ('is_super_role', models.BooleanField(default=False)),
                 ('role', models.CharField(max_length=40)),
                 ('group', models.OneToOneField(to='auth.Group')),
-                ('project', models.ForeignKey(related_name=b'roles', to='main.Project')),
+                ('project', models.ForeignKey(related_name='roles', to='main.Project')),
             ],
             options={
             },
@@ -258,8 +258,8 @@ class Migration(migrations.Migration):
             name='RevisionLogActivity',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('log_activity', models.OneToOneField(related_name=b'revision_metadata', to='main.LogActivity')),
-                ('revision', models.ForeignKey(related_name=b'logactivity_metadata', to='reversion.Revision')),
+                ('log_activity', models.OneToOneField(related_name='revision_metadata', to='main.LogActivity')),
+                ('revision', models.ForeignKey(related_name='logactivity_metadata', to='reversion.Revision')),
             ],
             options={
             },
@@ -270,7 +270,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('project', models.ForeignKey(to='main.Project')),
-                ('revision', models.OneToOneField(related_name=b'project_metadata', to='reversion.Revision')),
+                ('revision', models.OneToOneField(related_name='project_metadata', to='reversion.Revision')),
             ],
             options={
             },
@@ -281,11 +281,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
-                ('image', models.ImageField(upload_to=b'scans/%Y/%m')),
-                ('image_thumbnail', models.ImageField(null=True, upload_to=b'scans/%Y/%m', blank=True)),
+                ('image', models.ImageField(upload_to='scans/%Y/%m')),
+                ('image_thumbnail', models.ImageField(null=True, upload_to='scans/%Y/%m', blank=True)),
                 ('ordering', models.IntegerField(null=True, blank=True)),
-                ('creator', models.ForeignKey(related_name=b'created_scan_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('document', models.ForeignKey(related_name=b'scans', to='main.Document')),
+                ('creator', models.ForeignKey(related_name='created_scan_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('document', models.ForeignKey(related_name='scans', to='main.Document')),
             ],
             options={
                 'ordering': ['ordering', '-created'],
@@ -311,10 +311,10 @@ class Migration(migrations.Migration):
                 ('preferred_name', models.CharField(max_length=200)),
                 ('summary', editorsnotes.main.fields.XHTMLField(null=True, blank=True)),
                 ('deleted', models.BooleanField(default=False, editable=False)),
-                ('creator', models.ForeignKey(related_name=b'created_topic_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('last_updater', models.ForeignKey(related_name=b'last_to_update_topic_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_topic_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('last_updater', models.ForeignKey(related_name='last_to_update_topic_set', editable=False, to=settings.AUTH_USER_MODEL)),
                 ('merged_into', models.ForeignKey(blank=True, editable=False, to='main.Topic', null=True)),
-                ('project', models.ForeignKey(related_name=b'topics', to='main.Project')),
+                ('project', models.ForeignKey(related_name='topics', to='main.Project')),
             ],
             options={
             },
@@ -327,8 +327,8 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('object_id', models.PositiveIntegerField()),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('creator', models.ForeignKey(related_name=b'created_topicassignment_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('topic', models.ForeignKey(related_name=b'assignments', blank=True, to='main.Topic', null=True)),
+                ('creator', models.ForeignKey(related_name='created_topicassignment_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('topic', models.ForeignKey(related_name='assignments', blank=True, to='main.Topic', null=True)),
             ],
             options={
             },
@@ -340,11 +340,11 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('last_updated', models.DateTimeField(auto_now=True)),
-                ('_preferred_name', models.CharField(max_length=b'200')),
-                ('type', models.CharField(blank=True, max_length=3, null=True, choices=[(b'EVT', b'Event'), (b'ORG', b'Organization'), (b'PER', b'Person'), (b'PUB', b'Publication')])),
+                ('_preferred_name', models.CharField(max_length='200')),
+                ('type', models.CharField(blank=True, max_length=3, null=True, choices=[('EVT', 'Event'), ('ORG', 'Organization'), ('PER', 'Person'), ('PUB', 'Publication')])),
                 ('deleted', models.BooleanField(default=False, editable=False)),
-                ('creator', models.ForeignKey(related_name=b'created_topicnode_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('last_updater', models.ForeignKey(related_name=b'last_to_update_topicnode_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_topicnode_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('last_updater', models.ForeignKey(related_name='last_to_update_topicnode_set', editable=False, to=settings.AUTH_USER_MODEL)),
                 ('merged_into', models.ForeignKey(blank=True, editable=False, to='main.TopicNode', null=True)),
             ],
             options={
@@ -358,9 +358,9 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('last_updated', models.DateTimeField(auto_now=True)),
                 ('content', editorsnotes.main.fields.XHTMLField()),
-                ('creator', models.ForeignKey(related_name=b'created_transcript_set', editable=False, to=settings.AUTH_USER_MODEL)),
-                ('document', models.OneToOneField(related_name=b'_transcript', to='main.Document')),
-                ('last_updater', models.ForeignKey(related_name=b'last_to_update_transcript_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(related_name='created_transcript_set', editable=False, to=settings.AUTH_USER_MODEL)),
+                ('document', models.OneToOneField(related_name='_transcript', to='main.Document')),
+                ('last_updater', models.ForeignKey(related_name='last_to_update_transcript_set', editable=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -371,7 +371,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
-                ('purpose', models.IntegerField(choices=[(1, b'Feedback'), (2, b'Bug report'), (9, b'Other')])),
+                ('purpose', models.IntegerField(choices=[(1, 'Feedback'), (2, 'Bug report'), (9, 'Other')])),
                 ('message', models.TextField()),
                 ('user', models.ForeignKey(editable=False, to=settings.AUTH_USER_MODEL)),
             ],
@@ -386,7 +386,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='topic',
             name='topic_node',
-            field=models.ForeignKey(related_name=b'project_topics', to='main.TopicNode'),
+            field=models.ForeignKey(related_name='project_topics', to='main.TopicNode'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -406,19 +406,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='notesection',
             name='creator',
-            field=models.ForeignKey(related_name=b'created_notesection_set', editable=False, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='created_notesection_set', editable=False, to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='notesection',
             name='last_updater',
-            field=models.ForeignKey(related_name=b'last_to_update_notesection_set', editable=False, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='last_to_update_notesection_set', editable=False, to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='notesection',
             name='note',
-            field=models.ForeignKey(related_name=b'sections', to='main.Note'),
+            field=models.ForeignKey(related_name='sections', to='main.Note'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -428,7 +428,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='note',
             name='project',
-            field=models.ForeignKey(related_name=b'notes', to='main.Project'),
+            field=models.ForeignKey(related_name='notes', to='main.Project'),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -452,7 +452,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='footnote',
             name='transcript',
-            field=models.ForeignKey(related_name=b'footnotes', to='main.Transcript'),
+            field=models.ForeignKey(related_name='footnotes', to='main.Transcript'),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -468,13 +468,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='document',
             name='project',
-            field=models.ForeignKey(related_name=b'documents', to='main.Project'),
+            field=models.ForeignKey(related_name='documents', to='main.Project'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='document',
             name='zotero_link',
-            field=models.OneToOneField(related_name=b'zotero_item', null=True, blank=True, to='djotero.ZoteroLink'),
+            field=models.OneToOneField(related_name='zotero_item', null=True, blank=True, to='djotero.ZoteroLink'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -490,19 +490,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='citation',
             name='document',
-            field=models.ForeignKey(related_name=b'citations', to='main.Document'),
+            field=models.ForeignKey(related_name='citations', to='main.Document'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='citation',
             name='last_updater',
-            field=models.ForeignKey(related_name=b'last_to_update_citation_set', editable=False, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='last_to_update_citation_set', editable=False, to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='alternatename',
             name='topic',
-            field=models.ForeignKey(related_name=b'alternate_names', to='main.Topic'),
+            field=models.ForeignKey(related_name='alternate_names', to='main.Topic'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(

@@ -85,7 +85,7 @@ class DocumentTypeConfig(object):
     def data_from_object(self, obj):
         serializer = self.serializer(obj, context={'request': self.request})
         json_data = JSONRenderer().render(serializer.data)
-        serialized = json.loads(json_data, object_pairs_hook=OrderedDict)
+        serialized = json.loads(json_data.decode('utf-8'), object_pairs_hook=OrderedDict)
 
         # All items' ES IDs will be the URLs. However, their PKs from the
         # database will also be stored for convenience.

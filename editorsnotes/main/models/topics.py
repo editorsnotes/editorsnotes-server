@@ -9,7 +9,7 @@ from reversion import revisions as reversion
 
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
 
-from base import (
+from .base import (
     Administered, CreationMetadata, LastUpdateMetadata, URLAccessible,
     IsReferenced, ENMarkup)
 
@@ -80,7 +80,7 @@ class TopicAssignment(CreationMetadata, ProjectPermissionsMixin):
         unique_together = ('content_type', 'object_id', 'topic')
 
     def __unicode__(self):
-        return u'{} --> {}: {}'.format(
+        return '{} --> {}: {}'.format(
             self.topic.preferred_name,
             self.content_object._meta.model_name,
             self.content_object)

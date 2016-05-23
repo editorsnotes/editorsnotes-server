@@ -13,6 +13,8 @@
 .svn
 .tmp*
 
+pip-selfcheck.json
+
 bin/*
 build/*
 lib/*

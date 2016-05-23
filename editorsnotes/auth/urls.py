@@ -3,7 +3,7 @@
 from django.conf.urls import patterns, url
 from django.contrib.auth import views as auth_views
 
-import views
+from . import views
 from .forms import ENAuthenticationForm
 
 urlpatterns = [

@@ -1,2 +1,2 @@
 from documents import *
-from projects import *
+from .projects import *

@@ -25,7 +25,7 @@ class ZoteroField(models.TextField):
         if item_type not in valid_item_types:
             raise ValidationError('{} is not a valid item type.'.format(item_type))
 
-        valid_fields = utils.get_item_template(item_type).keys()
+        valid_fields = list(utils.get_item_template(item_type).keys())
         bad_fields = set(data.keys()) - set(valid_fields)
         if len(bad_fields):
             raise ValidationError('Invalid fields for {}: {}.'.format(
@@ -37,7 +37,7 @@ class ZoteroField(models.TextField):
             data = json.loads(cleaned_value)
             cleaned_data = OrderedDict()
             item_template = utils.get_item_template(data['itemType'])
-            for key, default_val in item_template.items():
+            for key, default_val in list(item_template.items()):
                 cleaned_data[key] = data.get(key, default_val) or default_val
             cleaned_value = json.dumps(cleaned_data)
         return cleaned_value

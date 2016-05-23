@@ -15,15 +15,15 @@ from .. import utils
 
 class UtilsTestCase(unittest.TestCase):
     def test_truncate(self):
-        self.assertEquals(utils.truncate(u'xxxxxxxxxx', 4), u'xx... xx')
+        self.assertEqual(utils.truncate('xxxxxxxxxx', 4), 'xx... xx')
 
     def test_native_to_utc(self):
         from datetime import datetime
         naive_datetime = datetime(2011, 2, 10, 16, 42, 54, 421353)
-        self.assertEquals(  # assuming settings.TIME_ZONE is Pacific Time
+        self.assertEqual(  # assuming settings.TIME_ZONE is Pacific Time
             'datetime.datetime(2011, 2, 11, 0, 42, 54, 421353, tzinfo=<UTC>)',
             repr(utils.naive_to_utc(naive_datetime)))
-        self.assertEquals(
+        self.assertEqual(
             'datetime.datetime(2011, 2, 10, 16, 42, 54, 421353, tzinfo=<UTC>)',
             repr(utils.naive_to_utc(naive_datetime, 'UTC')))
         aware_datetime = utils.naive_to_utc(naive_datetime)
@@ -37,37 +37,37 @@ class UtilsTestCase(unittest.TestCase):
             def __init__(self, key):
                 self.key = key
 
-        items = [Item(letter) for letter in string.lowercase]
+        items = [Item(letter) for letter in string.ascii_lowercase]
         random.shuffle(items)
         columns = utils.alpha_columns(items, 'key', itemkey='thing')
-        self.assertEquals(3, len(columns))
-        self.assertEquals(9, len(columns[0]))
-        self.assertEquals(9, len(columns[1]))
-        self.assertEquals(8, len(columns[2]))
-        self.assertEquals('A', columns[0][0]['first_letter'])
-        self.assertEquals('a', columns[0][0]['thing'].key)
-        self.assertEquals('J', columns[1][0]['first_letter'])
-        self.assertEquals('S', columns[2][0]['first_letter'])
-        self.assertEquals('Z', columns[2][7]['first_letter'])
+        self.assertEqual(3, len(columns))
+        self.assertEqual(9, len(columns[0]))
+        self.assertEqual(9, len(columns[1]))
+        self.assertEqual(8, len(columns[2]))
+        self.assertEqual('A', columns[0][0]['first_letter'])
+        self.assertEqual('a', columns[0][0]['thing'].key)
+        self.assertEqual('J', columns[1][0]['first_letter'])
+        self.assertEqual('S', columns[2][0]['first_letter'])
+        self.assertEqual('Z', columns[2][7]['first_letter'])
 
     def test_description_digest(self):
         _hash = main_models.Document.hash_description
         self.assertEqual(
-            _hash(u'Prison Memoirs of an Anarchist'),
-            _hash(u'<div>Prison Memoirs of an Anarchist</div>'))
+            _hash('Prison Memoirs of an Anarchist'),
+            _hash('<div>Prison Memoirs of an Anarchist</div>'))
         self.assertEqual(
-            _hash(u'Prison Memoirs of an Anarchist'),
+            _hash('Prison Memoirs of an Anarchist'),
             _hash(html.fragment_fromstring(
-                u'<div>Prison Memoirs of an Anarchist</div>')))
+                '<div>Prison Memoirs of an Anarchist</div>')))
         self.assertEqual(
-            _hash(u'Prison Memoirs of an Anarchist'),
-            _hash(u'Prison Memoirs of an Anarchist&nbsp;'))
+            _hash('Prison Memoirs of an Anarchist'),
+            _hash('Prison Memoirs of an Anarchist&nbsp;'))
         self.assertEqual(
-            _hash(u'Prison Memoirs of an Anarchist'),
-            _hash(u'Prison Memoirs of an Anarchist.'))
+            _hash('Prison Memoirs of an Anarchist'),
+            _hash('Prison Memoirs of an Anarchist.'))
         self.assertEqual(
-            _hash(u'Prison Memoirs of an Anarchist'),
-            _hash(u'prison memoirs of an anarchist'))
+            _hash('Prison Memoirs of an Anarchist'),
+            _hash('prison memoirs of an anarchist'))
 
     def test_stray_br_stripped(self):
         "<br/> tags with nothing after them should be removed."
@@ -75,21 +75,23 @@ class UtilsTestCase(unittest.TestCase):
             '<div>I am an annoying browser<br/></div>')
         utils.remove_stray_brs(test1)
         self.assertEqual('<div>I am an annoying browser</div>',
-                         etree.tostring(test1))
+                         etree.tostring(test1, encoding='unicode'))
 
         test2 = html.fragment_fromstring('<div>text<br/>text</div>')
         utils.remove_stray_brs(test2)
-        self.assertEqual('<div>text<br/>text</div>', etree.tostring(test2))
+        self.assertEqual('<div>text<br/>text</div>', etree.tostring(test2,
+                                                                    encoding='unicode'))
 
         test3 = html.fragment_fromstring(
             '<div>I<br/><br/> am really annoying.<br/><br/><br/></div>')
         utils.remove_stray_brs(test3)
         self.assertEqual('<div>I<br/> am really annoying.</div>',
-                         etree.tostring(test3))
+                         etree.tostring(test3, encoding='unicode'))
 
         test4 = html.fragment_fromstring('<div><br/>No leading break?</div>')
         utils.remove_stray_brs(test4)
-        self.assertEqual('<div>No leading break?</div>', etree.tostring(test4))
+        self.assertEqual('<div>No leading break?</div>', etree.tostring(test4,
+                                                                        encoding='unicode'))
 
     def test_remove_empty_els(self):
         """
@@ -99,16 +101,19 @@ class UtilsTestCase(unittest.TestCase):
 
         test1 = html.fragment_fromstring('<div><p></p>just me<hr/></div>')
         utils.remove_empty_els(test1)
-        self.assertEqual('<div>just me<hr/></div>', etree.tostring(test1))
+        self.assertEqual('<div>just me<hr/></div>', etree.tostring(test1,
+                                                                   encoding='unicode'))
 
         test2 = html.fragment_fromstring(
             '<div><div>a</div>bcd<div><b></b></div>e</div>')
         utils.remove_empty_els(test2)
-        self.assertEqual('<div><div>a</div>bcde</div>', etree.tostring(test2))
+        self.assertEqual('<div><div>a</div>bcde</div>', etree.tostring(test2,
+                                                                       encoding='unicode'))
 
         test3 = html.fragment_fromstring('<div><p></p><hr/></div>')
         utils.remove_empty_els(test3, ignore=('p',))
-        self.assertEqual('<div><p/></div>', etree.tostring(test3))
+        self.assertEqual('<div><p/></div>', etree.tostring(test3,
+                                                           encoding='unicode'))
 
 
 class MarkupUtilsTestCase(TestCase):
@@ -122,7 +127,7 @@ class MarkupUtilsTestCase(TestCase):
         from ..utils import markup
 
         html = markup.render_markup('test', self.project)
-        self.assertEqual(etree.tostring(html), u'<div><p>test</p></div>')
+        self.assertEqual(etree.tostring(html, encoding='unicode'), '<div><p>test</p></div>')
 
     def test_count_references(self):
         from ..utils import markup, markup_html
@@ -143,10 +148,10 @@ class MarkupUtilsTestCase(TestCase):
             }),
             creator=self.user, last_updater=self.user, project=self.project)
 
-        html = markup.render_markup(u'I am citing [@@d{}]'.format(document.id),
+        html = markup.render_markup('I am citing [@@d{}]'.format(document.id),
                                     self.project)
-        self.assertEqual(etree.tostring(html), (
-            u'<div><p>I am citing <cite>('
+        self.assertEqual(etree.tostring(html, encoding='unicode'), (
+            '<div><p>I am citing <cite>('
             '<a href="/projects/emma/documents/{}/" '
             'class="ENInlineReference ENInlineReference-document">'
             'Shaw 2010'
@@ -163,10 +168,10 @@ class MarkupUtilsTestCase(TestCase):
             preferred_name='Ryan Shaw',
             creator=self.user, last_updater=self.user, project=self.project)
 
-        html = markup.render_markup(u'This is about @@t{}.'.format(topic.id),
+        html = markup.render_markup('This is about @@t{}.'.format(topic.id),
                                     self.project)
-        self.assertEqual(etree.tostring(html), (
-            u'<div><p>This is about '
+        self.assertEqual(etree.tostring(html, encoding='unicode'), (
+            '<div><p>This is about '
             '<a href="/projects/emma/topics/{}/" '
             'class="ENInlineReference ENInlineReference-topic">'
             'Ryan Shaw'

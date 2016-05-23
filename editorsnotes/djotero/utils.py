@@ -1,6 +1,7 @@
 import json
 from collections import OrderedDict
-from urllib2 import urlopen, HTTPError
+from urllib.request import urlopen
+from urllib.error import HTTPError
 
 from lxml import etree
 
@@ -78,6 +79,6 @@ def parse_xml(url):
             'items': root.xpath('./atom:entry', namespaces=NS),
             'count': root.xpath('./zot:totalResults', namespaces=NS)[0].text
         }
-    except HTTPError, error:
+    except HTTPError as error:
         error_content = error.read()
         raise Exception(error_content)

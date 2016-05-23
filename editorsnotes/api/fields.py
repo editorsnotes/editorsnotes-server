@@ -19,7 +19,7 @@ class CurrentProjectDefault:
         return self.project
 
     def __repr__(self):
-        return u'%s()' % self.__class__.__name__
+        return '%s()' % self.__class__.__name__
 
 
 class HyperlinkedAffiliatedProjectField(ReadOnlyField):
@@ -40,8 +40,8 @@ class UnqualifiedURLField(ReadOnlyField):
         make_url = lambda path: request.build_absolute_uri(path)
 
         return (
-            make_url(value) if isinstance(value, basestring)
-            else map(make_url, value)
+            make_url(value) if isinstance(value, str)
+            else list(map(make_url, value))
         )
 
 
@@ -64,7 +64,7 @@ class CustomLookupHyperlinkedField(HyperlinkedRelatedField):
     def get_lookup_kwargs(self, obj):
         return dict(
             (key, nested_getattr(obj, val))
-            for key, val in self.lookup_kwarg_attrs.items())
+            for key, val in list(self.lookup_kwarg_attrs.items()))
 
     def get_attribute(self, instance):
         return instance

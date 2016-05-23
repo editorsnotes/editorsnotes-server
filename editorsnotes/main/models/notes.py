@@ -6,7 +6,7 @@ from licensing.models import License
 from reversion import revisions as reversion
 
 from editorsnotes.auth.models import ProjectPermissionsMixin, UpdatersMixin
-from base import (Administered, LastUpdateMetadata, URLAccessible,
+from .base import (Administered, LastUpdateMetadata, URLAccessible,
                   IsReferenced, ENMarkup)
 
 __all__ = ['Note', 'NOTE_STATUS_CHOICES']
@@ -20,7 +20,7 @@ NOTE_STATUS_CHOICES = (
 
 class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
            IsReferenced, ProjectPermissionsMixin, UpdatersMixin):
-    u"""
+    """
     Text written by an editor or curator. The text is stored as XHTML,
     so it may have hyperlinks and all the other features that XHTML
     enables.
@@ -76,7 +76,7 @@ class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
         app_label = 'main'
         ordering = ['-last_updated']
         permissions = (
-            (u'view_private_note', u'Can view notes private to a project.'),
+            ('view_private_note', 'Can view notes private to a project.'),
         )
         unique_together = (
             ('title', 'project'),

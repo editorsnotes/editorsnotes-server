@@ -92,7 +92,7 @@ class ElasticSearchListMixin(object):
             ('count', self.paginator.count),
             ('prev', prev_link),
             ('next', next_link),
-            ('results', map(self.process_es_result, results))
+            ('results', list(map(self.process_es_result, results)))
         ))
 
         if hasattr(request, 'project'):

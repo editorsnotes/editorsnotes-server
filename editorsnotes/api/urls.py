@@ -4,7 +4,7 @@ from django.conf.urls import url, include
 from django.core.urlresolvers import RegexURLPattern
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.authtoken.views import obtain_auth_token
-import views
+from . import views
 
 
 def format_patterns(urlpatterns):

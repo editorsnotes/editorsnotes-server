@@ -77,7 +77,7 @@ class ENMarkup(models.Model):
             return []
 
         urls_by_type = get_embedded_item_urls(self.markup_html)
-        embedded_urls = set(itertools.chain(*urls_by_type.values()))
+        embedded_urls = set(itertools.chain(*list(urls_by_type.values())))
         return embedded_urls
 
 
