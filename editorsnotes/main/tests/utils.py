@@ -37,7 +37,7 @@ class UtilsTestCase(unittest.TestCase):
             def __init__(self, key):
                 self.key = key
 
-        items = [Item(letter) for letter in string.lowercase]
+        items = [Item(letter) for letter in string.ascii_lowercase]
         random.shuffle(items)
         columns = utils.alpha_columns(items, 'key', itemkey='thing')
         self.assertEqual(3, len(columns))
