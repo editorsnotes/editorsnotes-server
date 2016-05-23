@@ -21,7 +21,7 @@ lib: bin/pip requirements.txt bin/pip
 	$< install -r $(word 2,$^)
 
 bin/pip:
-	virtualenv .
+	virtualenv . -p python3
 
 editorsnotes/settings_local.py:
 	cp editorsnotes/example-settings_local.py $@
