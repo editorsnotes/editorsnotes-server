@@ -1,6 +1,6 @@
 import documents
 import notes
-import projects
+from . import projects
 import topics
 
 #from documents import DocumentAdminView, TranscriptAdminView

@@ -8,8 +8,8 @@ class Command(BaseCommand):
         items_index.delete()
         items_index.initialize()
 
-        for doc_type in items_index.document_types.values():
+        for doc_type in list(items_index.document_types.values()):
             ct = doc_type.model.objects.count()
-            self.stdout.write(u'Creating {:,} "{}" documents'.format(
+            self.stdout.write('Creating {:,} "{}" documents'.format(
                 ct, doc_type.type_label))
             doc_type.update_all()

@@ -241,8 +241,8 @@ class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
     class Meta:
         app_label = 'main'
         permissions = (
-            (u'view_project_roster', u'Can view project roster.'),
-            (u'change_project_roster', u'Can edit project roster.'),
+            ('view_project_roster', 'Can view project roster.'),
+            ('change_project_roster', 'Can edit project roster.'),
         )
 
     @models.permalink
@@ -305,7 +305,7 @@ class ProjectRoleManager(models.Manager):
         """
         Create a project role & related group by the role name.
         """
-        group_name = u'{}-{}'.format(project.slug, role)
+        group_name = '{}-{}'.format(project.slug, role)
         role_group = Group.objects.create(name=group_name)
         return self.create(project=project, role=role, group=role_group,
                            **kwargs)
@@ -371,7 +371,7 @@ class ProjectRole(models.Model):
         unique_together = ('project', 'role',)
 
     def __unicode__(self):
-        return u'{} - {}'.format(self.project.name, self.role)
+        return '{} - {}'.format(self.project.name, self.role)
 
     def _get_valid_permissions(self):
         if not hasattr(self, '_valid_permissions_cache'):
@@ -435,7 +435,7 @@ class FeaturedItem(CreationMetadata, ProjectPermissionsMixin):
     content_object = GenericForeignKey()
 
     def __unicode__(self):
-        return u'({})-- {}'.format(
+        return '({})-- {}'.format(
             self.project.slug,
             self.content_object.__repr__()
         )

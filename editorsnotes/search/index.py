@@ -74,7 +74,7 @@ class ElasticSearchIndex(object):
         self.put_all_mappings()
 
     def put_all_mappings(self):
-        for doc_type, mapping in self.get_mappings().items():
+        for doc_type, mapping in list(self.get_mappings().items()):
             self.es.put_mapping(self.name, doc_type, mapping)
 
     def exists(self):

@@ -78,7 +78,7 @@ def update_project_permissions(*args, **kwargs):
     verbosity = kwargs.get('verbosity', 0)
     for perm in new_perms:
         if verbosity > 0:
-            print u'Adding project-specific permission: {}.{}'.format(
-                perm.content_type.app_label, perm.codename)
+            print('Adding project-specific permission: {}.{}'.format(
+                perm.content_type.app_label, perm.codename))
         project_perm_group.permissions.add(perm)
     return

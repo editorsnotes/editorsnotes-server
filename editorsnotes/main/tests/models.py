@@ -19,11 +19,11 @@ class NoteTestCase(TestCase):
     def testAssignTopics(self):
         note = main_models.Note.objects.create(
             title='test note',
-            markup=u'# hey\n\nthis is a _note_',
+            markup='# hey\n\nthis is a _note_',
             creator=self.user, last_updater=self.user, project=self.project)
 
         topic = main_models.Topic.objects.create(
-            preferred_name=u'Example',
+            preferred_name='Example',
             project=self.project,
             creator=self.user,
             last_updater=self.user
@@ -34,9 +34,9 @@ class NoteTestCase(TestCase):
         note.related_topics.create(topic=topic, creator=self.user)
 
         self.assertTrue(note.has_topic(topic))
-        self.assertEquals(1, len(note.related_topics.all()))
-        self.assertEquals(1, len(topic.assignments.all()))
-        self.assertEquals(topic, note.related_topics.all()[0].topic)
+        self.assertEqual(1, len(note.related_topics.all()))
+        self.assertEqual(1, len(topic.assignments.all()))
+        self.assertEqual(topic, note.related_topics.all()[0].topic)
 
 
 class DocumentTestCase(TestCase):
@@ -46,7 +46,7 @@ class DocumentTestCase(TestCase):
         self.project = Project.objects.get(slug='emma')
         self.user = self.project.members.all()[0]
         self.document_kwargs = {
-            'description': u'<div>My Disillusionment in Russia</div>',
+            'description': '<div>My Disillusionment in Russia</div>',
             'project_id': self.project.id,
             'creator_id': self.user.id,
             'last_updater_id': self.user.id
@@ -61,7 +61,7 @@ class DocumentTestCase(TestCase):
 
     def test_duplicate_descriptions(self):
         data = self.document_kwargs.copy()
-        data['description'] = u'“My Disillusionment in Russia”'
+        data['description'] = '“My Disillusionment in Russia”'
         test_document = main_models.Document(**data)
         self.assertRaises(ValidationError, test_document.full_clean)
         self.assertRaises(IntegrityError, test_document.save)
@@ -111,11 +111,11 @@ class NoteTransactionTestCase(TestCase):
     def testAssignTopicTwice(self):
         note = main_models.Note.objects.create(
             title='test note',
-            markup=u'# hey\n\nthis is a _note_',
+            markup='# hey\n\nthis is a _note_',
             creator=self.user, last_updater=self.user, project=self.project)
 
         topic = main_models.Topic.objects.create(
-            preferred_name=u'Example',
+            preferred_name='Example',
             project=self.project,
             creator=self.user,
             last_updater=self.user)

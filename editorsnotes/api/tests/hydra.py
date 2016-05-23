@@ -106,8 +106,8 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
             context=context
         )
 
-        serialized_property = dict(property_serializer.data.items())
-        hydra_property = dict(serialized_property.pop('property').items())
+        serialized_property = dict(list(property_serializer.data.items()))
+        hydra_property = dict(list(serialized_property.pop('property').items()))
 
         self.assertDictEqual(hydra_property, {
             '@id': 'projectns:Project/notes',
@@ -159,8 +159,7 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(len(supported_operations), 2)
 
-        create_operation, = filter(lambda op: op.get('hydra:method') == 'POST',
-                                   supported_operations)
+        create_operation, = [op for op in supported_operations if op.get('hydra:method') == 'POST']
 
         self.assertDictEqual(dict(create_operation), {
             '@id': '_:project_note_create',

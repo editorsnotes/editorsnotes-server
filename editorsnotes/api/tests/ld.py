@@ -78,21 +78,21 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
 
         embedded = response.data.get('embedded')
 
-        self.assertEqual(embedded.keys(), map(
+        self.assertEqual(list(embedded.keys()), list(map(
             self.dummy_req.build_absolute_uri,
             [
                 '/projects/emma/vocab#Project/notes',
                 '/projects/emma/vocab#Project/topics',
                 '/projects/emma/vocab#Project/documents',
             ]
-        ))
+        )))
 
         # FIXME: Should be able to update projects' info in the API
         # self.assertEqual(len(response.data.get('hydra:operation')), 3)
         self.assertEqual(len(response.data.get('hydra:operation')), 1)
 
         link_class_embeds = [
-            hydra_class for hydra_class in embedded.values()
+            hydra_class for hydra_class in list(embedded.values())
             if hydra_class['@type'] == 'hydra:Link'
         ]
 
@@ -123,10 +123,10 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
         project_url = self.dummy_req.build_absolute_uri(
             self.project.get_absolute_url())
 
-        self.assertEqual(response.data.get('affiliated_projects').keys(),
+        self.assertEqual(list(response.data.get('affiliated_projects').keys()),
                          [project_url])
         self.assertEqual(
-            len(response.data['affiliated_projects'].values()[0]['@context']),
+            len(list(response.data['affiliated_projects'].values())[0]['@context']),
             3)
         self.assertEqual(len(response.data.get('embedded')), 3)
 
@@ -141,7 +141,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
 
     def test_topic_ld(self):
         topic = Topic.objects.create(
-            preferred_name=u'Hippolyte Havel',
+            preferred_name='Hippolyte Havel',
             project=self.project,
             creator=self.user,
             last_updater=self.user)

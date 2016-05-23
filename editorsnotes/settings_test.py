@@ -1,6 +1,6 @@
 import sys
 
-from settings import *
+from .settings import *
 
 ELASTICSEARCH_PREFIX = '-test-' + ELASTICSEARCH_PREFIX
 SITE_URL = 'http://testserver/'

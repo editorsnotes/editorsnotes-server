@@ -37,12 +37,12 @@ class ZoteroItem(models.Model):
                 zotero_data[part] = date_parts[part]
         if zotero_data['creators']:
             names = zotero_data.pop('creators')
-            output = zotero_data.items()
+            output = list(zotero_data.items())
             for name in names:
                 output.append(
                     (name['creatorType'], utils.get_creator_name(name)))
         else:
-            output = zotero_data.items()
+            output = list(zotero_data.items())
         return output
 
 

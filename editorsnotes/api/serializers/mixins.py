@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from itertools import chain
 import json
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.core.urlresolvers import resolve
 
@@ -10,7 +10,7 @@ from rest_framework.renderers import JSONRenderer
 from editorsnotes.auth.models import User
 from editorsnotes.search.items.helpers import get_data_for_urls
 
-ensure_list = lambda val: [val] if isinstance(val, basestring) else val
+ensure_list = lambda val: [val] if isinstance(val, str) else val
 
 
 class EmbeddedItemsMixin(object):
@@ -32,10 +32,10 @@ class EmbeddedItemsMixin(object):
             urls = urls.difference(user_urls)
 
             embedded_data = OrderedDict()
-            for key, val in get_data_for_urls(urls).items():
+            for key, val in list(get_data_for_urls(urls).items()):
                 embedded_data[key] = val
 
-            for key, val in self.get_users_from_urls(user_urls).items():
+            for key, val in list(self.get_users_from_urls(user_urls).items()):
                 embedded_data[key] = val
 
             data['embedded'] = embedded_data

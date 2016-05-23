@@ -28,11 +28,11 @@ def delete_es_indexes():
             index.delete()
 
 TEST_TOPIC = {
-    'preferred_name': u'Patrick Golden',
-    'types': [u'http://schema.org/Person'],
-    'alternate_names': [u'big guy', u'stretch'],
+    'preferred_name': 'Patrick Golden',
+    'types': ['http://schema.org/Person'],
+    'alternate_names': ['big guy', 'stretch'],
     'related_topics': [],
-    'markup': u'A writer of tests.'
+    'markup': 'A writer of tests.'
 }
 
 
@@ -48,7 +48,7 @@ def create_topic(**kwargs):
 
 TEST_DOCUMENT = {
     'description': (
-        u'<div>Draper, Theodore. <em>Roots of American Communism</em></div>'
+        '<div>Draper, Theodore. <em>Roots of American Communism</em></div>'
     ),
     'related_topics': [],
     'zotero_data': {
@@ -72,18 +72,18 @@ def create_document(**kwargs):
 
 
 TEST_NOTE = {
-    'title': u'Is testing good?',
+    'title': 'Is testing good?',
     'related_topics': [],
     'markup': (
-        u'We need to figure out if it\'s worth it to write tests.'
+        'We need to figure out if it\'s worth it to write tests.'
     ),
     'status': 'open',
     'sections': []
 }
 
 
-BAD_PERMISSION_MESSAGE = u'You do not have permission to perform this action.'
-NO_AUTHENTICATION_MESSAGE = u'Authentication credentials were not provided.'
+BAD_PERMISSION_MESSAGE = 'You do not have permission to perform this action.'
+NO_AUTHENTICATION_MESSAGE = 'Authentication credentials were not provided.'
 
 
 class ClearContentTypesMixin(object):
@@ -218,7 +218,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data.get('preferred_name'),
-                         [u'Topic with this preferred name already exists.'])
+                         ['Topic with this preferred name already exists.'])
 
     def test_topic_api_list(self):
         """
@@ -270,7 +270,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         topic_obj = create_topic(user=self.user, project=self.project)
 
         # Update the topic with new data.
-        data['markup'] = u'Still writing tests.'
+        data['markup'] = 'Still writing tests.'
 
         response = self.client.put(
             reverse('api:topics-wn-detail',
@@ -316,8 +316,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         data = TEST_TOPIC.copy()
         topic_obj = create_topic(user=self.user, project=self.project)
 
-        data['preferred_name'] = u'Patrick Garbage'
-        data['markup'] = u'a bad, garbage guy'
+        data['preferred_name'] = 'Patrick Garbage'
+        data['markup'] = 'a bad, garbage guy'
 
         self.client.logout()
         self.client.login(username='esther@example.com', password='esther')
@@ -476,7 +476,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['description'],
-                         [u'Document with this description already exists.'])
+                         ['Document with this description already exists.'])
 
     def test_document_api_list(self):
         """
@@ -525,7 +525,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
             project=self.project, creator=self.user, last_updater=self.user)
         data = TEST_DOCUMENT.copy()
         data['description'] = (
-            u'<div>Draper, Theodore. <em>Roots of American '
+            '<div>Draper, Theodore. <em>Roots of American '
             'Communism</em>. New York: Viking Press, 1957.</div>'
         )
         response = self.client.put(
@@ -553,7 +553,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.login(username='esther@example.com', password='esther')
 
         data = TEST_DOCUMENT.copy()
-        data['description'] = u'a stupid book!!!!!!!'
+        data['description'] = 'a stupid book!!!!!!!'
         response = self.client.put(
             reverse('api:documents-detail',
                     args=[self.project.slug, document_obj.id]),
@@ -569,7 +569,7 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
             project=self.project, creator=self.user, last_updater=self.user)
         self.client.logout()
         data = TEST_DOCUMENT.copy()
-        data['description'] = u'a stupid book!!!!!!!!!!!!!!!!!!!!'
+        data['description'] = 'a stupid book!!!!!!!!!!!!!!!!!!!!'
         response = self.client.put(
             reverse('api:documents-detail',
                     args=[self.project.slug, document_obj.id]),
@@ -670,7 +670,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['status'], data['status'])
         self.assertEqual(response.data['markup'], data['markup'])
         self.assertEqual(response.data['markup_html'], (
-            u'<div><p>We need to figure out if it\'s worth it to '
+            '<div><p>We need to figure out if it\'s worth it to '
             'write tests.</p></div>'
         ))
         self.assertEqual(response.data['title'], new_note_obj.title)
@@ -719,7 +719,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['title'],
-                         [u'Note with this title already exists.'])
+                         ['Note with this title already exists.'])
 
     def test_note_api_list(self):
         """
@@ -760,7 +760,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         "Updating a note in your own project is ok"
         note_obj = self.create_test_note()
         data = TEST_NOTE.copy()
-        data['title'] = u'Тестовать'
+        data['title'] = 'Тестовать'
 
         response = self.client.put(
             reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
@@ -783,7 +783,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         self.client.logout()
         self.client.login(username='esther@example.com', password='esther')
         data = TEST_NOTE.copy()
-        data['title'] = u'Нет!!!!!!'
+        data['title'] = 'Нет!!!!!!'
         response = self.client.put(
             reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             json.dumps(data),
@@ -810,7 +810,7 @@ class NoteAPITestCase(ClearContentTypesTransactionTestCase):
         note_obj = self.create_test_note()
         self.client.logout()
         data = TEST_NOTE.copy()
-        data['title'] = u'Нет!!!!!!'
+        data['title'] = 'Нет!!!!!!'
         response = self.client.put(
             reverse('api:notes-detail', args=[self.project.slug, note_obj.id]),
             json.dumps(data),

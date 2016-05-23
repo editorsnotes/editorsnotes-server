@@ -54,5 +54,5 @@ def get_embedded_models(tree):
 
     return {
         item_type: qs_from_urls(MODELS_BY_LABEL[item_type], urls)
-        for item_type, urls in embedded_item_urls.items()
+        for item_type, urls in list(embedded_item_urls.items())
     }

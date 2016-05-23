@@ -4,7 +4,7 @@ Functions for the items index.
 
 from collections import OrderedDict
 from itertools import chain
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from elasticsearch_dsl import F
 
@@ -78,7 +78,7 @@ def get_data_for_urls(item_urls):
 
 
 def perform_query(query, highlight=False, **kwargs):
-    if isinstance(query, basestring):
+    if isinstance(query, str):
         prepared_query = {
             'query': {
                 'query_string': {'query': clean_query_string(query)}
@@ -96,7 +96,7 @@ def perform_query(query, highlight=False, **kwargs):
         }
         highlight_fields = chain(*[
             doc_type.highlight_fields
-            for doc_type in index.document_types.values()
+            for doc_type in list(index.document_types.values())
         ])
         for field_name in highlight_fields:
             prepared_query['highlight']['fields'][field_name] = {}

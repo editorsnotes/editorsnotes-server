@@ -16,7 +16,7 @@ def update_attrs(attrs, extra_attrs):
     if attrs is None:
         attrs = extra_attrs
     else:
-        for k, v in extra_attrs.iteritems():
+        for k, v in extra_attrs.items():
             if k in attrs and k in ['class', 'style']:
                 values = attrs[k].split()
                 values.extend(extra_attrs[k].split())
@@ -33,15 +33,15 @@ class XHTMLWidget(forms.Textarea):
         if value is None:
             return ''
         if isinstance(value, html.HtmlElement):
-            return etree.tostring(value, encoding=unicode)
-        if isinstance(value, str) or isinstance(value, unicode):
+            return etree.tostring(value, encoding=str)
+        if isinstance(value, str) or isinstance(value, str):
             return value
         raise TypeError('%s cannot be formatted as XHTML' % value)
 
     def render(self, name, value, attrs=None):
         update_attrs(attrs, {'class': 'xhtml-textarea'})
         final_attrs = self.build_attrs(attrs, name=name)
-        return mark_safe(u'<textarea%s>%s</textarea>' % (
+        return mark_safe('<textarea%s>%s</textarea>' % (
             forms.util.flatatt(final_attrs),
             conditional_escape(force_unicode(self._format_value(value)))))
 
@@ -59,9 +59,8 @@ class ReadonlyXHTMLWidget(XHTMLWidget):
                 + super(ReadonlyXHTMLWidget, self).render(name, value, attrs))
 
 
-class XHTMLField(models.Field):
+class XHTMLField(models.Field, metaclass=models.SubfieldBase):
     description = 'A parsed XHTML fragment'
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         super(XHTMLField, self).__init__(*args, **kwargs)
@@ -74,7 +73,7 @@ class XHTMLField(models.Field):
             return None
         if isinstance(value, html.HtmlElement):
             return value
-        if not (isinstance(value, str) or isinstance(value, unicode)):
+        if not (isinstance(value, str) or isinstance(value, str)):
             raise TypeError('%s cannot be parsed to XHTML' % type(value))
         if len(value) == 0 or value == '<br/>':
             return None
@@ -90,7 +89,7 @@ class XHTMLField(models.Field):
     def get_prep_value(self, value):
         if value is None:
             return None
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             return value
         else:
             return etree.tostring(value)

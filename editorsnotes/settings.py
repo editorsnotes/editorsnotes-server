@@ -66,7 +66,7 @@ EN_PROJECT_PATH = os.path.abspath(os.path.join(
 # Override these variables in settings_local.py if desired
 DEBUG = False
 try:
-    from settings_local import STORAGE_PATH
+    from .settings_local import STORAGE_PATH
 except ImportError:
     STORAGE_PATH = EN_PROJECT_PATH
 
@@ -144,7 +144,7 @@ REST_FRAMEWORK = {
 }
 
 # Add in local settings
-from settings_local import *
+from .settings_local import *
 DATABASES['default'].update(POSTGRES_DB)
 try:
     INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS

@@ -12,7 +12,7 @@ from reversion import revisions as reversion
 from editorsnotes.auth.models import Project
 
 from .. import forms
-from common import VIEW_ERROR_MSG, CHANGE_ERROR_MSG
+from .common import VIEW_ERROR_MSG, CHANGE_ERROR_MSG
 
 @login_required
 @reversion.create_revision()
@@ -66,7 +66,7 @@ def project_roster(request, project_slug):
                         continue
                     obj = form.save(commit=False)
                     if not obj.id:
-                        if not form.cleaned_data.has_key('email'):
+                        if 'email' not in form.cleaned_data:
                             continue
                         obj.creator = request.user
                         obj.project = project

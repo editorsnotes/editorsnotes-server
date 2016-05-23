@@ -37,8 +37,7 @@ def operation_from_perm(user, project, perm_label):
     if not has_perm:
         return None
 
-    perm, = filter(lambda perm: perm.codename == codename,
-                   user.get_project_permission_objects(project))
+    perm, = [perm for perm in user.get_project_permission_objects(project) if perm.codename == codename]
 
     model_opts = perm.content_type.model_class()._meta
 
