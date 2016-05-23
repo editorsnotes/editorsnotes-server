@@ -15,7 +15,7 @@ documentation of those applications for installation instructions.
 
 ## Dependencies
 
-Editors' Notes currently uses **Python 2.7**.
+Editors' Notes currently uses **Python 3.5**.
 
 This project depends on the Python package `lxml`, which has two dependencies:
 `libxml2`, and `libxslt1`. They can be installed with your OS's package manager.
@@ -33,11 +33,7 @@ Notes on a server using nginx and uWSGI.
 
 ## Local development environment
 
-Setting up a local environment requires the Python task runner [Fabric], which
-can be installed with your package manager. Once it and the dependencies above
-have been installed, perform the following steps:
-
-  1. Run `fab setup` at the project root directory. This will set up a virtual
+  1. Run `make setup` at the project root directory. This will set up a virtual
      environment for python packages, install all dependencies, make a skeleton
      configuration file, and collect all necessary static files.
 
@@ -45,9 +41,9 @@ have been installed, perform the following steps:
      information about your system. The only setting you *must* fill out is
      your database configuration.
 
-  3. Run `fab sync_database` to execute all database migrations
+  3. Run `make refresh` to execute all database migrations
 
-  4. Start the development server with `fab runserver`
+  4. Start the development server with `./bin/python manage.py runserver`
 
 __FIXME: Add section about required editorsnotes-markup-renderer__
 
@@ -55,4 +51,3 @@ __FIXME: Add section about required editorsnotes-markup-renderer__
 [PostgreSQL]: http://www.postgresql.org/
 [Elasticsearch]: https://www.elastic.co/products/elasticsearch
 [editorsnotes/editorsnotes.org]: https://github.com/editorsnotes/editorsnotes.org
-[Fabric]: http://fabfile.org/
