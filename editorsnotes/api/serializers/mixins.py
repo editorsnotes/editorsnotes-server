@@ -59,7 +59,7 @@ class EmbeddedItemsMixin(object):
 
         serializer = UserSerializer(instance=qs, many=True,
                                     context=self.context)
-        data = json.loads(JSONRenderer().render(serializer.data),
+        data = json.loads(JSONRenderer().render(serializer.data).decode('utf-8'),
                           object_pairs_hook=OrderedDict)
 
         ret = OrderedDict()

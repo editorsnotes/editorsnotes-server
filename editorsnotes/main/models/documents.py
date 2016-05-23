@@ -78,7 +78,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
 
     @staticmethod
     def strip_description(description):
-        description_str = etree.tostring(description) \
+        description_str = etree.tostring(description, encoding='unicode') \
             if isinstance(description, html.HtmlElement) \
             else description
         return ''.join(
@@ -88,7 +88,7 @@ class Document(LastUpdateMetadata, Administered, URLAccessible, IsReferenced,
     @staticmethod
     def hash_description(description):
         string_to_hash = Document.strip_description(description).lower()
-        return md5(string_to_hash).hexdigest()
+        return md5(string_to_hash.encode()).hexdigest()
 
     def validate_unique(self, exclude=None):
         super(Document, self).validate_unique(exclude)

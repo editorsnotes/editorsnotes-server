@@ -40,12 +40,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='display_name',
-            field=models.CharField(help_text=b'Display name for a user', max_length=200),
+            field=models.CharField(help_text='Display name for a user', max_length=200),
         ),
         migrations.AlterField(
             model_name='user',
             name='email',
-            field=models.EmailField(unique=True, max_length=255, verbose_name=b'email address'),
+            field=models.EmailField(unique=True, max_length=255, verbose_name='email address'),
         ),
         migrations.AlterField(
             model_name='user',

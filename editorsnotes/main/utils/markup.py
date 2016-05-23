@@ -64,7 +64,8 @@ def format_items(items_dict, project):
                 'id': document.id,
                 'zotero_data': (document.zotero_data and
                                 json.loads(document.zotero_data)),
-                'description': etree.tostring(document.description)
+                'description': etree.tostring(document.description,
+                                              encoding='unicode')
             }
             for document in documents
         ]

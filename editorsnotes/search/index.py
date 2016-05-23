@@ -15,7 +15,7 @@ class OrderedResponseElasticSearch(ElasticSearch):
     """
     def _decode_response(self, response):
         try:
-            json_response = json.loads(response.content,
+            json_response = json.loads(response.text,
                                        object_pairs_hook=OrderedDict)
         except ValueError:
             raise InvalidJsonResponseError(response)

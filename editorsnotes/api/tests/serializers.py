@@ -47,9 +47,9 @@ class EmbeddingSerializerTestCase(ClearContentTypesTransactionTestCase):
             context=context
         )
 
-        data = json.loads(JSONRenderer().render(test_serializer.data))
+        data = json.loads(JSONRenderer().render(test_serializer.data).decode('utf-8'))
         project_data = json.loads(
-            JSONRenderer().render(project_serializer.data))
+            JSONRenderer().render(project_serializer.data).decode('utf-8'))
 
         self.assertEqual(data, {
             'project_url': project_url,

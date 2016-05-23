@@ -14,7 +14,7 @@ def handle_activity_edit(instance, refresh=True):
     from editorsnotes.api.serializers import ActivitySerializer
 
     serializer = ActivitySerializer(instance)
-    data = json.loads(JSONRenderer().render(serializer.data),
+    data = json.loads(JSONRenderer().render(serializer.data).decode('utf-8'),
                       object_pairs_hook=OrderedDict)
 
     activity_index.es.index(

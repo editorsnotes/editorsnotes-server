@@ -32,7 +32,7 @@ class XHTMLWidget(forms.Textarea):
         if value is None:
             return ''
         if isinstance(value, html.HtmlElement):
-            return etree.tostring(value, encoding=str)
+            return etree.tostring(value, encoding='unicode')
         if isinstance(value, str) or isinstance(value, str):
             return value
         raise TypeError('%s cannot be formatted as XHTML' % value)
@@ -91,7 +91,7 @@ class XHTMLField(models.Field, metaclass=models.SubfieldBase):
         elif isinstance(value, str):
             return value
         else:
-            return etree.tostring(value)
+            return etree.tostring(value, encoding='unicode')
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)

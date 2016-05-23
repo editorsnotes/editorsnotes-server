@@ -75,21 +75,23 @@ class UtilsTestCase(unittest.TestCase):
             '<div>I am an annoying browser<br/></div>')
         utils.remove_stray_brs(test1)
         self.assertEqual('<div>I am an annoying browser</div>',
-                         etree.tostring(test1))
+                         etree.tostring(test1, encoding='unicode'))
 
         test2 = html.fragment_fromstring('<div>text<br/>text</div>')
         utils.remove_stray_brs(test2)
-        self.assertEqual('<div>text<br/>text</div>', etree.tostring(test2))
+        self.assertEqual('<div>text<br/>text</div>', etree.tostring(test2,
+                                                                    encoding='unicode'))
 
         test3 = html.fragment_fromstring(
             '<div>I<br/><br/> am really annoying.<br/><br/><br/></div>')
         utils.remove_stray_brs(test3)
         self.assertEqual('<div>I<br/> am really annoying.</div>',
-                         etree.tostring(test3))
+                         etree.tostring(test3, encoding='unicode'))
 
         test4 = html.fragment_fromstring('<div><br/>No leading break?</div>')
         utils.remove_stray_brs(test4)
-        self.assertEqual('<div>No leading break?</div>', etree.tostring(test4))
+        self.assertEqual('<div>No leading break?</div>', etree.tostring(test4,
+                                                                        encoding='unicode'))
 
     def test_remove_empty_els(self):
         """
@@ -99,16 +101,19 @@ class UtilsTestCase(unittest.TestCase):
 
         test1 = html.fragment_fromstring('<div><p></p>just me<hr/></div>')
         utils.remove_empty_els(test1)
-        self.assertEqual('<div>just me<hr/></div>', etree.tostring(test1))
+        self.assertEqual('<div>just me<hr/></div>', etree.tostring(test1,
+                                                                   encoding='unicode'))
 
         test2 = html.fragment_fromstring(
             '<div><div>a</div>bcd<div><b></b></div>e</div>')
         utils.remove_empty_els(test2)
-        self.assertEqual('<div><div>a</div>bcde</div>', etree.tostring(test2))
+        self.assertEqual('<div><div>a</div>bcde</div>', etree.tostring(test2,
+                                                                       encoding='unicode'))
 
         test3 = html.fragment_fromstring('<div><p></p><hr/></div>')
         utils.remove_empty_els(test3, ignore=('p',))
-        self.assertEqual('<div><p/></div>', etree.tostring(test3))
+        self.assertEqual('<div><p/></div>', etree.tostring(test3,
+                                                           encoding='unicode'))
 
 
 class MarkupUtilsTestCase(TestCase):
@@ -122,7 +127,7 @@ class MarkupUtilsTestCase(TestCase):
         from ..utils import markup
 
         html = markup.render_markup('test', self.project)
-        self.assertEqual(etree.tostring(html), '<div><p>test</p></div>')
+        self.assertEqual(etree.tostring(html, encoding='unicode'), '<div><p>test</p></div>')
 
     def test_count_references(self):
         from ..utils import markup, markup_html
@@ -145,7 +150,7 @@ class MarkupUtilsTestCase(TestCase):
 
         html = markup.render_markup('I am citing [@@d{}]'.format(document.id),
                                     self.project)
-        self.assertEqual(etree.tostring(html), (
+        self.assertEqual(etree.tostring(html, encoding='unicode'), (
             '<div><p>I am citing <cite>('
             '<a href="/projects/emma/documents/{}/" '
             'class="ENInlineReference ENInlineReference-document">'
@@ -165,7 +170,7 @@ class MarkupUtilsTestCase(TestCase):
 
         html = markup.render_markup('This is about @@t{}.'.format(topic.id),
                                     self.project)
-        self.assertEqual(etree.tostring(html), (
+        self.assertEqual(etree.tostring(html, encoding='unicode'), (
             '<div><p>This is about '
             '<a href="/projects/emma/topics/{}/" '
             'class="ENInlineReference ENInlineReference-topic">'

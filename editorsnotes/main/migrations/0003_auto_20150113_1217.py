@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='note',
             name='title',
-            field=models.CharField(max_length=b'80'),
+            field=models.CharField(max_length='80'),
         ),
         migrations.AlterUniqueTogether(
             name='note',

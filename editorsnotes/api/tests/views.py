@@ -142,7 +142,7 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data.get('id'), topic_obj.id)
 
         self.assertEqual(
-            etree.tostring(topic_obj.markup_html),
+            etree.tostring(topic_obj.markup_html, encoding='unicode'),
             response.data['wn_data']['@graph']['@graph']['markup_html'])
 
         # Make sure a revision was created
@@ -286,7 +286,8 @@ class TopicAPITestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(data['markup'], response.data['markup'])
         self.assertEqual('<div><p>Still writing tests.</p></div>',
-                         etree.tostring(updated_topic_obj.markup_html))
+                         etree.tostring(updated_topic_obj.markup_html,
+                                        encoding='unicode'))
 
         # Make sure a revision was created upon update
         self.assertEqual(Revision.objects.count(), 1)
@@ -433,7 +434,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.status_code, 201)
         new_document_id = response.data.get('id')
         new_document = main_models.Document.objects.get(id=new_document_id)
-        self.assertEqual(etree.tostring(new_document.description),
+        self.assertEqual(etree.tostring(new_document.description,
+                                        encoding='unicode'),
                          data['description'])
 
         # Make sure a revision was created
@@ -495,7 +497,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['id'], document_obj.id)
         self.assertEqual(response.data['results'][0]['description'],
-                         etree.tostring(document_obj.description))
+                         etree.tostring(document_obj.description,
+                                        encoding='unicode'))
 
         original_response_content = response.data
 
@@ -539,7 +542,8 @@ class DocumentAPITestCase(ClearContentTypesTransactionTestCase):
 
         updated_document = main_models.Document.objects.get(id=document_obj.id)
         self.assertEqual(response.data.get('description'), data['description'])
-        self.assertEqual(etree.tostring(updated_document.description),
+        self.assertEqual(etree.tostring(updated_document.description,
+                                        encoding='unicode'),
                          data['description'])
 
         # Make sure a revision was created upon update

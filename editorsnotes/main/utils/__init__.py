@@ -11,7 +11,7 @@ textify = etree.XSLT(etree.parse(
 def xhtml_to_text(xhtml):
     if xhtml is None: 
         return ''
-    string = etree.tostring(textify(xhtml), method='text', encoding=str)
+    string = etree.tostring(textify(xhtml), method='text', encoding='unicode')
     if string is None:
         return ''
     return string.strip()

@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='note',
             name='title',
-            field=models.CharField(help_text=b'The title of the note.', max_length=80),
+            field=models.CharField(help_text='The title of the note.', max_length=80),
         ),
         migrations.AlterField(
             model_name='project',
             name='name',
-            field=models.CharField(help_text=b'The name of the project.', max_length=80),
+            field=models.CharField(help_text='The name of the project.', max_length=80),
         ),
     ]
