@@ -92,7 +92,7 @@ class ReplaceLDFields(object):
     """
     def __init__(self, *args, **kwargs):
         super(ReplaceLDFields, self).__init__(*args, **kwargs)
-        for field in self.fields:
+        for field in list(self.fields):
             if field.startswith('hydra_'):
                 hydra_name = field.replace('hydra_', 'hydra:')
                 self.fields[hydra_name] = self.fields.pop(field)
