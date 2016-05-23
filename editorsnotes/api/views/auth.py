@@ -107,11 +107,11 @@ class ActivityView(ElasticSearchListMixin, ListAPIView):
     queryset = LogActivity.objects.all()
 
     def get_object(self):
-        user_id = self.kwargs.get('id', None)
+        user_pk = self.kwargs.get('pk', None)
         project_slug = self.kwargs.get('project_slug', None)
 
-        if user_id is not None:
-            obj = get_object_or_404(User, id=user_id)
+        if user_pk is not None:
+            obj = get_object_or_404(User, pk=user_pk)
         elif project_slug is not None:
             obj = get_object_or_404(Project, slug=project_slug)
         else:

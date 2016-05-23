@@ -51,7 +51,7 @@ def operation_from_perm(user, project, perm_label):
         ('label', hydra_title.format(model_opts.verbose_name)),
         ('description', None),
         ('hydra:method', method),
-        ('hydra:expects', ROOT_NAMESPACE + model_opts.object_name),
-        ('hydra:returns', ROOT_NAMESPACE + model_opts.object_name),
+        ('hydra:expects', { "@id": ROOT_NAMESPACE + model_opts.object_name }),
+        ('hydra:returns', { "@id": ROOT_NAMESPACE + model_opts.object_name }),
         ('hydra:possibleStatus', [])
     ))

@@ -32,7 +32,7 @@ def format_patterns(urlpatterns):
 project_specific_patterns = [
     ### Project (general) ###
     url(r'^$', views.ProjectDetail.as_view(), name='projects-detail'),
-    url(r'^vocab/$', views.ProjectAPIDocumentation.as_view(), name='projects-api-documentation'),
+    url(r'^vocab$', views.ProjectAPIDocumentation.as_view(), name='projects-api-documentation'),
     url(r'^activity/$', views.ActivityView.as_view(), name='projects-activity'),
 
     ### Topics ###

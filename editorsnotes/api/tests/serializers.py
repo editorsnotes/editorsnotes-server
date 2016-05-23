@@ -143,9 +143,7 @@ class TopicSerializerTestCase(ClearContentTypesTransactionTestCase):
                     "alternate_names": [],
                     "related_topics": [],
                     "markup": None,
-                    "markup_html": None,
-                    "references": [],
-                    "referenced_by": []
+                    "markup_html": None
                 }
             }
         })

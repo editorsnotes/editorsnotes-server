@@ -23,19 +23,21 @@ class HydraAffordancesMixin(object):
     For now, this is only meant to be used on views that represent a single
     item (i.e., they are instances of rest_framework.generics.RetrieveAPIView)
     """
+    def get_hydra_class(self, request):
+        return hydra_class_for_type(self.queryset.model.__name__,
+                                    request.project,
+                                    request)
+
     def finalize_response(self, request, response, *args, **kwargs):
         response = super(HydraAffordancesMixin, self)\
             .finalize_response(request, response, *args, **kwargs)
-
-        project = self.request.project
 
         # Don't add anything if there's no content (i.e. in a successful
         # DELETE operation)
         if not response.data:
             return response
 
-        hydra_class = hydra_class_for_type(
-            self.queryset.model.__name__, project, request)
+        hydra_class = self.get_hydra_class(request)
         operations = hydra_class['hydra:supportedOperation']
         response.data['hydra:operation'] = operations
 

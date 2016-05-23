@@ -329,20 +329,22 @@ class HyperlinkedHydraPropertySerializer(ReplaceLDFields,
             operation = operation_from_perm(
                 request.user, self.parent_model, required_permission)
 
+            # FIXME: This is where we'll have to make hydra operations more
+            # sophisticated
             if operation:
-                operation['@id'] = '_:{}_{}_{}'.format(
-                    parent_label, child_label, op
+                operation['@id'] = '_:{}_{}'.format(
+                    parent_label, required_permission.split('.')[1]
                 )
                 operation['label'] = '{} a {} for this {}.'.format(
                     op.title(), child_label, parent_label)
 
                 if 'hydra:expects' in operation:
                     operation['hydra:expects'] = \
-                        self.domain + child_label.title()
+                        { "@id": self.domain + child_label.title() }
 
                 if 'hydra:returns' in operation:
                     operation['hydra:returns'] = \
-                        self.domain + child_label.title()
+                        { "@id": self.domain + child_label.title() }
                 operations.append(operation)
 
         return operations

@@ -81,9 +81,9 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
         self.assertEqual(embedded.keys(), map(
             self.dummy_req.build_absolute_uri,
             [
-                '/projects/emma/vocab/#Project/notes',
-                '/projects/emma/vocab/#Project/topics',
-                '/projects/emma/vocab/#Project/documents',
+                '/projects/emma/vocab#Project/notes',
+                '/projects/emma/vocab#Project/topics',
+                '/projects/emma/vocab#Project/documents',
             ]
         ))
 
@@ -100,7 +100,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
 
         project_url = self.dummy_req.build_absolute_uri(
             self.project.get_absolute_url())
-        project_url += 'vocab/#'
+        project_url += 'vocab#'
 
         self.assertEqual([
             link_class['hydra:supportedOperation'][0]
@@ -112,7 +112,7 @@ class HydraLinksTestCase(ClearContentTypesTransactionTestCase):
 
         self.assertEqual(response.data['@context']['notes'], {
             '@id': self.dummy_req.build_absolute_uri(
-                '/projects/emma/vocab/#Project/notes'),
+                '/projects/emma/vocab#Project/notes'),
             '@type': '@id'
         })
 
