@@ -7,7 +7,6 @@ from lxml import etree, html
 from lxml.html.clean import Cleaner
 from django.utils.safestring import mark_safe
 from django.utils.html import conditional_escape
-from django.utils.encoding import force_unicode
 
 cleaner = Cleaner(style=True, remove_unknown_tags=False)
 
@@ -43,7 +42,7 @@ class XHTMLWidget(forms.Textarea):
         final_attrs = self.build_attrs(attrs, name=name)
         return mark_safe('<textarea%s>%s</textarea>' % (
             forms.util.flatatt(final_attrs),
-            conditional_escape(force_unicode(self._format_value(value)))))
+            conditional_escape(self._format_value(value))))
 
 
 class ReadonlyXHTMLWidget(XHTMLWidget):
