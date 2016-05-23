@@ -19,8 +19,8 @@ def xhtml_to_text(xhtml):
 def truncate(text, length=120):
     if len(text) <= length:
         return text
-    l = text[:(length/2)].rsplit(' ', 1)[0]
-    r = text[-(length/2):].split(' ', 1)
+    l = text[:(length//2)].rsplit(' ', 1)[0]
+    r = text[-(length//2):].split(' ', 1)
     if len(r) == 1:
         r = r[0]
     else:
