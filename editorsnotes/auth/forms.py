@@ -11,10 +11,19 @@ class ENUserCreationForm(UserCreationForm):
         model = User
         fields = ('email', 'display_name')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.error_messages['duplicate_email'] = (
+            'A user with this email already exists.'
+        )
+
+
     def clean_email(self):
         # Since User.email is unique, this check is redundant,
         # but it sets a nicer error message than the ORM. See #13147.
         email = self.cleaned_data["email"]
+
+
         try:
             User._default_manager.get(email=email)
         except User.DoesNotExist:
