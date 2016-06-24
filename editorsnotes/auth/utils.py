@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.utils.http import urlsafe_base64_encode
 
 def send_activation_email(request, user):
-    b64uid = urlsafe_base64_encode(str(user.id))
+    b64uid = urlsafe_base64_encode(str(user.id).encode())
     token_generator = PasswordResetTokenGenerator()
     token = token_generator.make_token(user)
 
