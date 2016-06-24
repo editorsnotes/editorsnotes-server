@@ -28,7 +28,7 @@ class ENUserCreationForm(UserCreationForm):
 class ENAuthenticationForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
         if not user.is_active:
-            if user.confirmed:
+            if user.is_confirmed:
                 raise forms.ValidationError('This account is inactive.')
 
 
