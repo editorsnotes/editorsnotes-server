@@ -1,31 +1,16 @@
 *.bak
+*.swp
 *.pyc
 *.pyo
-*.tar.gz
-*.webloc
-*.swp
 
 .DS_Store
 .Python
-.project
-.pydevproject
-.settings
-.svn
-.tmp*
 
 pip-selfcheck.json
 
-bin/*
-build/*
-lib/*
-local
-local/*
-man/*
-include/*
-share/*
-src/*
-static/*
+venv/*
 uploads/*
+static/*
+tmp/*
 
-secret.txt
 settings_local.py
