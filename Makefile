@@ -1,28 +1,54 @@
+VIRTUALENV_DIR ?= 'venv'
 
-SECRET_CHAR_CHOICES = 'abcdefghijklmnopqrstuvw1234567890+-_'
-RANDOM_KEY = $(shell \
-	     python -c 'import random; print("".join([random.choice("${SECRET_CHAR_CHOICES}") for i in range(50)]))')
+PIP = $(VIRTUALENV_DIR)/bin/pip
+PYTHON = $(VIRTUALENV_DIR)/bin/python
+PYTHONLIBS = $(VIRTUALENV_DIR)/lib
 
-setup: editorsnotes/settings_local.py lib
+SECRET_KEY_CHARS = 'abcdefghijklmnopqrstuvw1234567890+-_'
+
+
+#######
+
+all: $(PYTHON) $(PYTHONLIBS) static
+	$< manage.py migrate --noinput
+
+setup: editorsnotes/settings_local.py
 	@echo
 	@echo Development environment succesfully created.
 	@echo Create a Postgres database, enter its authentication information \
 		into $<, and run make XXX to finish configuration.
 
-refresh: lib static
-	./manage.py migrate --noinput
 
 clean:
-	rm -rf bin lib include local man share static
+	rm -rf venv tmp
 
 .PHONY: setup refresh clean
 
-lib: bin/pip requirements.txt bin/pip
-	$< install -r $(word 2,$^)
 
-bin/pip:
-	virtualenv . -p python3
+#######
 
-editorsnotes/settings_local.py:
+$(PYTHON):
+	virtualenv venv -p python3
+
+$(PYTHONLIBS): $(PYTHON) requirements.txt
+	$(PIP) install -r $(word 2, $^)
+
+static: $(PYTHON)
+	$< manage.py collectstatic
+
+tmp:
+	mkdir -p tmp
+
+tmp/secret_key: | tmp
+	python -c 'import random; print("".join([random.choice("${SECRET_KEY_CHARS}") for i in range(50)]))' > $@
+
+tmp/cache_filename: | tmp
+	python -c 'import tempfile; print(tempfile.mktemp(prefix="workingnotes-"))' > $@
+
+editorsnotes/settings_local.py: tmp/secret_key tmp/cache_filename
+	mkdir -p tmp
 	cp editorsnotes/example-settings_local.py $@
-	sed -i -e "s/SECRET_KEY = ''/SECRET_KEY = '${RANDOM_KEY}'/" $@
+	sed -i -e "s/SECRET_KEY = ''/SECRET_KEY = '$(shell cat $(word 2, $^))'/" $@
+	sed -i -e "s/CACHE_FILENAME = ''/CACHE_FILENAME = '$(shell cat $(word 3, $^))'/" $@
+	rm $^
+	rmdir tmp
