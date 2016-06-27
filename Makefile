@@ -45,10 +45,10 @@ tmp/secret_key: | tmp
 tmp/cache_filename: | tmp
 	python -c 'import tempfile; print(tempfile.mktemp(prefix="workingnotes-"))' > $@
 
-editorsnotes/settings_local.py: tmp/secret_key tmp/cache_filename
-	mkdir -p tmp
-	cp editorsnotes/example-settings_local.py $@
-	sed -i -e "s/SECRET_KEY = ''/SECRET_KEY = '$(shell cat $(word 2, $^))'/" $@
-	sed -i -e "s/CACHE_FILENAME = ''/CACHE_FILENAME = '$(shell cat $(word 3, $^))'/" $@
-	rm $^
-	rmdir tmp
+editorsnotes/settings_local.py: editorsnotes/example-settings_local.py tmp/secret_key tmp/cache_filename
+	sed \
+		-e "s|SECRET_KEY = ''|SECRET_KEY = '$(shell cat $(word 2, $^))'|" \
+		-e "s|CACHE_FILENAME = ''|CACHE_FILENAME = '$(shell cat $(word 3, $^))'|" \
+		$< > $@
+	rm $(word 2, $^) $(word 3, $^)
+	rmdir --ignore-fail-on-non-empty tmp
