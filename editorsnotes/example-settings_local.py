@@ -13,6 +13,8 @@ POSTGRES_DB = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+CACHE_FILENAME = ''
+
 
 # ALLOWED_HOSTS = ['www.example.com']
 

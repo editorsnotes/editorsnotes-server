@@ -20,10 +20,12 @@ DATABASES = {
         # The rest of the DB configuration is done in settings_local.py
     }
 }
+
+from .settings_local import CACHE_FILENAME
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'zotero_cache'
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': CACHE_FILENAME
     }
 }
 SOUTH_TESTS_MIGRATE = False
