@@ -12,11 +12,15 @@ SECRET_KEY_CHARS = 'abcdefghijklmnopqrstuvw1234567890+-_'
 all: $(PYTHON) $(PYTHONLIBS) static
 	$< manage.py migrate --noinput
 
-setup: editorsnotes/settings_local.py
+setup: $(PYTHONLIBS) editorsnotes/settings_local.py
+	@echo
 	@echo
 	@echo Development environment succesfully created.
+	@echo
 	@echo Create a Postgres database, enter its authentication information \
-		into $<, and run make XXX to finish configuration.
+		into $(word 2, $^), and run make all to finish configuration.
+	@echo
+	@echo
 
 
 clean:
