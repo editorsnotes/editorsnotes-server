@@ -55,4 +55,3 @@ editorsnotes/settings_local.py: editorsnotes/example-settings_local.py tmp/secre
 		-e "s|CACHE_FILENAME = ''|CACHE_FILENAME = '$(shell cat $(word 3, $^))'|" \
 		$< > $@
 	rm $(word 2, $^) $(word 3, $^)
-	rmdir --ignore-fail-on-non-empty tmp
