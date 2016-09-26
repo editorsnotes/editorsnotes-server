@@ -17,6 +17,7 @@ from licensing.models import License
 from editorsnotes.main.management import get_all_project_permissions
 from editorsnotes.main.models.base import (URLAccessible, CreationMetadata,
                                            ENMarkup)
+from editorsnotes.main.utils.randomish_id import randomish_id
 
 
 __all__ = [
@@ -215,11 +216,9 @@ class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
     )
 
     slug = models.SlugField(
-        help_text=(
-            'Used for project-specific URLs and groups. '
-            'Valid characters: letters, numbers, or _-'
-        ),
-        unique=True
+        unique=True,
+        editable=False,
+        help_text='Short, randomish identifier used in the URL of a project.'
     )
 
     image = models.ImageField(
@@ -244,6 +243,15 @@ class Project(ENMarkup, models.Model, URLAccessible, ProjectPermissionsMixin):
             ('view_project_roster', 'Can view project roster.'),
             ('change_project_roster', 'Can edit project roster.'),
         )
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            while True:
+                slug = randomish_id()
+                if not Project.objects.filter(slug=slug).exists():
+                    self.slug = slug
+                    break
+        super().save(*args, **kwargs)
 
     @models.permalink
     def get_absolute_url(self):

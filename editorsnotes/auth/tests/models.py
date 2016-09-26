@@ -39,14 +39,21 @@ def create_user():
 #         self.assertEqual(ProjectInvitation.objects.count(), 0)
 #         self.assertEqual(new_user.username, 'fakeperson')
 
+class ProjectTestCase(TestCase):
+    def setUp(self):
+        self.project = Project.objects.create(
+            name='Alexander Berkman Papers Project'
+        )
+
 
 class ProjectSpecificPermissionsTestCase(TestCase):
     fixtures = ['projects.json']
 
     def setUp(self):
         self.project = Project.objects.create(
-            name='Alexander Berkman Papers Project',
-            slug='abpp')
+            name='Alexander Berkman Papers Project'
+        )
+
         self.user = User.objects.create(
             email='jd@example.com',
             display_name='John Doe',

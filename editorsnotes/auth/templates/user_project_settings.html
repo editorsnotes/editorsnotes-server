@@ -24,22 +24,5 @@
       <input type="submit" class="btn btn-primary" value="Add Project" />
     </div>
   </form>
-
-  <script type="text/javascript">
-    var slugEl = document.getElementById('id_slug')
-      , ok = false
-
-    slugEl.setAttribute('readonly', true);
-
-    document.getElementById('id_name').addEventListener('input', function (e) {
-      slugEl.value = (
-        e.target.value
-          .replace(/\s+/g, '-')
-          .replace('[a-zA-Z0-9_\-]', '')
-          .toLowerCase()
-          .replace(/\b(the-|of-|a-|an-)/g, '')
-          .replace(/-$/, ''));
-    });
-  </script>
 </section>
 {% endblock %}
