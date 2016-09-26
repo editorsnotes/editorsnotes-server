@@ -38,6 +38,26 @@ class NoteTestCase(TestCase):
         self.assertEqual(1, len(topic.assignments.all()))
         self.assertEqual(topic, note.related_topics.all()[0].topic)
 
+    def testEmptyTitle(self):
+        empty_title = main_models.Note.objects.create(
+            creator=self.user, last_updater=self.user, project=self.project
+        )
+
+        self.assertEqual(empty_title.title, '')
+
+    def testDuplicateTitle(self):
+        title1 = main_models.Note.objects.create(
+            title='example',
+            creator=self.user, last_updater=self.user, project=self.project
+        )
+
+        title2 = main_models.Note.objects.create(
+            title='example',
+            creator=self.user, last_updater=self.user, project=self.project
+        )
+
+        self.assertEqual(title1.title, title2.title)
+
 
 class DocumentTestCase(TestCase):
     fixtures = ['projects.json']
