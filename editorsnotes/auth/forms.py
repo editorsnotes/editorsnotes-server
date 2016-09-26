@@ -72,4 +72,4 @@ class UserProfileForm(forms.ModelForm):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ('name', 'slug', 'default_license',)
+        fields = ('name', 'default_license',)
