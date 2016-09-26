@@ -26,9 +26,10 @@ class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
     enables.
     """
     title = models.CharField(
-        max_length=80,
+        max_length=200,
+        blank=True,
         help_text=(
-            'The title of the note.'
+            'The title of the note (optional).'
         )
     )
 
@@ -77,9 +78,6 @@ class Note(LastUpdateMetadata, Administered, URLAccessible, ENMarkup,
         ordering = ['-last_updated']
         permissions = (
             ('view_private_note', 'Can view notes private to a project.'),
-        )
-        unique_together = (
-            ('title', 'project'),
         )
 
     def as_text(self):
